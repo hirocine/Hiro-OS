@@ -1,39 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Plus, Pencil, Building2 } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { WhatsAppIcon, InstagramIcon } from '@/components/icons/SocialIcons';
-
-import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useCompanies } from '@/features/supplier-companies/hooks/useCompanies';
 import { CompanyDialog } from '@/features/supplier-companies/components/CompanyDialog';
 import { CompanyFilters } from '@/features/supplier-companies/components/CompanyFilters';
 import { StarRating } from '@/features/suppliers/components/StarRating';
 import type { CompanyFilters as Filters, Company } from '@/features/supplier-companies/types';
 
+const COMP_COLS = '1.5fr 1.2fr 130px 100px 44px';
+
 export default function Companies() {
   const navigate = useNavigate();
   const { canAccessSuppliers, roleLoading } = useAuthContext();
-  const {
-    companies,
-    loading,
-    fetchCompanies,
-    createCompany,
-    updateCompany,
-  } = useCompanies();
+  const { companies, loading, fetchCompanies, createCompany, updateCompany } = useCompanies();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | undefined>();
@@ -43,16 +24,10 @@ export default function Companies() {
     fetchCompanies(filters);
   }, [filters]);
 
-  const handleSearchChange = (search: string) => {
+  const handleSearchChange = (search: string) =>
     setFilters((prev) => ({ ...prev, search: search || undefined }));
-  };
-
-  const handleRatingChange = (rating: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      minRating: rating === 'all' ? undefined : parseInt(rating),
-    }));
-  };
+  const handleRatingChange = (rating: string) =>
+    setFilters((prev) => ({ ...prev, minRating: rating === 'all' ? undefined : parseInt(rating) }));
 
   const handleSave = async (data: any) => {
     if (editingCompany) {
@@ -63,15 +38,8 @@ export default function Companies() {
     setEditingCompany(undefined);
   };
 
-  const formatWhatsApp = (number: string) => {
-    const cleaned = number.replace(/\D/g, '');
-    return `https://wa.me/${cleaned}`;
-  };
-
-  const formatInstagram = (username: string) => {
-    const cleaned = username.replace('@', '');
-    return `https://instagram.com/${cleaned}`;
-  };
+  const formatWhatsApp = (number: string) => `https://wa.me/${number.replace(/\D/g, '')}`;
+  const formatInstagram = (username: string) => `https://instagram.com/${username.replace('@', '')}`;
 
   if (roleLoading) {
     return (
@@ -80,144 +48,145 @@ export default function Companies() {
       </div>
     );
   }
-
-  if (!canAccessSuppliers) {
-    return <Navigate to="/" replace />;
-  }
+  if (!canAccessSuppliers) return <Navigate to="/" replace />;
 
   return (
-    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-      <PageHeader
-        title="Empresas"
-        subtitle="Gerencie suas empresas fornecedoras"
-        actions={
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Empresa
-          </Button>
-        }
-      />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Empresas.</h1>
+            <p className="ph-sub">Gerencie suas empresas fornecedoras.</p>
+          </div>
+          <div className="ph-actions">
+            <button className="btn primary" onClick={() => setDialogOpen(true)} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Nova Empresa</span>
+            </button>
+          </div>
+        </div>
 
-      <CompanyFilters
-        onSearchChange={handleSearchChange}
-        onRatingChange={handleRatingChange}
-      />
+        <div style={{ marginTop: 28 }}>
+          <CompanyFilters onSearchChange={handleSearchChange} onRatingChange={handleRatingChange} />
+        </div>
 
-      <div className="rounded-lg border bg-card">
-        <Table className="table-fixed">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[25%]">Empresa</TableHead>
-              <TableHead className="w-[25%]">Área</TableHead>
-              <TableHead className="w-[15%]">Rating</TableHead>
-              <TableHead className="w-[15%]">Contatos</TableHead>
-              <TableHead className="w-[20%] text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i} className="animate-pulse">
-                  <TableCell>
-                    <Skeleton className="h-4 w-28" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      {[1,2,3,4,5].map(s => <Skeleton key={s} className="h-4 w-4" />)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Skeleton className="h-4 w-4" />
-                      <Skeleton className="h-4 w-4" />
-                    </div>
-                  </TableCell>
-                  <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                </TableRow>
-              ))
-            ) : companies.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5}>
-                  <EmptyState icon={Building2} title="Nenhuma empresa encontrada" description="Cadastre empresas fornecedoras" />
-                </TableCell>
-              </TableRow>
-            ) : (
-              companies.map((company) => (
-                <TableRow
+        <div className="tbl" style={{ gridTemplateColumns: COMP_COLS, marginTop: 20, border: '1px solid hsl(var(--ds-line-1))' }}>
+          <div className="tbl-head">
+            <div>Empresa</div>
+            <div>Área</div>
+            <div>Rating</div>
+            <div>Contatos</div>
+            <div></div>
+          </div>
+
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={`sk-${i}`} className={'tbl-row' + (i === 4 ? ' last' : '')}>
+                <div><span className="sk line lg" style={{ width: 160 }} /></div>
+                <div><span className="sk line" style={{ width: 100 }} /></div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <span key={s} className="sk dot" style={{ width: 10, height: 10 }} />
+                  ))}
+                </div>
+                <div><span className="sk dot" /></div>
+                <div></div>
+              </div>
+            ))
+          ) : companies.length === 0 ? (
+            <div style={{ gridColumn: '1 / -1', padding: 0 }}>
+              <div className="empties" style={{ borderTop: 0, borderLeft: 0, borderRight: 0 }}>
+                <div className="empty" style={{ borderRight: 0 }}>
+                  <div className="glyph">
+                    <Building2 strokeWidth={1.25} />
+                  </div>
+                  <h5>Nenhuma empresa encontrada</h5>
+                  <p>Cadastre empresas fornecedoras para acompanhar a rede.</p>
+                  <div className="actions">
+                    <button className="btn primary" onClick={() => setDialogOpen(true)} type="button">
+                      <Plus size={14} strokeWidth={1.5} />
+                      <span>Cadastrar primeira</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            companies.map((company, idx) => {
+              const isLast = idx === companies.length - 1;
+              return (
+                <div
                   key={company.id}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className={'tbl-row' + (isLast ? ' last' : '')}
                   onClick={() => navigate(`/fornecedores/empresas/${company.id}`)}
                 >
-                  <TableCell className="font-medium">
-                    {company.company_name}
-                    {!company.is_active && (
-                      <Badge variant="outline" className="ml-2 text-xs">
-                        Inativa
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>{company.area}</TableCell>
-                  <TableCell>
-                    <StarRating rating={company.rating} readonly />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {company.whatsapp && (
-                        <a
-                          href={formatWhatsApp(company.whatsapp)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-green-600 hover:text-green-700 dark:text-green-400"
-                        >
-                          <WhatsAppIcon className="h-4 w-4" />
-                        </a>
-                      )}
-                      {company.instagram && (
-                        <a
-                          href={formatInstagram(company.instagram)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-pink-600 hover:text-pink-700 dark:text-pink-400"
-                        >
-                          <InstagramIcon className="h-4 w-4" />
-                        </a>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                      <span className="t-title">{company.company_name}</span>
+                      {!company.is_active && (
+                        <span className="pill muted"><span className="dot" />Inativa</span>
                       )}
                     </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
+                  </div>
+                  <div style={{ fontSize: 13, color: 'hsl(var(--ds-fg-2))' }}>{company.area}</div>
+                  <div><StarRating rating={company.rating} readonly /></div>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    {company.whatsapp && (
+                      <a
+                        href={formatWhatsApp(company.whatsapp)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ color: 'hsl(var(--ds-accent))', display: 'inline-flex' }}
+                      >
+                        <WhatsAppIcon className="h-4 w-4" />
+                      </a>
+                    )}
+                    {company.instagram && (
+                      <a
+                        href={formatInstagram(company.instagram)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ color: 'hsl(var(--ds-fg-3))', display: 'inline-flex' }}
+                      >
+                        <InstagramIcon className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
+                  <div style={{ justifyContent: 'flex-end' }}>
+                    <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         setEditingCompany(company);
                         setDialogOpen(true);
                       }}
+                      style={{
+                        width: 28, height: 28, display: 'grid', placeItems: 'center',
+                        color: 'hsl(var(--ds-fg-3))', cursor: 'pointer',
+                      }}
+                      aria-label="Editar"
                     >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                      <Pencil size={14} strokeWidth={1.5} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
 
-      <CompanyDialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) setEditingCompany(undefined);
-        }}
-        company={editingCompany}
-        onSave={handleSave}
-      />
-    </ResponsiveContainer>
+        <CompanyDialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) setEditingCompany(undefined);
+          }}
+          company={editingCompany}
+          onSave={handleSave}
+        />
+      </div>
+    </div>
   );
 }

@@ -1,8 +1,5 @@
 import { useState } from 'react';
 import { Trash2, Edit, Download, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { MobileOptimizedConfirmationDialog } from '@/components/ui/mobile-optimized-confirmation-dialog';
 import { Equipment } from '@/types/equipment';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
@@ -18,13 +15,28 @@ interface BulkActionsBarProps {
   onBulkExport: (items: Equipment[]) => void;
 }
 
+const actionBtn: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '0 10px',
+  height: 30,
+  fontSize: 12,
+  fontWeight: 500,
+  background: 'transparent',
+  border: 0,
+  cursor: 'pointer',
+  color: 'hsl(var(--ds-fg-2))',
+  transition: 'background 0.15s, color 0.15s',
+};
+
 export function BulkActionsBar({
   selectedItems,
   selectedCount,
   onClearSelection,
   onBulkDelete,
   onBulkEdit,
-  onBulkExport
+  onBulkExport,
 }: BulkActionsBarProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,21 +50,21 @@ export function BulkActionsBar({
       await onBulkDelete(selectedItems);
       setIsDeleteDialogOpen(false);
       onClearSelection();
-      
+
       enhancedToast.success({
         title: 'Equipamentos excluídos',
-        description: `${selectedCount} equipamento(s) foram excluídos com sucesso.`
+        description: `${selectedCount} equipamento(s) foram excluídos com sucesso.`,
       });
     } catch (error) {
       logger.error('Error deleting equipment in bulk', {
         module: 'equipment',
         action: 'bulk_delete',
         error,
-        data: { selectedCount, equipmentIds: selectedItems.map(item => item.id) }
+        data: { selectedCount, equipmentIds: selectedItems.map((item) => item.id) },
       });
       enhancedToast.error({
         title: 'Erro na exclusão',
-        description: 'Não foi possível excluir os equipamentos selecionados.'
+        description: 'Não foi possível excluir os equipamentos selecionados.',
       });
     } finally {
       setIsLoading(false);
@@ -61,74 +73,99 @@ export function BulkActionsBar({
 
   return (
     <>
-      <Card className={`fixed z-50 shadow-xl border-primary/20 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90 
-        ${isMobile 
-          ? 'bottom-4 left-4 right-4 rounded-2xl' 
-          : 'bottom-6 left-1/2 transform -translate-x-1/2 rounded-xl'
-        }`}
+      <div
+        style={{
+          position: 'fixed',
+          zIndex: 50,
+          background: 'hsl(var(--ds-surface))',
+          border: '1px solid hsl(var(--ds-line-1))',
+          boxShadow: '0 12px 32px hsl(0 0% 0% / 0.15)',
+          backdropFilter: 'blur(12px)',
+          ...(isMobile
+            ? { bottom: 16, left: 16, right: 16 }
+            : { bottom: 24, left: '50%', transform: 'translateX(-50%)' }),
+        }}
       >
-        <div className={`flex items-center gap-3 ${isMobile ? 'p-4' : 'p-4'}`}>
-          {/* Seção de informações */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Badge variant="secondary" className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>
-              {selectedCount} item{selectedCount !== 1 ? 's' : ''}
-            </Badge>
-            <Button
-              variant="ghost"
-              size={isMobile ? "sm" : "sm"}
-              onClick={onClearSelection}
-              className={`text-muted-foreground hover:text-foreground ${isMobile ? 'h-9 w-9 p-0' : 'h-8 px-2'}`}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+            <span
+              className="pill"
+              style={{ fontSize: 11, fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}
             >
-              {isMobile ? (
-                <X className="h-4 w-4" />
-              ) : (
-                <>
-                  <X className="h-4 w-4 mr-1" />
-                  Limpar
-                </>
-              )}
-            </Button>
+              {selectedCount} item{selectedCount !== 1 ? 's' : ''}
+            </span>
+            <button
+              type="button"
+              onClick={onClearSelection}
+              style={{ ...actionBtn, color: 'hsl(var(--ds-fg-3))' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'hsl(var(--ds-fg-1))';
+                e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'hsl(var(--ds-fg-3))';
+                e.currentTarget.style.background = 'transparent';
+              }}
+              aria-label="Limpar seleção"
+            >
+              <X size={13} strokeWidth={1.5} />
+              {!isMobile && <span>Limpar</span>}
+            </button>
           </div>
 
-          {/* Divisor apenas no desktop */}
-          {!isMobile && <div className="h-6 border-l border-border" />}
+          {!isMobile && (
+            <div style={{ height: 20, borderLeft: '1px solid hsl(var(--ds-line-2))' }} />
+          )}
 
-          {/* Ações */}
-          <div className={`flex items-center gap-1 ${isMobile ? 'flex-wrap' : ''}`}>
-            <Button
-              variant="ghost"
-              size={isMobile ? "sm" : "sm"}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: isMobile ? 'wrap' : undefined }}>
+            <button
+              type="button"
               onClick={() => onBulkEdit(selectedItems)}
-              className={`${isMobile ? 'h-11 min-w-11 flex-col gap-1 text-xs' : 'h-8'}`}
               disabled={selectedCount > 10}
+              style={{ ...actionBtn, opacity: selectedCount > 10 ? 0.4 : 1 }}
+              onMouseEnter={(e) => {
+                if (selectedCount <= 10) e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
             >
-              <Edit className="h-4 w-4" />
-              {isMobile ? 'Editar' : <span className="ml-1">Editar</span>}
-            </Button>
+              <Edit size={13} strokeWidth={1.5} />
+              <span>Editar</span>
+            </button>
 
-            <Button
-              variant="ghost"
-              size={isMobile ? "sm" : "sm"}
+            <button
+              type="button"
               onClick={() => onBulkExport(selectedItems)}
-              className={`${isMobile ? 'h-11 min-w-11 flex-col gap-1 text-xs' : 'h-8'}`}
+              style={actionBtn}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
             >
-              <Download className="h-4 w-4" />
-              {isMobile ? 'Export' : <span className="ml-1">Exportar</span>}
-            </Button>
+              <Download size={13} strokeWidth={1.5} />
+              <span>Exportar</span>
+            </button>
 
-            <Button
-              variant="ghost"
-              size={isMobile ? "sm" : "sm"}
+            <button
+              type="button"
               onClick={() => setIsDeleteDialogOpen(true)}
-              className={`text-destructive hover:text-destructive hover:bg-destructive/10 
-                ${isMobile ? 'h-11 min-w-11 flex-col gap-1 text-xs' : 'h-8'}`}
+              style={{ ...actionBtn, color: 'hsl(var(--ds-danger))' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'hsl(var(--ds-danger) / 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
             >
-              <Trash2 className="h-4 w-4" />
-              {isMobile ? 'Excluir' : <span className="ml-1">Excluir</span>}
-            </Button>
+              <Trash2 size={13} strokeWidth={1.5} />
+              <span>Excluir</span>
+            </button>
           </div>
         </div>
-      </Card>
+      </div>
 
       <MobileOptimizedConfirmationDialog
         open={isDeleteDialogOpen}
@@ -136,7 +173,7 @@ export function BulkActionsBar({
         onConfirm={handleBulkDelete}
         title="Excluir equipamentos"
         description={`Tem certeza que deseja excluir ${selectedCount} equipamento(s)? Esta ação não pode ser desfeita.`}
-        confirmText={isLoading ? "Excluindo..." : "Excluir"}
+        confirmText={isLoading ? 'Excluindo...' : 'Excluir'}
         cancelText="Cancelar"
         variant="destructive"
         icon="delete"

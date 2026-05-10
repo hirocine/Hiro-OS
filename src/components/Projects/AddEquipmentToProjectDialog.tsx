@@ -1,18 +1,14 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { 
-  ResponsiveDialog, 
-  ResponsiveDialogContent, 
-  ResponsiveDialogHeader, 
-  ResponsiveDialogTitle, 
-  ResponsiveDialogDescription 
+import { useState, useMemo, useEffect, useRef } from 'react';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogDescription
 } from '@/components/ui/responsive-dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { Package, Search, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useEquipment } from '@/features/equipment';
@@ -20,7 +16,6 @@ import { useLoans } from '@/features/loans';
 import { useToast } from '@/hooks/use-toast';
 import { Equipment } from '@/types/equipment';
 import { Project } from '@/types/project';
-import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -32,30 +27,30 @@ interface AddEquipmentToProjectDialogProps {
   onSuccess?: () => void;
 }
 
-export function AddEquipmentToProjectDialog({ 
-  open, 
-  onOpenChange, 
-  project, 
-  onSuccess 
+export function AddEquipmentToProjectDialog({
+  open,
+  onOpenChange,
+  project,
+  onSuccess
 }: AddEquipmentToProjectDialogProps) {
   const { toast } = useToast();
   const { allEquipment } = useEquipment();
   const { addLoan } = useLoans();
-  
+
   const [selectedEquipment, setSelectedEquipment] = useState<Set<string>>(new Set());
   const [searchInput, setSearchInput] = useState('');
   const [displayLimit, setDisplayLimit] = useState(30);
   const [loading, setLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  
+
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const debouncedSearchTerm = useDebounce(searchInput, 300);
-  
+
   // Refs to avoid recreating scroll listener on every state change
   const displayLimitRef = useRef(displayLimit);
   const isLoadingMoreRef = useRef(isLoadingMore);
-  
+
   // Sync refs with state
   useEffect(() => {
     displayLimitRef.current = displayLimit;
@@ -72,11 +67,11 @@ export function AddEquipmentToProjectDialog({
                equipment.brand.toLowerCase().includes(search) ||
                equipment.patrimonyNumber?.toLowerCase().includes(search);
       }
-      
+
       return true;
     });
   }, [allEquipment, debouncedSearchTerm]);
-  
+
   // Limit visible equipment for performance (lazy rendering)
   const visibleEquipment = useMemo(() => {
     return availableEquipment.slice(0, displayLimit);
@@ -87,19 +82,19 @@ export function AddEquipmentToProjectDialog({
     try {
       const { data, error } = await supabase
         .rpc('get_equipment_project_count', { equipment_id: equipmentId });
-      
+
       if (error) {
-        logger.error('Error getting project count', { 
+        logger.error('Error getting project count', {
           module: 'equipment-project-count',
           error,
           data: { equipment_id: equipmentId }
         });
         return 0;
       }
-      
+
       return data || 0;
     } catch (error) {
-      logger.error('Error getting project count', { 
+      logger.error('Error getting project count', {
         module: 'equipment-project-count',
         error,
         data: { equipment_id: equipmentId }
@@ -117,7 +112,7 @@ export function AddEquipmentToProjectDialog({
     }
     setSelectedEquipment(newSelected);
   };
-  
+
   // Lazy loading via IntersectionObserver with retry
   useEffect(() => {
     if (!open) return;
@@ -127,10 +122,10 @@ export function AddEquipmentToProjectDialog({
 
     const attachObserver = (attempt = 0) => {
       if (cancelled) return;
-      
+
       const scrollArea = scrollAreaRef.current;
       const loadMoreEl = loadMoreRef.current;
-      
+
       if (!scrollArea || !loadMoreEl) {
         if (attempt < 10) {
           setTimeout(() => attachObserver(attempt + 1), 50);
@@ -139,7 +134,7 @@ export function AddEquipmentToProjectDialog({
       }
 
       const viewport = scrollArea.querySelector('[data-lovable-scroll-viewport]') as HTMLElement | null;
-      
+
       if (!viewport) {
         if (attempt < 10) {
           setTimeout(() => attachObserver(attempt + 1), 50);
@@ -247,7 +242,7 @@ export function AddEquipmentToProjectDialog({
       const loanPromises = Array.from(selectedEquipment).map(async (equipmentId) => {
         const equipment = allEquipment.find(eq => eq.id === equipmentId);
         if (!equipment) {
-          logger.error('Equipment not found for loan creation', { 
+          logger.error('Equipment not found for loan creation', {
             module: 'project-equipment',
             action: 'create_loan',
             data: { equipmentId }
@@ -262,7 +257,7 @@ export function AddEquipmentToProjectDialog({
             action: 'create_loan',
             data: { equipmentName: equipment.name, equipmentId }
           });
-          
+
           await addLoan({
             equipmentId: equipment.id,
             equipmentName: equipment.name,
@@ -272,16 +267,16 @@ export function AddEquipmentToProjectDialog({
             expectedReturnDate: format(new Date(project.expectedEndDate), 'yyyy-MM-dd'),
             status: 'active'
           });
-          
+
           successCount++;
           logger.debug('Loan created successfully', {
             module: 'project-equipment',
             action: 'loan_created',
             data: { equipmentName: equipment.name }
           });
-          
+
         } catch (loanError) {
-          logger.error('Error creating loan for equipment', { 
+          logger.error('Error creating loan for equipment', {
             module: 'project-equipment',
             action: 'create_loan',
             error: loanError,
@@ -298,11 +293,11 @@ export function AddEquipmentToProjectDialog({
         // Verificar quantos SSDs/HDs foram selecionados
         const storageDevices = Array.from(selectedEquipment).filter(id => {
           const equipment = allEquipment.find(e => e.id === id);
-          return equipment?.category === 'Armazenamento' && 
-                 (equipment?.subcategory?.toLowerCase().includes('ssd') || 
+          return equipment?.category === 'Armazenamento' &&
+                 (equipment?.subcategory?.toLowerCase().includes('ssd') ||
                   equipment?.subcategory?.toLowerCase().includes('hd'));
         });
-        
+
         // Mensagem diferenciada para SSDs/HDs
         if (storageDevices.length > 0 && storageDevices.length === successCount) {
           toast({
@@ -320,20 +315,20 @@ export function AddEquipmentToProjectDialog({
             description: `${successCount} equipamento(s) adicionado(s) ao projeto`,
           });
         }
-        
+
         logger.info('Loans created successfully', {
           module: 'project-equipment',
           action: 'loans_completed',
           data: { successCount, storageDevicesCount: storageDevices.length }
         });
-        
+
         // Reset form and close dialog
         setSelectedEquipment(new Set());
         setSearchInput('');
         onOpenChange(false);
         onSuccess?.();
       }
-      
+
       if (errors.length > 0) {
         logger.error('Loan creation completed with errors', {
           module: 'project-equipment',
@@ -346,7 +341,7 @@ export function AddEquipmentToProjectDialog({
           variant: "destructive"
         });
       }
-      
+
     } catch (error) {
       logger.error('Error in loan creation process', {
         module: 'project-equipment',
@@ -368,18 +363,32 @@ export function AddEquipmentToProjectDialog({
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent className="w-full max-w-5xl flex flex-col h-[80vh] overflow-hidden">
         <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>Adicionar Equipamentos ao Projeto</ResponsiveDialogTitle>
+          <ResponsiveDialogTitle>
+            <span style={{ fontFamily: '"HN Display", sans-serif' }}>
+              Adicionar Equipamentos ao Projeto
+            </span>
+          </ResponsiveDialogTitle>
           <ResponsiveDialogDescription>
             Selecione os equipamentos que deseja vincular ao projeto "{project.name}"
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
           {/* Equipment Selection */}
-          <div className="flex-1 flex flex-col min-h-0">
-            <div className="space-y-4 mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
+              <div style={{ position: 'relative' }}>
+                <Search
+                  size={14}
+                  strokeWidth={1.5}
+                  style={{
+                    position: 'absolute',
+                    left: 12,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'hsl(var(--ds-fg-3))',
+                  }}
+                />
                 <Input
                   placeholder="Buscar equipamentos..."
                   value={searchInput}
@@ -388,62 +397,121 @@ export function AddEquipmentToProjectDialog({
                 />
               </div>
 
-              <Label className="text-sm font-medium">
-                {visibleEquipment.length === availableEquipment.length 
+              <span style={{
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                fontWeight: 500,
+                color: 'hsl(var(--ds-fg-2))',
+                fontVariantNumeric: 'tabular-nums',
+              }}>
+                {visibleEquipment.length === availableEquipment.length
                   ? `Todos os Equipamentos (${availableEquipment.length})`
                   : `Mostrando ${visibleEquipment.length} de ${availableEquipment.length} equipamentos`
                 }
-              </Label>
+              </span>
             </div>
 
-            <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0 h-full border rounded-md">
-              <div className="p-3 space-y-2">
-                {visibleEquipment.map((equipment) => (
-                  <Card 
-                    key={equipment.id} 
-                    className={cn(
-                      "cursor-pointer transition-colors hover:bg-muted/50",
-                      selectedEquipment.has(equipment.id) && "bg-primary/5 border-primary"
-                    )}
-                    onClick={() => handleEquipmentToggle(equipment.id)}
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex items-center gap-3">
-                        <Checkbox 
-                          checked={selectedEquipment.has(equipment.id)}
+            <ScrollArea
+              ref={scrollAreaRef}
+              className="flex-1 min-h-0 h-full"
+              style={{ border: '1px solid hsl(var(--ds-line-1))' }}
+            >
+              <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {visibleEquipment.map((equipment) => {
+                  const isSelected = selectedEquipment.has(equipment.id);
+                  return (
+                    <div
+                      key={equipment.id}
+                      onClick={() => handleEquipmentToggle(equipment.id)}
+                      style={{
+                        cursor: 'pointer',
+                        border: isSelected
+                          ? '1px solid hsl(var(--ds-accent))'
+                          : '1px solid hsl(var(--ds-line-1))',
+                        background: isSelected
+                          ? 'hsl(var(--ds-accent) / 0.05)'
+                          : 'hsl(var(--ds-surface))',
+                        padding: 12,
+                        transition: 'all 0.15s',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.background = 'hsl(var(--ds-surface))';
+                        }
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <Checkbox
+                          checked={isSelected}
                           onChange={() => handleEquipmentToggle(equipment.id)}
                         />
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium truncate">{equipment.name}</h4>
-                            <Badge 
-                              variant={equipment.currentBorrower ? "secondary" : "outline"}
+
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                            <h4 style={{
+                              fontWeight: 500,
+                              fontSize: 13,
+                              color: 'hsl(var(--ds-fg-1))',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}>
+                              {equipment.name}
+                            </h4>
+                            <span
+                              className="pill"
+                              style={
+                                equipment.currentBorrower
+                                  ? {
+                                      color: 'hsl(var(--ds-warning))',
+                                      borderColor: 'hsl(var(--ds-warning) / 0.3)',
+                                      background: 'hsl(var(--ds-warning) / 0.08)',
+                                    }
+                                  : {
+                                      color: 'hsl(var(--ds-success))',
+                                      borderColor: 'hsl(var(--ds-success) / 0.3)',
+                                      background: 'hsl(var(--ds-success) / 0.08)',
+                                    }
+                              }
                             >
                               {equipment.currentBorrower ? "Em projetos" : "Disponível"}
-                            </Badge>
+                            </span>
                           </div>
-                          
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            <div className="flex items-center gap-1">
-                              <Package className="h-3 w-3" />
+
+                          <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <Package size={11} strokeWidth={1.5} />
                               <span>{equipment.brand} • {equipment.category}</span>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    </div>
+                  );
+                })}
 
                 {visibleEquipment.length < availableEquipment.length && (
                   <div
                     ref={loadMoreRef}
-                    className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      padding: '24px 0',
+                      fontSize: 12,
+                      color: 'hsl(var(--ds-fg-3))',
+                    }}
                   >
                     {isLoadingMore ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />
                         <span>Carregando mais equipamentos...</span>
                       </>
                     ) : (
@@ -451,11 +519,11 @@ export function AddEquipmentToProjectDialog({
                     )}
                   </div>
                 )}
-                
+
                 {availableEquipment.length === 0 && (
-                  <div className="text-center py-8">
-                    <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
+                  <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                    <Package size={28} strokeWidth={1.5} style={{ margin: '0 auto 8px', color: 'hsl(var(--ds-fg-3))' }} />
+                    <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
                       Nenhum equipamento encontrado
                     </p>
                   </div>
@@ -465,26 +533,35 @@ export function AddEquipmentToProjectDialog({
           </div>
 
           {/* Footer with Action Buttons */}
-          <div className="pt-4 border-t space-y-4">
-            <div className="text-sm text-muted-foreground">
+          <div style={{
+            paddingTop: 16,
+            borderTop: '1px solid hsl(var(--ds-line-1))',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+          }}>
+            <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
               {selectedEquipment.size} equipamento(s) selecionado(s)
             </div>
-            
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                className="btn"
                 onClick={() => onOpenChange(false)}
-                className="flex-1"
+                style={{ flex: 1, justifyContent: 'center' }}
               >
                 Cancelar
-              </Button>
-              <Button 
+              </button>
+              <button
+                type="button"
+                className="btn primary"
                 onClick={handleSubmit}
                 disabled={loading || selectedEquipment.size === 0}
-                className="flex-1"
+                style={{ flex: 1, justifyContent: 'center' }}
               >
                 {loading ? 'Adicionando...' : 'Adicionar ao Projeto'}
-              </Button>
+              </button>
             </div>
           </div>
         </div>

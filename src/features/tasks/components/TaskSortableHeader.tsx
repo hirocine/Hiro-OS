@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { TaskSortableField, TaskSortOrder } from '../types';
 
@@ -11,49 +10,54 @@ interface TaskSortableHeaderProps {
   className?: string;
 }
 
-export function TaskSortableHeader({ 
-  field, 
-  label, 
-  currentSortBy, 
-  currentSortOrder, 
+export function TaskSortableHeader({
+  field,
+  label,
+  currentSortBy,
+  currentSortOrder,
   onSort,
-  className 
 }: TaskSortableHeaderProps) {
   const isActive = currentSortBy === field;
-  
+
   const handleClick = () => {
-    if (!isActive) {
-      onSort(field, 'asc');
-    } else if (currentSortOrder === 'asc') {
-      onSort(field, 'desc');
-    } else {
-      onSort(field, 'asc');
-    }
+    if (!isActive) onSort(field, 'asc');
+    else if (currentSortOrder === 'asc') onSort(field, 'desc');
+    else onSort(field, 'asc');
   };
 
-  const getIcon = () => {
-    if (!isActive) {
-      return <ChevronsUpDown className="h-3 w-3 opacity-50 transition-opacity hover:opacity-70" />;
-    }
-    
-    return currentSortOrder === 'asc' ? 
-      <ChevronUp className="h-3 w-3 text-primary transition-colors" /> : 
-      <ChevronDown className="h-3 w-3 text-primary transition-colors" />;
-  };
+  const Icon = !isActive ? ChevronsUpDown : currentSortOrder === 'asc' ? ChevronUp : ChevronDown;
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
+    <button
+      type="button"
       onClick={handleClick}
-      className={`h-7 px-0 py-1 w-full font-medium justify-start gap-1 hover:bg-white/10 transition-colors min-w-0 ${
-        isActive 
-          ? 'text-primary' 
-          : 'text-muted-foreground hover:text-foreground'
-      } ${className}`}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+        padding: 0,
+        background: 'transparent',
+        border: 0,
+        cursor: 'pointer',
+        color: isActive ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+        fontSize: 11,
+        letterSpacing: '0.14em',
+        textTransform: 'uppercase',
+        fontWeight: 500,
+        transition: 'color 0.15s',
+      }}
     >
-      <span className="truncate mr-1 text-xs lg:text-sm font-semibold uppercase tracking-wider">{label}</span>
-      {getIcon()}
-    </Button>
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {label}
+      </span>
+      <Icon
+        size={11}
+        strokeWidth={1.5}
+        style={{
+          color: isActive ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-4))',
+          opacity: isActive ? 1 : 0.6,
+        }}
+      />
+    </button>
   );
 }

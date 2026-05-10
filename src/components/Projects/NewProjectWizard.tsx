@@ -1,17 +1,13 @@
 import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useEquipment } from '@/features/equipment';
 import { useCategories } from '@/hooks/useCategories';
 import { Equipment } from '@/types/equipment';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { cn } from '@/lib/utils';
 
 interface NewProjectWizardProps {
   open: boolean;
@@ -30,33 +26,47 @@ interface ProjectData {
   selectedEquipment: Record<string, Equipment[]>;
 }
 
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const successPill: React.CSSProperties = {
+  color: 'hsl(var(--ds-success))',
+  borderColor: 'hsl(var(--ds-success) / 0.3)',
+  background: 'hsl(var(--ds-success) / 0.08)',
+};
+
 export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWizardProps) {
   const { allEquipment } = useEquipment();
   const { getCategoriesHierarchy, categories, loading: categoriesLoading } = useCategories();
 
   // Gerar steps de equipamentos dinamicamente baseado nas categorias do banco
   const EQUIPMENT_STEPS = useMemo(() => {
-    const categoriesHierarchy = getCategoriesHierarchy(); // Chamar dentro do useMemo
-    
+    const categoriesHierarchy = getCategoriesHierarchy();
+
     const steps: Array<{
       category: string;
       title: string;
       step: number;
       subcategory?: string;
     }> = [];
-    
+
     let stepNumber = 7; // Começar após os 6 steps de dados do projeto
-    
+
     categoriesHierarchy.forEach((categoryData) => {
       if (categoryData.subcategories.length === 0) {
-        // Categoria sem subcategorias: criar 1 step
         steps.push({
           category: categoryData.categoryName,
           title: categoryData.categoryName,
           step: stepNumber++
         });
       } else {
-        // Categoria com subcategorias: criar 1 step por subcategoria
         categoryData.subcategories.forEach((subcategory) => {
           steps.push({
             category: categoryData.categoryName,
@@ -67,11 +77,11 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
         });
       }
     });
-    
+
     return steps;
   }, [categories, getCategoriesHierarchy]);
 
-  const TOTAL_STEPS = 6 + EQUIPMENT_STEPS.length + 1; // 6 dados + equipamentos + 1 confirmação
+  const TOTAL_STEPS = 6 + EQUIPMENT_STEPS.length + 1;
 
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -81,15 +91,29 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] mx-auto">
           <DialogHeader>
-            <DialogTitle>Carregando categorias...</DialogTitle>
+            <DialogTitle>
+              <span style={{ fontFamily: '"HN Display", sans-serif' }}>
+                Carregando categorias...
+              </span>
+            </DialogTitle>
           </DialogHeader>
-          <div className="flex items-center justify-center p-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+            <div
+              className="animate-spin"
+              style={{
+                width: 32,
+                height: 32,
+                border: '2px solid hsl(var(--ds-line-1))',
+                borderBottomColor: 'hsl(var(--ds-accent))',
+                borderRadius: '50%',
+              }}
+            />
           </div>
         </DialogContent>
       </Dialog>
     );
   }
+
   const [projectData, setProjectData] = useState<ProjectData>({
     name: '',
     description: '',
@@ -127,17 +151,11 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
 
   const getAvailableEquipment = (category: string, subcategory?: string) => {
     return allEquipment.filter(eq => {
-      // Apenas equipamentos disponíveis
       if (eq.status !== 'available') return false;
-      
-      // Filtrar por categoria
       if (eq.category !== category) return false;
-      
-      // Filtrar por subcategoria (se especificada)
       if (subcategory && eq.subcategory !== subcategory) {
         return false;
       }
-      
       return true;
     });
   };
@@ -171,10 +189,9 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
   };
 
   const handleSubmit = async () => {
-    const allSelectedEquipment = Object.values(projectData.selectedEquipment)
-      .flat();
+    const allSelectedEquipment = Object.values(projectData.selectedEquipment).flat();
     const totalEquipmentCount = allSelectedEquipment.length;
-    
+
     const finalData = {
       name: projectData.name,
       description: projectData.description,
@@ -189,12 +206,10 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
     };
 
     try {
-      // Pass project data and selected equipment to parent
       await onSubmit(finalData, allSelectedEquipment);
-      
+
       onOpenChange(false);
-      
-      // Reset form
+
       setCurrentStep(1);
       setProjectData({
         name: '',
@@ -206,7 +221,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
         expectedEndDate: '',
         selectedEquipment: {}
       });
-      
+
       toast.success('Projeto criado com sucesso!');
     } catch (error) {
       logger.error('Error creating project in wizard', {
@@ -223,8 +238,8 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-4">
-            <Label htmlFor="projectName">Nome do Projeto</Label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label htmlFor="projectName" style={fieldLabel}>Nome do Projeto</label>
             <Input
               id="projectName"
               value={projectData.name}
@@ -236,8 +251,8 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
 
       case 2:
         return (
-          <div className="space-y-4">
-            <Label htmlFor="description">Descrição do Projeto</Label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label htmlFor="description" style={fieldLabel}>Descrição do Projeto</label>
             <Textarea
               id="description"
               value={projectData.description}
@@ -250,8 +265,8 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
 
       case 3:
         return (
-          <div className="space-y-4">
-            <Label htmlFor="responsibleName">Responsável pelo Projeto</Label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label htmlFor="responsibleName" style={fieldLabel}>Responsável pelo Projeto</label>
             <Input
               id="responsibleName"
               value={projectData.responsibleName}
@@ -263,8 +278,8 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
 
       case 4:
         return (
-          <div className="space-y-4">
-            <Label htmlFor="responsibleEmail">Email do Responsável</Label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label htmlFor="responsibleEmail" style={fieldLabel}>Email do Responsável</label>
             <Input
               id="responsibleEmail"
               type="email"
@@ -277,8 +292,8 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
 
       case 5:
         return (
-          <div className="space-y-4">
-            <Label htmlFor="department">Departamento</Label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label htmlFor="department" style={fieldLabel}>Departamento</label>
             <Input
               id="department"
               value={projectData.department}
@@ -290,8 +305,8 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
 
       case 6:
         return (
-          <div className="space-y-4">
-            <Label htmlFor="expectedEndDate">Data de Devolução Prevista</Label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label htmlFor="expectedEndDate" style={fieldLabel}>Data de Devolução Prevista</label>
             <Input
               id="expectedEndDate"
               type="date"
@@ -304,31 +319,89 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
 
       case TOTAL_STEPS:
         return (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Confirmação Final</h3>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><strong>Projeto:</strong> {projectData.name}</div>
-                <div><strong>Responsável:</strong> {projectData.responsibleName}</div>
-                <div><strong>Email:</strong> {projectData.responsibleEmail}</div>
-                <div><strong>Departamento:</strong> {projectData.department}</div>
-                <div><strong>Início:</strong> {new Date(projectData.startDate).toLocaleDateString('pt-BR')}</div>
-                <div><strong>Devolução:</strong> {new Date(projectData.expectedEndDate).toLocaleDateString('pt-BR')}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <h3
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 18,
+                fontWeight: 600,
+                color: 'hsl(var(--ds-fg-1))',
+              }}
+            >
+              Confirmação Final
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: 16,
+                  fontSize: 13,
+                }}
+              >
+                {[
+                  ['Projeto', projectData.name],
+                  ['Responsável', projectData.responsibleName],
+                  ['Email', projectData.responsibleEmail],
+                  ['Departamento', projectData.department],
+                  ['Início', new Date(projectData.startDate).toLocaleDateString('pt-BR')],
+                  ['Devolução', new Date(projectData.expectedEndDate).toLocaleDateString('pt-BR')],
+                ].map(([label, value]) => (
+                  <div key={label}>
+                    <p style={fieldLabel}>{label}</p>
+                    <p
+                      style={{
+                        color: 'hsl(var(--ds-fg-1))',
+                        fontVariantNumeric:
+                          label === 'Início' || label === 'Devolução' ? 'tabular-nums' : undefined,
+                      }}
+                    >
+                      {value}
+                    </p>
+                  </div>
+                ))}
               </div>
-              
-              <div className="space-y-3">
-                <h4 className="font-medium">Equipamentos Selecionados:</h4>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <h4
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    fontWeight: 500,
+                    color: 'hsl(var(--ds-fg-2))',
+                  }}
+                >
+                  Equipamentos Selecionados
+                </h4>
                 {EQUIPMENT_STEPS.map(({ category, title }) => {
                   const items = getSelectedEquipment(category);
                   if (items.length === 0) return null;
-                  
+
                   return (
-                    <div key={title} className="border rounded-lg p-3">
-                      <h5 className="font-medium text-sm mb-2">{title} ({items.length})</h5>
-                      <div className="space-y-1">
+                    <div
+                      key={title}
+                      style={{
+                        border: '1px solid hsl(var(--ds-line-1))',
+                        background: 'hsl(var(--ds-surface))',
+                        padding: 12,
+                      }}
+                    >
+                      <h5
+                        style={{
+                          fontWeight: 500,
+                          fontSize: 13,
+                          marginBottom: 8,
+                          color: 'hsl(var(--ds-fg-1))',
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        {title} ({items.length})
+                      </h5>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                         {items.map(item => (
-                          <div key={item.id} className="text-sm text-muted-foreground">
+                          <div key={item.id} style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
                             {item.name} - {item.brand}
                           </div>
                         ))}
@@ -341,63 +414,146 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
           </div>
         );
 
-      default:
-        // Equipment selection steps (7-13)
+      default: {
+        // Equipment selection steps
         const equipmentStep = EQUIPMENT_STEPS.find(step => step.step === currentStep);
         if (!equipmentStep) return null;
 
         const availableEquipment = getAvailableEquipment(equipmentStep.category, equipmentStep.subcategory);
         const selectedEquipment = getSelectedEquipment(equipmentStep.category);
-        
+
         return (
-          <div className="space-y-2">
-            <div className="grid grid-cols-2 gap-4 h-96">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: 16,
+                height: 384,
+              }}
+            >
               {/* Available Equipment */}
-              <div className="border rounded-lg">
-                <div className="p-3 border-b bg-muted/50 flex items-center gap-2">
-                  <h4 className="font-medium">{equipmentStep.title} - Disponíveis</h4>
-                  <Badge variant="secondary">{availableEquipment.length}</Badge>
+              <div
+                style={{
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  background: 'hsl(var(--ds-surface))',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <div
+                  style={{
+                    padding: '12px 14px',
+                    borderBottom: '1px solid hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-line-2) / 0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase',
+                      fontWeight: 500,
+                      color: 'hsl(var(--ds-fg-2))',
+                      flex: 1,
+                    }}
+                  >
+                    {equipmentStep.title} — Disponíveis
+                  </span>
+                  <span className="pill muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    {availableEquipment.length}
+                  </span>
                 </div>
-                <div className="p-3 space-y-2 overflow-y-auto h-80">
+                <div
+                  style={{
+                    padding: 12,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                    overflowY: 'auto',
+                    flex: 1,
+                  }}
+                >
                   {availableEquipment.map(equipment => {
                     const isSelected = selectedEquipment.some(eq => eq.id === equipment.id);
                     return (
                       <div
                         key={equipment.id}
-                        className={cn(
-                          "flex items-center justify-between p-2 border rounded transition-all duration-200",
-                          isSelected 
-                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-sm" 
-                            : "hover:bg-accent hover:border-primary/30"
-                        )}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: 8,
+                          border: isSelected
+                            ? '1px solid hsl(var(--ds-success) / 0.5)'
+                            : '1px solid hsl(var(--ds-line-1))',
+                          background: isSelected
+                            ? 'hsl(var(--ds-success) / 0.06)'
+                            : 'hsl(var(--ds-surface))',
+                          transition: 'border-color 0.15s, background 0.15s',
+                        }}
                       >
-                        <div className="flex items-center gap-2 flex-1">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
                           {isSelected && (
-                            <div className="w-6 h-6 bg-green-500/10 border border-green-500/30 rounded flex items-center justify-center flex-shrink-0">
-                              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <div
+                              style={{
+                                width: 24,
+                                height: 24,
+                                background: 'hsl(var(--ds-success) / 0.1)',
+                                border: '1px solid hsl(var(--ds-success) / 0.3)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                              }}
+                            >
+                              <Check size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-success))' }} />
                             </div>
                           )}
-                          <div>
-                            <div className="font-medium text-sm">{equipment.name}</div>
-                            <div className="text-xs text-muted-foreground">{equipment.brand}</div>
+                          <div style={{ minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontWeight: 500,
+                                fontSize: 13,
+                                color: 'hsl(var(--ds-fg-1))',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {equipment.name}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 11,
+                                color: 'hsl(var(--ds-fg-3))',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {equipment.brand}
+                            </div>
                           </div>
                         </div>
-                        <Button
-                          size="sm"
-                          variant={isSelected ? "default" : "outline"}
+                        <button
+                          type="button"
+                          className={isSelected ? 'btn primary' : 'btn'}
                           disabled={isSelected}
                           onClick={() => !isSelected && addEquipment(equipment, equipmentStep.category)}
-                          className={isSelected ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600" : ""}
                         >
                           {isSelected ? (
                             <>
-                              <Check className="h-3 w-3 mr-1" />
-                              Selecionado
+                              <Check size={12} strokeWidth={1.5} />
+                              <span>Selecionado</span>
                             </>
                           ) : (
-                            "Adicionar"
+                            <span>Adicionar</span>
                           )}
-                        </Button>
+                        </button>
                       </div>
                     );
                   })}
@@ -405,37 +561,114 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
               </div>
 
               {/* Selected Equipment */}
-              <div className="border rounded-lg">
-                <div className="p-3 border-b bg-muted/50 flex items-center gap-2">
-                  <Check className="h-5 w-5 text-green-600" />
-                  <h4 className="font-medium">Selecionados</h4>
-                  <Badge variant="default">{selectedEquipment.length}</Badge>
+              <div
+                style={{
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  background: 'hsl(var(--ds-surface))',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <div
+                  style={{
+                    padding: '12px 14px',
+                    borderBottom: '1px solid hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-line-2) / 0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <Check size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-success))' }} />
+                  <span
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase',
+                      fontWeight: 500,
+                      color: 'hsl(var(--ds-fg-2))',
+                      flex: 1,
+                    }}
+                  >
+                    Selecionados
+                  </span>
+                  <span
+                    className="pill"
+                    style={{ ...successPill, fontVariantNumeric: 'tabular-nums' }}
+                  >
+                    {selectedEquipment.length}
+                  </span>
                 </div>
-                <div className="p-3 space-y-2 overflow-y-auto h-80">
+                <div
+                  style={{
+                    padding: 12,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                    overflowY: 'auto',
+                    flex: 1,
+                  }}
+                >
                   {selectedEquipment.map(equipment => (
-                    <div 
-                      key={equipment.id} 
-                      className={cn(
-                        "flex items-center justify-between p-2 border rounded transition-all duration-200",
-                        "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-sm"
-                      )}
+                    <div
+                      key={equipment.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: 8,
+                        border: '1px solid hsl(var(--ds-success) / 0.5)',
+                        background: 'hsl(var(--ds-success) / 0.06)',
+                      }}
                     >
-                      <div className="flex items-center gap-2 flex-1">
-                        <div className="w-6 h-6 bg-green-500/10 border border-green-500/30 rounded flex items-center justify-center flex-shrink-0">
-                          <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            width: 24,
+                            height: 24,
+                            background: 'hsl(var(--ds-success) / 0.1)',
+                            border: '1px solid hsl(var(--ds-success) / 0.3)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Check size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-success))' }} />
                         </div>
-                        <div>
-                          <div className="font-medium text-sm">{equipment.name}</div>
-                          <div className="text-xs text-muted-foreground">{equipment.brand}</div>
+                        <div style={{ minWidth: 0 }}>
+                          <div
+                            style={{
+                              fontWeight: 500,
+                              fontSize: 13,
+                              color: 'hsl(var(--ds-fg-1))',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {equipment.name}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 11,
+                              color: 'hsl(var(--ds-fg-3))',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {equipment.brand}
+                          </div>
                         </div>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
+                      <button
+                        type="button"
+                        className="btn"
                         onClick={() => removeEquipment(equipment.id, equipmentStep.category)}
                       >
                         Remover
-                      </Button>
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -443,6 +676,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
             </div>
           </div>
         );
+      }
     }
   };
 
@@ -450,49 +684,80 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] mx-auto overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Novo Projeto - Passo {currentStep} de {TOTAL_STEPS}</DialogTitle>
+          <DialogTitle>
+            <span
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              Novo Projeto — Passo {currentStep} de {TOTAL_STEPS}
+            </span>
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="py-4">
+        <div style={{ paddingTop: 16, paddingBottom: 16 }}>
           {/* Progress bar */}
-          <div className="w-full bg-muted rounded-full h-2 mb-6">
-            <div 
-              className="bg-primary h-2 rounded-full transition-all"
-              style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
+          <div
+            style={{
+              width: '100%',
+              background: 'hsl(var(--ds-line-2) / 0.5)',
+              height: 4,
+              marginBottom: 24,
+              border: '1px solid hsl(var(--ds-line-1))',
+            }}
+          >
+            <div
+              style={{
+                background: 'hsl(var(--ds-accent))',
+                height: '100%',
+                width: `${(currentStep / TOTAL_STEPS) * 100}%`,
+                transition: 'width 0.2s',
+              }}
             />
           </div>
 
           {renderStep()}
         </div>
 
-        <div className="flex justify-between pt-4 border-t">
-          <Button
-            variant="outline"
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            paddingTop: 16,
+            borderTop: '1px solid hsl(var(--ds-line-1))',
+          }}
+        >
+          <button
+            type="button"
+            className="btn"
             onClick={prevStep}
             disabled={currentStep === 1}
           >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Anterior
-          </Button>
+            <ChevronLeft size={13} strokeWidth={1.5} />
+            <span>Anterior</span>
+          </button>
 
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="button" className="btn" onClick={() => onOpenChange(false)}>
               Cancelar
-            </Button>
-            
+            </button>
+
             {currentStep === TOTAL_STEPS ? (
-              <Button onClick={handleSubmit}>
-                <Check className="h-4 w-4 mr-2" />
-                Finalizar
-              </Button>
+              <button type="button" className="btn primary" onClick={handleSubmit}>
+                <Check size={13} strokeWidth={1.5} />
+                <span>Finalizar</span>
+              </button>
             ) : (
-              <Button
+              <button
+                type="button"
+                className="btn primary"
                 onClick={nextStep}
                 disabled={!isStepValid()}
               >
-                Próximo
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
+                <span>Próximo</span>
+                <ChevronRight size={13} strokeWidth={1.5} />
+              </button>
             )}
           </div>
         </div>

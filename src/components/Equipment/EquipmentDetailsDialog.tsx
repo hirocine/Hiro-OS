@@ -1,18 +1,14 @@
 import { useState, useEffect } from 'react';
 import { formatCurrency } from '@/lib/utils';
-import { 
-  ResponsiveDialog, 
-  ResponsiveDialogContent, 
-  ResponsiveDialogHeader, 
-  ResponsiveDialogTitle 
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Calendar, Package, User, Clock, AlertTriangle, CheckCircle, Wrench } from 'lucide-react';
+import { Package, User, Clock, AlertTriangle, CheckCircle, Wrench } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,6 +55,56 @@ interface LoanHistory {
   return_notes?: string;
 }
 
+const cardWrap: React.CSSProperties = {
+  border: '1px solid hsl(var(--ds-line-1))',
+  background: 'hsl(var(--ds-surface))',
+};
+
+const cardHeader: React.CSSProperties = {
+  padding: '12px 18px',
+  borderBottom: '1px solid hsl(var(--ds-line-1))',
+};
+
+const cardTitle: React.CSSProperties = {
+  fontFamily: '"HN Display", sans-serif',
+  fontSize: 14,
+  fontWeight: 600,
+  color: 'hsl(var(--ds-fg-1))',
+};
+
+const KV = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  <div>
+    <span
+      style={{
+        fontSize: 10,
+        letterSpacing: '0.14em',
+        textTransform: 'uppercase',
+        fontWeight: 500,
+        color: 'hsl(var(--ds-fg-3))',
+        display: 'block',
+        marginBottom: 2,
+      }}
+    >
+      {label}
+    </span>
+    <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-1))' }}>{value}</span>
+  </div>
+);
+
+const statusToneStyle: Record<string, React.CSSProperties> = {
+  available:   { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
+  on_loan:     { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
+  maintenance: { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
+  damaged:     { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+  lost:        { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+};
+
+const loanStatusStyle: Record<string, React.CSSProperties> = {
+  active:   { color: 'hsl(var(--ds-info))',    borderColor: 'hsl(var(--ds-info) / 0.3)' },
+  overdue:  { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+  returned: { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
+};
+
 export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: EquipmentDetailsDialogProps) {
   const [equipment, setEquipment] = useState<EquipmentDetails | null>(null);
   const [loanHistory, setLoanHistory] = useState<LoanHistory[]>([]);
@@ -73,32 +119,13 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
 
   const fetchEquipmentDetails = async () => {
     if (!equipmentId) return;
-    
     setLoading(true);
     try {
-      logger.debug('Fetching equipment details', { 
-        module: 'equipment',
-        data: { equipmentId }
-      });
-      
-      const { data, error } = await supabase
-        .from('equipments')
-        .select('*')
-        .eq('id', equipmentId)
-        .single();
-
+      const { data, error } = await supabase.from('equipments').select('*').eq('id', equipmentId).single();
       if (error) throw error;
-      
-      logger.debug('Equipment details fetched successfully', { 
-        module: 'equipment',
-        data 
-      });
       setEquipment(data);
     } catch (error) {
-      logger.error('Error fetching equipment details', { 
-        module: 'equipment',
-        error 
-      });
+      logger.error('Error fetching equipment details', { module: 'equipment', error });
     } finally {
       setLoading(false);
     }
@@ -106,44 +133,29 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
 
   const fetchLoanHistory = async () => {
     if (!equipmentId) return;
-    
     try {
-      logger.debug('Fetching loan history', { 
-        module: 'equipment',
-        data: { equipmentId }
-      });
-      
       const { data, error } = await supabase
-        .from('loans')
+        .from('loan_history')
         .select('*')
         .eq('equipment_id', equipmentId)
         .order('loan_date', { ascending: false });
-
       if (error) throw error;
-      
-      logger.debug('Loan history fetched successfully', { 
-        module: 'equipment',
-        data: { count: data?.length }
-      });
       setLoanHistory(data || []);
     } catch (error) {
-      logger.error('Error fetching loan history', { 
-        module: 'equipment',
-        error 
-      });
+      logger.error('Error fetching loan history', { module: 'equipment', error });
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'available':
-        return <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />;
-    case 'maintenance':
-      return <Wrench className="h-4 w-4 text-orange-500" />;
+        return <CheckCircle size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-success))' }} />;
+      case 'maintenance':
+        return <Wrench size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-warning))' }} />;
       case 'on_loan':
-        return <User className="h-4 w-4 text-primary" />;
+        return <User size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-info))' }} />;
       default:
-        return <Package className="h-4 w-4 text-muted-foreground" />;
+        return <Package size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />;
     }
   };
 
@@ -153,270 +165,299 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
       on_loan: 'Emprestado',
       maintenance: 'Manutenção',
       damaged: 'Danificado',
-      lost: 'Perdido'
+      lost: 'Perdido',
     };
     return labels[status as keyof typeof labels] || status;
   };
 
-  const getLoanStatusVariant = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'default';
-      case 'overdue':
-        return 'destructive';
-      case 'returned':
-        return 'secondary';
-      default:
-        return 'outline';
-    }
-  };
-
-  // formatCurrency imported from @/lib/utils
-
-  if (!equipment && !loading) {
-    return null;
-  }
+  if (!equipment && !loading) return null;
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent className="w-full max-w-4xl max-h-[90vh]">
         <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            {equipment?.name || 'Carregando...'}
+          <ResponsiveDialogTitle>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                fontFamily: '"HN Display", sans-serif',
+              }}
+            >
+              <Package size={18} strokeWidth={1.5} />
+              {equipment?.name || 'Carregando…'}
+            </span>
           </ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
 
         {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 0' }}>
+            <div
+              className="animate-spin"
+              style={{
+                width: 28,
+                height: 28,
+                border: '2px solid hsl(var(--ds-accent))',
+                borderTopColor: 'transparent',
+                borderRadius: '50%',
+              }}
+            />
           </div>
         ) : equipment ? (
           <ScrollArea className="max-h-[calc(90vh-8rem)]">
-            <div className="space-y-6">
-              {/* Informações Básicas */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="md:col-span-1">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Informações Gerais</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 16 }}>
+                <div style={cardWrap}>
+                  <div style={cardHeader}>
+                    <span style={cardTitle}>Informações Gerais</span>
+                  </div>
+                  <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
                     {equipment.image && (
-                      <div className="flex justify-center">
-                        <Avatar className="h-20 w-20">
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <Avatar style={{ width: 76, height: 76 }}>
                           <AvatarImage src={equipment.image} alt={equipment.name} />
                           <AvatarFallback>
-                            <Package className="h-8 w-8" />
+                            <Package size={28} strokeWidth={1.5} />
                           </AvatarFallback>
                         </Avatar>
                       </div>
                     )}
-                    
-                    <div className="flex items-center gap-2">
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {getStatusIcon(equipment.status)}
-                      <Badge variant={equipment.status === 'available' ? 'default' : 'secondary'}>
+                      <span
+                        className="pill"
+                        style={{
+                          ...(statusToneStyle[equipment.status] || statusToneStyle.available),
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                        }}
+                      >
+                        <span className="dot" style={{ background: 'currentColor' }} />
                         {getStatusLabel(equipment.status)}
-                      </Badge>
+                      </span>
                     </div>
 
-                    <div className="space-y-2 text-sm">
-                      <div>
-                        <span className="font-medium">Marca:</span> {equipment.brand}
-                      </div>
-                      <div>
-                        <span className="font-medium">Categoria:</span> {equipment.category}
-                      </div>
-                      {equipment.subcategory && (
-                        <div>
-                          <span className="font-medium">Subcategoria:</span> {equipment.subcategory}
-                        </div>
-                      )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <KV label="Marca" value={equipment.brand} />
+                      <KV label="Categoria" value={equipment.category} />
+                      {equipment.subcategory && <KV label="Subcategoria" value={equipment.subcategory} />}
                       {equipment.patrimony_number && (
-                        <div>
-                          <span className="font-medium">Patrimônio:</span> #{equipment.patrimony_number}
-                        </div>
+                        <KV label="Patrimônio" value={<span style={{ fontVariantNumeric: 'tabular-nums' }}>#{equipment.patrimony_number}</span>} />
                       )}
                       {equipment.serial_number && (
-                        <div>
-                          <span className="font-medium">Série:</span> {equipment.serial_number}
-                        </div>
+                        <KV label="Série" value={<span style={{ fontVariantNumeric: 'tabular-nums' }}>{equipment.serial_number}</span>} />
                       )}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
-                <Card className="md:col-span-2">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Detalhes Técnicos</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                <div style={cardWrap}>
+                  <div style={cardHeader}>
+                    <span style={cardTitle}>Detalhes Técnicos</span>
+                  </div>
+                  <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
                     {equipment.description && (
                       <div>
-                        <span className="font-medium text-sm">Descrição:</span>
-                        <p className="text-sm text-muted-foreground mt-1">{equipment.description}</p>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            letterSpacing: '0.14em',
+                            textTransform: 'uppercase',
+                            fontWeight: 500,
+                            color: 'hsl(var(--ds-fg-3))',
+                            display: 'block',
+                            marginBottom: 4,
+                          }}
+                        >
+                          Descrição
+                        </span>
+                        <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-2))', lineHeight: 1.5 }}>
+                          {equipment.description}
+                        </p>
                       </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
                       {equipment.purchase_date && (
-                        <div>
-                          <span className="font-medium">Data de Compra:</span>
-                          <p className="text-muted-foreground">
-                            {new Date(equipment.purchase_date).toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
+                        <KV
+                          label="Data de Compra"
+                          value={
+                            <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                              {new Date(equipment.purchase_date).toLocaleDateString('pt-BR')}
+                            </span>
+                          }
+                        />
                       )}
-
                       {equipment.receive_date && (
-                        <div>
-                          <span className="font-medium">Data de Recebimento:</span>
-                          <p className="text-muted-foreground">
-                            {new Date(equipment.receive_date).toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
+                        <KV
+                          label="Data de Recebimento"
+                          value={
+                            <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                              {new Date(equipment.receive_date).toLocaleDateString('pt-BR')}
+                            </span>
+                          }
+                        />
                       )}
-
                       {equipment.value && (
-                        <div>
-                          <span className="font-medium">Valor de Compra:</span>
-                          <p className="text-muted-foreground">{formatCurrency(equipment.value)}</p>
-                        </div>
+                        <KV
+                          label="Valor de Compra"
+                          value={
+                            <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                              {formatCurrency(equipment.value)}
+                            </span>
+                          }
+                        />
                       )}
-
                       {equipment.depreciated_value && (
-                        <div>
-                          <span className="font-medium">Valor Depreciado:</span>
-                          <p className="text-muted-foreground">{formatCurrency(equipment.depreciated_value)}</p>
-                        </div>
+                        <KV
+                          label="Valor Depreciado"
+                          value={
+                            <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                              {formatCurrency(equipment.depreciated_value)}
+                            </span>
+                          }
+                        />
                       )}
-
-                      {equipment.store && (
-                        <div>
-                          <span className="font-medium">Loja:</span>
-                          <p className="text-muted-foreground">{equipment.store}</p>
-                        </div>
-                      )}
-
-                      {equipment.invoice && (
-                        <div>
-                          <span className="font-medium">Nota Fiscal:</span>
-                          <p className="text-muted-foreground">{equipment.invoice}</p>
-                        </div>
-                      )}
-
+                      {equipment.store && <KV label="Loja" value={equipment.store} />}
+                      {equipment.invoice && <KV label="Nota Fiscal" value={equipment.invoice} />}
                       {equipment.last_maintenance && (
-                        <div>
-                          <span className="font-medium">Última Manutenção:</span>
-                          <p className="text-muted-foreground">
-                            {new Date(equipment.last_maintenance).toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
+                        <KV
+                          label="Última Manutenção"
+                          value={
+                            <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                              {new Date(equipment.last_maintenance).toLocaleDateString('pt-BR')}
+                            </span>
+                          }
+                        />
                       )}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
 
-              <Separator />
-
-              {/* Histórico de Empréstimos */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock className="h-5 w-5" />
+              <div style={cardWrap}>
+                <div style={cardHeader}>
+                  <span style={{ ...cardTitle, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <Clock size={14} strokeWidth={1.5} />
                     Histórico de Empréstimos
-                  </CardTitle>
-                  <CardDescription>
-                    {loanHistory.length === 0 
+                  </span>
+                  <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
+                    {loanHistory.length === 0
                       ? 'Nenhum empréstimo registrado para este equipamento'
-                      : `${loanHistory.length} empréstimo(s) registrado(s)`
-                    }
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+                      : `${loanHistory.length} empréstimo(s) registrado(s)`}
+                  </p>
+                </div>
+                <div style={{ padding: 18 }}>
                   {loanHistory.length > 0 ? (
-                    <div className="space-y-4">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       {loanHistory.map((loan) => (
-                        <div key={loan.id} className="border rounded-lg p-4 space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">{loan.borrower_name}</span>
-                              <Badge variant={getLoanStatusVariant(loan.status)}>
+                        <div
+                          key={loan.id}
+                          style={{
+                            border: '1px solid hsl(var(--ds-line-2))',
+                            padding: 14,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 10,
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                              <User size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+                              <span style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                                {loan.borrower_name}
+                              </span>
+                              <span
+                                className="pill"
+                                style={loanStatusStyle[loan.status] || { color: 'hsl(var(--ds-fg-3))' }}
+                              >
                                 {loan.status === 'active' && 'Ativo'}
                                 {loan.status === 'overdue' && 'Atrasado'}
                                 {loan.status === 'returned' && 'Devolvido'}
-                              </Badge>
+                              </span>
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                              {formatDistanceToNow(new Date(loan.loan_date), { 
-                                addSuffix: true, 
-                                locale: ptBR 
-                              })}
+                            <div style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
+                              {formatDistanceToNow(new Date(loan.loan_date), { addSuffix: true, locale: ptBR })}
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                            <div>
-                              <span className="font-medium">Data Empréstimo:</span>
-                              <p className="text-muted-foreground">
-                                {new Date(loan.loan_date).toLocaleDateString('pt-BR')}
-                              </p>
-                            </div>
-                            <div>
-                              <span className="font-medium">Previsão Retorno:</span>
-                              <p className="text-muted-foreground">
-                                {new Date(loan.expected_return_date).toLocaleDateString('pt-BR')}
-                              </p>
-                            </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                            <KV
+                              label="Data Empréstimo"
+                              value={
+                                <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                                  {new Date(loan.loan_date).toLocaleDateString('pt-BR')}
+                                </span>
+                              }
+                            />
+                            <KV
+                              label="Previsão Retorno"
+                              value={
+                                <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                                  {new Date(loan.expected_return_date).toLocaleDateString('pt-BR')}
+                                </span>
+                              }
+                            />
                             {loan.actual_return_date && (
-                              <div>
-                                <span className="font-medium">Data Retorno:</span>
-                                <p className="text-muted-foreground">
-                                  {new Date(loan.actual_return_date).toLocaleDateString('pt-BR')}
-                                </p>
-                              </div>
+                              <KV
+                                label="Data Retorno"
+                                value={
+                                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                                    {new Date(loan.actual_return_date).toLocaleDateString('pt-BR')}
+                                  </span>
+                                }
+                              />
                             )}
-                            {loan.project && (
-                              <div>
-                                <span className="font-medium">Projeto:</span>
-                                <p className="text-muted-foreground">{loan.project}</p>
-                              </div>
-                            )}
+                            {loan.project && <KV label="Projeto" value={loan.project} />}
                           </div>
 
                           {loan.return_condition && (
-                            <div className="text-sm">
-                              <span className="font-medium">Condição de Retorno:</span>
-                              <Badge variant="outline" className="ml-2">
-                                {loan.return_condition}
-                              </Badge>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                              <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Condição de Retorno:</span>
+                              <span className="pill muted">{loan.return_condition}</span>
                             </div>
                           )}
 
                           {loan.return_notes && (
-                            <div className="text-sm">
-                              <span className="font-medium">Observações:</span>
-                              <p className="text-muted-foreground mt-1">{loan.return_notes}</p>
+                            <div style={{ fontSize: 12 }}>
+                              <span
+                                style={{
+                                  fontSize: 10,
+                                  letterSpacing: '0.14em',
+                                  textTransform: 'uppercase',
+                                  fontWeight: 500,
+                                  color: 'hsl(var(--ds-fg-3))',
+                                  display: 'block',
+                                  marginBottom: 4,
+                                }}
+                              >
+                                Observações
+                              </span>
+                              <p style={{ color: 'hsl(var(--ds-fg-2))', lineHeight: 1.5 }}>
+                                {loan.return_notes}
+                              </p>
                             </div>
                           )}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <div style={{ textAlign: 'center', padding: '24px 0', color: 'hsl(var(--ds-fg-3))', fontSize: 12 }}>
+                      <Package size={36} strokeWidth={1.25} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.5 }} />
                       <p>Este equipamento ainda não foi emprestado</p>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </ScrollArea>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
-            <p>Equipamento não encontrado</p>
+          <div style={{ textAlign: 'center', padding: '32px 0', color: 'hsl(var(--ds-fg-3))' }}>
+            <AlertTriangle size={36} strokeWidth={1.25} style={{ margin: '0 auto 12px', display: 'block' }} />
+            <p style={{ fontSize: 13 }}>Equipamento não encontrado</p>
           </div>
         )}
       </ResponsiveDialogContent>

@@ -1,13 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EmptyState } from '@/components/ui/empty-state';
 import { Film, Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { PageHeader } from '@/components/ui/page-header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   useAVProjects,
@@ -31,34 +25,27 @@ export default function AVProjects() {
 
   if (!canAccessSuppliers) {
     return (
-      <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Você não tem permissão para acessar esta página.</p>
-          <button className="mt-4 text-primary underline" onClick={() => navigate('/')}>Voltar ao início</button>
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner">
+          <div style={{ textAlign: 'center', padding: '64px 0', color: 'hsl(var(--ds-fg-3))' }}>
+            <p>Você não tem permissão para acessar esta página.</p>
+            <button className="btn" style={{ marginTop: 16 }} onClick={() => navigate('/')} type="button">
+              Voltar ao início
+            </button>
+          </div>
         </div>
-      </ResponsiveContainer>
+      </div>
     );
   }
 
   const renderProjectsGrid = (projects: typeof activeProjects, isLoading: boolean) => {
     if (isLoading) {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-4 space-y-3">
-                <div className="flex items-start gap-3">
-                  <Skeleton className="h-12 w-12 rounded-lg" />
-                  <div className="space-y-1.5 flex-1">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                  </div>
-                </div>
-                <Skeleton className="h-5 w-16" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-8 w-full" />
-              </CardContent>
-            </Card>
+            <div key={i} style={{ border: '1px solid hsl(var(--ds-line-1))', padding: 16, minHeight: 140 }}>
+              <span className="sk line lg" style={{ width: '70%' }} />
+            </div>
           ))}
         </div>
       );
@@ -66,12 +53,18 @@ export default function AVProjects() {
 
     if (!projects?.length) {
       return (
-        <EmptyState icon={Film} title="Nenhum projeto encontrado" description="Projetos audiovisuais aparecerão aqui" />
+        <div className="empties">
+          <div className="empty" style={{ borderRight: 0 }}>
+            <div className="glyph"><Film strokeWidth={1.25} /></div>
+            <h5>Nenhum projeto encontrado</h5>
+            <p>Projetos audiovisuais aparecerão aqui.</p>
+          </div>
+        </div>
       );
     }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
         {projects.map((project) => (
           <AVProjectCard key={project.id} project={project} />
         ))}
@@ -79,102 +72,92 @@ export default function AVProjects() {
     );
   };
 
-  return (
-    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-      <div className="space-y-6">
-        <PageHeader
-          title="Projetos"
-          subtitle="Gerencie projetos audiovisuais do início ao fim"
-          actions={
-            <Button onClick={() => setDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Projeto
-            </Button>
-          }
-        />
-
-        {/* Stats Cards */}
-        <AVProjectStatsCards stats={stats} isLoading={statsLoading} />
-
-        {/* Active Projects */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Film className="h-4 w-4 text-primary" />
-              </div>
-              <CardTitle className="text-lg">
-                Projetos Ativos {activeProjects?.length ? `(${activeProjects.length})` : ''}
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {renderProjectsGrid(activeProjects, activeLoading)}
-          </CardContent>
-        </Card>
-
-        {/* Completed Projects */}
-        <Collapsible open={completedOpen} onOpenChange={setCompletedOpen}>
-          <Card>
-            <CollapsibleTrigger asChild>
-              <CardHeader className="py-4 cursor-pointer hover:bg-muted/30 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-success/10">
-                      <Film className="h-4 w-4 text-success" />
-                    </div>
-                    <CardTitle className="text-lg">
-                      Projetos Finalizados {completedProjects?.length ? `(${completedProjects.length})` : ''}
-                    </CardTitle>
-                  </div>
-                  {completedOpen ? (
-                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                  )}
-                </div>
-              </CardHeader>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <CardContent>
-                {renderProjectsGrid(completedProjects, completedLoading)}
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
-
-        {/* Archived Projects */}
-        <Collapsible open={archivedOpen} onOpenChange={setArchivedOpen}>
-          <Card>
-            <CollapsibleTrigger asChild>
-              <CardHeader className="py-4 cursor-pointer hover:bg-muted/30 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-muted">
-                      <Film className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <CardTitle className="text-lg">
-                      Projetos Arquivados {archivedProjects?.length ? `(${archivedProjects.length})` : ''}
-                    </CardTitle>
-                  </div>
-                  {archivedOpen ? (
-                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                  )}
-                </div>
-              </CardHeader>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <CardContent>
-                {renderProjectsGrid(archivedProjects, archivedLoading)}
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
+  const sectionHeader = (eyebrow: string, title: string, count: number, Icon = Film) => (
+    <div className="section-head">
+      <div className="section-head-l">
+        <span className="section-eyebrow">{eyebrow}</span>
+        <span className="section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <Icon size={14} strokeWidth={1.5} />
+          {title}
+        </span>
       </div>
+      <span className="section-meta">{count} {count === 1 ? 'item' : 'itens'}</span>
+    </div>
+  );
 
-      <AVProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-    </ResponsiveContainer>
+  return (
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Projetos.</h1>
+            <p className="ph-sub">Gerencie projetos audiovisuais do início ao fim.</p>
+          </div>
+          <div className="ph-actions">
+            <button className="btn primary" onClick={() => setDialogOpen(true)} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Novo Projeto</span>
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 24 }}>
+          <AVProjectStatsCards stats={stats} isLoading={statsLoading} />
+        </div>
+
+        <section className="section">
+          {sectionHeader('01', 'Projetos Ativos', activeProjects?.length ?? 0)}
+          {renderProjectsGrid(activeProjects, activeLoading)}
+        </section>
+
+        <Collapsible open={completedOpen} onOpenChange={setCompletedOpen}>
+          <section className="section">
+            <CollapsibleTrigger asChild>
+              <div style={{ cursor: 'pointer' }} className="section-head">
+                <div className="section-head-l">
+                  <span className="section-eyebrow">02</span>
+                  <span className="section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <Film size={14} strokeWidth={1.5} />
+                    Projetos Finalizados
+                  </span>
+                </div>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <span className="section-meta">{completedProjects?.length ?? 0} {(completedProjects?.length ?? 0) === 1 ? 'item' : 'itens'}</span>
+                  {completedOpen ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
+                </span>
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              {renderProjectsGrid(completedProjects, completedLoading)}
+            </CollapsibleContent>
+          </section>
+        </Collapsible>
+
+        <Collapsible open={archivedOpen} onOpenChange={setArchivedOpen}>
+          <section className="section">
+            <CollapsibleTrigger asChild>
+              <div style={{ cursor: 'pointer' }} className="section-head">
+                <div className="section-head-l">
+                  <span className="section-eyebrow">03</span>
+                  <span className="section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <Film size={14} strokeWidth={1.5} />
+                    Projetos Arquivados
+                  </span>
+                </div>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <span className="section-meta">{archivedProjects?.length ?? 0} {(archivedProjects?.length ?? 0) === 1 ? 'item' : 'itens'}</span>
+                  {archivedOpen ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
+                </span>
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              {renderProjectsGrid(archivedProjects, archivedLoading)}
+            </CollapsibleContent>
+          </section>
+        </Collapsible>
+
+        <AVProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      </div>
+    </div>
   );
 }

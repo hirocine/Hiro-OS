@@ -96,7 +96,7 @@ export function HeroBanner() {
   // Skeleton apenas durante loading inicial dos dados
   if (isLoading) {
     return (
-      <div className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden rounded-xl bg-muted animate-pulse">
+      <div className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden  bg-muted animate-pulse">
         <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/20 to-transparent" />
       </div>
     );
@@ -105,13 +105,13 @@ export function HeroBanner() {
   return (
     <>
       <div 
-        className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden rounded-xl"
+        className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden "
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Skeleton overlay */}
         <div 
-          className={`absolute inset-0 bg-muted rounded-xl transition-opacity duration-300 z-10 ${
+          className={`absolute inset-0 bg-muted  transition-opacity duration-300 z-10 ${
             imageLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >

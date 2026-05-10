@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useSupplierRoles } from '../hooks/useSupplierRoles';
-import { EXPERTISE_LABELS, type ExpertiseLevel } from '../types';
+import { EXPERTISE_LABELS } from '../types';
 
 interface SupplierFiltersProps {
   onSearchChange: (search: string) => void;
@@ -26,18 +26,29 @@ export function SupplierFilters({
   const { roles } = useSupplierRoles();
 
   return (
-    <div className="flex flex-col md:flex-row gap-4">
-      <div className="flex-1 relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ position: 'relative', flex: 1, minWidth: 240 }}>
+        <Search
+          size={14}
+          strokeWidth={1.5}
+          style={{
+            position: 'absolute',
+            left: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'hsl(var(--ds-fg-4))',
+            pointerEvents: 'none',
+          }}
+        />
         <Input
-          placeholder="Buscar por nome..."
+          placeholder="Buscar por nome…"
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10"
+          style={{ paddingLeft: 34 }}
         />
       </div>
 
       <Select onValueChange={onRoleChange}>
-        <SelectTrigger className="w-full md:w-[200px]">
+        <SelectTrigger style={{ width: 200 }}>
           <SelectValue placeholder="Todas as funções" />
         </SelectTrigger>
         <SelectContent>
@@ -51,7 +62,7 @@ export function SupplierFilters({
       </Select>
 
       <Select onValueChange={onExpertiseChange}>
-        <SelectTrigger className="w-full md:w-[180px]">
+        <SelectTrigger style={{ width: 180 }}>
           <SelectValue placeholder="Todas expertise" />
         </SelectTrigger>
         <SelectContent>
@@ -65,7 +76,7 @@ export function SupplierFilters({
       </Select>
 
       <Select onValueChange={onRatingChange}>
-        <SelectTrigger className="w-full md:w-[150px]">
+        <SelectTrigger style={{ width: 150 }}>
           <SelectValue placeholder="Todos ratings" />
         </SelectTrigger>
         <SelectContent>

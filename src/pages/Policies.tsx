@@ -1,15 +1,9 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Plus, Search } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { usePolicies, POLICY_CATEGORIES } from '@/features/policies';
 import { PolicyCard, PolicyEditor } from '@/features/policies';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import type { PolicyForm } from '@/features/policies';
 
 export default function Policies() {
@@ -21,11 +15,10 @@ export default function Policies() {
 
   const filteredPolicies = policies.filter((policy) => {
     const matchesCategory = selectedCategory === 'Todas' || policy.category === selectedCategory;
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       policy.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       policy.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
       policy.category?.toLowerCase().includes(searchTerm.toLowerCase());
-    
     return matchesCategory && matchesSearch;
   });
 
@@ -34,109 +27,125 @@ export default function Policies() {
   }
 
   return (
-    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-      <PageHeader
-        title="Políticas da Empresa"
-        subtitle="Acesse as políticas e diretrizes da empresa"
-        actions={
-          isAdmin ? (
-            <Button onClick={() => setEditorOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Política
-            </Button>
-          ) : undefined
-        }
-      />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Políticas.</h1>
+            <p className="ph-sub">Acesse as políticas e diretrizes da empresa.</p>
+          </div>
+          {isAdmin && (
+            <div className="ph-actions">
+              <button className="btn primary" onClick={() => setEditorOpen(true)} type="button">
+                <Plus size={14} strokeWidth={1.5} />
+                <span>Nova Política</span>
+              </button>
+            </div>
+          )}
+        </div>
 
-      <div className="space-y-4 mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar políticas por título, conteúdo ou categoria..."
+        {/* Search */}
+        <div style={{ position: 'relative', marginTop: 28, maxWidth: 480 }}>
+          <Search
+            size={14}
+            strokeWidth={1.5}
+            style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'hsl(var(--ds-fg-4))', pointerEvents: 'none' }}
+          />
+          <input
+            className="field-input"
+            placeholder="Buscar por título, conteúdo ou categoria…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
+            style={{ width: '100%', paddingLeft: 34 }}
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={selectedCategory === 'Todas' ? 'default' : 'outline'}
-            size="sm"
+        {/* Category chip picker */}
+        <div className="chip-pick" style={{ marginTop: 16, width: 'fit-content' }}>
+          <button
+            type="button"
+            className={selectedCategory === 'Todas' ? 'on' : ''}
             onClick={() => setSelectedCategory('Todas')}
           >
-            Todas
-            <Badge 
-              variant="secondary" 
-              className={cn(
-                "ml-2",
-                selectedCategory === 'Todas' && "bg-primary-foreground/20"
-              )}
-            >
-              {policies.length}
-            </Badge>
-          </Button>
-
+            Todas <span style={{ marginLeft: 8, color: 'hsl(var(--ds-fg-4))', fontVariantNumeric: 'tabular-nums' }}>{policies.length}</span>
+          </button>
           {POLICY_CATEGORIES.map((cat) => {
-            const count = policies.filter(p => p.category === cat.value).length;
+            const count = policies.filter((p) => p.category === cat.value).length;
             const isActive = selectedCategory === cat.value;
-            
             return (
-              <Button
+              <button
                 key={cat.value}
-                variant={isActive ? 'default' : 'outline'}
-                size="sm"
+                type="button"
+                className={isActive ? 'on' : ''}
                 onClick={() => setSelectedCategory(cat.value)}
-                className="gap-1"
               >
-                <span>{cat.icon}</span>
-                <span className="hidden sm:inline">{cat.label}</span>
-                <Badge 
-                  variant="secondary" 
-                  className={cn(
-                    "ml-1",
-                    isActive && "bg-primary-foreground/20"
-                  )}
-                >
-                  {count}
-                </Badge>
-              </Button>
+                <span style={{ marginRight: 6 }}>{cat.icon}</span>
+                {cat.label}
+                <span style={{ marginLeft: 8, color: 'hsl(var(--ds-fg-4))', fontVariantNumeric: 'tabular-nums' }}>{count}</span>
+              </button>
             );
           })}
         </div>
-      </div>
 
-      {filteredPolicies.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg">
-            {selectedCategory === 'Todas' 
-              ? 'Nenhuma política cadastrada ainda.'
-              : `Nenhuma política na categoria "${selectedCategory}".`
-            }
-          </p>
-          {isAdmin && selectedCategory === 'Todas' && (
-            <Button 
-              onClick={() => setEditorOpen(true)}
-              className="mt-4"
+        {/* Content */}
+        <div style={{ marginTop: 32 }}>
+          {filteredPolicies.length === 0 ? (
+            <div className="empties" style={{ borderColor: 'hsl(var(--ds-line-1))' }}>
+              <div className="empty">
+                <div className="glyph">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                </div>
+                <h5>
+                  {selectedCategory === 'Todas'
+                    ? 'Nenhuma política cadastrada'
+                    : `Nenhuma política em "${selectedCategory}"`}
+                </h5>
+                <p>
+                  {selectedCategory === 'Todas'
+                    ? 'Crie sua primeira política para a empresa.'
+                    : 'Tente outra categoria ou ajuste os filtros.'}
+                </p>
+                {isAdmin && selectedCategory === 'Todas' && (
+                  <div className="actions">
+                    <button className="btn primary" onClick={() => setEditorOpen(true)} type="button">
+                      <Plus size={14} strokeWidth={1.5} />
+                      <span>Criar primeira política</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: 0,
+                border: '1px solid hsl(var(--ds-line-1))',
+                borderLeft: 0,
+                borderTop: 0,
+              }}
             >
-              <Plus className="mr-2 h-4 w-4" />
-              Criar Primeira Política
-            </Button>
+              {filteredPolicies.map((policy) => (
+                <div
+                  key={policy.id}
+                  style={{
+                    borderLeft: '1px solid hsl(var(--ds-line-1))',
+                    borderTop: '1px solid hsl(var(--ds-line-1))',
+                  }}
+                >
+                  <PolicyCard policy={policy} />
+                </div>
+              ))}
+            </div>
           )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredPolicies.map((policy) => (
-            <PolicyCard key={policy.id} policy={policy} />
-          ))}
-        </div>
-      )}
 
-      <PolicyEditor
-        open={editorOpen}
-        onOpenChange={setEditorOpen}
-        onSave={addPolicy}
-      />
-    </ResponsiveContainer>
+        <PolicyEditor open={editorOpen} onOpenChange={setEditorOpen} onSave={addPolicy} />
+      </div>
+    </div>
   );
 }

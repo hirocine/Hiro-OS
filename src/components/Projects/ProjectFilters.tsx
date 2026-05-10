@@ -1,9 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { ProjectFilters } from '@/types/project';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { X, Search } from 'lucide-react';
 import { statusLabels } from '@/lib/projectLabels';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -13,19 +11,29 @@ interface ProjectFiltersProps {
   onFiltersChange: (filters: ProjectFilters) => void;
 }
 
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
 export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps) {
   const [nameInput, setNameInput] = useState(filters.name || '');
   const [responsibleInput, setResponsibleInput] = useState(filters.responsible || '');
-  
+
   const debouncedName = useDebounce(nameInput, 300);
   const debouncedResponsible = useDebounce(responsibleInput, 300);
-  
+
   useEffect(() => {
     if (debouncedName !== filters.name) {
       updateFilter('name', debouncedName);
     }
   }, [debouncedName]);
-  
+
   useEffect(() => {
     if (debouncedResponsible !== filters.responsible) {
       updateFilter('responsible', debouncedResponsible);
@@ -42,27 +50,55 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
     onFiltersChange({});
   };
 
-  const hasActiveFilters = useMemo(() => 
-    Object.values(filters).some(value => value !== undefined && value !== ''),
-    [filters]
+  const hasActiveFilters = useMemo(
+    () => Object.values(filters).some((value) => value !== undefined && value !== ''),
+    [filters],
   );
 
   return (
-    <div className="bg-card p-4 rounded-lg border space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-medium">Filtros</h3>
+    <div
+      style={{
+        background: 'hsl(var(--ds-surface))',
+        border: '1px solid hsl(var(--ds-line-1))',
+        padding: 16,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <h3
+          style={{
+            fontSize: 11,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+            color: 'hsl(var(--ds-fg-2))',
+          }}
+        >
+          Filtros
+        </h3>
         {hasActiveFilters && (
-          <Button variant="outline" size="sm" onClick={clearFilters}>
-            <X className="mr-2 h-3 w-3" />
-            Limpar
-          </Button>
+          <button type="button" className="btn" onClick={clearFilters} style={{ fontSize: 12 }}>
+            <X size={12} strokeWidth={1.5} />
+            <span>Limpar</span>
+          </button>
         )}
       </div>
-      
-      <div className="flex flex-col sm:grid sm:grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label>Status</Label>
-          <Select value={filters.status || 'all'} onValueChange={(value) => updateFilter('status', value === 'all' ? undefined : value)}>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 14,
+        }}
+      >
+        <div>
+          <label style={fieldLabel}>Status</label>
+          <Select
+            value={filters.status || 'all'}
+            onValueChange={(value) => updateFilter('status', value === 'all' ? undefined : value)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Todos os status" />
             </SelectTrigger>
@@ -76,31 +112,57 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
             </SelectContent>
           </Select>
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="projectName">Nome do Projeto</Label>
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+
+        <div>
+          <label htmlFor="projectName" style={fieldLabel}>
+            Nome do Projeto
+          </label>
+          <div style={{ position: 'relative' }}>
+            <Search
+              size={14}
+              strokeWidth={1.5}
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'hsl(var(--ds-fg-3))',
+                pointerEvents: 'none',
+              }}
+            />
             <Input
               id="projectName"
               placeholder="Buscar por nome..."
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
-              className="pl-10"
+              style={{ paddingLeft: 32 }}
             />
           </div>
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="responsible">Responsável</Label>
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+
+        <div>
+          <label htmlFor="responsible" style={fieldLabel}>
+            Responsável
+          </label>
+          <div style={{ position: 'relative' }}>
+            <Search
+              size={14}
+              strokeWidth={1.5}
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'hsl(var(--ds-fg-3))',
+                pointerEvents: 'none',
+              }}
+            />
             <Input
               id="responsible"
               placeholder="Buscar por responsável..."
               value={responsibleInput}
               onChange={(e) => setResponsibleInput(e.target.value)}
-              className="pl-10"
+              style={{ paddingLeft: 32 }}
             />
           </div>
         </div>

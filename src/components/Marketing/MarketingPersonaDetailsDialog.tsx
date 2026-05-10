@@ -1,6 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { User } from 'lucide-react';
 import { type MarketingPersona } from '@/hooks/useMarketingPersonas';
 
@@ -14,12 +13,23 @@ function Section({ title, items }: { title: string; items: string[] }) {
   if (!items || items.length === 0) return null;
   return (
     <div>
-      <h4 className="text-sm font-semibold mb-2">{title}</h4>
-      <div className="flex flex-wrap gap-1.5">
+      <h4
+        style={{
+          fontSize: 11,
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          fontWeight: 500,
+          color: 'hsl(var(--ds-fg-3))',
+          marginBottom: 8,
+        }}
+      >
+        {title}
+      </h4>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
         {items.map((it) => (
-          <Badge key={it} variant="secondary">
+          <span key={it} className="pill muted">
             {it}
-          </Badge>
+          </span>
         ))}
       </div>
     </div>
@@ -32,26 +42,30 @@ export function MarketingPersonaDetailsDialog({ open, onOpenChange, persona }: P
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Avatar style={{ width: 56, height: 56 }}>
               <AvatarImage src={persona.avatar_url || undefined} alt={persona.name} />
               <AvatarFallback>
-                {persona.name ? persona.name.charAt(0).toUpperCase() : <User className="h-6 w-6" />}
+                {persona.name ? persona.name.charAt(0).toUpperCase() : <User size={20} strokeWidth={1.5} />}
               </AvatarFallback>
             </Avatar>
-            <div className="text-left">
-              <DialogTitle className="text-xl">{persona.name}</DialogTitle>
-              <div className="flex flex-wrap gap-1.5 mt-1">
-                {persona.segment && <Badge variant="outline">{persona.segment}</Badge>}
-                {persona.company_size && <Badge variant="outline">{persona.company_size}</Badge>}
+            <div style={{ textAlign: 'left' }}>
+              <DialogTitle style={{ fontFamily: '"HN Display", sans-serif', fontSize: 20 }}>
+                {persona.name}
+              </DialogTitle>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                {persona.segment && <span className="pill">{persona.segment}</span>}
+                {persona.company_size && <span className="pill">{persona.company_size}</span>}
               </div>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="space-y-5 mt-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18, marginTop: 8 }}>
           {persona.description && (
-            <p className="text-sm text-muted-foreground leading-relaxed">{persona.description}</p>
+            <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', lineHeight: 1.5 }}>
+              {persona.description}
+            </p>
           )}
           <Section title="Principais dores" items={persona.main_pains} />
           <Section title="Objeções comuns" items={persona.common_objections} />

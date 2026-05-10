@@ -33,6 +33,40 @@
   font-weight: 700; font-style: normal; font-display: swap;
 }
 
+/* ============================================================
+   HIRO DS — Phase 1 font aliases (HN Display / HN Text)
+   ============================================================ */
+@font-face {
+  font-family: "HN Display";
+  src: url("/fonts/HelveticaNowDisplay-Regular.otf") format("opentype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "HN Display";
+  src: url("/fonts/HelveticaNowDisplay-Medium.otf") format("opentype");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "HN Display";
+  src: url("/fonts/HelveticaNowDisplay-Bold.otf") format("opentype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "HN Text";
+  src: url("/fonts/HelveticaNowText-Regular.otf") format("opentype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "HN Text";
+  src: url("/fonts/HelveticaNowText-Medium.otf") format("opentype");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "HN Text";
+  src: url("/fonts/HelveticaNowText-Bold.otf") format("opentype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+
 :root {
   --hf-black: #000000;
   --hf-gray-1: #141414;
@@ -266,6 +300,117 @@ html body[data-scroll-locked="true"] {
 
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(0 0% 90%));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(0 0% 12%));
+  }
+}
+
+/* ============================================================
+   HIRO DS — Phase 1 design tokens (additive, namespaced --ds-*)
+   Black + white + 10% green. Sharp corners. Hairlines only.
+   New components opt-in via Tailwind `ds.*` utilities.
+   ============================================================ */
+@layer base {
+  :root {
+    /* shadcn-equivalent semantic tokens (HSL) */
+    --ds-background:            0 0% 100%;
+    --ds-foreground:            0 0% 4%;
+    --ds-primary:               0 0% 4%;
+    --ds-primary-foreground:    0 0% 100%;
+    --ds-secondary:            45 14% 95%;
+    --ds-secondary-foreground:  0 0% 4%;
+    --ds-muted:                60 14% 98%;
+    --ds-muted-foreground:      0 0% 42%;
+    --ds-accent:              150 100% 36%;
+    --ds-accent-foreground:     0 0% 4%;
+    --ds-destructive:           0 60% 47%;
+    --ds-destructive-foreground:0 0% 100%;
+    --ds-border:               60  5% 89%;
+    --ds-input:                50  5% 82%;
+    --ds-ring:                150 100% 36%;
+    --ds-card:                  0 0% 100%;
+    --ds-card-foreground:       0 0% 4%;
+    --ds-popover:               0 0% 100%;
+    --ds-popover-foreground:    0 0% 4%;
+
+    /* DS extensions */
+    --ds-surface:              60 14% 98%;
+    --ds-surface-2:            45 14% 95%;
+    --ds-surface-3:            45 13% 91%;
+    --ds-fg-1:                  0 0% 4%;
+    --ds-fg-2:                  0 0% 23%;
+    --ds-fg-3:                  0 0% 42%;
+    --ds-fg-4:                  0 0% 66%;
+    --ds-line-1:               60  5% 89%;
+    --ds-line-2:               50  5% 82%;
+    --ds-line-3:               50  5% 73%;
+    --ds-accent-bright:       150 100% 44%;
+    --ds-accent-soft:         145  82% 94%;
+    --ds-accent-deep:         150 100% 30%;
+    --ds-warn:                 43 89% 38%;
+    --ds-info:                209 71% 42%;
+    --ds-success:             150 100% 36%;
+
+    --ds-accent-ink:          110 53% 11%;        /* text on bright accent */
+
+    --ds-radius:                0px;
+    --ds-radius-pill:         999px;
+
+    /* Layout (raw px, no hsl wrapper) */
+    --ds-rail-w:    56px;
+    --ds-side-w:   256px;
+    --ds-topbar-h:  56px;
+    --ds-gutter-x:  40px;
+    --ds-gutter-y:  32px;
+
+    /* Type scale (raw px, no hsl wrapper) */
+    --ds-eyebrow:    11px;
+    --ds-label:      12px;
+    --ds-body:       14px;
+    --ds-body-lg:    16px;
+    --ds-num-md:     22px;
+    --ds-num-lg:     32px;
+    --ds-num-xl:     48px;
+    --ds-display:    44px;
+    --ds-display-lg: 64px;
+  }
+
+  .dark {
+    --ds-background:            0 0% 4%;
+    --ds-foreground:            0 0% 96%;
+    --ds-primary:               0 0% 96%;
+    --ds-primary-foreground:    0 0% 4%;
+    --ds-secondary:             0 0% 8%;
+    --ds-secondary-foreground:  0 0% 96%;
+    --ds-muted:                 0 0% 6%;
+    --ds-muted-foreground:      0 0% 53%;
+    --ds-accent:              150 100% 44%;
+    --ds-accent-foreground:     0 0% 4%;
+    --ds-destructive:           0 67% 62%;
+    --ds-destructive-foreground:0 0% 4%;
+    --ds-border:                0 0% 12%;
+    --ds-input:                 0 0% 16%;
+    --ds-ring:                150 100% 44%;
+    --ds-card:                  0 0% 4%;
+    --ds-card-foreground:       0 0% 96%;
+    --ds-popover:               0 0% 4%;
+    --ds-popover-foreground:    0 0% 96%;
+
+    --ds-surface:               0 0% 6%;
+    --ds-surface-2:             0 0% 8%;
+    --ds-surface-3:             0 0% 11%;
+    --ds-fg-1:                  0 0% 96%;
+    --ds-fg-2:                  0 0% 77%;
+    --ds-fg-3:                  0 0% 53%;
+    --ds-fg-4:                  0 0% 35%;
+    --ds-line-1:                0 0% 12%;
+    --ds-line-2:                0 0% 16%;
+    --ds-line-3:                0 0% 23%;
+    --ds-accent-bright:       150 100% 60%;
+    --ds-accent-soft:         145  60%  9%;
+    --ds-accent-deep:         150 100% 36%;
+    --ds-warn:                 43 70% 56%;
+    --ds-info:                209 65% 65%;
+    --ds-success:             150 100% 44%;
+    --ds-accent-ink:          138 100% 84%;
   }
 }
 

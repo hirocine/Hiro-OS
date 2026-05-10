@@ -1,13 +1,11 @@
 import { useState, useMemo } from 'react';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { PageHeader } from '@/components/ui/page-header';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Search, Plus } from 'lucide-react';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { usePostProduction } from '@/features/post-production/hooks/usePostProduction';
 import { PPTable, PPKanban, PPCalendar, PPStatsCards, PPDialog } from '@/features/post-production/components';
 import { PostProductionItem, PPPriority, PP_PRIORITY_CONFIG } from '@/features/post-production/types';
+
+type Tab = 'tabela' | 'kanban' | 'calendario';
 
 export default function PostProduction() {
   const { items, isLoading } = usePostProduction();
@@ -16,6 +14,7 @@ export default function PostProduction() {
   const [filterPriority, setFilterPriority] = useState<PPPriority | null>(null);
   const [selectedItem, setSelectedItem] = useState<PostProductionItem | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [tab, setTab] = useState<Tab>('tabela');
 
   const editors = useMemo(() =>
     [...new Set(items.map(i => i.editor_name).filter(Boolean))] as string[],
@@ -48,58 +47,67 @@ export default function PostProduction() {
   };
 
   return (
-    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-      <PageHeader
-        title="Esteira de Pós"
-        subtitle="Controle da fila de pós-produção"
-        actions={
-          <Button onClick={handleCreate}>
-            <Plus className="h-4 w-4 mr-2" /> Novo Vídeo
-          </Button>
-        }
-      />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Esteira de Pós.</h1>
+            <p className="ph-sub">Controle da fila de pós-produção.</p>
+          </div>
+          <div className="ph-actions">
+            <button className="btn primary" onClick={handleCreate} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Novo Vídeo</span>
+            </button>
+          </div>
+        </div>
 
-      <PPStatsCards items={items} />
+        <div style={{ marginTop: 24 }}>
+          <PPStatsCards items={items} />
+        </div>
 
-      <div className="mt-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
+        {/* Toolbar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: 240, maxWidth: 360 }}>
+            <Search
+              size={14}
+              strokeWidth={1.5}
+              style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'hsl(var(--ds-fg-4))', pointerEvents: 'none' }}
+            />
+            <input
+              className="field-input"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar vídeo, projeto, editor..."
-              className="pl-9"
+              placeholder="Buscar vídeo, projeto, editor…"
+              style={{ width: '100%', paddingLeft: 34 }}
             />
+          </div>
         </div>
 
         {/* Filter chips */}
-        <div className="flex flex-wrap gap-2 items-center">
-{(['urgente', 'alta', 'media', 'baixa'] as PPPriority[]).map(p => (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginTop: 12 }}>
+          {(['urgente', 'alta', 'media', 'baixa'] as PPPriority[]).map(p => (
             <button
               key={p}
+              type="button"
               onClick={() => setFilterPriority(filterPriority === p ? null : p)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
-                filterPriority === p
-                  ? `${PP_PRIORITY_CONFIG[p].bgColor} ${PP_PRIORITY_CONFIG[p].color} border-transparent ring-2 ring-offset-1 ring-current`
-                  : `${PP_PRIORITY_CONFIG[p].bgColor} ${PP_PRIORITY_CONFIG[p].color} border-transparent opacity-60 hover:opacity-100`
-              }`}
+              className={'pill' + (filterPriority === p ? ' acc' : '')}
+              style={{ cursor: 'pointer' }}
             >
+              <span className="dot" />
               {PP_PRIORITY_CONFIG[p].label}
             </button>
           ))}
 
-          {editors.length > 0 && <span className="text-muted-foreground/40">·</span>}
+          {editors.length > 0 && <span style={{ color: 'hsl(var(--ds-line-2))', margin: '0 4px' }}>·</span>}
 
           {editors.map(editor => (
             <button
               key={editor}
+              type="button"
               onClick={() => setFilterEditor(filterEditor === editor ? null : editor)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
-                filterEditor === editor
-                  ? 'bg-foreground text-background border-foreground'
-                  : 'bg-background text-muted-foreground border-border hover:border-foreground/40'
-              }`}
+              className={'pill' + (filterEditor === editor ? ' acc' : '')}
+              style={{ cursor: 'pointer' }}
             >
               {editor.split(' ')[0]}
             </button>
@@ -107,37 +115,44 @@ export default function PostProduction() {
 
           {(filterEditor || filterPriority) && (
             <button
+              type="button"
               onClick={() => { setFilterEditor(null); setFilterPriority(null); }}
-              className="text-xs px-2 py-1.5 text-muted-foreground hover:text-foreground transition-colors"
+              style={{
+                fontFamily: '"HN Display", sans-serif', fontSize: 10, fontWeight: 500,
+                letterSpacing: '0.14em', textTransform: 'uppercase',
+                color: 'hsl(var(--ds-fg-3))', cursor: 'pointer',
+              }}
             >
               Limpar ×
             </button>
           )}
         </div>
+
+        {/* Tabs */}
+        <div style={{ marginTop: 20 }}>
+          <div className="tabs-bar">
+            <button className={'tab' + (tab === 'tabela' ? ' on' : '')} onClick={() => setTab('tabela')} type="button">Tabela</button>
+            <button className={'tab' + (tab === 'kanban' ? ' on' : '')} onClick={() => setTab('kanban')} type="button">Kanban</button>
+            <button className={'tab' + (tab === 'calendario' ? ' on' : '')} onClick={() => setTab('calendario')} type="button">Calendário</button>
+          </div>
+
+          <div style={{ marginTop: 16 }}>
+            <Tabs value={tab}>
+              <TabsContent value="tabela">
+                <PPTable items={filteredItems} isLoading={isLoading} onItemClick={handleItemClick} onEditClick={handleItemClick} />
+              </TabsContent>
+              <TabsContent value="kanban">
+                <PPKanban items={filteredItems} onItemClick={handleItemClick} />
+              </TabsContent>
+              <TabsContent value="calendario">
+                <PPCalendar items={filteredItems} onItemClick={handleItemClick} />
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
-
-        <Tabs defaultValue="tabela">
-          <TabsList>
-            <TabsTrigger value="tabela">Tabela</TabsTrigger>
-            <TabsTrigger value="kanban">Kanban</TabsTrigger>
-            <TabsTrigger value="calendario">Calendário</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="tabela">
-            <PPTable items={filteredItems} isLoading={isLoading} onItemClick={handleItemClick} onEditClick={handleItemClick} />
-          </TabsContent>
-
-          <TabsContent value="kanban">
-            <PPKanban items={filteredItems} onItemClick={handleItemClick} />
-          </TabsContent>
-
-          <TabsContent value="calendario">
-            <PPCalendar items={filteredItems} onItemClick={handleItemClick} />
-          </TabsContent>
-        </Tabs>
       </div>
 
       <PPDialog item={selectedItem} open={dialogOpen} onOpenChange={setDialogOpen} />
-    </ResponsiveContainer>
+    </div>
   );
 }

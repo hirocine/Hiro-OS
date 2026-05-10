@@ -1,4 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { logger } from '@/lib/logger';
 
 interface ErrorBoundaryProps {
@@ -48,58 +49,108 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       }
 
       return (
-        <div className="min-h-[400px] flex items-center justify-center p-6">
-          <div className="max-w-md w-full text-center space-y-6">
-            <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-destructive"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-                />
-              </svg>
+        <div
+          style={{
+            minHeight: 400,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 24,
+          }}
+        >
+          <div
+            style={{
+              maxWidth: 480,
+              width: '100%',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 22,
+            }}
+          >
+            <div
+              style={{
+                margin: '0 auto',
+                width: 56,
+                height: 56,
+                display: 'grid',
+                placeItems: 'center',
+                background: 'hsl(var(--ds-danger) / 0.08)',
+                border: '1px solid hsl(var(--ds-danger) / 0.3)',
+                color: 'hsl(var(--ds-danger))',
+              }}
+            >
+              <AlertTriangle size={26} strokeWidth={1.5} />
             </div>
 
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold">Algo deu errado</h2>
-              <p className="text-sm text-muted-foreground">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <h2
+                style={{
+                  fontFamily: '"HN Display", sans-serif',
+                  fontSize: 18,
+                  fontWeight: 600,
+                  color: 'hsl(var(--ds-fg-1))',
+                }}
+              >
+                Algo deu errado
+              </h2>
+              <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', lineHeight: 1.5 }}>
                 Ocorreu um erro inesperado nesta seção. O restante do sistema continua funcionando normalmente.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button
-                onClick={this.handleRetry}
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                justifyContent: 'center',
+              }}
+              className="error-actions"
+            >
+              <style>{`
+                @media (min-width: 640px) {
+                  .error-actions { flex-direction: row !important; }
+                }
+              `}</style>
+              <button type="button" className="btn primary" onClick={this.handleRetry}>
                 Tentar novamente
               </button>
-              <button
-                onClick={this.handleGoHome}
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
+              <button type="button" className="btn" onClick={this.handleGoHome}>
                 Ir para o início
               </button>
-              <button
-                onClick={this.handleReload}
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
+              <button type="button" className="btn" onClick={this.handleReload}>
                 Recarregar página
               </button>
             </div>
 
             {this.state.error && (
-              <details className="text-left mt-4">
-                <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+              <details style={{ textAlign: 'left', marginTop: 8 }}>
+                <summary
+                  style={{
+                    fontSize: 11,
+                    color: 'hsl(var(--ds-fg-3))',
+                    cursor: 'pointer',
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    fontWeight: 500,
+                  }}
+                >
                   Detalhes técnicos
                 </summary>
-                <pre className="mt-2 p-3 bg-muted rounded-md text-xs overflow-auto max-h-32">
+                <pre
+                  style={{
+                    marginTop: 10,
+                    padding: 12,
+                    background: 'hsl(var(--ds-line-2) / 0.4)',
+                    border: '1px solid hsl(var(--ds-line-1))',
+                    fontSize: 11,
+                    overflow: 'auto',
+                    maxHeight: 128,
+                    color: 'hsl(var(--ds-fg-2))',
+                    fontFamily: 'monospace',
+                  }}
+                >
                   {this.state.error.message}
                 </pre>
               </details>

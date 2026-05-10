@@ -1,8 +1,5 @@
 import React from 'react';
 import { Project } from '@/types/project';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Package, User, Building2, FileText, MoreHorizontal, Archive } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -12,8 +9,7 @@ const statusLabels = {
   completed: 'Finalizado',
   archived: 'Arquivado'
 };
-import { stepLabels, stepColors, stepIcons, getStepProgress, canTransitionTo, stepOrder } from '@/lib/projectSteps';
-import { cn } from '@/lib/utils';
+import { stepLabels, stepIcons, canTransitionTo, stepOrder } from '@/lib/projectSteps';
 import { useToast } from '@/hooks/use-toast';
 
 interface ProjectCardProps {
@@ -24,41 +20,31 @@ interface ProjectCardProps {
   onStepUpdate?: (projectId: string, step: import('@/types/project').ProjectStep, notes?: string) => void;
 }
 
+const statusToneStyle: Record<string, React.CSSProperties> = {
+  active:    { color: 'hsl(var(--ds-info))',    borderColor: 'hsl(var(--ds-info) / 0.3)',    background: 'hsl(var(--ds-info) / 0.08)' },
+  completed: { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)', background: 'hsl(var(--ds-success) / 0.08)' },
+  archived:  { color: 'hsl(var(--ds-fg-3))',    borderColor: 'hsl(var(--ds-line-1))',        background: 'hsl(var(--ds-line-2) / 0.3)' },
+};
+
 export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpdate }: ProjectCardProps) {
   const { toast } = useToast();
-  
-  const getStatusVariant = (status: Project['status']) => {
-    switch (status) {
-      case 'active':
-        return 'default';
-      case 'completed':
-        return 'secondary';
-      case 'archived':
-        return 'outline';
-      default:
-        return 'default';
-    }
-  };
 
   const isOverdue = project.status === 'active' && new Date(project.expectedEndDate) < new Date();
   const StepIcon = stepIcons[project.step];
-  const progress = getStepProgress(project.step);
 
   const getAvailableSteps = () => {
     if (project.status === 'active') {
-      // Para projetos ativos - lógica atual de transição
-      return stepOrder.filter(step => 
+      return stepOrder.filter(step =>
         step !== project.step && canTransitionTo(project.step, step)
       );
     } else {
-      // Para projetos finalizados/arquivados - qualquer step
       return stepOrder.filter(step => step !== project.step);
     }
   };
 
   const handleStepChange = (newStep: string) => {
     if (newStep === project.step) return;
-    
+
     const step = newStep as import('@/types/project').ProjectStep;
     onStepUpdate?.(project.id, step);
     toast({
@@ -69,85 +55,145 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
 
   const availableSteps = getAvailableSteps();
   const showStepSelector = availableSteps.length > 0;
+  const statusTone = statusToneStyle[project.status] || statusToneStyle.active;
 
   return (
-    <Card 
-      className={cn(
-        "hover:shadow-elegant transition-all duration-200 border-l-4",
-        `border-l-${stepColors[project.step]}`
-      )}
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'border-color 0.15s, box-shadow 0.15s',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';
+        e.currentTarget.style.boxShadow = '0 4px 12px hsl(0 0% 0% / 0.05)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
     >
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <CardTitle className="text-lg font-semibold">{project.name}</CardTitle>
-              <Badge variant={getStatusVariant(project.status)}>
+      <div style={{ padding: '14px 18px 12px', borderBottom: '1px solid hsl(var(--ds-line-2))' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 16,
+                fontWeight: 600,
+                color: 'hsl(var(--ds-fg-1))',
+                lineHeight: 1.2,
+                marginBottom: 8,
+              }}
+            >
+              {project.name}
+            </h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
+              <span
+                className="pill"
+                style={{ ...statusTone, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+              >
+                <span className="dot" style={{ background: 'currentColor' }} />
                 {statusLabels[project.status]}
-              </Badge>
+              </span>
               {isOverdue && (
-                <Badge variant="destructive">Atrasado</Badge>
+                <span
+                  className="pill"
+                  style={{
+                    color: 'hsl(var(--ds-danger))',
+                    borderColor: 'hsl(var(--ds-danger) / 0.3)',
+                    background: 'hsl(var(--ds-danger) / 0.08)',
+                  }}
+                >
+                  Atrasado
+                </span>
               )}
-              <Badge variant={stepColors[project.step] as any}>
-                <StepIcon className="w-3 h-3 mr-1" />
+              <span
+                className="pill muted"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+              >
+                <StepIcon size={11} strokeWidth={1.5} />
                 {stepLabels[project.step]}
-              </Badge>
+              </span>
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+              <button
+                type="button"
+                className="btn"
+                style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}
+                aria-label="Mais opções"
+              >
+                <MoreHorizontal size={14} strokeWidth={1.5} />
+              </button>
             </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit?.(project)}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Editar
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit?.(project)}>
+                <FileText className="mr-2 h-4 w-4" />
+                Editar
+              </DropdownMenuItem>
+              {project.status === 'active' && (
+                <DropdownMenuItem onClick={() => onComplete?.(project.id)}>
+                  <Package className="mr-2 h-4 w-4" />
+                  Finalizar
                 </DropdownMenuItem>
-                {project.status === 'active' && (
-                  <DropdownMenuItem onClick={() => onComplete?.(project.id)}>
-                    <Package className="mr-2 h-4 w-4" />
-                    Finalizar
-                  </DropdownMenuItem>
-                )}
-                {project.status !== 'archived' && (
-                  <DropdownMenuItem onClick={() => onArchive?.(project.id)}>
-                    <Archive className="mr-2 h-4 w-4" />
-                    Arquivar
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
+              )}
+              {project.status !== 'archived' && (
+                <DropdownMenuItem onClick={() => onArchive?.(project.id)}>
+                  <Archive className="mr-2 h-4 w-4" />
+                  Arquivar
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-2">
-        {/* Informações principais em grid compacto */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <div className="min-w-0">
-              <p className="font-medium text-xs">Retirada</p>
-              <p className="text-muted-foreground truncate">
+      </div>
+
+      <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px 16px', fontSize: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Calendar size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))', flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <p style={{
+                fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
+                fontWeight: 500, color: 'hsl(var(--ds-fg-3))',
+              }}>
+                Retirada
+              </p>
+              <p style={{ color: 'hsl(var(--ds-fg-2))', fontVariantNumeric: 'tabular-nums', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {new Date(project.startDate).toLocaleDateString('pt-BR')}
               </p>
             </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <div className="min-w-0">
-              <p className="font-medium text-xs">Responsável</p>
-              <p className="text-muted-foreground truncate">{project.responsibleName}</p>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <User size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))', flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <p style={{
+                fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
+                fontWeight: 500, color: 'hsl(var(--ds-fg-3))',
+              }}>
+                Responsável
+              </p>
+              <p style={{ color: 'hsl(var(--ds-fg-2))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {project.responsibleName}
+              </p>
             </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <div className="min-w-0">
-              <p className="font-medium text-xs">Devolução</p>
-              <p className="text-muted-foreground truncate">
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Calendar size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))', flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <p style={{
+                fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
+                fontWeight: 500, color: 'hsl(var(--ds-fg-3))',
+              }}>
+                Devolução
+              </p>
+              <p style={{ color: 'hsl(var(--ds-fg-2))', fontVariantNumeric: 'tabular-nums', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {project.actualEndDate
                   ? new Date(project.actualEndDate).toLocaleDateString('pt-BR')
                   : new Date(project.expectedEndDate).toLocaleDateString('pt-BR')
@@ -155,52 +201,65 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
               </p>
             </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <div className="min-w-0">
-              <p className="font-medium text-xs">Equipamentos</p>
-              <p className="text-muted-foreground truncate">{project.equipmentCount} itens</p>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Package size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))', flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <p style={{
+                fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
+                fontWeight: 500, color: 'hsl(var(--ds-fg-3))',
+              }}>
+                Equipamentos
+              </p>
+              <p style={{ color: 'hsl(var(--ds-fg-2))', fontVariantNumeric: 'tabular-nums', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {project.equipmentCount} itens
+              </p>
             </div>
           </div>
         </div>
-        
-        {/* Departamento */}
+
         {project.department && (
-          <div className="flex items-center gap-2 text-sm pt-1">
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">{project.department}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+            <Building2 size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+            <span style={{ color: 'hsl(var(--ds-fg-3))' }}>{project.department}</span>
           </div>
         )}
-        
-        {/* Observações */}
+
         {project.notes && (
-          <div className="text-sm pt-1">
-            <p className="font-medium text-xs mb-1">Observações:</p>
-            <p className="text-muted-foreground text-xs leading-relaxed">{project.notes}</p>
+          <div style={{ fontSize: 12 }}>
+            <p style={{
+              fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
+              fontWeight: 500, color: 'hsl(var(--ds-fg-3))', marginBottom: 4,
+            }}>
+              Observações
+            </p>
+            <p style={{ color: 'hsl(var(--ds-fg-3))', fontSize: 11, lineHeight: 1.5 }}>{project.notes}</p>
           </div>
         )}
-        
-        {/* Seletor de Status */}
+
         {showStepSelector && (
-          <div className="pt-2 border-t border-border/50">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-medium text-muted-foreground">Alterar Status:</span>
-            </div>
+          <div style={{ paddingTop: 10, borderTop: '1px solid hsl(var(--ds-line-2))' }}>
+            <label style={{
+              fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase',
+              fontWeight: 500, color: 'hsl(var(--ds-fg-3))',
+              display: 'block', marginBottom: 6,
+            }}>
+              Alterar Status
+            </label>
             <Select onValueChange={handleStepChange} value={project.step}>
               <SelectTrigger className="w-full h-8">
                 <SelectValue placeholder="Selecionar novo status..." />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={project.step} disabled>
-                  <div className="flex items-center gap-2">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {React.createElement(stepIcons[project.step], { className: "w-4 h-4" })}
                     <span>{stepLabels[project.step]} (atual)</span>
                   </div>
                 </SelectItem>
                 {availableSteps.map((step) => (
                   <SelectItem key={step} value={step}>
-                    <div className="flex items-center gap-2">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {React.createElement(stepIcons[step], { className: "w-4 h-4" })}
                       <span>{stepLabels[step]}</span>
                     </div>
@@ -210,7 +269,7 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
             </Select>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

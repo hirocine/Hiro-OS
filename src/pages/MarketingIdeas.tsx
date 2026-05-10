@@ -16,8 +16,6 @@ import { useIdeasWithPosts, type IdeaPostLink } from '@/hooks/useIdeasWithPosts'
 import { EmptyState } from '@/components/ui/empty-state';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -438,18 +436,22 @@ export default function MarketingIdeas() {
   const activeIdea = activeId ? ideas.find((i) => i.id === activeId) : null;
 
   return (
-    <ResponsiveContainer>
-      <PageHeader
-        title="Ideias"
-        subtitle="Banco de ideias organizado por status"
-        actions={
-          <Button onClick={() => handleAdd('rascunho')}>
-            <Plus className="h-4 w-4 mr-2" /> Nova Ideia
-          </Button>
-        }
-      />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Ideias.</h1>
+            <p className="ph-sub">Banco de ideias organizado por status.</p>
+          </div>
+          <div className="ph-actions">
+            <button className="btn primary" onClick={() => handleAdd('rascunho')} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Nova Ideia</span>
+            </button>
+          </div>
+        </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="flex flex-col sm:flex-row gap-3" style={{ marginTop: 24, marginBottom: 16 }}>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -560,6 +562,7 @@ export default function MarketingIdeas() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </ResponsiveContainer>
+      </div>
+    </div>
   );
 }

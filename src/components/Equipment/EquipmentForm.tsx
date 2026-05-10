@@ -3,20 +3,14 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useCategories } from '@/hooks/useCategories';
 import { Equipment, EquipmentCategory, EquipmentStatus, EquipmentItemType } from '@/types/equipment';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Loader2, Upload, X, Package, Check, Link2, DollarSign, Calendar, Camera, Mic, Lightbulb, Wrench, HardDrive, CalendarIcon, Plus } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2, X, Package, Check, Link2, DollarSign, Calendar, Camera, Mic, Lightbulb, Wrench, HardDrive, CalendarIcon, Plus, type LucideIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -36,6 +30,61 @@ interface EquipmentFormProps {
   handleImageUpload: (file: File) => Promise<void>;
   handleImageRemove: () => void;
 }
+
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const FieldLabel = ({
+  htmlFor,
+  children,
+  required,
+}: {
+  htmlFor?: string;
+  children: React.ReactNode;
+  required?: boolean;
+}) => (
+  <label htmlFor={htmlFor} style={fieldLabel}>
+    {children}
+    {required && <span style={{ marginLeft: 4, color: 'hsl(var(--ds-danger))' }}>*</span>}
+  </label>
+);
+
+const sectionHeaderStyle: React.CSSProperties = {
+  padding: '14px 18px',
+  borderBottom: '1px solid hsl(var(--ds-line-1))',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+};
+
+const sectionTitleStyle: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-2))',
+};
+
+const SectionShell: React.FC<{
+  icon: LucideIcon;
+  title: string;
+  children: React.ReactNode;
+}> = ({ icon: Icon, title, children }) => (
+  <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+    <div style={sectionHeaderStyle}>
+      <Icon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+      <span style={sectionTitleStyle}>{title}</span>
+    </div>
+    <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>{children}</div>
+  </div>
+);
 
 export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   formData,
@@ -75,6 +124,9 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   const [showLoanFields, setShowLoanFields] = useState(formData.status === 'loaned');
   const [showLoanDateCalendar, setShowLoanDateCalendar] = useState(false);
   const [showReturnDateCalendar, setShowReturnDateCalendar] = useState(false);
+
+  // Drag-and-drop state for image upload
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
 
   // Estados para controlar edição dos campos monetários
   const [editingValue, setEditingValue] = useState<string>('');
@@ -123,7 +175,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   const handleStatusChange = (value: EquipmentStatus) => {
     updateField('status', value);
     setShowLoanFields(value === 'loaned');
-    
+
     // Limpar campos de empréstimo se não for mais 'loaned'
     if (value !== 'loaned') {
       updateField('currentBorrower', '');
@@ -157,26 +209,26 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   // Handler para criar nova subcategoria
   const handleCreateSubcategory = async () => {
     if (!newSubcategoryName.trim() || !formData.category) return;
-    
+
     setIsCreatingSubcategory(true);
-    
+
     try {
       const result = await addCustomCategory(
         formData.category,
         newSubcategoryName.trim()
       );
-      
+
       if (result.success) {
         // Atualizar o campo com a nova subcategoria
         updateField('subcategory', newSubcategoryName.trim());
-        
+
         // Recarregar categorias
         await refetch();
-        
+
         // Fechar dialog
         setShowNewSubcategoryDialog(false);
         setNewSubcategoryName('');
-        
+
         toast.success('Subcategoria criada', {
           description: `"${newSubcategoryName.trim()}" foi adicionada com sucesso.`
         });
@@ -195,26 +247,26 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   // Handler para criar nova categoria
   const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) return;
-    
+
     setIsCreatingCategory(true);
-    
+
     try {
       const result = await addCustomCategory(
         newCategoryName.trim(),
         null // Sem subcategoria inicial
       );
-      
+
       if (result.success) {
         // Atualizar o campo com a nova categoria
         updateField('category', newCategoryName.trim());
-        
+
         // Recarregar categorias
         await refetch();
-        
+
         // Fechar dialog
         setShowNewCategoryDialog(false);
         setNewCategoryName('');
-        
+
         toast.success('Categoria criada', {
           description: `"${newCategoryName.trim()}" foi adicionada com sucesso.`
         });
@@ -233,7 +285,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   // Helper para formatar data do formato yyyy-MM-dd para dd/MM/yyyy
   const formatDateForDisplay = (dateString: string): string => {
     if (!dateString) return '';
-    
+
     // Se for formato yyyy-MM-dd completo, formata
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
       try {
@@ -246,43 +298,18 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
         return dateString;
       }
     }
-    
+
     // Retorna como está (permite ver o que está sendo digitado)
     return dateString;
-  };
-
-  // Helper para converter dd/MM/yyyy para yyyy-MM-dd
-  const parseDateInput = (input: string): string => {
-    if (!input) return '';
-    
-    // Se já está no formato yyyy-MM-dd, retorna
-    if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
-    
-    // Remove caracteres que não sejam dígitos ou /
-    const cleaned = input.replace(/[^\d/]/g, '');
-    
-    // Se for uma data completa dd/MM/yyyy, converte
-    const fullMatch = cleaned.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (fullMatch) {
-      const [, day, month, year] = fullMatch;
-      // Valida se é uma data válida
-      const date = new Date(Number(year), Number(month) - 1, Number(day));
-      if (!isNaN(date.getTime())) {
-        return `${year}-${month}-${day}`;
-      }
-    }
-    
-    // Retorna a string limpa (permite digitação parcial)
-    return cleaned;
   };
 
   // Handler para entrada de data com máscara automática
   const handleDateInput = (value: string, field: 'purchaseDate' | 'receiveDate' | 'lastMaintenance') => {
     let cleaned = value.replace(/[^\d]/g, '');
-    
+
     // Limita a 8 dígitos (ddmmyyyy)
     cleaned = cleaned.substring(0, 8);
-    
+
     // Adiciona as barras automaticamente
     let formatted = cleaned;
     if (cleaned.length >= 3) {
@@ -291,7 +318,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     if (cleaned.length >= 5) {
       formatted = `${cleaned.substring(0, 2)}/${cleaned.substring(2, 4)}/${cleaned.substring(4)}`;
     }
-    
+
     updateField(field, formatted);
   };
 
@@ -306,22 +333,23 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
         return;
       }
     }
-    
+
     // Se não for válida, limpa o campo
     if (value && value.length > 0 && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
       updateField(field, '');
     }
   };
+
   // Função para formatar moeda durante digitação (em tempo real)
   const formatCurrencyInput = (value: string): string => {
     // Remove tudo que não seja dígito
     const digits = value.replace(/\D/g, '');
-    
+
     if (!digits) return '';
-    
+
     // Converte para número (centavos)
     const number = parseInt(digits, 10);
-    
+
     // Formata para reais (divide por 100 para ter os centavos)
     const formatted = new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -329,14 +357,13 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(number / 100);
-    
+
     return formatted;
   };
 
   // Handlers para campos monetários - Valor de Compra
   const handleValueFocus = () => {
     setIsEditingValue(true);
-    // Se já tem valor, formata ao receber foco
     const rawValue = formData.value ? formData.value.toString() : '';
     if (rawValue && parseFloat(rawValue) > 0) {
       const formatted = formatCurrencyInput((parseFloat(rawValue) * 100).toString());
@@ -348,7 +375,6 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
 
   const handleValueBlur = () => {
     setIsEditingValue(false);
-    // Remove formatação e salva apenas o número
     const digits = editingValue.replace(/\D/g, '');
     const parsed = digits ? parseInt(digits, 10) / 100 : 0;
     updateField('value', parsed);
@@ -385,11 +411,6 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     setEditingDepreciatedValue(formatted);
   };
 
-  // Helper para mapear categoria para variante de badge
-  const getCategoryBadgeVariant = (category: EquipmentCategory): "neutral" => {
-    return 'neutral' as const;
-  };
-
   // Helper para mapear categoria para ícone
   const getCategoryIcon = (category: EquipmentCategory) => {
     const icons: Record<string, any> = {
@@ -405,7 +426,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
       'armazenamento': HardDrive
     };
     const IconComponent = icons[category.toLowerCase()];
-    return IconComponent ? <IconComponent className="w-3 h-3" /> : <Package className="w-3 h-3" />;
+    return IconComponent ? <IconComponent size={11} strokeWidth={1.5} /> : <Package size={11} strokeWidth={1.5} />;
   };
 
   // Helper para traduzir categoria
@@ -417,27 +438,27 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
       accessories: 'Acessórios',
       storage: 'Armazenamento'
     };
-    return labels[category] || category; // Retorna o nome original se não estiver na lista
+    return labels[category] || category;
   };
 
-  // Helper para obter variante do badge de status
-  const getStatusBadgeVariant = (status: EquipmentStatus): 'success' | 'warning' | 'neutral' => {
-    const variants: Record<EquipmentStatus, 'success' | 'warning' | 'neutral'> = {
+  // Helper para tonalidade do status (success/warning/neutral)
+  const getStatusTone = (status: EquipmentStatus): 'success' | 'warning' | 'neutral' => {
+    const tones: Record<EquipmentStatus, 'success' | 'warning' | 'neutral'> = {
       available: 'success',
       maintenance: 'warning',
       loaned: 'neutral'
     };
-    return variants[status] || 'success';
+    return tones[status] || 'success';
   };
 
   // Helper para obter ícone do status
   const getStatusIcon = (status: EquipmentStatus) => {
     const icons: Record<EquipmentStatus, JSX.Element> = {
-      available: <Check className="w-3 h-3" />,
-      maintenance: <Wrench className="w-3 h-3" />,
-      loaned: <Package className="w-3 h-3" />
+      available: <Check size={11} strokeWidth={1.5} />,
+      maintenance: <Wrench size={11} strokeWidth={1.5} />,
+      loaned: <Package size={11} strokeWidth={1.5} />
     };
-    return icons[status] || <Check className="w-3 h-3" />;
+    return icons[status] || <Check size={11} strokeWidth={1.5} />;
   };
 
   // Helper para obter label traduzido do status
@@ -448,6 +469,23 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
       loaned: 'Emprestado'
     };
     return labels[status];
+  };
+
+  // Pill style helper for tonal pills
+  const tonalPillStyle = (tone: 'success' | 'warning' | 'neutral' | 'info' | 'danger'): React.CSSProperties => {
+    if (tone === 'neutral') {
+      return {
+        color: 'hsl(var(--ds-fg-2))',
+        borderColor: 'hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-line-2) / 0.3)',
+      };
+    }
+    const tokenName = tone === 'info' ? 'info' : tone;
+    return {
+      color: `hsl(var(--ds-${tokenName}))`,
+      borderColor: `hsl(var(--ds-${tokenName}) / 0.3)`,
+      background: `hsl(var(--ds-${tokenName}) / 0.08)`,
+    };
   };
 
   // Helper para transformar itens principais em opções do Autocomplete
@@ -462,746 +500,853 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     ];
   }, [getMainItems]);
 
-  // Hero Card: Foto grande + Nome em destaque
-  const renderHeroCard = () => (
-    <Card className="border-2 border-border">
-      <CardContent className="p-6">
-        <div className={cn(
-          "flex gap-6",
-          isMobile ? "flex-col items-center" : "flex-row items-center"
-        )}>
-          {/* Foto Upload */}
-          <div className={cn(
-            "flex-shrink-0 self-start",
-            isMobile ? "w-full" : "w-[150px]"
-          )}>
-            <div className={cn(
-              "relative border-2 border-dashed border-border rounded-lg overflow-hidden bg-muted/30",
-              isMobile ? "aspect-square w-full" : "w-[150px] h-[150px]"
-            )}>
-              {imageUrl ? (
-                <>
-                  <img 
-                    src={imageUrl} 
-                    alt="Equipment preview" 
-                    className="w-full h-full object-cover"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg"
-                    onClick={handleImageRemove}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </>
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
-                  <Camera className="h-8 w-8 text-muted-foreground mb-2" />
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Clique ou arraste uma foto
-                  </p>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/jpg,image/png,image/webp"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleImageUpload(file);
+  // Drag-and-drop handlers for image
+  const handleImageDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingImage(true);
+  };
+
+  const handleImageDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingImage(false);
+  };
+
+  const handleImageDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingImage(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      handleImageUpload(file);
+    }
+  };
+
+  // ---------- Sections ----------
+
+  // Hero Section: Foto grande + Nome em destaque
+  const renderHeroSection = () => {
+    const imageBoxBaseBorder = isDraggingImage
+      ? '2px dashed hsl(var(--ds-accent))'
+      : imageUrl
+      ? '1px solid hsl(var(--ds-line-1))'
+      : '2px dashed hsl(var(--ds-line-1))';
+
+    const hasMiniInfo =
+      formData.brand ||
+      formData.category ||
+      formData.status ||
+      (formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none');
+
+    return (
+      <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+        <div style={{ padding: 18 }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: 18,
+              flexDirection: isMobile ? 'column' : 'row',
+              alignItems: isMobile ? 'stretch' : 'center',
+            }}
+          >
+            {/* Foto Upload */}
+            <div
+              style={{
+                flexShrink: 0,
+                alignSelf: 'flex-start',
+                width: isMobile ? '100%' : 150,
+              }}
+            >
+              <div
+                onDragOver={handleImageDragOver}
+                onDragLeave={handleImageDragLeave}
+                onDrop={handleImageDrop}
+                style={{
+                  position: 'relative',
+                  border: imageBoxBaseBorder,
+                  background: isDraggingImage
+                    ? 'hsl(var(--ds-accent) / 0.05)'
+                    : 'hsl(var(--ds-line-2) / 0.3)',
+                  overflow: 'hidden',
+                  width: isMobile ? '100%' : 150,
+                  aspectRatio: isMobile ? '1 / 1' : undefined,
+                  height: isMobile ? undefined : 150,
+                }}
+              >
+                {imageUrl ? (
+                  <>
+                    <img
+                      src={imageUrl}
+                      alt="Equipment preview"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    <button
+                      type="button"
+                      className="btn"
+                      onClick={handleImageRemove}
+                      style={{
+                        position: 'absolute',
+                        top: 6,
+                        right: 6,
+                        width: 28,
+                        height: 28,
+                        padding: 0,
+                        justifyContent: 'center',
+                        color: 'hsl(var(--ds-danger))',
+                        background: 'hsl(var(--ds-surface))',
+                      }}
+                      aria-label="Remover imagem"
+                    >
+                      <X size={13} strokeWidth={1.5} />
+                    </button>
+                  </>
+                ) : (
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 14,
+                      textAlign: 'center',
                     }}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
+                  >
+                    <Camera
+                      size={26}
+                      strokeWidth={1.5}
+                      style={{ color: 'hsl(var(--ds-fg-3))', marginBottom: 8 }}
+                    />
+                    <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginBottom: 4 }}>
+                      Clique ou arraste uma foto
+                    </p>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageUpload(file);
+                      }}
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        opacity: 0,
+                        cursor: 'pointer',
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {isUploadingImage && (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    fontSize: 12,
+                    color: 'hsl(var(--ds-fg-3))',
+                    marginTop: 8,
+                  }}
+                >
+                  <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />
+                  Carregando...
                 </div>
               )}
             </div>
-            
-            {isUploadingImage && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Carregando...
-              </div>
-            )}
-          </div>
 
-          {/* Nome em Destaque */}
-          <div className="flex-1 w-full">
-            <Label htmlFor="hero-name" className="text-sm font-medium">
-              Nome do Equipamento <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="hero-name"
-              value={formData.name}
-              onChange={(e) => updateField('name', e.target.value)}
-              placeholder="Ex: Canon EOS R5"
-              className={cn(
-                "font-bold text-lg mt-1.5",
-                isMobile ? "h-12" : "h-11"
+            {/* Nome em Destaque */}
+            <div style={{ flex: 1, width: '100%' }}>
+              <FieldLabel htmlFor="hero-name" required>
+                Nome do Equipamento
+              </FieldLabel>
+              <Input
+                id="hero-name"
+                value={formData.name}
+                onChange={(e) => updateField('name', e.target.value)}
+                placeholder="Ex: Canon EOS R5"
+                style={{
+                  fontFamily: '"HN Display", sans-serif',
+                  fontSize: 18,
+                  fontWeight: 600,
+                }}
+                required
+              />
+
+              {/* Mini-resumo visual */}
+              {hasMiniInfo && (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginTop: 10,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  {formData.brand && (
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>
+                      {formData.brand}
+                    </span>
+                  )}
+                  {formData.brand &&
+                    (formData.category ||
+                      formData.status ||
+                      (formData.itemType === 'accessory' &&
+                        formData.parentId &&
+                        formData.parentId !== 'none')) && (
+                      <span style={{ color: 'hsl(var(--ds-fg-4))' }}>•</span>
+                    )}
+                  {formData.category && (
+                    <span
+                      className="pill"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle('neutral') }}
+                    >
+                      {getCategoryIcon(formData.category)}
+                      {getCategoryLabel(formData.category)}
+                    </span>
+                  )}
+                  {formData.category &&
+                    (formData.status ||
+                      (formData.itemType === 'accessory' &&
+                        formData.parentId &&
+                        formData.parentId !== 'none')) && (
+                      <span style={{ color: 'hsl(var(--ds-fg-4))' }}>•</span>
+                    )}
+                  {formData.status && (
+                    <span
+                      className="pill"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        ...tonalPillStyle(getStatusTone(formData.status)),
+                      }}
+                    >
+                      {getStatusIcon(formData.status)}
+                      {getStatusLabel(formData.status)}
+                    </span>
+                  )}
+                  {formData.status &&
+                    formData.itemType === 'accessory' &&
+                    formData.parentId &&
+                    formData.parentId !== 'none' && <span style={{ color: 'hsl(var(--ds-fg-4))' }}>•</span>}
+
+                  {formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none' && (
+                    <span
+                      className="pill"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle('neutral') }}
+                    >
+                      <Link2 size={11} strokeWidth={1.5} />
+                      Acessório de <span style={{ margin: '0 4px' }}>›</span> {getSelectedParentName()}
+                    </span>
+                  )}
+                </div>
               )}
-              required
-            />
-            
-            {/* Mini-resumo visual */}
-            {(formData.brand || formData.category || formData.status || (formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none')) && (
-              <div className="flex items-center gap-2 mt-2 flex-wrap">
-                {formData.brand && <span className="text-sm font-medium text-muted-foreground">{formData.brand}</span>}
-                {formData.brand && (formData.category || formData.status || (formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none')) && <span className="text-muted-foreground">•</span>}
-                {formData.category && (
-                  <Badge variant={getCategoryBadgeVariant(formData.category)} className="gap-1.5">
-                    {getCategoryIcon(formData.category)}
-                    {getCategoryLabel(formData.category)}
-                  </Badge>
-                )}
-                {formData.category && (formData.status || (formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none')) && <span className="text-muted-foreground">•</span>}
-                {formData.status && (
-                  <Badge variant={getStatusBadgeVariant(formData.status)} className="gap-1.5">
-                    {getStatusIcon(formData.status)}
-                    {getStatusLabel(formData.status)}
-                  </Badge>
-                )}
-                {formData.status && (formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none') && <span className="text-muted-foreground">•</span>}
-                
-                {/* Badge de Acessório */}
-                {formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none' && (
-                  <Badge variant="neutral" className="gap-1.5">
-                    <Link2 className="w-3 h-3" />
-                    Acessório de <span className="mx-1">›</span> {getSelectedParentName()}
-                  </Badge>
-                )}
-              </div>
-            )}
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
-  );
+      </div>
+    );
+  };
 
+  // Section: Identificação & Status
+  const renderStatusSection = () => (
+    <SectionShell icon={Package} title="Identificação & Status">
+      {/* Marca */}
+      <div>
+        <FieldLabel htmlFor="brand" required>
+          Marca
+        </FieldLabel>
+        <Input
+          id="brand"
+          value={formData.brand}
+          onChange={(e) => updateField('brand', e.target.value)}
+          placeholder="Ex: Canon"
+          required
+        />
+      </div>
 
-  // Card: Identificação & Status
-  const renderStatusCard = () => (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Package className="w-4 h-4 text-primary" />
-          Identificação & Status
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {/* Marca */}
-        <div>
-          <Label htmlFor="brand" className="text-sm font-medium">
-            Marca <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="brand"
-            value={formData.brand}
-            onChange={(e) => updateField('brand', e.target.value)}
-            placeholder="Ex: Canon"
-            className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-            required
-          />
-        </div>
-
-        {/* Categoria */}
-        <div>
-          <Label htmlFor="category" className="text-sm font-medium">
-            Categoria <span className="text-destructive">*</span>
-          </Label>
-          {categoriesLoading ? (
-            <Skeleton className={cn("mt-1.5", isMobile ? "h-10" : "h-9")} />
-          ) : (
-            <Select
-              key={`category-${categoriesLoading}-${formData.category}`}
-              value={formData.category || undefined}
-              onValueChange={handleCategoryChange}
-              disabled={categoriesLoading}
-            >
-              <SelectTrigger id="category" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-                <SelectValue placeholder="Selecione uma categoria">
-                  {formData.category || "Selecione uma categoria"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {/* Fallback ad-hoc: Se categoria atual não está na lista, injeta dinamicamente */}
-                {formData.category && !getCategoriesHierarchy().some(cat => cat.categoryName === formData.category) && (
+      {/* Categoria */}
+      <div>
+        <FieldLabel htmlFor="category" required>
+          Categoria
+        </FieldLabel>
+        {categoriesLoading ? (
+          <span className="sk line" style={{ display: 'block', height: 36, width: '100%' }} />
+        ) : (
+          <Select
+            key={`category-${categoriesLoading}-${formData.category}`}
+            value={formData.category || undefined}
+            onValueChange={handleCategoryChange}
+            disabled={categoriesLoading}
+          >
+            <SelectTrigger id="category">
+              <SelectValue placeholder="Selecione uma categoria">
+                {formData.category || 'Selecione uma categoria'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {formData.category &&
+                !getCategoriesHierarchy().some((cat) => cat.categoryName === formData.category) && (
                   <>
                     <SelectItem value={formData.category}>
                       {formData.category} (valor atual - fora da lista)
                     </SelectItem>
-                    <div className="border-t my-1" />
+                    <div style={{ borderTop: '1px solid hsl(var(--ds-line-1))', margin: '4px 0' }} />
                   </>
                 )}
-                
-                {/* Categorias do banco de dados */}
-                {getCategoriesHierarchy().map((cat) => (
-                  <SelectItem key={cat.categoryName} value={cat.categoryName}>
-                    {cat.categoryName}
-                  </SelectItem>
-                ))}
-                
-                {/* Separador */}
-                {getCategoriesHierarchy().length > 0 && (
-                  <div className="border-t my-1" />
-                )}
-                
-                {/* Opção de criar nova */}
-                <SelectItem 
-                  value="__CREATE_NEW__" 
-                  className="text-primary font-medium"
-                >
-                  <div className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    Criar nova categoria
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        </div>
 
-        {/* Subcategoria */}
-        <div>
-          <Label htmlFor="subcategory" className="text-sm font-medium">
-            Subcategoria
-          </Label>
-          <Select
-            key={`subcategory-${categoriesLoading}-${formData.category}-${formData.subcategory || ''}`}
-            value={formData.subcategory || ''}
-            onValueChange={handleSubcategoryChange}
-            disabled={categoriesLoading || !formData.category}
-          >
-            <SelectTrigger id="subcategory" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-              <SelectValue placeholder="Selecione">
-                {formData.subcategory || "Selecione"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {/* Fallback ad-hoc: Se subcategoria atual não está na lista, injeta dinamicamente */}
-              {formData.subcategory && !getSubcategoriesForCategory(formData.category).includes(formData.subcategory) && (
+              {getCategoriesHierarchy().map((cat) => (
+                <SelectItem key={cat.categoryName} value={cat.categoryName}>
+                  {cat.categoryName}
+                </SelectItem>
+              ))}
+
+              {getCategoriesHierarchy().length > 0 && (
+                <div style={{ borderTop: '1px solid hsl(var(--ds-line-1))', margin: '4px 0' }} />
+              )}
+
+              <SelectItem value="__CREATE_NEW__">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-accent))', fontWeight: 500 }}>
+                  <Plus size={13} strokeWidth={1.5} />
+                  Criar nova categoria
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+      </div>
+
+      {/* Subcategoria */}
+      <div>
+        <FieldLabel htmlFor="subcategory">Subcategoria</FieldLabel>
+        <Select
+          key={`subcategory-${categoriesLoading}-${formData.category}-${formData.subcategory || ''}`}
+          value={formData.subcategory || ''}
+          onValueChange={handleSubcategoryChange}
+          disabled={categoriesLoading || !formData.category}
+        >
+          <SelectTrigger id="subcategory">
+            <SelectValue placeholder="Selecione">
+              {formData.subcategory || 'Selecione'}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {formData.subcategory &&
+              !getSubcategoriesForCategory(formData.category).includes(formData.subcategory) && (
                 <>
                   <SelectItem value={formData.subcategory}>
                     {formData.subcategory} (valor atual - fora da lista)
                   </SelectItem>
-                  <div className="border-t my-1" />
+                  <div style={{ borderTop: '1px solid hsl(var(--ds-line-1))', margin: '4px 0' }} />
                 </>
               )}
-              
-              {getSubcategoriesForCategory(formData.category).map((sub) => (
-                <SelectItem key={sub} value={sub}>
-                  {sub}
-                </SelectItem>
-              ))}
-              
-              {/* Separador */}
-              {getSubcategoriesForCategory(formData.category).length > 0 && (
-                <div className="border-t my-1" />
-              )}
-              
-              {/* Opção de criar nova */}
-              <SelectItem 
-                value="__CREATE_NEW__" 
-                className="text-primary font-medium"
-              >
-                <div className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Criar nova subcategoria
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
 
-        {/* Tipo de Item */}
+            {getSubcategoriesForCategory(formData.category).map((sub) => (
+              <SelectItem key={sub} value={sub}>
+                {sub}
+              </SelectItem>
+            ))}
+
+            {getSubcategoriesForCategory(formData.category).length > 0 && (
+              <div style={{ borderTop: '1px solid hsl(var(--ds-line-1))', margin: '4px 0' }} />
+            )}
+
+            <SelectItem value="__CREATE_NEW__">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-accent))', fontWeight: 500 }}>
+                <Plus size={13} strokeWidth={1.5} />
+                Criar nova subcategoria
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Tipo de Item */}
+      <div>
+        <FieldLabel htmlFor="itemType" required>
+          Tipo de Item
+        </FieldLabel>
+        <Select
+          value={formData.itemType}
+          onValueChange={(value: 'main' | 'accessory') => updateField('itemType', value)}
+        >
+          <SelectTrigger id="itemType">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="main">Item Principal</SelectItem>
+            <SelectItem value="accessory">Acessório</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Item Principal (condicional) */}
+      {formData.itemType === 'accessory' && (
         <div>
-          <Label htmlFor="itemType" className="text-sm font-medium">
-            Tipo de Item <span className="text-destructive">*</span>
-          </Label>
-          <Select 
-            value={formData.itemType} 
-            onValueChange={(value: 'main' | 'accessory') => updateField('itemType', value)}
-          >
-            <SelectTrigger id="itemType" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="main">Item Principal</SelectItem>
-              <SelectItem value="accessory">Acessório</SelectItem>
-            </SelectContent>
-          </Select>
+          <FieldLabel htmlFor="parentId">Item Principal</FieldLabel>
+          <Autocomplete
+            options={getMainItemsAsOptions()}
+            value={formData.parentId || 'none'}
+            onValueChange={(value) => updateField('parentId', value === 'none' ? '' : value)}
+            placeholder="Pesquise por número ou nome"
+            allowCustomValue={false}
+          />
         </div>
+      )}
 
-        {/* Item Principal (condicional - só para acessórios) */}
-        {formData.itemType === 'accessory' && (
-          <div>
-            <Label htmlFor="parentId" className="text-sm font-medium">
-              Item Principal
-            </Label>
-            <Autocomplete
-              options={getMainItemsAsOptions()}
-              value={formData.parentId || 'none'}
-              onValueChange={(value) => updateField('parentId', value === 'none' ? '' : value)}
-              placeholder="Pesquise por número ou nome"
-              allowCustomValue={false}
-              className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-            />
-          </div>
-        )}
-
-        {/* Status */}
-        <div>
-          <Label htmlFor="status" className="text-sm font-medium">
-            Status <span className="text-destructive">*</span>
-          </Label>
-          <Select 
-            value={formData.status} 
-            onValueChange={handleStatusChange}
-          >
-            <SelectTrigger id="status" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-              <SelectValue>
-                <Badge variant={getStatusBadgeVariant(formData.status)} className="gap-1.5">
-                  {getStatusIcon(formData.status)}
-                  {getStatusLabel(formData.status)}
-                </Badge>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="available">
-                <div className="flex items-center gap-2">
-                  <Badge variant="success" className="gap-1.5">
-                    <Check className="w-3 h-3" />
-                    Disponível
-                  </Badge>
-                </div>
-              </SelectItem>
-              <SelectItem value="maintenance">
-                <div className="flex items-center gap-2">
-                  <Badge variant="warning" className="gap-1.5">
-                    <Wrench className="w-3 h-3" />
-                    Em Manutenção
-                  </Badge>
-                </div>
-              </SelectItem>
-              <SelectItem value="loaned">
-                <div className="flex items-center gap-2">
-                  <Badge variant="neutral" className="gap-1.5">
-                    <Package className="w-3 h-3" />
-                    Emprestado
-                  </Badge>
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Informações de Empréstimo (condicionais) */}
-        {showLoanFields && (
-          <>
-            {/* Para quem foi emprestado */}
-            <div>
-              <Label htmlFor="currentBorrower" className="text-sm font-medium">
-                Para quem foi emprestado? <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="currentBorrower"
-                type="text"
-                value={formData.currentBorrower || ''}
-                onChange={(e) => updateField('currentBorrower', e.target.value)}
-                placeholder="Nome da pessoa ou departamento"
-                className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-                required={formData.status === 'loaned'}
-              />
-            </div>
-
-            {/* Data de empréstimo */}
-            <div>
-              <Label htmlFor="lastLoanDate" className="text-sm font-medium">
-                Data de Empréstimo <span className="text-destructive">*</span>
-              </Label>
-              <Popover 
-                open={showLoanDateCalendar} 
-                onOpenChange={setShowLoanDateCalendar}
+      {/* Status */}
+      <div>
+        <FieldLabel htmlFor="status" required>
+          Status
+        </FieldLabel>
+        <Select value={formData.status} onValueChange={handleStatusChange}>
+          <SelectTrigger id="status">
+            <SelectValue>
+              <span
+                className="pill"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle(getStatusTone(formData.status)) }}
               >
-                <PopoverTrigger asChild>
-                  <Button
-                    id="lastLoanDate"
-                    type="button"
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal mt-1.5",
-                      !formData.lastLoanDate && "text-muted-foreground",
-                      isMobile ? "h-10" : "h-9"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.lastLoanDate 
-                      ? format(new Date(formData.lastLoanDate), 'dd/MM/yyyy')
-                      : "Selecione a data"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={formData.lastLoanDate ? new Date(formData.lastLoanDate) : undefined}
-                    onSelect={handleLoanDateSelect}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* Data de devolução esperada */}
-            <div>
-              <Label htmlFor="expectedReturnDate" className="text-sm font-medium">
-                Data de Devolução Esperada <span className="text-destructive">*</span>
-              </Label>
-              <Popover 
-                open={showReturnDateCalendar} 
-                onOpenChange={setShowReturnDateCalendar}
+                {getStatusIcon(formData.status)}
+                {getStatusLabel(formData.status)}
+              </span>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="available">
+              <span
+                className="pill"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle('success') }}
               >
-                <PopoverTrigger asChild>
-                  <Button
-                    id="expectedReturnDate"
-                    type="button"
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal mt-1.5",
-                      !formData.expectedReturnDate && "text-muted-foreground",
-                      isMobile ? "h-10" : "h-9"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.expectedReturnDate 
-                      ? format(new Date(formData.expectedReturnDate), 'dd/MM/yyyy')
-                      : "Selecione a data"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={formData.expectedReturnDate ? new Date(formData.expectedReturnDate) : undefined}
-                    onSelect={handleExpectedReturnDateSelect}
-                    initialFocus
-                    disabled={(date) => {
-                      // Impedir seleção de datas anteriores à data de empréstimo
-                      if (formData.lastLoanDate) {
-                        return date < new Date(formData.lastLoanDate);
-                      }
-                      return false;
-                    }}
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+                <Check size={11} strokeWidth={1.5} />
+                Disponível
+              </span>
+            </SelectItem>
+            <SelectItem value="maintenance">
+              <span
+                className="pill"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle('warning') }}
+              >
+                <Wrench size={11} strokeWidth={1.5} />
+                Em Manutenção
+              </span>
+            </SelectItem>
+            <SelectItem value="loaned">
+              <span
+                className="pill"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle('neutral') }}
+              >
+                <Package size={11} strokeWidth={1.5} />
+                Emprestado
+              </span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-            {/* Alerta informativo */}
-            <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-              <p className="flex items-start gap-2">
-                <Package className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>
-                  Este equipamento ficará marcado como emprestado até que o status seja alterado manualmente.
-                </span>
-              </p>
-            </div>
-          </>
-        )}
-
-        {/* Capacidade (condicional para storage) */}
-        {formData.category === 'Armazenamento' && (
+      {/* Informações de Empréstimo (condicionais) */}
+      {showLoanFields && (
+        <>
           <div>
-            <Label htmlFor="capacity" className="text-sm font-medium">
-              Capacidade (GB)
-            </Label>
+            <FieldLabel htmlFor="currentBorrower" required>
+              Para quem foi emprestado?
+            </FieldLabel>
             <Input
-              id="capacity"
-              type="number"
-              value={formData.capacity || ''}
-              onChange={(e) => updateField('capacity', e.target.value ? parseInt(e.target.value) : 0)}
-              className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-              placeholder="Ex: 512"
+              id="currentBorrower"
+              type="text"
+              value={formData.currentBorrower || ''}
+              onChange={(e) => updateField('currentBorrower', e.target.value)}
+              placeholder="Nome da pessoa ou departamento"
+              required={formData.status === 'loaned'}
             />
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          <div>
+            <FieldLabel htmlFor="lastLoanDate" required>
+              Data de Empréstimo
+            </FieldLabel>
+            <Popover open={showLoanDateCalendar} onOpenChange={setShowLoanDateCalendar}>
+              <PopoverTrigger asChild>
+                <button
+                  id="lastLoanDate"
+                  type="button"
+                  className="btn"
+                  style={{ width: '100%', justifyContent: 'flex-start' }}
+                >
+                  <CalendarIcon size={13} strokeWidth={1.5} />
+                  <span
+                    style={{
+                      fontVariantNumeric: 'tabular-nums',
+                      color: formData.lastLoanDate ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+                    }}
+                  >
+                    {formData.lastLoanDate
+                      ? format(new Date(formData.lastLoanDate), 'dd/MM/yyyy')
+                      : 'Selecione a data'}
+                  </span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={formData.lastLoanDate ? new Date(formData.lastLoanDate) : undefined}
+                  onSelect={handleLoanDateSelect}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div>
+            <FieldLabel htmlFor="expectedReturnDate" required>
+              Data de Devolução Esperada
+            </FieldLabel>
+            <Popover open={showReturnDateCalendar} onOpenChange={setShowReturnDateCalendar}>
+              <PopoverTrigger asChild>
+                <button
+                  id="expectedReturnDate"
+                  type="button"
+                  className="btn"
+                  style={{ width: '100%', justifyContent: 'flex-start' }}
+                >
+                  <CalendarIcon size={13} strokeWidth={1.5} />
+                  <span
+                    style={{
+                      fontVariantNumeric: 'tabular-nums',
+                      color: formData.expectedReturnDate ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+                    }}
+                  >
+                    {formData.expectedReturnDate
+                      ? format(new Date(formData.expectedReturnDate), 'dd/MM/yyyy')
+                      : 'Selecione a data'}
+                  </span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={formData.expectedReturnDate ? new Date(formData.expectedReturnDate) : undefined}
+                  onSelect={handleExpectedReturnDateSelect}
+                  initialFocus
+                  disabled={(date) => {
+                    if (formData.lastLoanDate) {
+                      return date < new Date(formData.lastLoanDate);
+                    }
+                    return false;
+                  }}
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Callout informativo */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 10,
+              padding: 12,
+              border: '1px solid hsl(var(--ds-info) / 0.3)',
+              background: 'hsl(var(--ds-info) / 0.06)',
+              fontSize: 13,
+              color: 'hsl(var(--ds-fg-2))',
+            }}
+          >
+            <Package
+              size={15}
+              strokeWidth={1.5}
+              style={{ color: 'hsl(var(--ds-info))', marginTop: 1, flexShrink: 0 }}
+            />
+            <span>
+              Este equipamento ficará marcado como emprestado até que o status seja alterado manualmente.
+            </span>
+          </div>
+        </>
+      )}
+
+      {/* Capacidade (condicional para storage) */}
+      {formData.category === 'Armazenamento' && (
+        <div>
+          <FieldLabel htmlFor="capacity">Capacidade (GB)</FieldLabel>
+          <Input
+            id="capacity"
+            type="number"
+            value={formData.capacity || ''}
+            onChange={(e) => updateField('capacity', e.target.value ? parseInt(e.target.value) : 0)}
+            placeholder="Ex: 512"
+          />
+        </div>
+      )}
+    </SectionShell>
   );
 
-  // Card: Vínculos
-  const renderLinksCard = () => (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Link2 className="w-4 h-4 text-primary" />
-          Vínculos
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div>
-          <Label htmlFor="serialNumber" className="text-sm font-medium">Número de Série</Label>
-          <Input
-            id="serialNumber"
-            value={formData.serialNumber || ''}
-            onChange={(e) => updateField('serialNumber', e.target.value)}
-            placeholder="Ex: 123456789"
-            className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-          />
-        </div>
+  // Section: Vínculos
+  const renderLinksSection = () => (
+    <SectionShell icon={Link2} title="Vínculos">
+      <div>
+        <FieldLabel htmlFor="serialNumber">Número de Série</FieldLabel>
+        <Input
+          id="serialNumber"
+          value={formData.serialNumber || ''}
+          onChange={(e) => updateField('serialNumber', e.target.value)}
+          placeholder="Ex: 123456789"
+        />
+      </div>
 
-        <div>
-          <Label htmlFor="patrimonyNumber" className="text-sm font-medium">Número de Patrimônio</Label>
-          <Input
-            id="patrimonyNumber"
-            value={formData.patrimonyNumber || ''}
-            onChange={(e) => updateField('patrimonyNumber', e.target.value)}
-            placeholder="Ex: PAT-001"
-            className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-          />
-        </div>
+      <div>
+        <FieldLabel htmlFor="patrimonyNumber">Número de Patrimônio</FieldLabel>
+        <Input
+          id="patrimonyNumber"
+          value={formData.patrimonyNumber || ''}
+          onChange={(e) => updateField('patrimonyNumber', e.target.value)}
+          placeholder="Ex: PAT-001"
+        />
+      </div>
 
-        <div>
-          <Label htmlFor="description" className="text-sm font-medium">Descrição</Label>
-          <Textarea
-            id="description"
-            value={formData.description || ''}
-            onChange={(e) => updateField('description', e.target.value)}
-            placeholder="Informações adicionais..."
-            className="min-h-[80px] mt-1.5"
-          />
-        </div>
-      </CardContent>
-    </Card>
+      <div>
+        <FieldLabel htmlFor="description">Descrição</FieldLabel>
+        <Textarea
+          id="description"
+          value={formData.description || ''}
+          onChange={(e) => updateField('description', e.target.value)}
+          placeholder="Informações adicionais..."
+          style={{ minHeight: 80 }}
+        />
+      </div>
+    </SectionShell>
   );
 
-  // Card: Financeiro
-  const renderFinancialCard = () => (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-primary" />
-          Financeiro
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div>
-          <Label htmlFor="value" className="text-sm font-medium">Valor de Compra</Label>
-          <Input
-            id="value"
-            value={isEditingValue ? editingValue : (formData.value ? formatCurrency(formData.value) : '')}
-            onChange={handleValueChange}
-            onFocus={handleValueFocus}
-            onBlur={handleValueBlur}
-            className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-            placeholder="R$ 0,00"
-            inputMode="decimal"
-          />
-        </div>
+  // Section: Financeiro
+  const renderFinancialSection = () => (
+    <SectionShell icon={DollarSign} title="Financeiro">
+      <div>
+        <FieldLabel htmlFor="value">Valor de Compra</FieldLabel>
+        <Input
+          id="value"
+          value={isEditingValue ? editingValue : formData.value ? formatCurrency(formData.value) : ''}
+          onChange={handleValueChange}
+          onFocus={handleValueFocus}
+          onBlur={handleValueBlur}
+          placeholder="R$ 0,00"
+          inputMode="decimal"
+          style={{ fontVariantNumeric: 'tabular-nums' }}
+        />
+      </div>
 
-        <div>
-          <Label htmlFor="depreciatedValue" className="text-sm font-medium">Valor Depreciado</Label>
-          <Input
-            id="depreciatedValue"
-            value={isEditingDepreciatedValue ? editingDepreciatedValue : (formData.depreciatedValue ? formatCurrency(formData.depreciatedValue) : '')}
-            onChange={handleDepreciatedValueChange}
-            onFocus={handleDepreciatedValueFocus}
-            onBlur={handleDepreciatedValueBlur}
-            className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-            placeholder="R$ 0,00"
-            inputMode="decimal"
-          />
-        </div>
+      <div>
+        <FieldLabel htmlFor="depreciatedValue">Valor Depreciado</FieldLabel>
+        <Input
+          id="depreciatedValue"
+          value={
+            isEditingDepreciatedValue
+              ? editingDepreciatedValue
+              : formData.depreciatedValue
+              ? formatCurrency(formData.depreciatedValue)
+              : ''
+          }
+          onChange={handleDepreciatedValueChange}
+          onFocus={handleDepreciatedValueFocus}
+          onBlur={handleDepreciatedValueBlur}
+          placeholder="R$ 0,00"
+          inputMode="decimal"
+          style={{ fontVariantNumeric: 'tabular-nums' }}
+        />
+      </div>
 
-        <div>
-          <Label htmlFor="store" className="text-sm font-medium">Loja</Label>
-          <Input
-            id="store"
-            value={formData.store || ''}
-            onChange={(e) => updateField('store', e.target.value)}
-            placeholder="Ex: B&H Photo"
-            className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-          />
-        </div>
+      <div>
+        <FieldLabel htmlFor="store">Loja</FieldLabel>
+        <Input
+          id="store"
+          value={formData.store || ''}
+          onChange={(e) => updateField('store', e.target.value)}
+          placeholder="Ex: B&H Photo"
+        />
+      </div>
 
-        <div>
-          <Label htmlFor="invoice" className="text-sm font-medium">Link da Nota Fiscal (Drive)</Label>
-          <Input
-            id="invoice"
-            value={formData.invoice || ''}
-            onChange={(e) => updateField('invoice', e.target.value)}
-            placeholder="Ex: https://drive.google.com/..."
-            className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-          />
-        </div>
-      </CardContent>
-    </Card>
+      <div>
+        <FieldLabel htmlFor="invoice">Link da Nota Fiscal (Drive)</FieldLabel>
+        <Input
+          id="invoice"
+          value={formData.invoice || ''}
+          onChange={(e) => updateField('invoice', e.target.value)}
+          placeholder="Ex: https://drive.google.com/..."
+        />
+      </div>
+    </SectionShell>
   );
 
-  // Seção: Datas (full-width)
+  // Section: Datas (full-width grid)
   const renderDatesSection = () => (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-primary" />
-          Datas
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className={cn(
-          "grid gap-4",
-          isMobile ? "grid-cols-1" : "grid-cols-3"
-        )}>
-          {/* Data de Compra */}
-          <div>
-            <Label htmlFor="purchaseDate" className="text-sm font-medium">Data de Compra</Label>
-            <div className="flex gap-2 mt-1.5">
-              <Input
-                id="purchaseDate"
-                value={formatDateForDisplay(formData.purchaseDate || '')}
-                onChange={(e) => handleDateInput(e.target.value, 'purchaseDate')}
-                onBlur={(e) => validateAndFormatDate(e.target.value, 'purchaseDate')}
-                placeholder="dd/mm/aaaa"
-                className={cn(isMobile ? "h-10" : "h-9")}
-              />
-              <Popover open={showPurchaseDateCalendar} onOpenChange={setShowPurchaseDateCalendar}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className={cn(isMobile ? "h-10 w-10" : "h-9 w-9")}
-                  >
-                    <CalendarIcon className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <CalendarComponent
-                    mode="single"
-                    selected={formData.purchaseDate ? new Date(formData.purchaseDate) : undefined}
-                    onSelect={handlePurchaseDateSelect}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-
-          {/* Data de Recebimento */}
-          <div>
-            <Label htmlFor="receiveDate" className="text-sm font-medium">Data de Recebimento</Label>
-            <div className="flex gap-2 mt-1.5">
-              <Input
-                id="receiveDate"
-                value={formatDateForDisplay(formData.receiveDate || '')}
-                onChange={(e) => handleDateInput(e.target.value, 'receiveDate')}
-                onBlur={(e) => validateAndFormatDate(e.target.value, 'receiveDate')}
-                placeholder="dd/mm/aaaa"
-                className={cn(isMobile ? "h-10" : "h-9")}
-              />
-              <Popover open={showReceiveDateCalendar} onOpenChange={setShowReceiveDateCalendar}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className={cn(isMobile ? "h-10 w-10" : "h-9 w-9")}
-                  >
-                    <CalendarIcon className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <CalendarComponent
-                    mode="single"
-                    selected={formData.receiveDate ? new Date(formData.receiveDate) : undefined}
-                    onSelect={handleReceiveDateSelect}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-
-          {/* Última Manutenção */}
-          <div>
-            <Label htmlFor="lastMaintenance" className="text-sm font-medium">Última Manutenção</Label>
-            <div className="flex gap-2 mt-1.5">
-              <Input
-                id="lastMaintenance"
-                value={formatDateForDisplay(formData.lastMaintenance || '')}
-                onChange={(e) => handleDateInput(e.target.value, 'lastMaintenance')}
-                onBlur={(e) => validateAndFormatDate(e.target.value, 'lastMaintenance')}
-                placeholder="dd/mm/aaaa"
-                className={cn(isMobile ? "h-10" : "h-9")}
-              />
-              <Popover open={showMaintenanceDateCalendar} onOpenChange={setShowMaintenanceDateCalendar}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className={cn(isMobile ? "h-10 w-10" : "h-9 w-9")}
-                  >
-                    <CalendarIcon className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <CalendarComponent
-                    mode="single"
-                    selected={formData.lastMaintenance ? new Date(formData.lastMaintenance) : undefined}
-                    onSelect={handleMaintenanceDateSelect}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+    <SectionShell icon={Calendar} title="Datas">
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+          gap: 14,
+        }}
+      >
+        {/* Data de Compra */}
+        <div>
+          <FieldLabel htmlFor="purchaseDate">Data de Compra</FieldLabel>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Input
+              id="purchaseDate"
+              value={formatDateForDisplay(formData.purchaseDate || '')}
+              onChange={(e) => handleDateInput(e.target.value, 'purchaseDate')}
+              onBlur={(e) => validateAndFormatDate(e.target.value, 'purchaseDate')}
+              placeholder="dd/mm/aaaa"
+              style={{ fontVariantNumeric: 'tabular-nums' }}
+            />
+            <Popover open={showPurchaseDateCalendar} onOpenChange={setShowPurchaseDateCalendar}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ width: 36, height: 36, padding: 0, justifyContent: 'center' }}
+                  aria-label="Abrir calendário de data de compra"
+                >
+                  <CalendarIcon size={13} strokeWidth={1.5} />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent
+                  mode="single"
+                  selected={formData.purchaseDate ? new Date(formData.purchaseDate) : undefined}
+                  onSelect={handlePurchaseDateSelect}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
-      </CardContent>
-    </Card>
-  );
 
+        {/* Data de Recebimento */}
+        <div>
+          <FieldLabel htmlFor="receiveDate">Data de Recebimento</FieldLabel>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Input
+              id="receiveDate"
+              value={formatDateForDisplay(formData.receiveDate || '')}
+              onChange={(e) => handleDateInput(e.target.value, 'receiveDate')}
+              onBlur={(e) => validateAndFormatDate(e.target.value, 'receiveDate')}
+              placeholder="dd/mm/aaaa"
+              style={{ fontVariantNumeric: 'tabular-nums' }}
+            />
+            <Popover open={showReceiveDateCalendar} onOpenChange={setShowReceiveDateCalendar}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ width: 36, height: 36, padding: 0, justifyContent: 'center' }}
+                  aria-label="Abrir calendário de data de recebimento"
+                >
+                  <CalendarIcon size={13} strokeWidth={1.5} />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent
+                  mode="single"
+                  selected={formData.receiveDate ? new Date(formData.receiveDate) : undefined}
+                  onSelect={handleReceiveDateSelect}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+
+        {/* Última Manutenção */}
+        <div>
+          <FieldLabel htmlFor="lastMaintenance">Última Manutenção</FieldLabel>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Input
+              id="lastMaintenance"
+              value={formatDateForDisplay(formData.lastMaintenance || '')}
+              onChange={(e) => handleDateInput(e.target.value, 'lastMaintenance')}
+              onBlur={(e) => validateAndFormatDate(e.target.value, 'lastMaintenance')}
+              placeholder="dd/mm/aaaa"
+              style={{ fontVariantNumeric: 'tabular-nums' }}
+            />
+            <Popover open={showMaintenanceDateCalendar} onOpenChange={setShowMaintenanceDateCalendar}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ width: 36, height: 36, padding: 0, justifyContent: 'center' }}
+                  aria-label="Abrir calendário de última manutenção"
+                >
+                  <CalendarIcon size={13} strokeWidth={1.5} />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent
+                  mode="single"
+                  selected={formData.lastMaintenance ? new Date(formData.lastMaintenance) : undefined}
+                  onSelect={handleMaintenanceDateSelect}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+      </div>
+    </SectionShell>
+  );
 
   return (
     <MobileFriendlyForm onSubmit={onSubmit} className="space-y-6">
-      {/* Hero Card: Foto + Campos Principais */}
-      {renderHeroCard()}
+      {/* Hero Section: Foto + Campos Principais */}
+      {renderHeroSection()}
 
-      {/* Cards em Coluna Única */}
-      {renderStatusCard()}
-      {renderLinksCard()}
-      {renderFinancialCard()}
+      {/* Sections em Coluna Única */}
+      {renderStatusSection()}
+      {renderLinksSection()}
+      {renderFinancialSection()}
       {renderDatesSection()}
 
       {/* Dialog para criar nova subcategoria */}
       <Dialog open={showNewSubcategoryDialog} onOpenChange={setShowNewSubcategoryDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Criar Nova Subcategoria</DialogTitle>
+            <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
+              Criar Nova Subcategoria
+            </DialogTitle>
             <DialogDescription>
-              Adicione uma nova subcategoria personalizada para {formData.category ? getCategoryLabel(formData.category) : 'a categoria selecionada'}.
+              Adicione uma nova subcategoria personalizada para{' '}
+              {formData.category ? getCategoryLabel(formData.category) : 'a categoria selecionada'}.
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="space-y-4 py-4">
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '14px 0' }}>
             {/* Categoria selecionada (read-only) */}
             <div>
-              <Label className="text-sm font-medium text-muted-foreground">
-                Categoria
-              </Label>
-              <div className="mt-1.5">
-                <Badge variant="neutral" className="gap-1.5">
+              <FieldLabel>Categoria</FieldLabel>
+              <div>
+                <span
+                  className="pill"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle('neutral') }}
+                >
                   {formData.category && getCategoryIcon(formData.category)}
                   {formData.category && getCategoryLabel(formData.category)}
-                </Badge>
+                </span>
               </div>
             </div>
-            
+
             {/* Input para nome da subcategoria */}
             <div>
-              <Label htmlFor="new-subcategory" className="text-sm font-medium">
-                Nome da Subcategoria <span className="text-destructive">*</span>
-              </Label>
+              <FieldLabel htmlFor="new-subcategory" required>
+                Nome da Subcategoria
+              </FieldLabel>
               <Input
                 id="new-subcategory"
                 placeholder="Ex: Lente Grande Angular, Tripé Profissional..."
@@ -1214,14 +1359,14 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                 }}
                 disabled={isCreatingSubcategory}
                 autoFocus
-                className="mt-1.5"
               />
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <button
+              type="button"
+              className="btn"
               onClick={() => {
                 setShowNewSubcategoryDialog(false);
                 setNewSubcategoryName('');
@@ -1229,23 +1374,25 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
               disabled={isCreatingSubcategory}
             >
               Cancelar
-            </Button>
-            <Button 
+            </button>
+            <button
+              type="button"
+              className="btn primary"
               onClick={handleCreateSubcategory}
               disabled={!newSubcategoryName.trim() || isCreatingSubcategory}
             >
               {isCreatingSubcategory ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Criando...
+                  <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />
+                  <span>Criando...</span>
                 </>
               ) : (
                 <>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Criar
+                  <Plus size={13} strokeWidth={1.5} />
+                  <span>Criar</span>
                 </>
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1254,15 +1401,15 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
       <Dialog open={showNewCategoryDialog} onOpenChange={setShowNewCategoryDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nova Categoria</DialogTitle>
-            <DialogDescription>
-              Crie uma nova categoria para o equipamento.
-            </DialogDescription>
+            <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>Nova Categoria</DialogTitle>
+            <DialogDescription>Crie uma nova categoria para o equipamento.</DialogDescription>
           </DialogHeader>
-          
-          <div className="space-y-4">
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
-              <Label htmlFor="new-category">Nome da Categoria *</Label>
+              <FieldLabel htmlFor="new-category" required>
+                Nome da Categoria
+              </FieldLabel>
               <Input
                 id="new-category"
                 placeholder="Ex: Computadores, Drones, Monitores..."
@@ -1279,38 +1426,44 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           </div>
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <button
+              type="button"
+              className="btn"
               onClick={() => setShowNewCategoryDialog(false)}
               disabled={isCreatingCategory}
             >
               Cancelar
-            </Button>
-            <Button 
+            </button>
+            <button
+              type="button"
+              className="btn primary"
               onClick={handleCreateCategory}
               disabled={isCreatingCategory || !newCategoryName.trim()}
             >
               {isCreatingCategory ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Criando...
+                  <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />
+                  <span>Criando...</span>
                 </>
               ) : (
-                'Criar'
+                <span>Criar</span>
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Actions */}
       <MobileFriendlyFormActions>
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <button type="button" className="btn" onClick={onCancel}>
           Cancelar
-        </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Salvando...' : isEditMode ? 'Atualizar Equipamento' : 'Adicionar Equipamento'}
-        </Button>
+        </button>
+        <button type="submit" className="btn primary" disabled={isSubmitting}>
+          {isSubmitting && <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />}
+          <span>
+            {isSubmitting ? 'Salvando...' : isEditMode ? 'Atualizar Equipamento' : 'Adicionar Equipamento'}
+          </span>
+        </button>
       </MobileFriendlyFormActions>
     </MobileFriendlyForm>
   );

@@ -6,12 +6,10 @@ import { useTeamProfiles } from '../../hooks/useTeamProfiles';
 import { DealCard } from './DealCard';
 import { DealForm } from './DealForm';
 import { LostReasonDialog } from './LostReasonDialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, AlertTriangle, Handshake, DollarSign, Search } from 'lucide-react';
-import { formatBRL, type DealWithRelations, type PipelineStage } from '../../types/crm.types';
+import { formatBRL, type DealWithRelations } from '../../types/crm.types';
 import { useDebounce } from '@/hooks/useDebounce';
 
 function DraggableDealCard({ deal }: { deal: DealWithRelations }) {
@@ -26,7 +24,20 @@ function DraggableDealCard({ deal }: { deal: DealWithRelations }) {
 function DroppableArea({ stageId, children }: { stageId: string; children: React.ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id: stageId });
   return (
-    <div ref={setNodeRef} className={`flex-1 p-2 space-y-2 overflow-y-auto max-h-[calc(100vh-320px)] transition-colors duration-200 ${isOver ? 'bg-primary/5' : ''}`}>
+    <div
+      ref={setNodeRef}
+      style={{
+        flex: 1,
+        padding: 8,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        overflowY: 'auto',
+        maxHeight: 'calc(100vh - 320px)',
+        background: isOver ? 'hsl(var(--ds-accent) / 0.05)' : 'transparent',
+        transition: 'background 0.15s',
+      }}
+    >
       {children}
     </div>
   );
@@ -109,72 +120,156 @@ export function PipelineBoard() {
   };
 
   if (stagesLoading || dealsLoading) {
-    return <div className="flex gap-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[400px] w-[280px] rounded-lg" />)}</div>;
+    return (
+      <div style={{ display: 'flex', gap: 12 }}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              height: 400,
+              width: 280,
+              border: '1px solid hsl(var(--ds-line-1))',
+              background: 'hsl(var(--ds-surface))',
+            }}
+          />
+        ))}
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-4 text-sm">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16, fontSize: 13 }}>
+        <div style={{ position: 'relative' }}>
+          <Search
+            size={14}
+            strokeWidth={1.5}
+            style={{
+              position: 'absolute',
+              left: 12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'hsl(var(--ds-fg-4))',
+              pointerEvents: 'none',
+            }}
+          />
           <Input
-            placeholder="Buscar deals..."
+            placeholder="Buscar deals…"
             value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9 h-8 w-[200px]"
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ paddingLeft: 34, width: 220 }}
           />
         </div>
-        <Select value={assigneeFilter || 'all'} onValueChange={v => setAssigneeFilter(v === 'all' ? '' : v)}>
-          <SelectTrigger className="w-[160px] h-8">
+        <Select value={assigneeFilter || 'all'} onValueChange={(v) => setAssigneeFilter(v === 'all' ? '' : v)}>
+          <SelectTrigger style={{ width: 180 }}>
             <SelectValue placeholder="Responsável" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
-            {profiles?.map(p => (
+            {profiles?.map((p) => (
               <SelectItem key={p.user_id} value={p.user_id}>{p.display_name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <div className="flex items-center gap-1.5">
-          <Handshake className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{activeDeals.length}</span>
-          <span className="text-muted-foreground">deals ativos</span>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'hsl(var(--ds-fg-3))' }}>
+          <Handshake size={14} strokeWidth={1.5} />
+          <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>
+            {activeDeals.length}
+          </span>
+          <span>deals ativos</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{formatBRL(pipelineValue)}</span>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'hsl(var(--ds-fg-3))' }}>
+          <DollarSign size={14} strokeWidth={1.5} />
+          <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>
+            {formatBRL(pipelineValue)}
+          </span>
         </div>
         {staleCount > 0 && (
-          <div className="flex items-center gap-1.5 text-orange-500">
-            <AlertTriangle className="h-4 w-4" />
-            <span className="font-medium">{staleCount}</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'hsl(var(--ds-warning))' }}>
+            <AlertTriangle size={14} strokeWidth={1.5} />
+            <span style={{ fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{staleCount}</span>
             <span>parados há +7 dias</span>
           </div>
         )}
-        <Button size="sm" className="ml-auto" onClick={() => setDealFormOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" /> Novo Deal
-        </Button>
+        <button
+          type="button"
+          className="btn primary"
+          style={{ marginLeft: 'auto' }}
+          onClick={() => setDealFormOpen(true)}
+        >
+          <Plus size={14} strokeWidth={1.5} />
+          <span>Novo Deal</span>
+        </button>
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {stages?.map(stage => {
+        <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 16 }}>
+          {stages?.map((stage) => {
             const stageDeals = dealsByStage.get(stage.id) ?? [];
+            const stageValue = stageDeals.reduce((s, d) => s + (d.estimated_value ?? 0), 0);
             return (
-              <div key={stage.id} className="flex flex-col min-w-[280px] max-w-[320px] bg-muted/30 rounded-lg border">
-                <div className="p-3 border-b">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: stage.color ?? '#6366f1' }} />
-                    <h3 className="text-sm font-medium truncate">{stage.name}</h3>
-                    <span className="ml-auto text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">{stageDeals.length}</span>
+              <div
+                key={stage.id}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minWidth: 280,
+                  maxWidth: 320,
+                  background: 'hsl(var(--ds-surface))',
+                  border: '1px solid hsl(var(--ds-line-1))',
+                }}
+              >
+                <div style={{ padding: '12px 14px', borderBottom: '1px solid hsl(var(--ds-line-1))' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        background: stage.color ?? 'hsl(var(--ds-accent))',
+                        flexShrink: 0,
+                      }}
+                    />
+                    <h3
+                      style={{
+                        fontFamily: '"HN Display", sans-serif',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: 'hsl(var(--ds-fg-1))',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {stage.name}
+                    </h3>
+                    <span
+                      style={{
+                        marginLeft: 'auto',
+                        fontSize: 11,
+                        color: 'hsl(var(--ds-fg-3))',
+                        background: 'hsl(var(--ds-line-2))',
+                        padding: '1px 8px',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {stageDeals.length}
+                    </span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatBRL(stageDeals.reduce((s, d) => s + (d.estimated_value ?? 0), 0))}
+                  <p
+                    style={{
+                      fontSize: 11,
+                      color: 'hsl(var(--ds-fg-3))',
+                      marginTop: 4,
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
+                    {formatBRL(stageValue)}
                   </p>
                 </div>
                 <DroppableArea stageId={stage.id}>
-                  {stageDeals.map(deal => <DraggableDealCard key={deal.id} deal={deal} />)}
+                  {stageDeals.map((deal) => <DraggableDealCard key={deal.id} deal={deal} />)}
                 </DroppableArea>
               </div>
             );

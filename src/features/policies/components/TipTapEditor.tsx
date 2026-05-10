@@ -321,7 +321,7 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
       </div>
 
       {/* Editor */}
-      <div className="bg-background">
+      <div style={{ background: 'hsl(var(--ds-surface))' }}>
         <EditorContent editor={editor} />
       </div>
     </div>

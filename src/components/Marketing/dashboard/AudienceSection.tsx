@@ -1,6 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, MapPin, Globe } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
 import { GenderAgeHero } from './GenderAgeHero';
 import { CityRanking } from './CityRanking';
 import { LocaleList } from './LocaleList';
@@ -21,60 +19,169 @@ interface Props {
 
 export function AudienceSection({ audience, syncingAudience, onSyncAudience }: Props) {
   return (
-    <Card className="shadow-card overflow-hidden">
-      <CardHeader className="pb-4 flex-row items-start justify-between space-y-0 gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <Users className="h-5 w-5 text-primary" />
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          padding: '14px 18px',
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 16,
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              display: 'grid',
+              placeItems: 'center',
+              background: 'hsl(var(--ds-accent) / 0.1)',
+              color: 'hsl(var(--ds-accent))',
+              flexShrink: 0,
+            }}
+          >
+            <Users size={16} strokeWidth={1.5} />
           </div>
-          <div className="min-w-0">
-            <CardTitle className="text-base sm:text-lg">Sobre sua audiência</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">
+          <div style={{ minWidth: 0 }}>
+            <h3
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 15,
+                fontWeight: 600,
+                color: 'hsl(var(--ds-fg-1))',
+                lineHeight: 1.25,
+              }}
+            >
+              Sobre sua audiência
+            </h3>
+            <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
               Quem te segue no Instagram
             </p>
           </div>
         </div>
         {audience && (
-          <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline-flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-success" />
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 11,
+              color: 'hsl(var(--ds-fg-3))',
+              flexShrink: 0,
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: 'hsl(var(--ds-success))',
+              }}
+            />
             Atualizado {formatTimeAgo(audience.captured_at).text}
           </span>
         )}
-      </CardHeader>
-      <CardContent>
+      </div>
+
+      <div style={{ padding: 18 }}>
         {!audience ? (
-          <EmptyState
-            icon={Users}
-            title="Sem dados de audiência ainda"
-            description="A demografia é atualizada semanalmente. Você pode forçar a primeira sincronização agora."
-            action={{
-              label: syncingAudience ? 'Sincronizando...' : 'Sincronizar audiência agora',
-              onClick: onSyncAudience,
-            }}
-          />
+          <div className="empties" style={{ borderTop: 0, borderLeft: 0, borderRight: 0 }}>
+            <div className="empty" style={{ borderRight: 0 }}>
+              <div className="glyph">
+                <Users strokeWidth={1.25} />
+              </div>
+              <h5>Sem dados de audiência ainda</h5>
+              <p>A demografia é atualizada semanalmente. Você pode forçar a primeira sincronização agora.</p>
+              <div className="actions">
+                <button className="btn primary" onClick={onSyncAudience} type="button" disabled={syncingAudience}>
+                  <span>{syncingAudience ? 'Sincronizando…' : 'Sincronizar audiência agora'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
         ) : (
-          <div className="space-y-6">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <GenderAgeHero audience={audience} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-7">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <h4 className="text-sm font-semibold">Top cidades</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: 24 }}>
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      color: 'hsl(var(--ds-fg-3))',
+                    }}
+                  >
+                    <MapPin size={13} strokeWidth={1.5} />
+                    <span
+                      style={{
+                        fontSize: 11,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        fontWeight: 500,
+                      }}
+                    >
+                      Top cidades
+                    </span>
                   </div>
-                  <span className="text-xs text-muted-foreground">
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: 'hsl(var(--ds-fg-4))',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
                     {topEntries(audience.cities, 100).length} cidades
                   </span>
                 </div>
                 <CityRanking cities={audience.cities} />
               </div>
 
-              <div className="lg:col-span-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-muted-foreground" />
-                    <h4 className="text-sm font-semibold">Idiomas falados</h4>
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      color: 'hsl(var(--ds-fg-3))',
+                    }}
+                  >
+                    <Globe size={13} strokeWidth={1.5} />
+                    <span
+                      style={{
+                        fontSize: 11,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        fontWeight: 500,
+                      }}
+                    >
+                      Idiomas falados
+                    </span>
                   </div>
                 </div>
                 <LocaleList locales={audience.locales} />
@@ -82,7 +189,7 @@ export function AudienceSection({ audience, syncingAudience, onSyncAudience }: P
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

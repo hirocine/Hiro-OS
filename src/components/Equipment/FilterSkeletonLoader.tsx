@@ -1,79 +1,82 @@
 import React from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 
-export function FilterSkeletonLoader() {
+const cardWrap: React.CSSProperties = {
+  border: '1px solid hsl(var(--ds-line-1))',
+  background: 'hsl(var(--ds-surface))',
+};
+
+const cardHeader: React.CSSProperties = {
+  padding: '14px 18px',
+  borderBottom: '1px solid hsl(var(--ds-line-1))',
+};
+
+function FilterSkeletonLoaderBase() {
   return (
-    <div className="space-y-4">
-      {/* Header Skeleton */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-5 w-5" />
-              <Skeleton className="h-6 w-16" />
-              <Skeleton className="h-5 w-20" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={cardWrap}>
+        <div style={cardHeader}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <span className="sk dot" style={{ width: 18, height: 18 }} />
+              <span className="sk line lg" style={{ width: 60 }} />
+              <span className="sk line" style={{ width: 60 }} />
             </div>
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-8 w-24" />
-              <Skeleton className="h-8 w-16" />
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <span className="sk line lg" style={{ width: 80 }} />
+              <span className="sk line lg" style={{ width: 60 }} />
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-10 w-full" />
-        </CardContent>
-      </Card>
+        </div>
+        <div style={{ padding: 18 }}>
+          <span className="sk line lg" style={{ width: '100%', height: 32 }} />
+        </div>
+      </div>
 
-      {/* Quick Filters Skeleton */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-4 w-4" />
+      <div style={cardWrap}>
+        <div style={cardHeader}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span className="sk line lg" style={{ width: 120 }} />
+            <span className="sk dot" />
           </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="space-y-4">
-            <div>
-              <Skeleton className="h-4 w-24 mb-2" />
-              <div className="flex flex-wrap gap-2">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Skeleton key={i} className="h-8 w-20" />
-                ))}
-              </div>
-            </div>
-            <div>
-              <Skeleton className="h-4 w-20 mb-2" />
-              <div className="flex flex-wrap gap-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-8 w-24" />
-                ))}
-              </div>
+        </div>
+        <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <span className="sk line" style={{ width: 90 }} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <span key={i} className="sk line lg" style={{ width: 70 }} />
+              ))}
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <span className="sk line" style={{ width: 70 }} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span key={i} className="sk line lg" style={{ width: 90 }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
-      {/* Basic Filters Skeleton */}
-      <Card>
-        <CardHeader className="pb-3">
-          <Skeleton className="h-5 w-28" />
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div style={cardWrap}>
+        <div style={cardHeader}>
+          <span className="sk line lg" style={{ width: 100 }} />
+        </div>
+        <div style={{ padding: 18 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-10 w-full" />
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <span className="sk line" style={{ width: 60 }} />
+                <span className="sk line lg" style={{ width: '100%', height: 32 }} />
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
 
-// Componente otimizado com React.memo
-export default React.memo(FilterSkeletonLoader);
+export const FilterSkeletonLoader = React.memo(FilterSkeletonLoaderBase);
+export default FilterSkeletonLoader;

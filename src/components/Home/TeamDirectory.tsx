@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { Users, Plus, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +20,32 @@ import {
   TeamMemberInsert,
   TeamMemberUpdate,
 } from '@/hooks/useTeamMembers';
+
+const containerStyle: React.CSSProperties = {
+  border: '1px solid hsl(var(--ds-line-1))',
+  background: 'hsl(var(--ds-surface))',
+};
+
+const headerStyle: React.CSSProperties = {
+  padding: '14px 18px',
+  borderBottom: '1px solid hsl(var(--ds-line-1))',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 10,
+};
+
+const titleStyle: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-2))',
+};
+
+const bodyStyle: React.CSSProperties = {
+  padding: 18,
+};
 
 export function TeamDirectory() {
   const { data: members, isLoading } = useTeamMembers();
@@ -70,44 +94,53 @@ export function TeamDirectory() {
     }
   };
 
+  const renderHeader = (showAdd: boolean) => (
+    <div style={headerStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Users size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+        <span style={titleStyle}>Nossa Equipe</span>
+      </div>
+      {showAdd && (
+        <AdminOnly>
+          <button type="button" className="btn primary" onClick={handleAddClick}>
+            <Plus size={14} strokeWidth={1.5} />
+            <span>Adicionar</span>
+          </button>
+        </AdminOnly>
+      )}
+    </div>
+  );
+
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Users className="h-5 w-5 text-primary" />
-            </div>
-            <CardTitle className="text-lg">Nossa Equipe</CardTitle>
+      <div style={containerStyle}>
+        {renderHeader(false)}
+        <div style={bodyStyle}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '48px 0',
+            }}
+          >
+            <Loader2
+              size={28}
+              strokeWidth={1.5}
+              className="animate-spin"
+              style={{ color: 'hsl(var(--ds-fg-3))' }}
+            />
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Users className="h-5 w-5 text-primary" />
-            </div>
-            <CardTitle className="text-lg">Nossa Equipe</CardTitle>
-          </div>
-          <AdminOnly>
-            <Button onClick={handleAddClick} size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar
-            </Button>
-          </AdminOnly>
-        </CardHeader>
-        <CardContent>
+      <div style={containerStyle}>
+        {renderHeader(true)}
+        <div style={bodyStyle}>
           {members && members.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {members.map((member) => (
@@ -120,19 +153,33 @@ export function TeamDirectory() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <Users className="h-12 w-12 mx-auto mb-4 opacity-20" />
-              <p>Nenhum membro da equipe cadastrado</p>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '48px 0',
+                color: 'hsl(var(--ds-fg-3))',
+              }}
+            >
+              <Users
+                size={44}
+                strokeWidth={1}
+                style={{ margin: '0 auto 14px', opacity: 0.3, color: 'hsl(var(--ds-fg-4))' }}
+              />
+              <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
+                Nenhum membro da equipe cadastrado
+              </p>
               <AdminOnly>
-                <Button onClick={handleAddClick} variant="outline" className="mt-4">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar primeiro membro
-                </Button>
+                <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center' }}>
+                  <button type="button" className="btn" onClick={handleAddClick}>
+                    <Plus size={14} strokeWidth={1.5} />
+                    <span>Adicionar primeiro membro</span>
+                  </button>
+                </div>
               </AdminOnly>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Add/Edit Dialog */}
       <TeamMemberDialog
@@ -158,10 +205,14 @@ export function TeamDirectory() {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              style={{
+                background: 'hsl(var(--ds-danger))',
+                color: 'hsl(var(--ds-bg))',
+                border: '1px solid hsl(var(--ds-danger))',
+              }}
             >
               {deleteMember.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />
               ) : (
                 'Remover'
               )}

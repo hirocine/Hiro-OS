@@ -1,30 +1,25 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarData } from "@/lib/avatarUtils";
-import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus, ChevronDown, ChevronUp, Lightbulb, Settings, Cog, Zap, HardDrive, Monitor, Wrench, Download, Video, Plug, Box } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Lightbulb, Settings, Cog, Zap, HardDrive, Monitor, Wrench, Download, Video, Plug, Box } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
 import { useEquipment } from '@/features/equipment';
 import { Equipment } from '@/types/equipment';
 import { logger } from '@/lib/logger';
 import { EquipmentSelectionStep } from './EquipmentSelectionStep';
-import { LucideIcon } from 'lucide-react';
+import { type LucideIcon } from 'lucide-react';
 
 interface NewWithdrawalDialogProps {
   open: boolean;
@@ -75,9 +70,18 @@ const RECORDING_TYPES = [
   'Making Of 🎞️'
 ];
 
+const eyebrowLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
 export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdrawalDialogProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [expandedCameras, setExpandedCameras] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [data, setData] = useState<WithdrawalData>({
     projectNumber: '',
@@ -126,10 +130,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   // Get available cameras (main items, camera category, available status)
   const getAvailableCameras = () => {
     return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'Câmera' && 
+      .filter(item =>
+        item.item.category === 'Câmera' &&
         item.item.subcategory === 'Câmera (Corpo e Acessórios)' &&
-        item.item.itemType === 'main' && 
+        item.item.itemType === 'main' &&
         item.item.status === 'available'
       );
   };
@@ -137,8 +141,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   // Get available lenses
   const getAvailableLenses = () => {
     return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'Câmera' && 
+      .filter(item =>
+        item.item.category === 'Câmera' &&
         item.item.subcategory === 'Lente' &&
         item.item.status === 'available'
       )
@@ -149,8 +153,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   const getAvailableCameraAccessories = () => {
     const cameraAccessorySubcategories = ['Acessórios (Câmera)', 'Bateria (Câmera)', 'Carregador (Bateria de Câmera)', 'Filtro', 'Mattebox', 'Adaptador de Lente'];
     return equipmentHierarchy
-      .filter(item => 
-        (item.item.category === 'Câmera' || item.item.category === 'Acessórios de Câmera') && 
+      .filter(item =>
+        (item.item.category === 'Câmera' || item.item.category === 'Acessórios de Câmera') &&
         cameraAccessorySubcategories.includes(item.item.subcategory || '') &&
         item.item.status === 'available'
       )
@@ -160,7 +164,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   // Get available tripods and movement equipment
   const getAvailableTripods = () => {
     return equipmentHierarchy
-      .filter(item => 
+      .filter(item =>
         ((item.item.category === 'Tripé de Câmera') ||
          (item.item.category === 'Movimento' && item.item.subcategory === 'Estabilizador')) &&
         item.item.status === 'available'
@@ -171,8 +175,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   // Get available lights
   const getAvailableLights = () => {
     return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'Iluminação' && 
+      .filter(item =>
+        item.item.category === 'Iluminação' &&
         item.item.subcategory === 'Luz' &&
         item.item.status === 'available'
       )
@@ -183,8 +187,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   const getAvailableLightModifiers = () => {
     const lightModifierSubcategories = ['Acessórios (Luz)', 'Modificador'];
     return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'Iluminação' && 
+      .filter(item =>
+        item.item.category === 'Iluminação' &&
         lightModifierSubcategories.includes(item.item.subcategory || '') &&
         item.item.status === 'available'
       )
@@ -194,8 +198,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   // Get available machinery
   const getAvailableMachinery = () => {
     return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'Produção' && 
+      .filter(item =>
+        item.item.category === 'Produção' &&
         item.item.subcategory === 'Diversos' &&
         item.item.status === 'available'
       )
@@ -205,7 +209,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   // Get available electrical equipment
   const getAvailableElectrical = () => {
     return equipmentHierarchy
-      .filter(item => 
+      .filter(item =>
         (item.item.category === 'Armazenamento' && item.item.subcategory?.includes('Cabo')) ||
         (item.item.category === 'Monitoração e Transmissão' && item.item.subcategory?.includes('Cabos')) ||
         (item.item.category === 'Áudio' && item.item.subcategory?.includes('Cabos')) &&
@@ -218,8 +222,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   const getAvailableStorage = () => {
     const storageSubcategories = ['Cartão de Memória', 'Leitor de Cartão', 'SSD/HD (Externo)', 'SSD/HD (Interno)'];
     return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'Armazenamento' && 
+      .filter(item =>
+        item.item.category === 'Armazenamento' &&
         storageSubcategories.includes(item.item.subcategory || '') &&
         item.item.status === 'available'
       )
@@ -229,25 +233,13 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   // Get available computers
   const getAvailableComputers = () => {
     return equipmentHierarchy
-      .filter(item => 
+      .filter(item =>
         item.item.category === 'Tecnologia' &&
         item.item.subcategory === 'Computador' &&
         item.item.status === 'available'
       )
       .map(item => item.item);
   };
-
-  // Filter equipment by search term (name or brand)
-  const filterEquipmentBySearch = (items: Equipment[], searchTerm: string) => {
-    if (!searchTerm.trim()) return items;
-    
-    const lowerSearch = searchTerm.toLowerCase();
-    return items.filter(item => 
-      item.name.toLowerCase().includes(lowerSearch) ||
-      item.brand.toLowerCase().includes(lowerSearch)
-    );
-  };
-
 
   const handleCameraSelect = (cameraHierarchy: { item: Equipment; accessories: Equipment[] }) => {
     const newSelectedCamera: SelectedCamera = {
@@ -265,7 +257,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     const updatedCameras = data.selectedEquipment.cameras.filter(
       selected => selected.camera.id !== cameraId
     );
-    
+
     updateField('selectedEquipment', {
       ...data.selectedEquipment,
       cameras: updatedCameras,
@@ -275,7 +267,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   // Generic equipment selection handlers
   const handleEquipmentSelect = (equipment: Equipment, type: keyof WithdrawalData['selectedEquipment']) => {
     if (type === 'cameras') return; // Cameras have special handling
-    
+
     const currentEquipment = data.selectedEquipment[type] as Equipment[];
     updateField('selectedEquipment', {
       ...data.selectedEquipment,
@@ -285,10 +277,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
   const handleEquipmentDeselect = (equipmentId: string, type: keyof WithdrawalData['selectedEquipment']) => {
     if (type === 'cameras') return; // Cameras have special handling
-    
+
     const currentEquipment = data.selectedEquipment[type] as Equipment[];
     const updatedEquipment = currentEquipment.filter(item => item.id !== equipmentId);
-    
+
     updateField('selectedEquipment', {
       ...data.selectedEquipment,
       [type]: updatedEquipment,
@@ -298,15 +290,15 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
-        return data.projectNumber.trim() !== '' && 
-               data.company.trim() !== '' && 
+        return data.projectNumber.trim() !== '' &&
+               data.company.trim() !== '' &&
                data.projectName.trim() !== '' &&
                /^\d{1,4}$/.test(data.projectNumber.trim());
       case 2:
         return data.responsibleUserId !== '';
       case 3:
-        return data.withdrawalDate && 
-               data.returnDate && 
+        return data.withdrawalDate &&
+               data.returnDate &&
                data.separationDate &&
                data.returnDate >= data.withdrawalDate;
       case 4:
@@ -342,28 +334,18 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     }
   };
 
-  const toggleAccessoriesExpansion = (cameraId: string) => {
-    const newExpanded = new Set(expandedCameras);
-    if (newExpanded.has(cameraId)) {
-      newExpanded.delete(cameraId);
-    } else {
-      newExpanded.add(cameraId);
-    }
-    setExpandedCameras(newExpanded);
-  };
-
   const generatePDF = () => {
     try {
       logger.info('Initiating PDF generation', {
         module: 'withdrawal-dialog',
         action: 'generate_pdf',
-        data: { 
+        data: {
           projectNumber: data.projectNumber,
           projectName: data.projectName,
           company: data.company
         }
       });
-      
+
       // Verificar se há dados válidos
       if (!data.projectNumber || !data.projectName) {
         toast({
@@ -373,46 +355,46 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         });
         return;
       }
-      
+
       const doc = new jsPDF();
-      
+
       // Configurações iniciais
       const pageWidth = doc.internal.pageSize.width;
       const margin = 20;
       let yPosition = margin;
-      
+
       // Cabeçalho
       doc.setFontSize(20);
       doc.text('Lista de Equipamentos - Retirada', margin, yPosition);
       yPosition += 15;
-      
+
       // Informações do projeto
       doc.setFontSize(12);
       doc.text(`Projeto: ${data.projectNumber} - ${data.projectName}`, margin, yPosition);
       yPosition += 8;
       doc.text(`Empresa: ${data.company}`, margin, yPosition);
       yPosition += 8;
-      
+
       const responsibleUser = users.find(user => user.id === data.responsibleUserId);
       doc.text(`Responsável: ${responsibleUser?.display_name || 'N/A'}`, margin, yPosition);
       yPosition += 8;
-      
+
       if (data.withdrawalDate) {
         doc.text(`Data de Retirada: ${format(data.withdrawalDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin, yPosition);
         yPosition += 8;
       }
-      
+
       if (data.returnDate) {
         doc.text(`Data de Devolução: ${format(data.returnDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin, yPosition);
         yPosition += 8;
       }
-      
+
       doc.text(`Tipo de Gravação: ${data.recordingType}`, margin, yPosition);
       yPosition += 15;
-      
+
       // Preparar dados para a tabela
       const tableData: string[][] = [];
-      
+
       // Processar câmeras e seus acessórios
       data.selectedEquipment.cameras.forEach(selectedCamera => {
         tableData.push([
@@ -422,7 +404,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           'Principal',
           ''
         ]);
-        
+
         selectedCamera.accessories.forEach(accessory => {
           tableData.push([
             'Câmeras',
@@ -433,7 +415,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           ]);
         });
       });
-      
+
       // Processar outras categorias
       const categories = [
         { items: data.selectedEquipment.lenses, category: 'Lentes' },
@@ -446,7 +428,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         { items: data.selectedEquipment.storage, category: 'Armazenamento' },
         { items: data.selectedEquipment.computers, category: 'Computadores' }
       ];
-      
+
       categories.forEach(({ items, category }) => {
         items.forEach(item => {
           tableData.push([
@@ -458,13 +440,13 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           ]);
         });
       });
-      
+
       logger.debug('PDF table data prepared', {
         module: 'withdrawal-dialog',
         action: 'pdf_table_prepared',
         data: { rowCount: tableData.length }
       });
-      
+
       // Gerar tabela
       (doc as any).autoTable({
         head: [['Categoria', 'Nome', 'Marca', 'Tipo', 'Relacionado a']],
@@ -484,12 +466,12 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           fillColor: [245, 245, 245]
         }
       });
-      
+
       // Adicionar total de itens
       const finalY = (doc as any).lastAutoTable.finalY + 10;
       doc.setFontSize(12);
       doc.text(`Total de itens: ${tableData.length}`, margin, finalY);
-      
+
       // Download do arquivo
       const fileName = `Lista_Equipamentos_${data.projectNumber}_${format(new Date(), 'ddMMyyyy')}.pdf`;
       logger.info('PDF file generated successfully', {
@@ -498,12 +480,12 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         data: { fileName, itemCount: tableData.length }
       });
       doc.save(fileName);
-      
+
       toast({
         title: "PDF Gerado",
         description: "Lista de equipamentos baixada com sucesso!",
       });
-      
+
     } catch (error) {
       logger.error('Error generating PDF', {
         module: 'withdrawal-dialog',
@@ -520,7 +502,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
   const handleSubmit = async () => {
     if (isSubmitting) return; // Prevent double submission
-    
+
     if (!isStepValid()) {
       toast({
         title: "Erro",
@@ -533,17 +515,17 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     setIsSubmitting(true);
 
     const selectedUser = users.find(u => u.id === data.responsibleUserId);
-    
+
     // Convert selected equipment to flat array
     const flattenSelectedEquipment = (): Equipment[] => {
       const equipment: Equipment[] = [];
-      
+
       // Add cameras and their accessories
       data.selectedEquipment.cameras.forEach(({ camera, accessories }) => {
         equipment.push(camera);
         equipment.push(...accessories);
       });
-      
+
       // Add all other equipment types
       equipment.push(...data.selectedEquipment.lenses);
       equipment.push(...data.selectedEquipment.cameraAccessories);
@@ -554,14 +536,14 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       equipment.push(...data.selectedEquipment.electrical);
       equipment.push(...data.selectedEquipment.storage);
       equipment.push(...data.selectedEquipment.computers);
-      
+
       return equipment;
     };
 
     const selectedEquipment = flattenSelectedEquipment();
-    
+
     const projectData = {
-      name: `${data.projectNumber} - ${data.company}: ${data.projectName}`, // Required field for database
+      name: `${data.projectNumber} - ${data.company}: ${data.projectName}`,
       projectNumber: data.projectNumber,
       company: data.company,
       projectName: data.projectName,
@@ -591,7 +573,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
     try {
       await onSubmit(projectData, selectedEquipment);
-      
+
       // Reset form
       setCurrentStep(1);
       setData({
@@ -616,9 +598,9 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           computers: [],
         },
       });
-      
+
       onOpenChange(false);
-      
+
       toast({
         title: "Sucesso",
         description: "Nova retirada criada com sucesso!",
@@ -653,9 +635,9 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       storage,
       computers
     } = data.selectedEquipment;
-    
-    return cameras.length + lenses.length + cameraAccessories.length + 
-           tripods.length + lights.length + lightModifiers.length + 
+
+    return cameras.length + lenses.length + cameraAccessories.length +
+           tripods.length + lights.length + lightModifiers.length +
            machinery.length + electrical.length + storage.length + computers.length;
   };
 
@@ -670,97 +652,139 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
   const renderEquipmentCategoryCard = (
     title: string,
-    icon: any,
+    icon: LucideIcon,
     items: Equipment[] | SelectedCamera[],
     isEmpty: boolean,
     stepNumber?: number
   ) => {
     const IconComponent = icon;
     const count = Array.isArray(items) ? items.length : 0;
-    
+
     if (isEmpty) {
       return (
-        <Card key={title} className="opacity-50 h-40 border-dashed">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <IconComponent className="h-6 w-6 text-muted-foreground" />
+        <div
+          key={title}
+          style={{
+            border: '1px dashed hsl(var(--ds-line-1))',
+            background: 'hsl(var(--ds-surface))',
+            opacity: 0.5,
+            minHeight: 160,
+          }}
+        >
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid hsl(var(--ds-line-1))' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <IconComponent size={18} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
               <div>
-                <CardTitle className="text-sm">{title}</CardTitle>
-                <Badge variant="secondary" className="text-xs">0 itens</Badge>
+                <h4 style={{
+                  fontFamily: '"HN Display", sans-serif',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: 'hsl(var(--ds-fg-1))',
+                  marginBottom: 4,
+                }}>
+                  {title}
+                </h4>
+                <span className="pill muted" style={{ fontVariantNumeric: 'tabular-nums' }}>0 itens</span>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="py-4 text-center">
-              <span className="text-xs text-muted-foreground">Nenhum item selecionado para esta categoria</span>
+          </div>
+          <div style={{ padding: 18 }}>
+            <div style={{ padding: '16px 0', textAlign: 'center' }}>
+              <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>Nenhum item selecionado para esta categoria</span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       );
     }
 
-      return (
-        <Card key={title} className="min-h-32 border-primary/30 bg-primary/5 animate-fade-in">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <IconComponent className="h-6 w-6 text-primary" />
-                <div>
-                  <CardTitle className="text-sm">{title}</CardTitle>
-                  <Badge variant="default" className="text-xs">{count} {count === 1 ? 'item' : 'itens'}</Badge>
-                </div>
+    return (
+      <div
+        key={title}
+        className="animate-fade-in"
+        style={{
+          border: '1px solid hsl(var(--ds-accent) / 0.3)',
+          background: 'hsl(var(--ds-accent) / 0.05)',
+          minHeight: 128,
+        }}
+      >
+        <div style={{ padding: '14px 18px', borderBottom: '1px solid hsl(var(--ds-line-1))' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <IconComponent size={18} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-accent))' }} />
+              <div>
+                <h4 style={{
+                  fontFamily: '"HN Display", sans-serif',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: 'hsl(var(--ds-fg-1))',
+                  marginBottom: 4,
+                }}>
+                  {title}
+                </h4>
+                <span
+                  className="pill"
+                  style={{
+                    color: 'hsl(var(--ds-accent))',
+                    borderColor: 'hsl(var(--ds-accent) / 0.3)',
+                    background: 'hsl(var(--ds-accent) / 0.08)',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {count} {count === 1 ? 'item' : 'itens'}
+                </span>
               </div>
-              
-              {/* Edit button with tooltip */}
-              {count > 0 && stepNumber && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentStep(stepNumber)}
-                    >
-                      Editar
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Editar seleção de {title.toLowerCase()}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
             </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2">
-              {title === 'Câmeras' ? (
-                (items as SelectedCamera[]).map((selectedCamera, index) => (
-                  <div key={selectedCamera.camera.id} className="flex justify-between items-center text-sm py-1">
-                    <div className="flex-1 min-w-0">
-                      <div className="truncate font-medium">{selectedCamera.camera.name}</div>
-                      <div className="text-muted-foreground text-xs truncate">{selectedCamera.camera.brand}</div>
-                    </div>
-                    {selectedCamera.accessories.length > 0 && (
-                      <Badge variant="secondary" className="text-xs ml-2 flex-shrink-0">
-                        +{selectedCamera.accessories.length}
-                      </Badge>
-                    )}
+
+            {/* Edit button with tooltip */}
+            {count > 0 && stepNumber && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{ height: 28, fontSize: 12 }}
+                    onClick={() => setCurrentStep(stepNumber)}
+                  >
+                    Editar
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Editar seleção de {title.toLowerCase()}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        </div>
+        <div style={{ padding: 18 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {title === 'Câmeras' ? (
+              (items as SelectedCamera[]).map((selectedCamera) => (
+                <div key={selectedCamera.camera.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, padding: '4px 0' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedCamera.camera.name}</div>
+                    <div style={{ color: 'hsl(var(--ds-fg-3))', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedCamera.camera.brand}</div>
                   </div>
-                ))
-              ) : (
-                (items as Equipment[]).map((item) => (
-                  <div key={item.id} className="flex justify-between items-center text-sm py-1">
-                    <div className="flex-1 min-w-0">
-                      <div className="truncate font-medium">{item.name}</div>
-                      <div className="text-muted-foreground text-xs truncate">{item.brand}</div>
-                    </div>
+                  {selectedCamera.accessories.length > 0 && (
+                    <span className="pill muted" style={{ marginLeft: 8, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
+                      +{selectedCamera.accessories.length}
+                    </span>
+                  )}
+                </div>
+              ))
+            ) : (
+              (items as Equipment[]).map((item) => (
+                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, padding: '4px 0' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                    <div style={{ color: 'hsl(var(--ds-fg-3))', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.brand}</div>
                   </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      );
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // Configuração dos steps de seleção de equipamentos (steps 6-14)
@@ -841,15 +865,15 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6 animate-fade-in">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }} className="animate-fade-in">
             <div>
-              <h3 className="text-lg font-semibold">Informações do Projeto</h3>
-              <p className="text-sm text-muted-foreground mt-1">Preencha os dados básicos do projeto</p>
+              <h3 style={{ fontFamily: '"HN Display", sans-serif', fontSize: 18, fontWeight: 600, color: 'hsl(var(--ds-fg-1))' }}>Informações do Projeto</h3>
+              <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>Preencha os dados básicos do projeto</p>
             </div>
-            
-            <div className="space-y-4">
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <Label htmlFor="projectNumber">Número do Projeto *</Label>
+                <label htmlFor="projectNumber" style={eyebrowLabel}>Número do Projeto *</label>
                 <Input
                   id="projectNumber"
                   value={data.projectNumber}
@@ -859,15 +883,15 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   }}
                   placeholder="Ex: 398"
                   maxLength={4}
-                  className="font-mono"
+                  style={{ fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace' }}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
                   Apenas números, máximo 4 dígitos
                 </p>
               </div>
 
               <div>
-                <Label htmlFor="company">Empresa *</Label>
+                <label htmlFor="company" style={eyebrowLabel}>Empresa *</label>
                 <Input
                   id="company"
                   value={data.company}
@@ -877,7 +901,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               <div>
-                <Label htmlFor="projectName">Nome do Projeto *</Label>
+                <label htmlFor="projectName" style={eyebrowLabel}>Nome do Projeto *</label>
                 <Input
                   id="projectName"
                   value={data.projectName}
@@ -887,9 +911,13 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               {data.projectNumber && data.company && data.projectName && (
-                <div className="p-3 bg-muted rounded-lg">
-                  <p className="text-sm font-medium">Nome final do projeto:</p>
-                  <p className="text-sm text-muted-foreground">
+                <div style={{
+                  padding: 14,
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  background: 'hsl(var(--ds-line-2) / 0.3)',
+                }}>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>Nome final do projeto:</p>
+                  <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
                     {data.projectNumber} - {data.company}: {data.projectName}
                   </p>
                 </div>
@@ -900,17 +928,17 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
       case 2:
         return (
-          <div className="space-y-6 animate-fade-in">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }} className="animate-fade-in">
             <div>
-              <h3 className="text-lg font-semibold">Responsável pelo Projeto</h3>
-              <p className="text-sm text-muted-foreground mt-1">Selecione quem será responsável por este projeto</p>
+              <h3 style={{ fontFamily: '"HN Display", sans-serif', fontSize: 18, fontWeight: 600, color: 'hsl(var(--ds-fg-1))' }}>Responsável pelo Projeto</h3>
+              <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>Selecione quem será responsável por este projeto</p>
             </div>
-            
-            <div className="space-y-4">
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <Label htmlFor="responsible">Responsável *</Label>
-                <Select 
-                  value={data.responsibleUserId} 
+                <label htmlFor="responsible" style={eyebrowLabel}>Responsável *</label>
+                <Select
+                  value={data.responsibleUserId}
                   onValueChange={(value) => updateField('responsibleUserId', value)}
                   disabled={usersLoading}
                 >
@@ -920,7 +948,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   <SelectContent>
                     {users.map((user) => {
                       const avatarData = getAvatarData(
-                        { 
+                        {
                           app_metadata: { provider: user.user_metadata?.provider || 'email' },
                           user_metadata: user.user_metadata || {},
                           email: user.email
@@ -928,20 +956,20 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                         user.avatar_url,
                         user.display_name
                       );
-                      
+
                       return (
                         <SelectItem key={user.id} value={user.id}>
-                          <div className="flex items-center gap-3">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <Avatar className="h-8 w-8">
                               <AvatarImage src={avatarData.url || undefined} alt={user.display_name || user.email} />
                               <AvatarFallback>{avatarData.initials}</AvatarFallback>
                             </Avatar>
-                            <div className="flex flex-col items-start">
-                              <span className="font-medium">
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                              <span style={{ fontWeight: 500 }}>
                                 {user.display_name || user.email}
                               </span>
-                              <span className="text-xs text-muted-foreground">
-                                {user.department && user.position 
+                              <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                                {user.department && user.position
                                   ? `${user.position} - ${user.department}`
                                   : user.department || user.position || user.email
                                 }
@@ -956,26 +984,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               {data.responsibleUserId && (
-                <div className="p-3 bg-muted rounded-lg">
+                <div style={{
+                  padding: 14,
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  background: 'hsl(var(--ds-line-2) / 0.3)',
+                }}>
                   {(() => {
                     const selectedUser = users.find(u => u.id === data.responsibleUserId);
                     return selectedUser ? (
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium">Dados do responsável:</p>
-                        <p className="text-sm text-muted-foreground">
-                          <strong>Nome:</strong> {selectedUser.display_name || selectedUser.email}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>Dados do responsável:</p>
+                        <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
+                          <strong style={{ color: 'hsl(var(--ds-fg-2))' }}>Nome:</strong> {selectedUser.display_name || selectedUser.email}
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                          <strong>Email:</strong> {selectedUser.email}
+                        <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
+                          <strong style={{ color: 'hsl(var(--ds-fg-2))' }}>Email:</strong> {selectedUser.email}
                         </p>
                         {selectedUser.department && (
-                          <p className="text-sm text-muted-foreground">
-                            <strong>Departamento:</strong> {selectedUser.department}
+                          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
+                            <strong style={{ color: 'hsl(var(--ds-fg-2))' }}>Departamento:</strong> {selectedUser.department}
                           </p>
                         )}
                         {selectedUser.position && (
-                          <p className="text-sm text-muted-foreground">
-                            <strong>Cargo:</strong> {selectedUser.position}
+                          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
+                            <strong style={{ color: 'hsl(var(--ds-fg-2))' }}>Cargo:</strong> {selectedUser.position}
                           </p>
                         )}
                       </div>
@@ -989,126 +1021,64 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
       case 3:
         return (
-          <div className="space-y-6 animate-fade-in">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }} className="animate-fade-in">
             <div>
-              <h3 className="text-lg font-semibold">Datas do Projeto</h3>
-              <p className="text-sm text-muted-foreground mt-1">Defina as datas de separação, retirada e devolução</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Data de Separação *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !data.separationDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {data.separationDate ? format(data.separationDate, "dd/MM/yyyy") : "Selecionar data"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={data.separationDate}
-                      onSelect={(date) => updateField('separationDate', date)}
-                      disabled={(date) => {
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        const oneYearFromNow = new Date();
-                        oneYearFromNow.setFullYear(today.getFullYear() + 1);
-                        
-                        return date < today || date > oneYearFromNow;
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Data de Retirada *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !data.withdrawalDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {data.withdrawalDate ? format(data.withdrawalDate, "dd/MM/yyyy") : "Selecionar data"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={data.withdrawalDate}
-                      onSelect={(date) => updateField('withdrawalDate', date)}
-                      disabled={(date) => {
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        const oneYearFromNow = new Date();
-                        oneYearFromNow.setFullYear(today.getFullYear() + 1);
-                        
-                        if (date < today || date > oneYearFromNow) return true;
-                        if (data.separationDate && date < data.separationDate) return true;
-                        
-                        return false;
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Data de Devolução *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !data.returnDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {data.returnDate ? format(data.returnDate, "dd/MM/yyyy") : "Selecionar data"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={data.returnDate}
-                      onSelect={(date) => updateField('returnDate', date)}
-                      disabled={(date) => {
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        const oneYearFromNow = new Date();
-                        oneYearFromNow.setFullYear(today.getFullYear() + 1);
-                        
-                        if (date < today || date > oneYearFromNow) return true;
-                        if (data.withdrawalDate && date < data.withdrawalDate) return true;
-                        
-                        return false;
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+              <h3 style={{ fontFamily: '"HN Display", sans-serif', fontSize: 18, fontWeight: 600, color: 'hsl(var(--ds-fg-1))' }}>Datas do Projeto</h3>
+              <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>Defina as datas de separação, retirada e devolução</p>
             </div>
 
-            <div className="text-sm text-muted-foreground space-y-1">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }} className="md:[grid-template-columns:1fr_1fr_1fr]">
+              {([
+                { label: 'Data de Separação *', value: data.separationDate, field: 'separationDate' as const },
+                { label: 'Data de Retirada *', value: data.withdrawalDate, field: 'withdrawalDate' as const },
+                { label: 'Data de Devolução *', value: data.returnDate, field: 'returnDate' as const },
+              ]).map(({ label, value, field }) => (
+                <div key={field} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={eyebrowLabel}>{label}</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="btn"
+                        style={{
+                          width: '100%',
+                          justifyContent: 'flex-start',
+                          color: value ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+                        }}
+                      >
+                        <CalendarIcon size={13} strokeWidth={1.5} />
+                        <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                          {value ? format(value, "dd/MM/yyyy") : "Selecionar data"}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={value}
+                        onSelect={(date) => updateField(field, date)}
+                        disabled={(date) => {
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          const oneYearFromNow = new Date();
+                          oneYearFromNow.setFullYear(today.getFullYear() + 1);
+
+                          if (date < today || date > oneYearFromNow) return true;
+                          if (field === 'withdrawalDate' && data.separationDate && date < data.separationDate) return true;
+                          if (field === 'returnDate' && data.withdrawalDate && date < data.withdrawalDate) return true;
+
+                          return false;
+                        }}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', display: 'flex', flexDirection: 'column', gap: 4 }}>
               <p>• A data de separação deve ser anterior à data de retirada</p>
               <p>• A data de devolução deve ser posterior à data de retirada</p>
             </div>
@@ -1117,17 +1087,17 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
       case 4:
         return (
-          <div className="space-y-6 animate-fade-in">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }} className="animate-fade-in">
             <div>
-              <h3 className="text-lg font-semibold">Tipo de Gravação</h3>
-              <p className="text-sm text-muted-foreground mt-1">Escolha o tipo de gravação do projeto</p>
+              <h3 style={{ fontFamily: '"HN Display", sans-serif', fontSize: 18, fontWeight: 600, color: 'hsl(var(--ds-fg-1))' }}>Tipo de Gravação</h3>
+              <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>Escolha o tipo de gravação do projeto</p>
             </div>
-            
-            <div className="space-y-4">
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <Label htmlFor="recordingType">Tipo de Gravação *</Label>
-                <Select 
-                  value={data.recordingType} 
+                <label htmlFor="recordingType" style={eyebrowLabel}>Tipo de Gravação *</label>
+                <Select
+                  value={data.recordingType}
                   onValueChange={(value) => updateField('recordingType', value)}
                 >
                   <SelectTrigger>
@@ -1144,9 +1114,13 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               {data.recordingType && (
-                <div className="p-3 bg-muted rounded-lg">
-                  <p className="text-sm font-medium">Tipo selecionado:</p>
-                  <p className="text-sm text-muted-foreground">
+                <div style={{
+                  padding: 14,
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  background: 'hsl(var(--ds-line-2) / 0.3)',
+                }}>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>Tipo selecionado:</p>
+                  <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
                     {data.recordingType}
                   </p>
                 </div>
@@ -1157,124 +1131,151 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
       case 5:
         return (
-          <div className="space-y-6">
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 32 }} className="lg:[grid-template-columns:1fr_1fr]">
                 {/* Available Cameras */}
-                <div className="flex-1 flex flex-col min-h-0">
-                  <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-                    <Camera className="h-5 w-5" />
-                    <h4 className="font-medium">Câmeras Disponíveis</h4>
-                    <Badge variant="secondary">
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginBottom: 16 }}>
+                    <Camera size={18} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-2))' }} />
+                    <h4 style={{ fontFamily: '"HN Display", sans-serif', fontSize: 14, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                      Câmeras Disponíveis
+                    </h4>
+                    <span className="pill muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
                       {getAvailableCameras().length} disponíveis
-                    </Badge>
+                    </span>
                   </div>
 
                   {equipmentLoading ? (
-                    <div className="space-y-3">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                        <div key={i} style={{ height: 96, background: 'hsl(var(--ds-line-2) / 0.3)' }} className="animate-pulse" />
                       ))}
                     </div>
                   ) : getAvailableCameras().length === 0 ? (
-                    <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed">
-                      <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
-                          <div className="text-center text-sm text-muted-foreground space-y-2">
-                            <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            <p className="font-medium">Nenhuma câmera disponível</p>
-                            <p className="text-xs">Todas as câmeras estão em uso no momento</p>
-                          </div>
-                        </CardContent>
-                      </Card>
+                    <div style={{ height: 500, overflowY: 'auto', flex: 1 }}>
+                      <div style={{
+                        border: '1px dashed hsl(var(--ds-line-1))',
+                        background: 'hsl(var(--ds-surface))',
+                        padding: '24px 16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: 120,
+                      }}>
+                        <div style={{ textAlign: 'center', fontSize: 13, color: 'hsl(var(--ds-fg-3))', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <Camera size={28} strokeWidth={1.5} style={{ margin: '0 auto', opacity: 0.5, color: 'hsl(var(--ds-fg-3))' }} />
+                          <p style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>Nenhuma câmera disponível</p>
+                          <p style={{ fontSize: 11 }}>Todas as câmeras estão em uso no momento</p>
+                        </div>
+                      </div>
                     </div>
                   ) : (
-                     <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <div style={{ height: 500, overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
                       {getAvailableCameras().map((cameraHierarchy) => {
                         const isSelected = data.selectedEquipment.cameras.some(
                           selected => selected.camera.id === cameraHierarchy.item.id
                         );
                         return (
-                      <Card 
-                        key={cameraHierarchy.item.id}
-                        className={cn(
-                          "transition-all border-2 h-24",
-                          isSelected
-                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-md cursor-default"
-                            : "cursor-pointer hover:bg-accent/50 hover-scale hover:border-primary/30 bg-card"
-                        )}
-                        onClick={() => !isSelected && handleCameraSelect(cameraHierarchy)}
-                      >
-                          <CardContent className="p-4 h-full">
-                            <div className="flex items-center gap-3 h-full">
-                              <div className={cn(
-                                "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
-                                isSelected 
-                                  ? "bg-green-500/10 border border-green-500/30" 
-                                  : "bg-primary/10"
-                              )}>
+                          <div
+                            key={cameraHierarchy.item.id}
+                            onClick={() => !isSelected && handleCameraSelect(cameraHierarchy)}
+                            style={{
+                              border: isSelected
+                                ? '1px solid hsl(var(--ds-success) / 0.5)'
+                                : '1px solid hsl(var(--ds-line-1))',
+                              background: isSelected
+                                ? 'hsl(var(--ds-success) / 0.08)'
+                                : 'hsl(var(--ds-surface))',
+                              cursor: isSelected ? 'default' : 'pointer',
+                              height: 96,
+                              padding: 16,
+                              transition: 'all 0.15s',
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected) e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected) e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, height: '100%' }}>
+                              <div style={{
+                                width: 48,
+                                height: 48,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                                border: isSelected ? '1px solid hsl(var(--ds-success) / 0.3)' : '1px solid hsl(var(--ds-line-1))',
+                                background: isSelected ? 'hsl(var(--ds-success) / 0.1)' : 'hsl(var(--ds-line-2) / 0.3)',
+                              }}>
                                 {isSelected ? (
-                                  <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                  <Check size={22} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-success))' }} />
                                 ) : cameraHierarchy.item.image ? (
-                                  <img 
-                                    src={cameraHierarchy.item.image} 
+                                  <img
+                                    src={cameraHierarchy.item.image}
                                     alt={cameraHierarchy.item.name}
-                                    className="w-full h-full object-cover rounded-lg"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                   />
                                 ) : (
-                                  <Camera className="h-6 w-6 text-primary" />
+                                  <Camera size={22} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
                                 )}
                               </div>
-                              <div className="flex-1 min-w-0 h-full">
-                                <div className="flex items-center justify-between h-full">
-                                  <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <p className="font-medium text-sm truncate">
-                                        {cameraHierarchy.item.name}
-                                      </p>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>{cameraHierarchy.item.name}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                  <p className="text-xs text-muted-foreground">
-                                    {cameraHierarchy.item.brand}
-                                  </p>
-                                  {cameraHierarchy.accessories.length > 0 && (
-                                    <div className="flex items-center gap-1">
-                                      <Package className="h-3 w-3 text-muted-foreground" />
-                                      <span className="text-xs text-muted-foreground">
-                                        {cameraHierarchy.accessories.length} acessórios
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant={isSelected ? "default" : "outline"}
-                                  disabled={isSelected}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (!isSelected) handleCameraSelect(cameraHierarchy);
-                                  }}
-                                  className={isSelected ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600" : ""}
-                                >
-                                  {isSelected ? (
-                                    <>
-                                      <Check className="h-3 w-3 mr-1" />
-                                      Selecionado
-                                    </>
-                                  ) : (
-                                    "Selecionar"
-                                  )}
-                                </Button>
+                              <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' }}>
+                                  <div style={{ flex: 1, minWidth: 0, marginRight: 12, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <p style={{ fontWeight: 500, fontSize: 13, color: 'hsl(var(--ds-fg-1))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                          {cameraHierarchy.item.name}
+                                        </p>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>{cameraHierarchy.item.name}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                    <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                                      {cameraHierarchy.item.brand}
+                                    </p>
+                                    {cameraHierarchy.accessories.length > 0 && (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                                        <Package size={11} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+                                        <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
+                                          {cameraHierarchy.accessories.length} acessórios
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="btn"
+                                    disabled={isSelected}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (!isSelected) handleCameraSelect(cameraHierarchy);
+                                    }}
+                                    style={isSelected ? {
+                                      height: 28,
+                                      fontSize: 12,
+                                      color: 'hsl(var(--ds-success))',
+                                      borderColor: 'hsl(var(--ds-success) / 0.3)',
+                                      background: 'hsl(var(--ds-success) / 0.08)',
+                                    } : { height: 28, fontSize: 12 }}
+                                  >
+                                    {isSelected ? (
+                                      <>
+                                        <Check size={11} strokeWidth={1.5} />
+                                        <span>Selecionado</span>
+                                      </>
+                                    ) : (
+                                      "Selecionar"
+                                    )}
+                                  </button>
                                 </div>
                               </div>
                             </div>
-                          </CardContent>
-                        </Card>
+                          </div>
                         );
                       })}
                     </div>
@@ -1282,70 +1283,107 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 </div>
 
                 {/* Selected Cameras Preview */}
-                <div className="flex-1 flex flex-col min-h-0">
-                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-                     <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    <h4 className="font-medium">Câmeras Selecionadas</h4>
-                    <Badge variant="default">
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginBottom: 16 }}>
+                    <Check size={18} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-success))' }} />
+                    <h4 style={{ fontFamily: '"HN Display", sans-serif', fontSize: 14, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                      Câmeras Selecionadas
+                    </h4>
+                    <span
+                      className="pill"
+                      style={{
+                        color: 'hsl(var(--ds-accent))',
+                        borderColor: 'hsl(var(--ds-accent) / 0.3)',
+                        background: 'hsl(var(--ds-accent) / 0.08)',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
                       {data.selectedEquipment.cameras.length}
-                    </Badge>
+                    </span>
                   </div>
 
                   {data.selectedEquipment.cameras.length === 0 ? (
-                    <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed">
-                      <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
-                          <div className="text-center text-sm text-muted-foreground space-y-2">
-                            <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            <p className="font-medium">Nenhuma câmera selecionada</p>
-                            <p className="text-xs">Clique nas câmeras disponíveis para adicioná-las</p>
-                          </div>
-                        </CardContent>
-                      </Card>
+                    <div style={{ height: 500, overflowY: 'auto', flex: 1 }}>
+                      <div style={{
+                        border: '1px dashed hsl(var(--ds-line-1))',
+                        background: 'hsl(var(--ds-surface))',
+                        padding: '24px 16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: 120,
+                      }}>
+                        <div style={{ textAlign: 'center', fontSize: 13, color: 'hsl(var(--ds-fg-3))', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <Package size={28} strokeWidth={1.5} style={{ margin: '0 auto', opacity: 0.5, color: 'hsl(var(--ds-fg-3))' }} />
+                          <p style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>Nenhuma câmera selecionada</p>
+                          <p style={{ fontSize: 11 }}>Clique nas câmeras disponíveis para adicioná-las</p>
+                        </div>
+                      </div>
                     </div>
                   ) : (
-                    <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <div style={{ height: 500, overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
                       {data.selectedEquipment.cameras.map((selectedCamera) => (
-                        <Card key={selectedCamera.camera.id} className="border-primary/30 bg-primary/5 h-24 animate-fade-in">
-                          <CardContent className="p-4 h-full">
-                            <div className="flex items-center gap-3 h-full">
-                               <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                                 <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
-                              </div>
-                              <div className="flex-1 min-w-0 h-full">
-                                <div className="flex items-center justify-between h-full">
-                                  <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
-                                    <p className="font-medium text-sm truncate">
-                                      {selectedCamera.camera.name}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {selectedCamera.camera.brand}
-                                    </p>
-                                    {selectedCamera.accessories.length > 0 && (
-                                      <div className="flex items-center gap-1">
-                                        <Package className="h-3 w-3 text-muted-foreground" />
-                                        <span className="text-xs text-muted-foreground">
-                                          {selectedCamera.accessories.length} acessórios
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCameraDeselect(selectedCamera.camera.id);
-                                    }}
-                                  >
-                                    Remover
-                                  </Button>
+                        <div
+                          key={selectedCamera.camera.id}
+                          className="animate-fade-in"
+                          style={{
+                            border: '1px solid hsl(var(--ds-accent) / 0.3)',
+                            background: 'hsl(var(--ds-accent) / 0.05)',
+                            height: 96,
+                            padding: 16,
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, height: '100%' }}>
+                            <div style={{
+                              width: 48,
+                              height: 48,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                              border: '1px solid hsl(var(--ds-success) / 0.3)',
+                              background: 'hsl(var(--ds-success) / 0.1)',
+                            }}>
+                              <Check size={22} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-success))' }} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' }}>
+                                <div style={{ flex: 1, minWidth: 0, marginRight: 12, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                  <p style={{ fontWeight: 500, fontSize: 13, color: 'hsl(var(--ds-fg-1))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {selectedCamera.camera.name}
+                                  </p>
+                                  <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                                    {selectedCamera.camera.brand}
+                                  </p>
+                                  {selectedCamera.accessories.length > 0 && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                                      <Package size={11} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+                                      <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
+                                        {selectedCamera.accessories.length} acessórios
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
+                                <button
+                                  type="button"
+                                  className="btn"
+                                  style={{
+                                    height: 28,
+                                    fontSize: 12,
+                                    color: 'hsl(var(--ds-danger))',
+                                    borderColor: 'hsl(var(--ds-danger) / 0.3)',
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCameraDeselect(selectedCamera.camera.id);
+                                  }}
+                                >
+                                  Remover
+                                </button>
                               </div>
                             </div>
-                          </CardContent>
-                        </Card>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -1354,18 +1392,31 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
               {/* Selection Summary */}
               {data.selectedEquipment.cameras.length > 0 && (
-                <div className="p-4 bg-muted rounded-lg">
-                  <h5 className="font-medium text-sm mb-2">Resumo da Seleção:</h5>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                <div style={{
+                  padding: 16,
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  background: 'hsl(var(--ds-line-2) / 0.3)',
+                }}>
+                  <h5 style={{
+                    fontSize: 11,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    fontWeight: 500,
+                    color: 'hsl(var(--ds-fg-2))',
+                    marginBottom: 8,
+                  }}>
+                    Resumo da Seleção
+                  </h5>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, fontSize: 13 }}>
                     <div>
-                      <span className="text-muted-foreground">Câmeras:</span>
-                      <span className="ml-2 font-medium">
+                      <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Câmeras:</span>
+                      <span style={{ marginLeft: 8, fontWeight: 500, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>
                         {data.selectedEquipment.cameras.length}
                       </span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Total acessórios:</span>
-                      <span className="ml-2 font-medium">
+                      <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Total acessórios:</span>
+                      <span style={{ marginLeft: 8, fontWeight: 500, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>
                         {data.selectedEquipment.cameras.reduce((acc, cam) => acc + cam.accessories.length, 0)}
                       </span>
                     </div>
@@ -1408,168 +1459,123 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       }
       case 15:
         return (
-          <div className="space-y-6 flex-1 overflow-y-auto">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Resumo da Retirada</h3>
-              <Badge variant="default" className="text-base px-4 py-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, flex: 1, overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 style={{ fontFamily: '"HN Display", sans-serif', fontSize: 18, fontWeight: 600, color: 'hsl(var(--ds-fg-1))' }}>Resumo da Retirada</h3>
+              <span
+                className="pill"
+                style={{
+                  color: 'hsl(var(--ds-accent))',
+                  borderColor: 'hsl(var(--ds-accent) / 0.3)',
+                  background: 'hsl(var(--ds-accent) / 0.08)',
+                  fontSize: 13,
+                  padding: '6px 14px',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
                 Total: {getTotalEquipmentCount()} itens
-              </Badge>
+              </span>
             </div>
-            
-            {/* Detailed Summary Card */}
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-primary">
-                      {data.selectedEquipment.cameras.length}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Câmeras</div>
+
+            {/* Detailed Summary */}
+            <div style={{
+              border: '1px solid hsl(var(--ds-accent) / 0.2)',
+              background: 'hsl(var(--ds-accent) / 0.05)',
+              padding: 24,
+            }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, textAlign: 'center' }} className="md:[grid-template-columns:repeat(4,1fr)]">
+                <div>
+                  <div style={{ fontFamily: '"HN Display", sans-serif', fontSize: 24, fontWeight: 700, color: 'hsl(var(--ds-accent))', fontVariantNumeric: 'tabular-nums' }}>
+                    {data.selectedEquipment.cameras.length}
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold text-primary">
-                      {data.selectedEquipment.cameras.reduce((acc, cam) => 
-                        acc + cam.accessories.length, 0)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Acessórios de Câmera</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-primary">
-                      {data.selectedEquipment.lenses.length + 
-                       data.selectedEquipment.lights.length}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Lentes + Luzes</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-primary">
-                      {getTotalEquipmentCount()}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Total Geral</div>
-                  </div>
+                  <div style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, marginTop: 4 }}>Câmeras</div>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <div className="grid grid-cols-1 gap-4">
-              {/* Equipment Categories */}
-              {renderEquipmentCategoryCard(
-                'Câmeras',
-                Camera,
-                data.selectedEquipment.cameras,
-                data.selectedEquipment.cameras.length === 0,
-                5
-              )}
-              
-              {renderEquipmentCategoryCard(
-                'Lentes',
-                Video,
-                data.selectedEquipment.lenses,
-                data.selectedEquipment.lenses.length === 0,
-                6
-              )}
-              
-              {renderEquipmentCategoryCard(
-                'Acessórios de Câmera',
-                Settings,
-                data.selectedEquipment.cameraAccessories,
-                data.selectedEquipment.cameraAccessories.length === 0,
-                7
-              )}
-              
-              {renderEquipmentCategoryCard(
-                'Tripés',
-                Box,
-                data.selectedEquipment.tripods,
-                data.selectedEquipment.tripods.length === 0,
-                8
-              )}
-              
-              {renderEquipmentCategoryCard(
-                'Iluminação',
-                Lightbulb,
-                data.selectedEquipment.lights,
-                data.selectedEquipment.lights.length === 0,
-                9
-              )}
-              
-              {renderEquipmentCategoryCard(
-                'Modificadores de Luz',
-                Wrench,
-                data.selectedEquipment.lightModifiers,
-                data.selectedEquipment.lightModifiers.length === 0,
-                10
-              )}
-              
-              {renderEquipmentCategoryCard(
-                'Máquinas',
-                Cog,
-                data.selectedEquipment.machinery,
-                data.selectedEquipment.machinery.length === 0,
-                11
-              )}
-              
-              {renderEquipmentCategoryCard(
-                'Elétricos',
-                Plug,
-                data.selectedEquipment.electrical,
-                data.selectedEquipment.electrical.length === 0,
-                12
-              )}
-              
-              {renderEquipmentCategoryCard(
-                'Armazenamento',
-                HardDrive,
-                data.selectedEquipment.storage,
-                data.selectedEquipment.storage.length === 0,
-                13
-              )}
-              
-              {renderEquipmentCategoryCard(
-                'Computadores',
-                Monitor,
-                data.selectedEquipment.computers,
-                data.selectedEquipment.computers.length === 0,
-                14
-              )}
+                <div>
+                  <div style={{ fontFamily: '"HN Display", sans-serif', fontSize: 24, fontWeight: 700, color: 'hsl(var(--ds-accent))', fontVariantNumeric: 'tabular-nums' }}>
+                    {data.selectedEquipment.cameras.reduce((acc, cam) => acc + cam.accessories.length, 0)}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, marginTop: 4 }}>Acessórios de Câmera</div>
+                </div>
+                <div>
+                  <div style={{ fontFamily: '"HN Display", sans-serif', fontSize: 24, fontWeight: 700, color: 'hsl(var(--ds-accent))', fontVariantNumeric: 'tabular-nums' }}>
+                    {data.selectedEquipment.lenses.length + data.selectedEquipment.lights.length}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, marginTop: 4 }}>Lentes + Luzes</div>
+                </div>
+                <div>
+                  <div style={{ fontFamily: '"HN Display", sans-serif', fontSize: 24, fontWeight: 700, color: 'hsl(var(--ds-accent))', fontVariantNumeric: 'tabular-nums' }}>
+                    {getTotalEquipmentCount()}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, marginTop: 4 }}>Total Geral</div>
+                </div>
+              </div>
             </div>
-            
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
+              {renderEquipmentCategoryCard('Câmeras', Camera, data.selectedEquipment.cameras, data.selectedEquipment.cameras.length === 0, 5)}
+              {renderEquipmentCategoryCard('Lentes', Video, data.selectedEquipment.lenses, data.selectedEquipment.lenses.length === 0, 6)}
+              {renderEquipmentCategoryCard('Acessórios de Câmera', Settings, data.selectedEquipment.cameraAccessories, data.selectedEquipment.cameraAccessories.length === 0, 7)}
+              {renderEquipmentCategoryCard('Tripés', Box, data.selectedEquipment.tripods, data.selectedEquipment.tripods.length === 0, 8)}
+              {renderEquipmentCategoryCard('Iluminação', Lightbulb, data.selectedEquipment.lights, data.selectedEquipment.lights.length === 0, 9)}
+              {renderEquipmentCategoryCard('Modificadores de Luz', Wrench, data.selectedEquipment.lightModifiers, data.selectedEquipment.lightModifiers.length === 0, 10)}
+              {renderEquipmentCategoryCard('Máquinas', Cog, data.selectedEquipment.machinery, data.selectedEquipment.machinery.length === 0, 11)}
+              {renderEquipmentCategoryCard('Elétricos', Plug, data.selectedEquipment.electrical, data.selectedEquipment.electrical.length === 0, 12)}
+              {renderEquipmentCategoryCard('Armazenamento', HardDrive, data.selectedEquipment.storage, data.selectedEquipment.storage.length === 0, 13)}
+              {renderEquipmentCategoryCard('Computadores', Monitor, data.selectedEquipment.computers, data.selectedEquipment.computers.length === 0, 14)}
+            </div>
+
             {/* Project Information Summary */}
-            <Card className="border-primary/20 bg-primary/5">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
+            <div style={{
+              border: '1px solid hsl(var(--ds-accent) / 0.2)',
+              background: 'hsl(var(--ds-accent) / 0.05)',
+            }}>
+              <div style={{
+                padding: '14px 18px',
+                borderBottom: '1px solid hsl(var(--ds-line-1))',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+              }}>
+                <Package size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+                <span style={{
+                  fontSize: 11,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  fontWeight: 500,
+                  color: 'hsl(var(--ds-fg-2))',
+                }}>
                   Informações do Projeto
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                </span>
+              </div>
+              <div style={{ padding: 18 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16, fontSize: 13 }} className="md:[grid-template-columns:1fr_1fr]">
                   <div>
-                    <span className="font-medium text-muted-foreground">Projeto:</span>
-                    <div className="font-medium">{data.projectName}</div>
+                    <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))', marginBottom: 4 }}>Projeto</div>
+                    <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{data.projectName}</div>
                   </div>
                   <div>
-                    <span className="font-medium text-muted-foreground">Empresa:</span>
-                    <div className="font-medium">{data.company}</div>
+                    <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))', marginBottom: 4 }}>Empresa</div>
+                    <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{data.company}</div>
                   </div>
                   <div>
-                    <span className="font-medium text-muted-foreground">Responsável:</span>
-                    <div className="font-medium">{getResponsibleUserName()}</div>
+                    <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))', marginBottom: 4 }}>Responsável</div>
+                    <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{getResponsibleUserName()}</div>
                   </div>
                   <div>
-                    <span className="font-medium text-muted-foreground">Data de Retirada:</span>
-                    <div className="font-medium">{formatDate(data.withdrawalDate)}</div>
+                    <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))', marginBottom: 4 }}>Data de Retirada</div>
+                    <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>{formatDate(data.withdrawalDate)}</div>
                   </div>
                   <div>
-                    <span className="font-medium text-muted-foreground">Data de Retorno:</span>
-                    <div className="font-medium">{formatDate(data.returnDate)}</div>
+                    <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))', marginBottom: 4 }}>Data de Retorno</div>
+                    <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>{formatDate(data.returnDate)}</div>
                   </div>
                   <div>
-                    <span className="font-medium text-muted-foreground">Tipo de Gravação:</span>
-                    <div className="font-medium">{data.recordingType}</div>
+                    <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))', marginBottom: 4 }}>Tipo de Gravação</div>
+                    <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{data.recordingType}</div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         );
 
@@ -1583,13 +1589,17 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-5xl max-h-[90vh] w-[98vw] sm:max-w-5xl flex flex-col overflow-hidden mobile-safe">
           <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="text-base sm:text-lg truncate">Nova Retirada - Passo {currentStep} de 15</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg truncate">
+              <span style={{ fontFamily: '"HN Display", sans-serif' }}>
+                Nova Retirada - Passo {currentStep} de 15
+              </span>
+            </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-hidden py-2 sm:py-4 flex flex-col min-h-0">
+          <div style={{ flex: 1, overflow: 'hidden', padding: '8px 0', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             {/* Progress bar */}
-            <div className="space-y-2 mb-6">
-              <div className="flex justify-between text-xs text-muted-foreground">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums', letterSpacing: '0.05em' }}>
                 <span>Passo {currentStep} de 15</span>
                 <span>{Math.round((currentStep / 15) * 100)}% completo</span>
               </div>
@@ -1599,31 +1609,43 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             {renderStep()}
           </div>
 
-          <div className="flex justify-between pt-4 border-t flex-shrink-0">
-            <Button
-              variant="outline"
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            paddingTop: 16,
+            borderTop: '1px solid hsl(var(--ds-line-1))',
+            flexShrink: 0,
+          }}>
+            <button
+              type="button"
+              className="btn"
               onClick={prevStep}
               disabled={currentStep === 1}
             >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Anterior
-            </Button>
+              <ChevronLeft size={13} strokeWidth={1.5} />
+              <span>Anterior</span>
+            </button>
 
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="button" className="btn" onClick={() => onOpenChange(false)}>
                 Cancelar
-              </Button>
-              
+              </button>
+
               {currentStep === 15 ? (
                 <>
-                  <Button variant="outline" onClick={generatePDF}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Baixar PDF
-                  </Button>
-                  <Button onClick={handleSubmit} disabled={!isStepValid() || isSubmitting}>
-                    <Check className="h-4 w-4 mr-2" />
-                    {isSubmitting ? 'Criando...' : 'Criar Retirada'}
-                  </Button>
+                  <button type="button" className="btn" onClick={generatePDF}>
+                    <Download size={13} strokeWidth={1.5} />
+                    <span>Baixar PDF</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn primary"
+                    onClick={handleSubmit}
+                    disabled={!isStepValid() || isSubmitting}
+                  >
+                    <Check size={13} strokeWidth={1.5} />
+                    <span>{isSubmitting ? 'Criando...' : 'Criar Retirada'}</span>
+                  </button>
                 </>
               ) : (
                 <>
@@ -1641,20 +1663,21 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       14: 'computers'
                     };
                     const category = categoryMap[currentStep];
-                    const hasItems = category && Array.isArray(data.selectedEquipment[category]) && 
+                    const hasItems = category && Array.isArray(data.selectedEquipment[category]) &&
                                     data.selectedEquipment[category].length > 0;
-                    
+
                     return !hasItems ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button
+                          <button
                             type="button"
-                            variant="ghost"
+                            className="btn"
+                            style={{ borderColor: 'transparent', background: 'transparent' }}
                             onClick={nextStep}
                           >
-                            Pular categoria
-                            <ChevronRight className="h-4 w-4 ml-2" />
-                          </Button>
+                            <span>Pular categoria</span>
+                            <ChevronRight size={13} strokeWidth={1.5} />
+                          </button>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Esta categoria é opcional</p>
@@ -1662,14 +1685,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       </Tooltip>
                     ) : null;
                   })()}
-                  
-                  <Button
+
+                  <button
+                    type="button"
+                    className="btn primary"
                     onClick={nextStep}
                     disabled={!isStepValid()}
                   >
-                    Próximo
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
+                    <span>Próximo</span>
+                    <ChevronRight size={13} strokeWidth={1.5} />
+                  </button>
                 </>
               )}
             </div>

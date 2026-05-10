@@ -1,11 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, ChevronDown, CheckSquare } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { TaskSortableHeader } from './TaskSortableHeader';
 import { InlineEditCell } from './InlineEditCell';
 import { InlineSelectCell } from './InlineSelectCell';
@@ -19,13 +15,13 @@ import { useDepartments } from '../hooks/useDepartments';
 import { useUsers } from '@/hooks/useUsers';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { 
+import {
   Task,
   TaskPriority,
   TaskStatus,
-  TaskSortableField, 
-  TaskSortOrder, 
-  PRIORITY_ORDER, 
+  TaskSortableField,
+  TaskSortOrder,
+  PRIORITY_ORDER,
   STATUS_ORDER,
   PRIORITY_CONFIG,
   STATUS_CONFIG,
@@ -47,9 +43,12 @@ const defaultTaskState = {
   department: null as string | null,
 };
 
-export function TasksTable({ 
-  tasks, 
-  isLoading, 
+const COLS_WITH_ASSIGNEE = '1.5fr 110px 110px 1fr 130px 1fr';
+const COLS_WITHOUT_ASSIGNEE = '2fr 120px 120px 130px 1fr';
+
+export function TasksTable({
+  tasks,
+  isLoading,
   showCreationRow = false,
   showAssignee = true,
 }: TasksTableProps) {
@@ -84,7 +83,7 @@ export function TasksTable({
         case 'status':
           comparison = (STATUS_ORDER[a.status as TaskStatus] ?? -1) - (STATUS_ORDER[b.status as TaskStatus] ?? -1);
           break;
-        case 'assignee_name':
+        case 'assignee_name': {
           const nameA = a.assignees?.[0]?.display_name || '';
           const nameB = b.assignees?.[0]?.display_name || '';
           if (!nameA && !nameB) comparison = 0;
@@ -92,6 +91,7 @@ export function TasksTable({
           else if (!nameB) comparison = -1;
           else comparison = nameA.localeCompare(nameB, 'pt-BR');
           break;
+        }
         case 'due_date':
           if (!a.due_date && !b.due_date) comparison = 0;
           else if (!a.due_date) comparison = 1;
@@ -145,116 +145,180 @@ export function TasksTable({
     }
   };
 
+  const cols = showAssignee ? COLS_WITH_ASSIGNEE : COLS_WITHOUT_ASSIGNEE;
+
   if (isLoading) {
     return (
-      <div className="space-y-2">
-        {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-12" />)}
+      <div className="tbl" style={{ gridTemplateColumns: cols, border: '1px solid hsl(var(--ds-line-1))' }}>
+        <div className="tbl-head">
+          <div>Título</div>
+          <div>Prioridade</div>
+          <div>Status</div>
+          {showAssignee && <div>Responsáveis</div>}
+          <div>Prazo</div>
+          <div>Departamento</div>
+        </div>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className={'tbl-row' + (i === 4 ? ' last' : '')}>
+            <div><span className="sk line lg" style={{ width: '70%' }} /></div>
+            <div><span className="sk line" style={{ width: 80 }} /></div>
+            <div><span className="sk line" style={{ width: 80 }} /></div>
+            {showAssignee && <div><span className="sk line" style={{ width: 100 }} /></div>}
+            <div><span className="sk line" style={{ width: 100 }} /></div>
+            <div><span className="sk line" style={{ width: 90 }} /></div>
+          </div>
+        ))}
       </div>
     );
   }
 
-  return (
-    <Table className="table-fixed">
-      <TableHeader>
-        <TableRow>
-          <TableHead className={showAssignee ? "w-[25%]" : "w-[30%]"} style={{ textAlign: 'left' }}>
-            <TaskSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
-          </TableHead>
-          <TableHead className="w-[12%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
-          </TableHead>
-          <TableHead className="w-[12%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader field="status" label="Status" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
-          </TableHead>
-          {showAssignee && (
-            <TableHead className="w-[18%]" style={{ textAlign: 'left' }}>
-              <TaskSortableHeader field="assignee_name" label="Responsáveis" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
-            </TableHead>
-          )}
-          <TableHead className="w-[18%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
-          </TableHead>
-          <TableHead className="w-[15%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader field="department" label="Departamento" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {/* Creation row */}
-        {showCreationRow && (
-          <TableRow className={`border-dashed ${!isTaskActive() ? 'opacity-70 hover:opacity-100' : ''}`}>
-            <TableCell style={{ textAlign: 'left' }}>
-              <div className="flex items-center gap-2">
-                <Plus className="w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="+ Adicionar nova tarefa..."
-                  value={newTask.title}
-                  onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
-                  onKeyDown={(e) => e.key === 'Enter' && handleCreateTask()}
-                  className="border-0 p-0 h-auto text-sm bg-transparent focus-visible:ring-0 placeholder:italic"
-                />
-              </div>
-            </TableCell>
-            <TableCell style={{ textAlign: 'left' }}>
-              <InlineSelectCell
-                value={newTask.priority}
-                options={Object.entries(PRIORITY_CONFIG).map(([value, config]) => ({ value, label: config.label }))}
-                onSave={(value) => setNewTask(prev => ({ ...prev, priority: value as TaskPriority }))}
-                renderValue={(val) => 
-                  isTaskActive() ? <PriorityBadge priority={val as TaskPriority} /> : <span className="text-muted-foreground text-sm flex items-center gap-1">Selecionar <ChevronDown className="w-3 h-3" /></span>
-                }
-                renderOption={(optVal) => <PriorityBadge priority={optVal as TaskPriority} />}
-              />
-            </TableCell>
-            <TableCell style={{ textAlign: 'left' }}>
-              <InlineSelectCell
-                value={newTask.status}
-                options={Object.entries(STATUS_CONFIG).map(([value, config]) => ({ value, label: config.label }))}
-                onSave={(value) => setNewTask(prev => ({ ...prev, status: value as TaskStatus }))}
-                renderValue={(val) => 
-                  isTaskActive() ? <StatusBadge status={val as TaskStatus} /> : <span className="text-muted-foreground text-sm flex items-center gap-1">Selecionar <ChevronDown className="w-3 h-3" /></span>
-                }
-                renderOption={(optVal) => <StatusBadge status={optVal as TaskStatus} />}
-              />
-            </TableCell>
-            {showAssignee && (
-              <TableCell style={{ textAlign: 'left' }}>
-                <InlineAssigneeCell
-                  value={newTask.assignee_ids}
-                  users={users}
-                  onSave={(value) => setNewTask(prev => ({ ...prev, assignee_ids: value }))}
-                  isActive={isTaskActive()}
-                />
-              </TableCell>
-            )}
-            <TableCell style={{ textAlign: 'left' }}>
-              <InlineDateCell value={newTask.due_date} onSave={(value) => setNewTask(prev => ({ ...prev, due_date: value }))} />
-            </TableCell>
-            <TableCell style={{ textAlign: 'left' }}>
-              <div className="flex items-center gap-2">
-                <InlineDepartmentCell value={newTask.department} departments={departments} onSave={(value) => setNewTask(prev => ({ ...prev, department: value }))} />
-                <Button size="sm" variant="ghost" onClick={handleCreateTask} disabled={!newTask.title.trim()} className="h-6 w-6 p-0">
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        )}
+  const totalRows = sortedTasks.length + (showCreationRow ? 1 : 0);
 
-        {/* Task rows */}
-        {sortedTasks.map((task) => (
-          <TableRow 
-            key={task.id} 
-            className="hover:bg-muted/50 cursor-pointer" 
+  return (
+    <div className="tbl" style={{ gridTemplateColumns: cols, border: '1px solid hsl(var(--ds-line-1))' }}>
+      <div className="tbl-head">
+        <div>
+          <TaskSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
+        </div>
+        <div>
+          <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
+        </div>
+        <div>
+          <TaskSortableHeader field="status" label="Status" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
+        </div>
+        {showAssignee && (
+          <div>
+            <TaskSortableHeader field="assignee_name" label="Responsáveis" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
+          </div>
+        )}
+        <div>
+          <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
+        </div>
+        <div>
+          <TaskSortableHeader field="department" label="Departamento" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
+        </div>
+      </div>
+
+      {showCreationRow && (
+        <div
+          className="tbl-row"
+          style={{
+            opacity: isTaskActive() ? 1 : 0.7,
+            background: isTaskActive() ? 'hsl(var(--ds-line-2) / 0.3)' : 'transparent',
+          }}
+        >
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Plus size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-4))' }} />
+              <Input
+                placeholder="+ Adicionar nova tarefa…"
+                value={newTask.title}
+                onChange={(e) => setNewTask((prev) => ({ ...prev, title: e.target.value }))}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateTask()}
+                style={{
+                  border: 0,
+                  padding: 0,
+                  height: 'auto',
+                  background: 'transparent',
+                  fontSize: 13,
+                  fontStyle: 'italic',
+                }}
+              />
+            </div>
+          </div>
+          <div>
+            <InlineSelectCell
+              value={newTask.priority}
+              options={Object.entries(PRIORITY_CONFIG).map(([value, config]) => ({ value, label: config.label }))}
+              onSave={(value) => setNewTask((prev) => ({ ...prev, priority: value as TaskPriority }))}
+              renderValue={(val) =>
+                isTaskActive() ? (
+                  <PriorityBadge priority={val as TaskPriority} />
+                ) : (
+                  <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-4))', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    Selecionar <ChevronDown size={11} strokeWidth={1.5} />
+                  </span>
+                )
+              }
+              renderOption={(optVal) => <PriorityBadge priority={optVal as TaskPriority} />}
+            />
+          </div>
+          <div>
+            <InlineSelectCell
+              value={newTask.status}
+              options={Object.entries(STATUS_CONFIG).map(([value, config]) => ({ value, label: config.label }))}
+              onSave={(value) => setNewTask((prev) => ({ ...prev, status: value as TaskStatus }))}
+              renderValue={(val) =>
+                isTaskActive() ? (
+                  <StatusBadge status={val as TaskStatus} />
+                ) : (
+                  <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-4))', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    Selecionar <ChevronDown size={11} strokeWidth={1.5} />
+                  </span>
+                )
+              }
+              renderOption={(optVal) => <StatusBadge status={optVal as TaskStatus} />}
+            />
+          </div>
+          {showAssignee && (
+            <div>
+              <InlineAssigneeCell
+                value={newTask.assignee_ids}
+                users={users}
+                onSave={(value) => setNewTask((prev) => ({ ...prev, assignee_ids: value }))}
+                isActive={isTaskActive()}
+              />
+            </div>
+          )}
+          <div>
+            <InlineDateCell value={newTask.due_date} onSave={(value) => setNewTask((prev) => ({ ...prev, due_date: value }))} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'space-between' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <InlineDepartmentCell
+                value={newTask.department}
+                departments={departments}
+                onSave={(value) => setNewTask((prev) => ({ ...prev, department: value }))}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleCreateTask}
+              disabled={!newTask.title.trim()}
+              style={{
+                width: 24,
+                height: 24,
+                display: 'grid',
+                placeItems: 'center',
+                background: 'transparent',
+                border: 0,
+                color: 'hsl(var(--ds-fg-3))',
+                cursor: 'pointer',
+                opacity: newTask.title.trim() ? 1 : 0.4,
+              }}
+              aria-label="Criar tarefa"
+            >
+              <Plus size={14} strokeWidth={1.5} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {sortedTasks.map((task, idx) => {
+        const isLast = idx === sortedTasks.length - 1;
+        return (
+          <div
+            key={task.id}
+            className={'tbl-row' + (isLast ? ' last' : '')}
             onClick={() => navigate(`/tarefas/${task.id}`)}
           >
-            <TableCell style={{ textAlign: 'left' }}>
+            <div onClick={(e) => e.stopPropagation()}>
               <InlineEditCell
                 value={task.title}
                 onSave={(value) => updateTask.mutate({ id: task.id, updates: { title: value }, oldTask: task })}
               />
-            </TableCell>
-            <TableCell style={{ textAlign: 'left' }}>
+            </div>
+            <div onClick={(e) => e.stopPropagation()}>
               <InlineSelectCell
                 value={task.priority}
                 options={Object.entries(PRIORITY_CONFIG).map(([val, config]) => ({ value: val, label: config.label }))}
@@ -262,8 +326,8 @@ export function TasksTable({
                 renderValue={(val) => <PriorityBadge priority={val as TaskPriority} />}
                 renderOption={(optVal) => <PriorityBadge priority={optVal as TaskPriority} />}
               />
-            </TableCell>
-            <TableCell style={{ textAlign: 'left' }}>
+            </div>
+            <div onClick={(e) => e.stopPropagation()}>
               <InlineSelectCell
                 value={task.status}
                 options={Object.entries(STATUS_CONFIG).map(([val, config]) => ({ value: val, label: config.label }))}
@@ -271,41 +335,46 @@ export function TasksTable({
                 renderValue={(val) => <StatusBadge status={val as TaskStatus} />}
                 renderOption={(optVal) => <StatusBadge status={optVal as TaskStatus} />}
               />
-            </TableCell>
+            </div>
             {showAssignee && (
-              <TableCell style={{ textAlign: 'left' }}>
+              <div onClick={(e) => e.stopPropagation()}>
                 <InlineAssigneeCell
-                  value={task.assignees?.map(a => a.user_id) || []}
+                  value={task.assignees?.map((a) => a.user_id) || []}
                   users={users}
                   onSave={(newIds) => updateAssignees.mutate({ taskId: task.id, assigneeIds: newIds })}
                 />
-              </TableCell>
+              </div>
             )}
-            <TableCell style={{ textAlign: 'left' }}>
+            <div onClick={(e) => e.stopPropagation()}>
               <InlineDateCell
                 value={task.due_date}
                 onSave={(val) => updateTask.mutate({ id: task.id, updates: { due_date: val }, oldTask: task })}
               />
-            </TableCell>
-            <TableCell style={{ textAlign: 'left' }}>
+            </div>
+            <div onClick={(e) => e.stopPropagation()}>
               <InlineDepartmentCell
                 value={task.department}
                 departments={departments}
                 onSave={(value) => updateTask.mutate({ id: task.id, updates: { department: value }, oldTask: task })}
               />
-            </TableCell>
-          </TableRow>
-        ))}
+            </div>
+          </div>
+        );
+      })}
 
-        {/* Empty state */}
-        {sortedTasks.length === 0 && !showCreationRow && (
-          <TableRow>
-            <TableCell colSpan={showAssignee ? 6 : 5}>
-              <EmptyState icon={CheckSquare} title="" description="Nenhuma tarefa encontrada." compact />
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+      {totalRows === 0 && (
+        <div style={{ gridColumn: '1 / -1', padding: 0 }}>
+          <div className="empties" style={{ borderTop: 0, borderLeft: 0, borderRight: 0 }}>
+            <div className="empty" style={{ borderRight: 0 }}>
+              <div className="glyph">
+                <CheckSquare strokeWidth={1.25} />
+              </div>
+              <h5>Nenhuma tarefa encontrada</h5>
+              <p>Crie sua primeira tarefa para começar.</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

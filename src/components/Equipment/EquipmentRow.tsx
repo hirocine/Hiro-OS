@@ -1,8 +1,5 @@
 import { Equipment } from '@/types/equipment';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Upload, Camera } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Edit, Trash2, Camera } from 'lucide-react';
 import { useRef } from 'react';
 
 interface EquipmentRowProps {
@@ -12,32 +9,35 @@ interface EquipmentRowProps {
   onImageUpload: (id: string, file: File) => void;
 }
 
+const statusToneStyle = (status: Equipment['status']): React.CSSProperties => {
+  switch (status) {
+    case 'available':
+      return { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' };
+    case 'maintenance':
+      return { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' };
+    default:
+      return { color: 'hsl(var(--ds-fg-3))' };
+  }
+};
+
+const getStatusLabel = (status: Equipment['status']) => {
+  switch (status) {
+    case 'available': return 'Disponível';
+    case 'maintenance': return 'Manutenção';
+    default: return status;
+  }
+};
+
+const formatCurrency = (value?: number) => {
+  if (!value) return '—';
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value);
+};
+
 export function EquipmentRow({ equipment, onEdit, onDelete, onImageUpload }: EquipmentRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const getStatusVariant = (status: Equipment['status']) => {
-    switch (status) {
-      case 'available': return 'success';
-      case 'maintenance': return 'destructive';
-      default: return 'default';
-    }
-  };
-
-  const getStatusLabel = (status: Equipment['status']) => {
-    switch (status) {
-      case 'available': return 'Disponível';
-      case 'maintenance': return 'Manutenção';
-      default: return status;
-    }
-  };
-
-  const formatCurrency = (value?: number) => {
-    if (!value) return '-';
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
 
   const handleImageClick = () => {
     fileInputRef.current?.click();
@@ -45,94 +45,145 @@ export function EquipmentRow({ equipment, onEdit, onDelete, onImageUpload }: Equ
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      onImageUpload(equipment.id, file);
-    }
+    if (file) onImageUpload(equipment.id, file);
   };
 
   return (
-    <div className="grid grid-cols-12 gap-4 py-4 px-4 border-b border-border hover:bg-accent/50 transition-colors items-center">
-      {/* Image */}
-      <div className="col-span-1">
-        <div 
-          className="w-12 h-12 border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors group"
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(12, 1fr)',
+        gap: 16,
+        padding: '12px 16px',
+        alignItems: 'center',
+        borderBottom: '1px solid hsl(var(--ds-line-2))',
+        transition: 'background 0.15s',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'transparent';
+      }}
+    >
+      <div style={{ gridColumn: 'span 1' }}>
+        <button
+          type="button"
           onClick={handleImageClick}
+          style={{
+            width: 44,
+            height: 44,
+            border: '1px dashed hsl(var(--ds-line-1))',
+            background: 'hsl(var(--ds-line-2) / 0.3)',
+            display: 'grid',
+            placeItems: 'center',
+            cursor: 'pointer',
+            overflow: 'hidden',
+            color: 'hsl(var(--ds-fg-3))',
+          }}
+          aria-label="Imagem"
         >
           {equipment.image ? (
-            <img 
-              src={equipment.image} 
+            <img
+              src={equipment.image}
               alt={equipment.name}
-              className="w-full h-full object-cover rounded-lg"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
-            <Camera className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+            <Camera size={14} strokeWidth={1.5} />
           )}
-        </div>
-        <Input
+        </button>
+        <input
           ref={fileInputRef}
           type="file"
           accept="image/*"
           onChange={handleFileChange}
-          className="hidden"
+          style={{ display: 'none' }}
         />
       </div>
 
-      {/* Patrimony */}
-      <div className="col-span-1">
-        <div className="text-sm">{equipment.patrimonyNumber || '-'}</div>
+      <div style={{ gridColumn: 'span 1', fontSize: 13, color: 'hsl(var(--ds-fg-2))', fontVariantNumeric: 'tabular-nums' }}>
+        {equipment.patrimonyNumber || '—'}
       </div>
 
-      {/* Name */}
-      <div className="col-span-2">
-        <div className="font-medium">{equipment.name}</div>
+      <div style={{ gridColumn: 'span 2', fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+        {equipment.name}
       </div>
 
-      {/* Brand */}
-      <div className="col-span-1">
-        <div className="text-sm text-muted-foreground">{equipment.brand}</div>
+      <div style={{ gridColumn: 'span 1', fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>
+        {equipment.brand}
       </div>
 
-
-      {/* Category */}
-      <div className="col-span-1">
-        <div className="text-sm capitalize">{equipment.category}</div>
+      <div
+        style={{
+          gridColumn: 'span 1',
+          fontSize: 13,
+          color: 'hsl(var(--ds-fg-2))',
+          textTransform: 'capitalize',
+        }}
+      >
+        {equipment.category}
       </div>
 
-      {/* Serial Number */}
-      <div className="col-span-1">
-        <div className="text-sm font-mono">{equipment.serialNumber || '-'}</div>
+      <div
+        style={{
+          gridColumn: 'span 1',
+          fontSize: 12,
+          color: 'hsl(var(--ds-fg-3))',
+          fontFamily: 'monospace',
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
+        {equipment.serialNumber || '—'}
       </div>
 
-      {/* Value */}
-      <div className="col-span-1">
-        <div className="text-sm">{formatCurrency(equipment.value)}</div>
+      <div
+        style={{
+          gridColumn: 'span 1',
+          fontSize: 13,
+          color: 'hsl(var(--ds-fg-1))',
+          fontVariantNumeric: 'tabular-nums',
+          fontWeight: 500,
+        }}
+      >
+        {formatCurrency(equipment.value)}
       </div>
 
-      {/* Status */}
-      <div className="col-span-1">
-        <Badge variant={getStatusVariant(equipment.status)}>
+      <div style={{ gridColumn: 'span 1' }}>
+        <span
+          className="pill"
+          style={{ ...statusToneStyle(equipment.status), display: 'inline-flex', alignItems: 'center', gap: 4 }}
+        >
+          <span className="dot" style={{ background: 'currentColor' }} />
           {getStatusLabel(equipment.status)}
-        </Badge>
+        </span>
       </div>
 
-      {/* Actions */}
-      <div className="col-span-2 flex gap-2 justify-end">
-        <Button
-          variant="outline"
-          size="sm"
+      <div style={{ gridColumn: 'span 2', display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+        <button
+          type="button"
+          className="btn"
+          style={{ height: 28, padding: '0 10px', fontSize: 11 }}
           onClick={() => onEdit(equipment)}
         >
-          <Edit className="h-3 w-3 mr-1" />
-          Editar
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
+          <Edit size={12} strokeWidth={1.5} />
+          <span>Editar</span>
+        </button>
+        <button
+          type="button"
+          className="btn"
+          style={{
+            height: 28,
+            padding: '0 10px',
+            fontSize: 11,
+            color: 'hsl(var(--ds-danger))',
+            borderColor: 'hsl(var(--ds-danger) / 0.3)',
+          }}
           onClick={() => onDelete(equipment.id)}
         >
-          <Trash2 className="h-3 w-3 mr-1" />
-          Excluir
-        </Button>
+          <Trash2 size={12} strokeWidth={1.5} />
+          <span>Excluir</span>
+        </button>
       </div>
     </div>
   );

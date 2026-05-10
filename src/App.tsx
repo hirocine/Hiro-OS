@@ -2,7 +2,7 @@ import { Suspense, lazy, ReactNode } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Layout } from "./components/Layout/Layout";
+import { LayoutDS } from "./ds/LayoutDS";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LoadingScreenSkeleton } from "./components/ui/loading-screen";
@@ -63,6 +63,7 @@ const MarketingPosts = lazy(() => import("./pages/MarketingPosts"));
 const MarketingInstagram = lazy(() => import("./pages/MarketingInstagram"));
 const MarketingSite = lazy(() => import("./pages/MarketingSite"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const DsPreview = lazy(() => import("./ds/preview"));
 
 const App = () => (
   <AuthProvider>
@@ -81,10 +82,15 @@ const App = () => (
                 <ProposalPublic />
               </Suspense>
             } />
+            <Route path="/ds-preview" element={
+              <Suspense fallback={null}>
+                <DsPreview />
+              </Suspense>
+            } />
             <Route path="/" element={
               <ProtectedRoute>
                 <ErrorBoundary>
-                  <Layout />
+                  <LayoutDS />
                 </ErrorBoundary>
               </ProtectedRoute>
             }>
@@ -119,7 +125,11 @@ const App = () => (
                 <Route path="orcamentos/novo" element={<Suspense fallback={<LoadingScreenSkeleton />}><NewProposal /></Suspense>} />
                 <Route path="orcamentos/:slug/overview" element={<ProposalOverview />} />
                 <Route path="orcamentos/:slug" element={<ProposalDetails />} />
-                <Route path="crm" element={<CRM />} />
+                <Route path="crm" element={<Navigate to="/crm/pipeline" replace />} />
+                <Route path="crm/pipeline" element={<CRM />} />
+                <Route path="crm/contatos" element={<CRM />} />
+                <Route path="crm/atividades" element={<CRM />} />
+                <Route path="crm/dashboard" element={<CRM />} />
                 <Route path="crm/contatos/:id" element={<CRMContactDetail />} />
                 <Route path="crm/deals/:id" element={<CRMDealDetail />} />
                 {/* Marketing — entrada principal redireciona pro Dashboard */}

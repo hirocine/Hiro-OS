@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMarketingIntegrations, type MarketingIntegration } from '@/hooks/useMarketingIntegrations';
@@ -34,6 +32,26 @@ const PLATFORM_META = {
       'Você precisa estar aprovado no Marketing Developer Platform da LinkedIn e gerar um token com escopo r_organization_social.',
   },
 } as const;
+
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const Field = ({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) => (
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <label style={fieldLabel}>
+      {label}
+      {hint && <span style={{ marginLeft: 6, fontSize: 10, color: 'hsl(var(--ds-fg-4))', textTransform: 'none', letterSpacing: 0 }}>{hint}</span>}
+    </label>
+    {children}
+  </div>
+);
 
 export function MarketingIntegrationDialog({ open, onOpenChange, platform, existing }: Props) {
   const meta = PLATFORM_META[platform];
@@ -88,69 +106,69 @@ export function MarketingIntegrationDialog({ open, onOpenChange, platform, exist
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{meta.title}</DialogTitle>
-          <DialogDescription>{meta.helper}</DialogDescription>
+          <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>{meta.title}</DialogTitle>
+          <DialogDescription style={{ fontSize: 12, lineHeight: 1.5 }}>{meta.helper}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="account-id">{meta.accountIdLabel}</Label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 8, paddingBottom: 8 }}>
+          <Field label={meta.accountIdLabel}>
             <Input
-              id="account-id"
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
               placeholder={meta.accountIdPlaceholder}
             />
-          </div>
+          </Field>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="account-name">Nome da conta (opcional)</Label>
+          <Field label="Nome da conta" hint="(opcional)">
             <Input
-              id="account-name"
               value={accountName}
               onChange={(e) => setAccountName(e.target.value)}
               placeholder="@hirofilm"
             />
-          </div>
+          </Field>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="access-token">
-              Access token {existing?.access_token && <span className="text-xs text-muted-foreground">(preenchido — deixe em branco para manter)</span>}
-            </Label>
+          <Field
+            label="Access token"
+            hint={existing?.access_token ? '(preenchido — deixe em branco para manter)' : undefined}
+          >
             <Input
-              id="access-token"
               type="password"
               value={accessToken}
               onChange={(e) => setAccessToken(e.target.value)}
-              placeholder={existing?.access_token ? '•••••••••• (clique para substituir)' : 'EAAB...'}
+              placeholder={existing?.access_token ? '•••••••••• (clique para substituir)' : 'EAAB…'}
               autoComplete="off"
             />
-          </div>
+          </Field>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="token-expires">Validade do token (opcional)</Label>
+          <Field label="Validade do token" hint="(opcional)">
             <Input
-              id="token-expires"
               type="date"
               value={tokenExpires}
               onChange={(e) => setTokenExpires(e.target.value)}
             />
-          </div>
+          </Field>
 
-          <p className="text-xs text-muted-foreground">
+          <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
             Documentação:{' '}
-            <a href={meta.docsHref} target="_blank" rel="noreferrer" className="underline">
+            <a
+              href={meta.docsHref}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: 'hsl(var(--ds-accent))', textDecoration: 'underline' }}
+            >
               {meta.docsLabel}
             </a>
           </p>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Salvar
-          </Button>
+          <button type="button" className="btn" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </button>
+          <button type="button" className="btn primary" onClick={handleSave} disabled={saving}>
+            {saving && <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />}
+            <span>Salvar</span>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

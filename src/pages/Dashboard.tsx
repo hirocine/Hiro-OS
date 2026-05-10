@@ -2,55 +2,135 @@ import { useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useFinancialData } from '@/hooks/useFinancialData';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useCashFlowData } from '@/hooks/useCashFlowData';
 import { formatCurrency, formatRelativeTime } from '@/lib/utils';
-import { cn } from '@/lib/utils';
 import {
   Clock, TrendingUp, TrendingDown, DollarSign, Target, Award,
-  Users, Zap, BarChart3, Heart, PartyPopper, Hourglass, Calendar,
-  Wallet, ArrowDownLeft, ArrowUpRight, Eye, EyeOff
+  Users, Zap, BarChart3, Heart, Hourglass, Calendar,
+  Wallet, ArrowDownLeft, ArrowUpRight, Eye, EyeOff, PartyPopper,
+  type LucideIcon,
 } from 'lucide-react';
-import { useCashFlowData } from '@/hooks/useCashFlowData';
 import {
-  ComposedChart, Bar, Line, Area, AreaChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer as RechartsContainer
+  ComposedChart, Bar, Line, Area, AreaChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer as RechartsContainer,
 } from 'recharts';
+
+type Tone = 'fg' | 'accent' | 'success' | 'warning' | 'destructive' | 'muted';
+
+const toneColor: Record<Tone, string> = {
+  fg: 'hsl(var(--ds-fg-1))',
+  accent: 'hsl(var(--ds-accent))',
+  success: 'hsl(var(--ds-success))',
+  warning: 'hsl(var(--ds-warning))',
+  destructive: 'hsl(var(--ds-danger))',
+  muted: 'hsl(var(--ds-fg-3))',
+};
+
+function Tile({
+  title, Icon, value, subtitle, tone = 'fg', accent = false, badge,
+}: {
+  title: string;
+  Icon?: LucideIcon;
+  value: string;
+  subtitle?: string;
+  tone?: Tone;
+  accent?: boolean;
+  badge?: React.ReactNode;
+}) {
+  const color = toneColor[tone];
+  return (
+    <div
+      style={{
+        border: `1px solid ${accent ? 'hsl(var(--ds-accent) / 0.4)' : 'hsl(var(--ds-line-1))'}`,
+        background: accent ? 'hsl(var(--ds-accent) / 0.05)' : 'hsl(var(--ds-surface))',
+        padding: '18px 20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        minHeight: 120,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-fg-3))', flexWrap: 'wrap' }}>
+          {Icon && <Icon size={13} strokeWidth={1.5} style={{ color }} />}
+          <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500 }}>
+            {title}
+          </span>
+          {badge}
+        </div>
+      </div>
+      <div
+        style={{
+          fontFamily: '"HN Display", sans-serif',
+          fontSize: 22,
+          fontWeight: 600,
+          letterSpacing: '-0.01em',
+          fontVariantNumeric: 'tabular-nums',
+          color,
+          marginTop: 2,
+        }}
+      >
+        {value}
+      </div>
+      {subtitle && (
+        <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', lineHeight: 1.4 }}>
+          {subtitle}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProgressBar({ value }: { value: number }) {
+  const pct = Math.max(0, Math.min(value, 100));
+  return (
+    <div style={{ height: 4, background: 'hsl(var(--ds-line-2))', overflow: 'hidden' }}>
+      <div style={{ width: `${pct}%`, height: '100%', background: 'hsl(var(--ds-accent))' }} />
+    </div>
+  );
+}
+
+function SectionHead({ eyebrow, title, Icon }: { eyebrow: string; title: string; Icon: LucideIcon }) {
+  return (
+    <div className="section-head">
+      <div className="section-head-l">
+        <span className="section-eyebrow">{eyebrow}</span>
+        <span className="section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <Icon size={14} strokeWidth={1.5} />
+          {title}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
-
   const meta = payload.find((p: any) => p.dataKey === 'meta')?.value ?? 0;
   const realizado = payload.find((p: any) => p.dataKey === 'realizado')?.value ?? 0;
   const diff = meta > 0 ? (((realizado - meta) / meta) * 100).toFixed(1) : '0.0';
   const isPositive = Number(diff) >= 0;
-
   return (
-    <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-sm">
-      <p className="font-semibold text-foreground mb-2">{label}</p>
-      <div className="space-y-1">
-        <div className="flex items-center justify-between gap-4">
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <span className="w-2.5 h-2.5 rounded-sm bg-white/10 inline-block" />
-            Meta
-          </span>
-          <span className="font-medium text-muted-foreground">{formatCurrency(meta)}</span>
+    <div style={{
+      background: 'hsl(var(--ds-surface))', border: '1px solid hsl(var(--ds-line-1))',
+      padding: 12, fontSize: 12, fontFamily: '"HN Text", sans-serif',
+    }}>
+      <div style={{ fontWeight: 600, color: 'hsl(var(--ds-fg-1))', marginBottom: 6 }}>{label}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, color: 'hsl(var(--ds-fg-3))' }}>
+          <span>Meta</span>
+          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(meta)}</span>
         </div>
-        <div className="flex items-center justify-between gap-4">
-          <span className="flex items-center gap-1.5 text-primary">
-            <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block" />
-            Realizado
-          </span>
-          <span className="font-medium text-foreground">{formatCurrency(realizado)}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, color: 'hsl(var(--ds-accent))' }}>
+          <span>Realizado</span>
+          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(realizado)}</span>
         </div>
       </div>
-      <div className="mt-2 pt-2 border-t border-border">
-        <span className={isPositive ? 'text-success' : 'text-warning'}>
-          {isPositive ? '+' : ''}{diff}%
-        </span>
-        <span className="text-muted-foreground text-xs ml-1">vs meta</span>
+      <div style={{
+        marginTop: 8, paddingTop: 8, borderTop: '1px solid hsl(var(--ds-line-2))',
+        color: isPositive ? 'hsl(var(--ds-success))' : 'hsl(var(--ds-warning))',
+      }}>
+        {isPositive ? '+' : ''}{diff}%
+        <span style={{ color: 'hsl(var(--ds-fg-4))', marginLeft: 4 }}>vs meta</span>
       </div>
     </div>
   );
@@ -63,625 +143,408 @@ export default function Dashboard() {
   const lastUpdate = lastSyncedAt ?? cashLastSynced;
   const [valuesHidden, setValuesHidden] = useState(true);
 
-  const toggleValuesVisibility = () => {
-    setValuesHidden(prev => !prev);
-  };
-
-  // lastUpdate is now derived from hooks, no need for useEffect
-
-  // Current month label
   const currentMonthLabel = useMemo(() => {
     const raw = new Date().toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   }, []);
 
-  // Derived calculations
   const currentMonth = new Date().getMonth();
-  const ytdGoal = useMemo(() =>
-    Math.round((goals.revenue_goal / 12) * (currentMonth + 1)),
-    [goals.revenue_goal, currentMonth]
-  );
-
+  const ytdGoal = useMemo(() => Math.round((goals.revenue_goal / 12) * (currentMonth + 1)), [goals.revenue_goal, currentMonth]);
   const annualProgress = useMemo(() =>
     goals.revenue_goal > 0 ? Math.round((metrics.accumulated_revenue_ytd / goals.revenue_goal) * 100) : 0,
     [metrics.accumulated_revenue_ytd, goals.revenue_goal]
   );
-
   const monthlyGoal = useMemo(() => Math.round(goals.revenue_goal / 12), [goals.revenue_goal]);
   const monthlyProgress = useMemo(() =>
-    Math.round((metrics.total_revenue / monthlyGoal) * 100),
+    monthlyGoal > 0 ? Math.round((metrics.total_revenue / monthlyGoal) * 100) : 0,
     [metrics.total_revenue, monthlyGoal]
   );
-
-  const ltvCacRatio = useMemo(() =>
-    metrics.cac > 0 ? (metrics.ltv / metrics.cac).toFixed(1) : '–',
-    [metrics.ltv, metrics.cac]
+  const ytdProgress = useMemo(() =>
+    ytdGoal > 0 ? Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100) : 0,
+    [metrics.accumulated_revenue_ytd, ytdGoal]
   );
+  const ltvCacRatio = useMemo(() => metrics.cac > 0 ? (metrics.ltv / metrics.cac).toFixed(1) : '–', [metrics.ltv, metrics.cac]);
 
   const chartData = useMemo(() =>
-    monthlyData.map(d => ({
-      ...d,
-      realizado: d.realizado > 0 ? d.realizado : null,
-    })),
+    monthlyData.map(d => ({ ...d, realizado: d.realizado > 0 ? d.realizado : null })),
     [monthlyData]
   );
 
   const marginAlert = metrics.contribution_margin_actual < goals.margin_goal_pct;
   const profitAlert = metrics.net_profit_actual < goals.profit_goal_pct;
   const monthlyGoalExceeded = monthlyProgress > 100;
+  const hidden = valuesHidden ? 'R$ ••••••' : '';
 
-  if (!roleLoading && !isAdmin) {
-    return <Navigate to="/" replace />;
-  }
+  if (!roleLoading && !isAdmin) return <Navigate to="/" replace />;
 
-  if (roleLoading || loading) {
-    return (
-      <ResponsiveContainer maxWidth="7xl">
-        <PageHeader title="Dashboard Financeiro" subtitle="Carregando dados..." />
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-36 w-full rounded-lg" />)}
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
-          </div>
-          <Skeleton className="h-80 w-full rounded-lg" />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(7)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
-          </div>
-        </div>
-      </ResponsiveContainer>
-    );
-  }
+  const isLoading = roleLoading || loading;
 
   return (
-    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-      <PageHeader
-        title="Dashboard Financeiro"
-        subtitle={
-          <>
-            Visão executiva de performance e saúde financeira
-            <span className="text-muted-foreground/50"> • </span>
-            <span className="text-xs text-muted-foreground/70 inline-flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {lastUpdate
-                ? `Sincronizado ${formatRelativeTime(lastUpdate)}`
-                : 'Dados de exemplo'}
-            </span>
-          </>
-        }
-      />
-
-      <div className="space-y-6 lg:space-y-8">
-        {/* Section 1: Mês Atual */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Calendar className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">Mês Atual ({currentMonthLabel})</h2>
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Dashboard Financeiro.</h1>
+            <p className="ph-sub">
+              Visão executiva de performance e saúde financeira.
+              <span className="meta">
+                <Clock size={12} strokeWidth={1.5} />
+                {lastUpdate ? `Sincronizado ${formatRelativeTime(lastUpdate)}` : 'Dados de exemplo'}
+              </span>
+            </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Faturamento do Mês */}
-            <Card className={cn(
-              "shadow-card hover:shadow-elegant transition-all duration-200",
-              monthlyGoalExceeded && "border-success/30 bg-success/5"
-            )}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2 flex-wrap">
-                  <TrendingUp className="h-4 w-4" />
+          <div className="ph-actions">
+            <button
+              type="button"
+              onClick={() => setValuesHidden(v => !v)}
+              className="btn"
+              aria-label={valuesHidden ? 'Mostrar valores' : 'Esconder valores'}
+            >
+              {valuesHidden ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
+              <span>{valuesHidden ? 'Mostrar valores' : 'Esconder valores'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Mês Atual */}
+        <section className="section">
+          <SectionHead eyebrow="01" title={`Mês Atual (${currentMonthLabel})`} Icon={Calendar} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            <div
+              style={{
+                border: `1px solid ${monthlyGoalExceeded ? 'hsl(var(--ds-success) / 0.4)' : 'hsl(var(--ds-line-1))'}`,
+                background: monthlyGoalExceeded ? 'hsl(var(--ds-success) / 0.05)' : 'hsl(var(--ds-surface))',
+                padding: '18px 20px',
+                display: 'flex', flexDirection: 'column', gap: 10,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-fg-3))', flexWrap: 'wrap' }}>
+                <TrendingUp size={13} strokeWidth={1.5} />
+                <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500 }}>
                   Faturamento do Mês
-                  {monthlyGoalExceeded && (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-success bg-success/10 px-2 py-0.5 rounded-full">
-                      <PartyPopper className="h-3 w-3" />
-                      Meta batida!
-                    </span>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
-                  <span className="text-xl sm:text-2xl font-bold text-foreground">{formatCurrency(metrics.total_revenue)}</span>
-                  <span className="text-xs text-muted-foreground">meta {formatCurrency(monthlyGoal)}</span>
-                </div>
-                <Progress value={Math.min(monthlyProgress, 100)} className="h-2" />
-                <p className="text-xs text-muted-foreground">{monthlyProgress}% da meta mensal</p>
-              </CardContent>
-            </Card>
-
-            {/* Margem de Contribuição */}
-            <Card className={cn(
-              "shadow-card hover:shadow-elegant transition-all duration-200",
-              marginAlert && "border-warning/30"
-            )}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  Margem de Contribuição
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className={cn(
-                  "text-3xl sm:text-4xl font-bold",
-                  marginAlert ? "text-warning" : "text-foreground"
-                )}>
-                  {metrics.contribution_margin_actual}%
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {formatCurrency(metrics.contribution_margin_value)}
-                </p>
-                {marginAlert && (
-                  <p className="text-xs text-warning flex items-center gap-1">
-                    <TrendingDown className="h-3 w-3" />
-                    {(goals.margin_goal_pct - metrics.contribution_margin_actual).toFixed(1)}pp abaixo da meta ({goals.margin_goal_pct}%)
-                  </p>
+                </span>
+                {monthlyGoalExceeded && (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                    color: 'hsl(var(--ds-success))', fontSize: 10, fontWeight: 600,
+                    letterSpacing: '0.1em', textTransform: 'uppercase',
+                  }}>
+                    <PartyPopper size={11} strokeWidth={1.5} />
+                    Meta batida
+                  </span>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{
+                  fontFamily: '"HN Display", sans-serif', fontSize: 22, fontWeight: 600,
+                  letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))',
+                }}>
+                  {hidden || formatCurrency(metrics.total_revenue)}
+                </span>
+                <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                  meta {hidden || formatCurrency(monthlyGoal)}
+                </span>
+              </div>
+              <ProgressBar value={monthlyProgress} />
+              <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>{monthlyProgress}% da meta mensal</div>
+            </div>
 
-            {/* Lucro Líquido */}
-            <Card className={cn(
-              "shadow-card hover:shadow-elegant transition-all duration-200",
-              profitAlert && "border-warning/30"
-            )}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Lucro Líquido
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className={cn(
-                  "text-3xl sm:text-4xl font-bold",
-                  profitAlert ? "text-warning" : "text-foreground"
-                )}>
-                  {metrics.net_profit_actual}%
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {formatCurrency(metrics.net_profit_value)}
-                </p>
-                {profitAlert && (
-                  <p className="text-xs text-warning flex items-center gap-1">
-                    <TrendingDown className="h-3 w-3" />
-                    {(goals.profit_goal_pct - metrics.net_profit_actual).toFixed(1)}pp abaixo da meta ({goals.profit_goal_pct}%)
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            <Tile
+              title="Margem de Contribuição"
+              Icon={Target}
+              value={`${metrics.contribution_margin_actual}%`}
+              subtitle={
+                marginAlert
+                  ? `${(goals.margin_goal_pct - metrics.contribution_margin_actual).toFixed(1)}pp abaixo da meta (${goals.margin_goal_pct}%)`
+                  : formatCurrency(metrics.contribution_margin_value)
+              }
+              tone={marginAlert ? 'warning' : 'fg'}
+            />
+            <Tile
+              title="Lucro Líquido"
+              Icon={DollarSign}
+              value={`${metrics.net_profit_actual}%`}
+              subtitle={
+                profitAlert
+                  ? `${(goals.profit_goal_pct - metrics.net_profit_actual).toFixed(1)}pp abaixo da meta (${goals.profit_goal_pct}%)`
+                  : formatCurrency(metrics.net_profit_value)
+              }
+              tone={profitAlert ? 'warning' : 'fg'}
+            />
           </div>
         </section>
 
-        {/* Section 2: Fluxo de Caixa */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Wallet className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">Fluxo de Caixa</h2>
-          </div>
+        {/* Fluxo de Caixa */}
+        <section className="section">
+          <SectionHead eyebrow="02" title="Fluxo de Caixa" Icon={Wallet} />
           {cashFlowLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-32 w-full rounded-lg" />
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} style={{
+                  border: '1px solid hsl(var(--ds-line-1))', minHeight: 120, padding: 20,
+                }}>
+                  <span className="sk line" style={{ width: '60%' }} />
+                  <div style={{ marginTop: 16 }}>
+                    <span className="sk line lg" style={{ width: '70%' }} />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
-            <div className="space-y-4">
-              {/* Linha 1: Saldo Atual + Gráfico de Evolução */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <Card className="border-primary/40 bg-primary/5 shadow-card hover:shadow-elegant transition-all duration-200 flex flex-col">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-primary/80">
-                      Saldo Atual Disponível
-                    </CardTitle>
-                    <button
-                      onClick={toggleValuesVisibility}
-                      className="p-1.5 rounded-md hover:bg-primary/10 transition-colors"
-                      aria-label={valuesHidden ? 'Mostrar valores' : 'Esconder valores'}
-                    >
-                      {valuesHidden ? (
-                        <EyeOff className="h-4 w-4 text-primary" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-primary" />
-                      )}
-                    </button>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-xl sm:text-2xl font-bold text-primary">
-                      {valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.total_balance)}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="lg:col-span-2 shadow-card">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12 }}>
+                <Tile
+                  title="Saldo Atual"
+                  Icon={Wallet}
+                  value={hidden || formatCurrency(cashFlow.total_balance)}
+                  subtitle="Soma de todas as contas bancárias"
+                  tone="accent"
+                  accent
+                />
+                <div style={{ border: '1px solid hsl(var(--ds-line-1))', padding: '18px 20px', background: 'hsl(var(--ds-surface))' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-fg-3))', marginBottom: 12 }}>
+                    <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500 }}>
                       Evolução de Caixa (2026)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-52 sm:h-64 lg:h-80">
-                      <RechartsContainer width="100%" height="100%">
-                        <AreaChart data={cashEvolution} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                          <defs>
-                            <linearGradient id="cashGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                          <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
-                          <YAxis
-                            orientation="right"
-                            tickFormatter={(v: number) => valuesHidden ? '•••' : `${(v / 1000).toFixed(0)}k`}
-                            tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                            axisLine={false}
-                            tickLine={false}
-                          />
-                          <Tooltip
-                            content={({ active, payload, label }) => {
-                              if (!active || !payload?.length) return null;
-                              const val = payload[0]?.value as number;
-                              return (
-                                <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-sm">
-                                  <p className="font-semibold text-foreground mb-1">{label}</p>
-                                  <p className="text-primary font-medium">{valuesHidden ? 'R$ ••••••' : formatCurrency(val)}</p>
+                    </span>
+                  </div>
+                  <div style={{ height: 220 }}>
+                    <RechartsContainer width="100%" height="100%">
+                      <AreaChart data={cashEvolution} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                        <defs>
+                          <linearGradient id="cashGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--ds-accent))" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="hsl(var(--ds-accent))" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--ds-line-2))" vertical={false} />
+                        <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--ds-fg-4))' }} />
+                        <YAxis
+                          orientation="right"
+                          tickFormatter={(v: number) => valuesHidden ? '•••' : `${(v / 1000).toFixed(0)}k`}
+                          tick={{ fontSize: 11, fill: 'hsl(var(--ds-fg-4))' }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <Tooltip
+                          content={({ active, payload, label }) => {
+                            if (!active || !payload?.length) return null;
+                            const val = payload[0]?.value as number;
+                            return (
+                              <div style={{
+                                background: 'hsl(var(--ds-surface))', border: '1px solid hsl(var(--ds-line-1))',
+                                padding: 12, fontSize: 12,
+                              }}>
+                                <div style={{ fontWeight: 600, color: 'hsl(var(--ds-fg-1))', marginBottom: 4 }}>{label}</div>
+                                <div style={{ color: 'hsl(var(--ds-accent))', fontVariantNumeric: 'tabular-nums' }}>
+                                  {valuesHidden ? 'R$ ••••••' : formatCurrency(val)}
                                 </div>
-                              );
-                            }}
-                          />
-                          <Area
-                            type="monotone"
-                            dataKey="balance"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth={3}
-                            fill="url(#cashGradient)"
-                            dot={{ fill: 'hsl(var(--primary))', r: 4, strokeWidth: 0 }}
-                            activeDot={{ fill: 'hsl(var(--primary))', r: 6, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
-                          />
-                        </AreaChart>
-                      </RechartsContainer>
-                    </div>
-                  </CardContent>
-                </Card>
+                              </div>
+                            );
+                          }}
+                        />
+                        <Area
+                          type="monotone" dataKey="balance"
+                          stroke="hsl(var(--ds-accent))" strokeWidth={2}
+                          fill="url(#cashGradient)"
+                          dot={{ fill: 'hsl(var(--ds-accent))', r: 3, strokeWidth: 0 }}
+                          activeDot={{ fill: 'hsl(var(--ds-accent))', r: 5, strokeWidth: 2, stroke: 'hsl(var(--ds-surface))' }}
+                        />
+                      </AreaChart>
+                    </RechartsContainer>
+                  </div>
+                </div>
               </div>
 
-              {/* Linha 2: Realizado do Mês */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <CashFlowDashCard
-                  title="Receitas Realizadas"
-                  value={cashFlow.realized_income}
-                  icon={ArrowDownLeft}
-                  subtitle="Total de entradas do mês atual"
-                  iconClassName="text-success"
-                  valueClassName="text-success"
-                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.realized_income)}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                <Tile
+                  title="Receitas Realizadas" Icon={ArrowDownLeft}
+                  value={hidden || formatCurrency(cashFlow.realized_income)}
+                  subtitle="Total de entradas do mês atual" tone="success"
                 />
-                <CashFlowDashCard
-                  title="Despesas Realizadas"
-                  value={cashFlow.realized_expenses}
-                  icon={ArrowUpRight}
-                  subtitle="Total de saídas do mês atual"
-                  iconClassName="text-destructive"
-                  valueClassName="text-destructive"
-                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.realized_expenses)}
+                <Tile
+                  title="Despesas Realizadas" Icon={ArrowUpRight}
+                  value={hidden || formatCurrency(cashFlow.realized_expenses)}
+                  subtitle="Total de saídas do mês atual" tone="destructive"
                 />
-                <CashFlowDashCard
-                  title="Fluxo Líquido Atual"
-                  value={cashFlow.net_flow}
-                  icon={cashFlow.net_flow < 0 ? TrendingDown : TrendingUp}
+                <Tile
+                  title="Fluxo Líquido Atual" Icon={cashFlow.net_flow < 0 ? TrendingDown : TrendingUp}
+                  value={hidden || formatCurrency(cashFlow.net_flow)}
                   subtitle="Entradas menos saídas do mês"
-                  iconClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
-                  valueClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
-                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.net_flow)}
+                  tone={cashFlow.net_flow < 0 ? 'destructive' : 'success'}
                 />
               </div>
 
-              {/* Linha 3: Projeção / Não Realizado */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <CashFlowDashCard
-                  title="Contas a Receber (Próx. 30d)"
-                  value={cashFlow.receivables_30d}
-                  icon={ArrowDownLeft}
-                  subtitle="Total a receber em até 30 dias"
-                  iconClassName="text-success"
-                  valueClassName="text-success"
-                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.receivables_30d)}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                <Tile
+                  title="A Receber (30d)" Icon={ArrowDownLeft}
+                  value={hidden || formatCurrency(cashFlow.receivables_30d)}
+                  subtitle="Total a receber em até 30 dias" tone="success"
                 />
-                <CashFlowDashCard
-                  title="Contas a Pagar (Próx. 30d)"
-                  value={cashFlow.payables_30d}
-                  icon={ArrowUpRight}
-                  subtitle="Total a pagar em até 30 dias"
-                  iconClassName="text-destructive"
-                  valueClassName="text-destructive"
-                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.payables_30d)}
+                <Tile
+                  title="A Pagar (30d)" Icon={ArrowUpRight}
+                  value={hidden || formatCurrency(cashFlow.payables_30d)}
+                  subtitle="Total a pagar em até 30 dias" tone="destructive"
                 />
-                <CashFlowDashCard
-                  title="Saldo Projetado (Próx. 30d)"
-                  value={cashFlow.projected_balance}
-                  icon={Target}
+                <Tile
+                  title="Saldo Projetado (30d)" Icon={Target}
+                  value={hidden || formatCurrency(cashFlow.projected_balance)}
                   subtitle="Estimativa de caixa em 30 dias"
-                  cardClassName={cn(
-                    'border-primary/40 bg-primary/5',
-                    cashFlow.projected_balance < 0 && 'border-destructive/40 bg-destructive/5'
-                  )}
-                  iconClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
-                  valueClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
-                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.projected_balance)}
+                  tone={cashFlow.projected_balance < 0 ? 'destructive' : 'accent'}
+                  accent={cashFlow.projected_balance >= 0}
                 />
               </div>
 
-              {/* Linha 4: Projeção 90 dias */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <CashFlowDashCard
-                  title="Contas a Receber (Próx. 90d)"
-                  value={cashFlow.receivables_90d}
-                  icon={ArrowDownLeft}
-                  subtitle="Total a receber em até 90 dias"
-                  iconClassName="text-success"
-                  valueClassName="text-success"
-                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.receivables_90d)}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                <Tile
+                  title="A Receber (90d)" Icon={ArrowDownLeft}
+                  value={hidden || formatCurrency(cashFlow.receivables_90d)}
+                  subtitle="Total a receber em até 90 dias" tone="success"
                 />
-                <CashFlowDashCard
-                  title="Contas a Pagar (Próx. 90d)"
-                  value={cashFlow.payables_90d}
-                  icon={ArrowUpRight}
-                  subtitle="Total a pagar em até 90 dias"
-                  iconClassName="text-destructive"
-                  valueClassName="text-destructive"
-                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.payables_90d)}
+                <Tile
+                  title="A Pagar (90d)" Icon={ArrowUpRight}
+                  value={hidden || formatCurrency(cashFlow.payables_90d)}
+                  subtitle="Total a pagar em até 90 dias" tone="destructive"
                 />
-                <CashFlowDashCard
-                  title="Saldo Projetado (Próx. 90d)"
-                  value={cashFlow.projected_balance_90d}
-                  icon={Target}
+                <Tile
+                  title="Saldo Projetado (90d)" Icon={Target}
+                  value={hidden || formatCurrency(cashFlow.projected_balance_90d)}
                   subtitle="Estimativa de caixa em 90 dias"
-                  cardClassName={cn(
-                    'border-primary/40 bg-primary/5',
-                    cashFlow.projected_balance_90d < 0 && 'border-destructive/40 bg-destructive/5'
-                  )}
-                  iconClassName={cashFlow.projected_balance_90d < 0 ? 'text-destructive' : 'text-primary'}
-                  valueClassName={cashFlow.projected_balance_90d < 0 ? 'text-destructive' : 'text-primary'}
-                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.projected_balance_90d)}
+                  tone={cashFlow.projected_balance_90d < 0 ? 'destructive' : 'accent'}
+                  accent={cashFlow.projected_balance_90d >= 0}
                 />
               </div>
             </div>
           )}
         </section>
 
-        {/* Section 3: Faturamento (2026) */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">Faturamento (2026)</h2>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-            {/* Left column: Meta Anual + Meta YTD */}
-            <div className="flex flex-col gap-4 h-full">
-              <Card className="shadow-card hover:shadow-elegant transition-all duration-200 flex-1 flex flex-col">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
+        {/* Faturamento */}
+        <section className="section">
+          <SectionHead eyebrow="03" title="Faturamento (2026)" Icon={BarChart3} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{
+                border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))',
+                padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-fg-3))' }}>
+                  <DollarSign size={13} strokeWidth={1.5} />
+                  <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500 }}>
                     Meta Anual
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
-                  <div className="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-0.5">
-                    <span className="text-lg lg:text-xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
-                    <span className="text-xs text-muted-foreground">de {formatCurrency(goals.revenue_goal)}</span>
-                  </div>
-                  <Progress value={Math.min(annualProgress, 100)} className="h-2" />
-                  <p className="text-xs text-muted-foreground">{annualProgress}% atingido</p>
-                </CardContent>
-              </Card>
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{
+                    fontFamily: '"HN Display", sans-serif', fontSize: 20, fontWeight: 600,
+                    letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))',
+                  }}>
+                    {hidden || formatCurrency(metrics.accumulated_revenue_ytd)}
+                  </span>
+                  <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                    de {hidden || formatCurrency(goals.revenue_goal)}
+                  </span>
+                </div>
+                <ProgressBar value={annualProgress} />
+                <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>{annualProgress}% atingido</div>
+              </div>
 
-              <Card className="shadow-card hover:shadow-elegant transition-all duration-200 flex-1 flex flex-col">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" />
+              <div style={{
+                border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))',
+                padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-fg-3))' }}>
+                  <BarChart3 size={13} strokeWidth={1.5} />
+                  <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500 }}>
                     Meta YTD
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
-                  <div className="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-0.5">
-                    <span className="text-lg lg:text-xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
-                    <span className="text-xs text-muted-foreground">de {formatCurrency(ytdGoal)}</span>
-                  </div>
-                  <Progress value={Math.min(Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100), 100)} className="h-2" />
-                  <p className="text-xs text-muted-foreground">
-                    {Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100)}% da meta até {new Date().toLocaleString('pt-BR', { month: 'long' })}
-                  </p>
-                </CardContent>
-              </Card>
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{
+                    fontFamily: '"HN Display", sans-serif', fontSize: 20, fontWeight: 600,
+                    letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))',
+                  }}>
+                    {hidden || formatCurrency(metrics.accumulated_revenue_ytd)}
+                  </span>
+                  <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                    de {hidden || formatCurrency(ytdGoal)}
+                  </span>
+                </div>
+                <ProgressBar value={ytdProgress} />
+                <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>
+                  {ytdProgress}% da meta até {new Date().toLocaleString('pt-BR', { month: 'long' })}
+                </div>
+              </div>
             </div>
 
-            {/* Right column: Chart */}
-            <Card className="lg:col-span-2 shadow-card">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Meta vs Realizado (2026)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-52 sm:h-64 lg:h-80">
-                  <RechartsContainer width="100%" height="100%">
-                    <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
-                      <YAxis
-                        orientation="right"
-                        tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
-                        tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                        axisLine={false}
-                        tickLine={false}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="meta" name="Meta" fill="rgba(255,255,255,0.1)" radius={[4, 4, 0, 0]} barSize={32} />
-                      <Line
-                        type="monotone"
-                        dataKey="realizado"
-                        name="Realizado"
-                        stroke="hsl(var(--primary))"
-                        strokeWidth={3}
-                        dot={{ fill: 'hsl(var(--primary))', r: 5, strokeWidth: 0 }}
-                        activeDot={{ fill: 'hsl(var(--primary))', r: 7, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
-                        connectNulls={false}
-                      />
-                    </ComposedChart>
-                  </RechartsContainer>
-                </div>
-              </CardContent>
-            </Card>
+            <div style={{ border: '1px solid hsl(var(--ds-line-1))', padding: '18px 20px', background: 'hsl(var(--ds-surface))' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-fg-3))', marginBottom: 12 }}>
+                <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500 }}>
+                  Meta vs Realizado
+                </span>
+              </div>
+              <div style={{ height: 280 }}>
+                <RechartsContainer width="100%" height="100%">
+                  <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--ds-line-2))" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--ds-fg-4))' }} />
+                    <YAxis
+                      orientation="right"
+                      tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
+                      tick={{ fontSize: 11, fill: 'hsl(var(--ds-fg-4))' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="meta" name="Meta" fill="hsl(var(--ds-line-2))" radius={[2, 2, 0, 0]} barSize={28} />
+                    <Line
+                      type="monotone" dataKey="realizado" name="Realizado"
+                      stroke="hsl(var(--ds-accent))" strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--ds-accent))', r: 4, strokeWidth: 0 }}
+                      activeDot={{ fill: 'hsl(var(--ds-accent))', r: 6, strokeWidth: 2, stroke: 'hsl(var(--ds-surface))' }}
+                      connectNulls={false}
+                    />
+                  </ComposedChart>
+                </RechartsContainer>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Section 3: Indicadores */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Zap className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">Indicadores</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            <UnitCard
-              title="% Margem Contribuição"
-              value={`${metrics.contribution_margin_actual}%`}
-              icon={TrendingUp}
-              subtitle={`Meta: ${goals.margin_goal_pct}%`}
-              alert={marginAlert}
-              highlight={!marginAlert}
-            />
-            <UnitCard
-              title="% Lucro Líquido"
-              value={`${metrics.net_profit_actual}%`}
-              icon={DollarSign}
-              subtitle={`Meta: ${goals.profit_goal_pct}%`}
-              alert={profitAlert}
-              highlight={!profitAlert}
-            />
-            <UnitCard
-              title="Ticket Médio"
-              value={formatCurrency(metrics.avg_ticket)}
-              icon={DollarSign}
-              subtitle="Receita média por cliente"
-            />
-            <UnitCard
-              title="LTV"
-              value={formatCurrency(metrics.ltv)}
-              icon={TrendingUp}
-              subtitle="Lifetime Value"
-            />
-            <UnitCard
-              title="CAC"
-              value={formatCurrency(metrics.cac)}
-              icon={Users}
+        {/* Indicadores */}
+        <section className="section">
+          <SectionHead eyebrow="04" title="Indicadores" Icon={Zap} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+            <Tile title="% Margem Contribuição" Icon={TrendingUp} value={`${metrics.contribution_margin_actual}%`}
+              subtitle={`Meta: ${goals.margin_goal_pct}%`} tone={marginAlert ? 'warning' : 'success'} />
+            <Tile title="% Lucro Líquido" Icon={DollarSign} value={`${metrics.net_profit_actual}%`}
+              subtitle={`Meta: ${goals.profit_goal_pct}%`} tone={profitAlert ? 'warning' : 'success'} />
+            <Tile title="Ticket Médio" Icon={DollarSign} value={hidden || formatCurrency(metrics.avg_ticket)}
+              subtitle="Receita média por cliente" />
+            <Tile title="LTV" Icon={TrendingUp} value={hidden || formatCurrency(metrics.ltv)}
+              subtitle="Lifetime Value" />
+            <Tile title="CAC" Icon={Users} value={hidden || formatCurrency(metrics.cac)}
               subtitle={`Meta: ${formatCurrency(goals.cac_goal)}`}
-              alert={metrics.cac > goals.cac_goal}
-            />
-            <UnitCard
-              title="LTV/CAC"
-              value={`${ltvCacRatio}x`}
-              icon={Award}
-              subtitle="Razão ideal > 3x"
-              highlight={Number(ltvCacRatio) >= 3}
-            />
-            <UnitCard
-              title="Churn Rate"
-              value={`${metrics.churn_rate}%`}
-              icon={TrendingDown}
-              subtitle="Taxa de cancelamento"
-              alert={metrics.churn_rate > 5}
-            />
-            <UnitCard
-              title="NPS"
-              value={String(metrics.nps)}
-              icon={Heart}
+              tone={metrics.cac > goals.cac_goal ? 'warning' : 'fg'} />
+            <Tile title="LTV / CAC" Icon={Award} value={`${ltvCacRatio}x`}
+              subtitle="Razão ideal > 3x" tone={Number(ltvCacRatio) >= 3 ? 'success' : 'fg'} />
+            <Tile title="Churn Rate" Icon={TrendingDown} value={`${metrics.churn_rate}%`}
+              subtitle="Taxa de cancelamento" tone={metrics.churn_rate > 5 ? 'warning' : 'fg'} />
+            <Tile title="NPS" Icon={Heart} value={String(metrics.nps)}
               subtitle={metrics.nps >= 70 ? 'Excelente' : metrics.nps >= 50 ? 'Bom' : 'Atenção'}
-              highlight={metrics.nps >= 70}
-              alert={metrics.nps < 50}
-            />
-            <UnitCard
-              title="Burn Rate"
-              value={formatCurrency(metrics.burn_rate)}
-              icon={Zap}
-              subtitle="Gastos mensais fixos"
-            />
-            <UnitCard
-              title="Cash Runway"
-              value={`${metrics.cash_runway_months} meses`}
-              icon={Hourglass}
+              tone={metrics.nps >= 70 ? 'success' : metrics.nps < 50 ? 'warning' : 'fg'} />
+            <Tile title="Burn Rate" Icon={Zap} value={hidden || formatCurrency(metrics.burn_rate)}
+              subtitle="Gastos mensais fixos" />
+            <Tile title="Cash Runway" Icon={Hourglass} value={`${metrics.cash_runway_months} meses`}
               subtitle={metrics.cash_runway_months <= 6 ? 'Atenção: runway curto' : 'Saúde financeira'}
-              alert={metrics.cash_runway_months <= 6}
-              highlight={metrics.cash_runway_months >= 18}
-            />
+              tone={metrics.cash_runway_months <= 6 ? 'warning' : metrics.cash_runway_months >= 18 ? 'success' : 'fg'} />
           </div>
         </section>
+
+        {isLoading && (
+          <div style={{ marginTop: 16, fontSize: 12, color: 'hsl(var(--ds-fg-4))' }}>
+            Carregando dados…
+          </div>
+        )}
       </div>
-    </ResponsiveContainer>
-  );
-}
-
-function CashFlowDashCard({ title, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName, displayValue }: {
-  title: string;
-  value?: number;
-  icon: React.ComponentType<{ className?: string }>;
-  subtitle?: string;
-  iconClassName?: string;
-  valueClassName?: string;
-  cardClassName?: string;
-  displayValue: string;
-}) {
-  return (
-    <Card className={cn('shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]', cardClassName)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3 sm:px-6 sm:pt-6">
-        <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider line-clamp-2">
-          {title}
-        </CardTitle>
-        <Icon className={cn('h-4 w-4 text-muted-foreground', iconClassName)} />
-      </CardHeader>
-      <CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
-        <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate', valueClassName)}>
-          {displayValue}
-        </div>
-        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
-      </CardContent>
-    </Card>
-  );
-}
-
-function UnitCard({ title, value, icon: Icon, subtitle, alert, highlight }: {
-  title: string;
-  value: string;
-  icon: React.ComponentType<{ className?: string }>;
-  subtitle?: string;
-  alert?: boolean;
-  highlight?: boolean;
-}) {
-  return (
-    <Card className={cn(
-      "shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]",
-      alert && "border-warning/30",
-      highlight && "border-success/30"
-    )}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3 sm:px-6 sm:pt-6">
-        <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider line-clamp-2">
-          {title}
-        </CardTitle>
-        <Icon className={cn(
-          "h-4 w-4",
-          alert ? "text-warning" : highlight ? "text-success" : "text-muted-foreground"
-        )} />
-      </CardHeader>
-      <CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
-        <div className={cn(
-          "text-base sm:text-lg lg:text-xl font-bold truncate",
-          alert ? "text-warning" : highlight ? "text-success" : "text-foreground"
-        )}>
-          {value}
-        </div>
-        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
-      </CardContent>
-    </Card>
+    </div>
   );
 }

@@ -1,19 +1,13 @@
 import { useState } from 'react';
 import { ArrowLeft, Save, FileText, Info, CalendarIcon, X } from 'lucide-react';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Separator } from '@/components/ui/separator';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { usePostProductionMutations } from '../hooks/usePostProductionMutations';
 import { useUsers } from '@/hooks/useUsers';
@@ -48,16 +42,58 @@ function getInitials(name: string | null | undefined): string {
   return name.split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
 }
 
-function SectionHeader({ icon: Icon, title, actions }: { icon: React.ElementType; title: string; actions?: React.ReactNode }) {
+// --- DS Field Label ---
+const fieldLabelStyle: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+// --- DS Section Shell ---
+function SectionShell({
+  icon: Icon,
+  title,
+  actions,
+  children,
+}: {
+  icon: React.ElementType;
+  title: string;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-      <div className="flex items-center gap-3">
-        <div className="p-1.5 rounded-md bg-muted">
-          <Icon className="h-4 w-4 text-foreground/70" />
+    <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+      <div
+        style={{
+          padding: '14px 18px',
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 10,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Icon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-2))',
+            }}
+          >
+            {title}
+          </span>
         </div>
-        <CardTitle className="text-sm font-semibold tracking-tight">{title}</CardTitle>
+        {actions}
       </div>
-      {actions}
+      <div style={{ padding: 18 }}>{children}</div>
     </div>
   );
 }
@@ -65,14 +101,25 @@ function SectionHeader({ icon: Icon, title, actions }: { icon: React.ElementType
 // --- Date Picker Helper ---
 function DateField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <div className="space-y-1.5">
-      <Label className="text-xs text-muted-foreground block mb-1.5">{label}</Label>
+    <div>
+      <label style={fieldLabelStyle}>{label}</label>
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-9 text-sm", !value && "text-muted-foreground")}>
-            <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-            {value ? format(new Date(value + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'Selecionar'}
-          </Button>
+          <button
+            type="button"
+            className="btn"
+            style={{ width: '100%', justifyContent: 'flex-start' }}
+          >
+            <CalendarIcon size={13} strokeWidth={1.5} />
+            <span
+              style={{
+                fontVariantNumeric: 'tabular-nums',
+                color: value ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+              }}
+            >
+              {value ? format(new Date(value + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'Selecionar'}
+            </span>
+          </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
@@ -80,13 +127,18 @@ function DateField({ label, value, onChange }: { label: string; value: string; o
             selected={value ? new Date(value + 'T00:00:00') : undefined}
             onSelect={(date) => onChange(date ? format(date, 'yyyy-MM-dd') : '')}
             initialFocus
-            className={cn("p-3 pointer-events-auto")}
+            className="p-3 pointer-events-auto"
           />
           {value && (
-            <div className="p-2 border-t">
-              <Button variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => onChange('')}>
-                <X className="w-3.5 h-3.5 mr-1" /> Limpar
-              </Button>
+            <div style={{ padding: 8, borderTop: '1px solid hsl(var(--ds-line-1))' }}>
+              <button
+                type="button"
+                className="btn"
+                style={{ width: '100%', justifyContent: 'flex-start' }}
+                onClick={() => onChange('')}
+              >
+                <X size={13} strokeWidth={1.5} /> Limpar
+              </button>
             </div>
           )}
         </PopoverContent>
@@ -157,148 +209,159 @@ export function PPVideoEditForm({ item, onBack }: Props) {
     onBack();
   };
 
+  const saveAction = isDirty ? (
+    <button type="button" className="btn primary" onClick={handleSave}>
+      <Save size={13} strokeWidth={1.5} /> Salvar
+    </button>
+  ) : undefined;
+
   return (
-    <ResponsiveContainer maxWidth="7xl">
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
       <div className="animate-fade-in space-y-6">
         {/* ===== HEADER ===== */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+            <button
+              type="button"
+              className="btn"
+              style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}
+              onClick={onBack}
+              aria-label="Voltar"
+            >
+              <ArrowLeft size={14} strokeWidth={1.5} />
+            </button>
             <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">Esteira de Pós</p>
-              <h1 className="text-lg font-semibold truncate">{composedTitle || 'Editar Vídeo'}</h1>
+              <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))' }}>
+                Esteira de Pós
+              </p>
+              <h1
+                style={{
+                  fontFamily: '"HN Display", sans-serif',
+                  fontSize: 18,
+                  fontWeight: 600,
+                  color: 'hsl(var(--ds-fg-1))',
+                }}
+                className="truncate"
+              >
+                {composedTitle || 'Editar Vídeo'}
+              </h1>
             </div>
           </div>
         </div>
 
         {/* ===== DADOS DO VÍDEO ===== */}
-        <Card>
-          <SectionHeader
-            icon={FileText}
-            title="Dados do Vídeo"
-            actions={
-              isDirty ? (
-                <Button size="sm" onClick={handleSave}>
-                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                </Button>
-              ) : undefined
-            }
-          />
-          <CardContent className="pt-6 space-y-4">
+        <SectionShell icon={FileText} title="Dados do Vídeo" actions={saveAction}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-client" className="text-xs text-muted-foreground block mb-1.5">Empresa</Label>
-                <Input id="edit-client" value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Ex: Cacau Show" className="h-9" />
+              <div>
+                <label htmlFor="edit-client" style={fieldLabelStyle}>Empresa</label>
+                <Input id="edit-client" value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Ex: Cacau Show" />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-project" className="text-xs text-muted-foreground block mb-1.5">Projeto</Label>
-                <Input id="edit-project" value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Ex: Campanha de Natal" className="h-9" />
+              <div>
+                <label htmlFor="edit-project" style={fieldLabelStyle}>Projeto</label>
+                <Input id="edit-project" value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Ex: Campanha de Natal" />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-suffix" className="text-xs text-muted-foreground block mb-1.5">Sufixo</Label>
-                <Input id="edit-suffix" value={form.suffix} onChange={e => setForm(prev => ({ ...prev, suffix: e.target.value }))} placeholder="Ex: Criativo 1" className="h-9" />
+              <div>
+                <label htmlFor="edit-suffix" style={fieldLabelStyle}>Sufixo</label>
+                <Input id="edit-suffix" value={form.suffix} onChange={e => setForm(prev => ({ ...prev, suffix: e.target.value }))} placeholder="Ex: Criativo 1" />
               </div>
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground block mb-1.5">Título gerado</Label>
-              <Input value={composedTitle} readOnly disabled className="bg-muted text-muted-foreground cursor-not-allowed h-9" />
+            <div>
+              <label style={fieldLabelStyle}>Título gerado</label>
+              <Input
+                value={composedTitle}
+                readOnly
+                disabled
+                style={{
+                  background: 'hsl(var(--ds-line-2) / 0.3)',
+                  color: 'hsl(var(--ds-fg-3))',
+                  cursor: 'not-allowed',
+                }}
+              />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-notes" className="text-xs text-muted-foreground block mb-1.5">Observações</Label>
+            <div>
+              <label htmlFor="edit-notes" style={fieldLabelStyle}>Observações</label>
               <Textarea id="edit-notes" value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3} />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </SectionShell>
 
         {/* ===== INFORMAÇÕES ===== */}
-        <Card>
-          <SectionHeader
-            icon={Info}
-            title="Informações"
-            actions={
-              isDirty ? (
-                <Button size="sm" onClick={handleSave}>
-                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                </Button>
-              ) : undefined
-            }
-          />
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Status */}
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground block mb-1.5">Etapa</Label>
-                <Select value={form.status} onValueChange={v => setForm(prev => ({ ...prev, status: v as PPStatus }))}>
-                  <SelectTrigger className="h-9">
-                    <PPStatusBadge status={form.status} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(PP_STATUS_CONFIG).map(v => (
-                      <SelectItem key={v} value={v}><PPStatusBadge status={v as PPStatus} /></SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+        <SectionShell icon={Info} title="Informações" actions={saveAction}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Status */}
+            <div>
+              <label style={fieldLabelStyle}>Etapa</label>
+              <Select value={form.status} onValueChange={v => setForm(prev => ({ ...prev, status: v as PPStatus }))}>
+                <SelectTrigger>
+                  <PPStatusBadge status={form.status} />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(PP_STATUS_CONFIG).map(v => (
+                    <SelectItem key={v} value={v}><PPStatusBadge status={v as PPStatus} /></SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              {/* Priority */}
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground block mb-1.5">Prioridade</Label>
-                <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
-                  <SelectTrigger className="h-9">
-                    <PPPriorityBadge priority={form.priority} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(PP_PRIORITY_CONFIG).map(v => (
-                      <SelectItem key={v} value={v}><PPPriorityBadge priority={v as PPPriority} /></SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* Priority */}
+            <div>
+              <label style={fieldLabelStyle}>Prioridade</label>
+              <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
+                <SelectTrigger>
+                  <PPPriorityBadge priority={form.priority} />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(PP_PRIORITY_CONFIG).map(v => (
+                    <SelectItem key={v} value={v}><PPPriorityBadge priority={v as PPPriority} /></SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              {/* Editor */}
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground block mb-1.5">Editor</Label>
-                <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
-                  <SelectTrigger className="h-9">
-                    {selectedEditor ? (
+            {/* Editor */}
+            <div>
+              <label style={fieldLabelStyle}>Editor</label>
+              <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
+                <SelectTrigger>
+                  {selectedEditor ? (
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
+                        <AvatarFallback className="text-[9px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
+                      </Avatar>
+                      <span className="truncate text-sm">{selectedEditor.display_name || selectedEditor.email}</span>
+                    </div>
+                  ) : (
+                    <SelectValue placeholder="Selecionar editor" />
+                  )}
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map(u => (
+                    <SelectItem key={u.id} value={u.id}>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-5 w-5">
-                          <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
-                          <AvatarFallback className="text-[9px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
+                          <AvatarImage src={getUserAvatarUrl(u)} />
+                          <AvatarFallback className="text-[9px]">{getInitials(u.display_name)}</AvatarFallback>
                         </Avatar>
-                        <span className="truncate text-sm">{selectedEditor.display_name || selectedEditor.email}</span>
+                        <span className="text-sm">{u.display_name || u.email}</span>
                       </div>
-                    ) : (
-                      <SelectValue placeholder="Selecionar editor" />
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map(u => (
-                      <SelectItem key={u.id} value={u.id}>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-5 w-5">
-                            <AvatarImage src={getUserAvatarUrl(u)} />
-                            <AvatarFallback className="text-[9px]">{getInitials(u.display_name)}</AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm">{u.display_name || u.email}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Prazo */}
-              <DateField label="Prazo" value={form.due_date} onChange={v => setForm(prev => ({ ...prev, due_date: v }))} />
-
-              {/* Início */}
-              <DateField label="Início" value={form.start_date} onChange={v => setForm(prev => ({ ...prev, start_date: v }))} />
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Prazo */}
+            <DateField label="Prazo" value={form.due_date} onChange={v => setForm(prev => ({ ...prev, due_date: v }))} />
+
+            {/* Início */}
+            <DateField label="Início" value={form.start_date} onChange={v => setForm(prev => ({ ...prev, start_date: v }))} />
+          </div>
+        </SectionShell>
       </div>
-    </ResponsiveContainer>
+      </div>
+    </div>
   );
 }

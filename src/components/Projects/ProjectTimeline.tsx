@@ -1,5 +1,4 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
 import { ProjectStep, ProjectStatus } from '@/types/project';
 import { stepLabels, stepIcons, stepOrder } from '@/lib/projectSteps';
 import { Check } from 'lucide-react';
@@ -11,14 +10,43 @@ interface ProjectTimelineProps {
   projectStatus?: ProjectStatus;
 }
 
-export function ProjectTimeline({ currentStep, stepHistory, className, projectStatus }: ProjectTimelineProps) {
-  const getCurrentStepIndex = () => stepOrder.indexOf(currentStep);
-  const currentStepIndex = getCurrentStepIndex();
+type StepStatus = 'completed' | 'current' | 'pending';
 
-  const getStepStatus = (stepIndex: number) => {
+function stepStyles(status: StepStatus) {
+  switch (status) {
+    case 'completed':
+      return {
+        background: 'hsl(var(--ds-success))',
+        border: '1px solid hsl(var(--ds-success))',
+        color: '#fff',
+      };
+    case 'current':
+      return {
+        background: 'hsl(var(--ds-surface))',
+        border: '1px solid hsl(var(--ds-accent))',
+        color: 'hsl(var(--ds-accent))',
+        boxShadow: '0 0 0 2px hsl(var(--ds-accent) / 0.2)',
+      };
+    case 'pending':
+      return {
+        background: 'hsl(var(--ds-surface))',
+        border: '1px solid hsl(var(--ds-line-1))',
+        color: 'hsl(var(--ds-fg-3))',
+      };
+  }
+}
+
+export function ProjectTimeline({
+  currentStep,
+  stepHistory,
+  className,
+  projectStatus,
+}: ProjectTimelineProps) {
+  const currentStepIndex = stepOrder.indexOf(currentStep);
+
+  const getStepStatus = (stepIndex: number): StepStatus => {
     if (stepIndex < currentStepIndex) return 'completed';
     if (stepIndex === currentStepIndex) {
-      // If project is completed and we're at the final step, show as completed (green)
       if (projectStatus === 'completed' && stepIndex === stepOrder.length - 1) {
         return 'completed';
       }
@@ -28,128 +56,197 @@ export function ProjectTimeline({ currentStep, stepHistory, className, projectSt
   };
 
   const getStepDate = (step: ProjectStep) => {
-    const historyItem = stepHistory.find(h => h.step === step);
+    const historyItem = stepHistory.find((h) => h.step === step);
     return historyItem ? new Date(historyItem.timestamp).toLocaleDateString('pt-BR') : null;
   };
 
+  const progressPct = Math.max(0, (currentStepIndex / (stepOrder.length - 1)) * 100);
+
   return (
-    <div className={cn("w-full", className)}>
+    <div className={className} style={{ width: '100%' }}>
       {/* Desktop Timeline */}
       <div className="hidden md:block">
-        <div className="flex items-start justify-center gap-6 lg:gap-8 relative max-w-5xl mx-auto py-2">
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            gap: 24,
+            position: 'relative',
+            maxWidth: 960,
+            margin: '0 auto',
+            padding: '8px 0',
+          }}
+        >
           {/* Progress Line */}
-          <div className="absolute top-[28px] h-0.5 bg-border rounded-full z-0" style={{ 
-            left: `calc(${100 / stepOrder.length / 2}% + 20px)`, 
-            right: `calc(${100 / stepOrder.length / 2}% + 20px)` 
-          }}>
-            <div 
-              className="h-full bg-green-500 rounded-full transition-all duration-700 ease-out"
-              style={{ 
-                width: `${Math.max(0, (currentStepIndex / (stepOrder.length - 1)) * 100)}%` 
+          <div
+            style={{
+              position: 'absolute',
+              top: 28,
+              height: 2,
+              background: 'hsl(var(--ds-line-1))',
+              zIndex: 0,
+              left: `calc(${100 / stepOrder.length / 2}% + 20px)`,
+              right: `calc(${100 / stepOrder.length / 2}% + 20px)`,
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                background: 'hsl(var(--ds-success))',
+                width: `${progressPct}%`,
+                transition: 'width 0.7s ease-out',
               }}
             />
           </div>
 
           {/* Timeline Steps */}
           {stepOrder.map((step, index) => {
-          const status = getStepStatus(index);
+            const status = getStepStatus(index);
             const Icon = status === 'completed' ? Check : stepIcons[step];
-          const stepDate = getStepDate(step);
+            const stepDate = getStepDate(step);
+            const styles = stepStyles(status);
 
-          return (
-            <div key={step} className="flex flex-col items-center relative z-10 animate-fade-in min-w-0 flex-1">
-              {/* Step Circle */}
+            return (
               <div
-                className={cn(
-                  "w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-300 ease-out relative bg-background",
-                  {
-                    "bg-green-500 border-green-500 text-white": status === 'completed',
-                    "bg-background border-primary text-primary ring-2 ring-primary/20": status === 'current',
-                    "border-border text-muted-foreground": status === 'pending'
-                  }
-                )}
+                key={step}
+                className="animate-fade-in"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  position: 'relative',
+                  zIndex: 10,
+                  minWidth: 0,
+                  flex: 1,
+                }}
               >
-                {status === 'current' && (
-                  <span className="pointer-events-none absolute inset-[3px] rounded-full bg-primary/10" aria-hidden />
-                )}
-                <Icon 
-                  className="w-5 h-5" 
-                  strokeWidth={2}
-                />
-              </div>
-
-              {/* Step Label */}
-              <div className="mt-3 text-center px-2 min-w-0">
+                {/* Step Circle */}
                 <div
-                  className={cn(
-                    "text-sm font-medium transition-colors duration-200 break-words leading-tight",
-                    {
-                      "text-foreground": status === 'completed' || status === 'current',
-                      "text-muted-foreground": status === 'pending'
-                    }
-                  )}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    display: 'grid',
+                    placeItems: 'center',
+                    position: 'relative',
+                    transition: 'all 0.3s ease-out',
+                    ...styles,
+                  }}
                 >
-                  {stepLabels[step]}
+                  {status === 'current' && (
+                    <span
+                      aria-hidden
+                      style={{
+                        pointerEvents: 'none',
+                        position: 'absolute',
+                        inset: 3,
+                        background: 'hsl(var(--ds-accent) / 0.08)',
+                      }}
+                    />
+                  )}
+                  <Icon size={18} strokeWidth={1.75} />
                 </div>
 
-                {/* Step Date */}
-                {stepDate && (
-                  <div className="text-xs text-muted-foreground mt-1.5 font-normal">
-                    {stepDate}
+                {/* Step Label */}
+                <div style={{ marginTop: 12, textAlign: 'center', padding: '0 8px', minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      lineHeight: 1.2,
+                      wordBreak: 'break-word',
+                      color:
+                        status === 'pending' ? 'hsl(var(--ds-fg-3))' : 'hsl(var(--ds-fg-1))',
+                      transition: 'color 0.2s',
+                    }}
+                  >
+                    {stepLabels[step]}
                   </div>
-                )}
+
+                  {stepDate && (
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: 'hsl(var(--ds-fg-3))',
+                        marginTop: 6,
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {stepDate}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
         </div>
       </div>
 
       {/* Mobile Timeline (Vertical) */}
-      <div className="block md:hidden space-y-4">
+      <div className="block md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {stepOrder.map((step, index) => {
           const status = getStepStatus(index);
           const Icon = status === 'completed' ? Check : stepIcons[step];
           const stepDate = getStepDate(step);
+          const styles = stepStyles(status);
 
           return (
-            <div key={step} className="relative animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
-              <div className="flex items-start space-x-3">
+            <div
+              key={step}
+              className="animate-fade-in"
+              style={{ position: 'relative', animationDelay: `${index * 100}ms` }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                 {/* Step Circle */}
                 <div
-                  className={cn(
-                    "w-10 h-10 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300 relative bg-background",
-                    {
-                      "bg-green-500 border-green-500 text-white": status === 'completed',
-                      "bg-background border-primary text-primary ring-2 ring-primary/20": status === 'current',
-                      "border-border text-muted-foreground": status === 'pending'
-                    }
-                  )}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    display: 'grid',
+                    placeItems: 'center',
+                    flexShrink: 0,
+                    position: 'relative',
+                    transition: 'all 0.3s',
+                    ...styles,
+                  }}
                 >
                   {status === 'current' && (
-                    <span className="pointer-events-none absolute inset-[3px] rounded-full bg-primary/10" aria-hidden />
+                    <span
+                      aria-hidden
+                      style={{
+                        pointerEvents: 'none',
+                        position: 'absolute',
+                        inset: 3,
+                        background: 'hsl(var(--ds-accent) / 0.08)',
+                      }}
+                    />
                   )}
-                  <Icon 
-                    className="w-5 h-5" 
-                    strokeWidth={2}
-                  />
+                  <Icon size={18} strokeWidth={1.75} />
                 </div>
 
                 {/* Step Info */}
-                <div className="flex-1 pb-1">
+                <div style={{ flex: 1, paddingBottom: 4 }}>
                   <div
-                    className={cn(
-                      "font-medium transition-colors duration-200 text-base leading-tight",
-                      {
-                        "text-foreground": status === 'completed' || status === 'current',
-                        "text-muted-foreground": status === 'pending'
-                      }
-                    )}
+                    style={{
+                      fontWeight: 500,
+                      fontSize: 15,
+                      lineHeight: 1.2,
+                      color:
+                        status === 'pending' ? 'hsl(var(--ds-fg-3))' : 'hsl(var(--ds-fg-1))',
+                      transition: 'color 0.2s',
+                    }}
                   >
                     {stepLabels[step]}
                   </div>
                   {stepDate && (
-                    <div className="text-sm text-muted-foreground mt-1 font-normal">
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: 'hsl(var(--ds-fg-3))',
+                        marginTop: 4,
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
                       {stepDate}
                     </div>
                   )}
@@ -158,11 +255,16 @@ export function ProjectTimeline({ currentStep, stepHistory, className, projectSt
 
               {/* Progress Line for Mobile */}
               {index < stepOrder.length - 1 && (
-                <div 
-                  className={cn(
-                    "absolute left-5 top-10 w-0.5 h-8 rounded-full transition-all duration-500",
-                    status === 'completed' ? "bg-green-500" : "bg-border"
-                  )} 
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 40,
+                    width: 2,
+                    height: 32,
+                    background: status === 'completed' ? 'hsl(var(--ds-success))' : 'hsl(var(--ds-line-1))',
+                    transition: 'background 0.5s',
+                  }}
                 />
               )}
             </div>

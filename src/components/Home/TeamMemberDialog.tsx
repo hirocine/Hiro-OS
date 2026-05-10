@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Plus, Upload, Loader2, Crop } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +20,16 @@ interface TeamMemberDialogProps {
   isSaving?: boolean;
 }
 
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
 export function TeamMemberDialog({
   open,
   onOpenChange,
@@ -38,7 +45,7 @@ export function TeamMemberDialog({
   const [newTag, setNewTag] = useState('');
   const [uploading, setUploading] = useState(false);
   const [cropSettings, setCropSettings] = useState<CropSettings | null>(null);
-  
+
   // Cropper states
   const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
@@ -73,29 +80,25 @@ export function TeamMemberDialog({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Store the original file as blob for later upload
     const arrayBuffer = await file.arrayBuffer();
     const originalBlob = new Blob([arrayBuffer], { type: file.type });
     setPendingOriginalBlob(originalBlob);
 
-    // Create temporary URL and open cropper
     const tempUrl = URL.createObjectURL(file);
     setTempImageSrc(tempUrl);
-    setIsRecropping(false); // New image, not a recrop
+    setIsRecropping(false);
     setShowCropper(true);
-    
-    // Reset the input so the same file can be selected again
+
     e.target.value = '';
   };
 
   const handleCropComplete = async (croppedBlob: Blob, settings: CropSettings) => {
     setUploading(true);
     setShowCropper(false);
-    
+
     try {
       const timestamp = Date.now();
-      
-      // Upload original image only if it's a new upload (not a re-crop)
+
       if (pendingOriginalBlob) {
         const originalFileName = `team-member-original-${timestamp}.webp`;
         const { data: originalData, error: originalError } = await supabase.storage
@@ -115,7 +118,6 @@ export function TeamMemberDialog({
         setPendingOriginalBlob(null);
       }
 
-      // Upload cropped image
       const croppedFileName = `team-member-${timestamp}.webp`;
       const { data, error } = await supabase.storage
         .from('site-assets')
@@ -131,13 +133,12 @@ export function TeamMemberDialog({
         .getPublicUrl(data.path);
 
       setPhotoUrl(urlData.publicUrl);
-      setCropSettings(settings); // Save the crop settings
+      setCropSettings(settings);
     } catch (error) {
       console.error('Upload error:', error);
     } finally {
       setUploading(false);
       setIsRecropping(false);
-      // Clean up temporary URL
       if (tempImageSrc) {
         URL.revokeObjectURL(tempImageSrc);
         setTempImageSrc(null);
@@ -155,11 +156,10 @@ export function TeamMemberDialog({
   };
 
   const handleRecrop = () => {
-    // For re-cropping, use original image if available, otherwise use current photo
     const imageToRecrop = originalPhotoUrl || photoUrl;
     if (imageToRecrop) {
       setTempImageSrc(imageToRecrop);
-      setIsRecropping(true); // This is a recrop, use saved settings
+      setIsRecropping(true);
       setShowCropper(true);
     }
   };
@@ -200,69 +200,110 @@ export function TeamMemberDialog({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {isEditing ? 'Editar Membro' : 'Adicionar Membro'}
+              <span style={{ fontFamily: '"HN Display", sans-serif' }}>
+                {isEditing ? 'Editar Membro' : 'Adicionar Membro'}
+              </span>
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '16px 0' }}>
             {/* Photo Upload */}
-            <div className="space-y-2">
-              <Label>Foto</Label>
-              <div className="flex items-center gap-4">
+            <div>
+              <label style={fieldLabel}>Foto</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 {photoUrl ? (
-                  <div className="relative">
-                    <div className="w-24 h-16 rounded-lg overflow-hidden bg-muted">
+                  <div style={{ position: 'relative' }}>
+                    <div
+                      style={{
+                        width: 96,
+                        height: 64,
+                        overflow: 'hidden',
+                        background: 'hsl(var(--ds-line-2) / 0.3)',
+                        border: '1px solid hsl(var(--ds-line-1))',
+                      }}
+                    >
                       <img
                         src={photoUrl}
                         alt="Preview"
-                        className="w-full h-full object-cover"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                     </div>
-                    <div className="absolute -top-2 -right-2 flex gap-1">
+                    <div style={{ position: 'absolute', top: -8, right: -8, display: 'flex', gap: 4 }}>
                       <button
+                        type="button"
                         onClick={handleRecrop}
-                        className="p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
                         title="Ajustar enquadramento"
+                        style={{
+                          padding: 4,
+                          borderRadius: '50%',
+                          background: 'hsl(var(--ds-accent))',
+                          color: 'white',
+                          border: 0,
+                          cursor: 'pointer',
+                        }}
                       >
-                        <Crop className="h-3 w-3" />
+                        <Crop size={11} strokeWidth={1.5} />
                       </button>
                       <button
+                        type="button"
                         onClick={() => {
                           setPhotoUrl('');
                           setCropSettings(null);
                         }}
-                        className="p-1 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm"
                         title="Remover foto"
+                        style={{
+                          padding: 4,
+                          borderRadius: '50%',
+                          background: 'hsl(var(--ds-danger))',
+                          color: 'white',
+                          border: 0,
+                          cursor: 'pointer',
+                        }}
                       >
-                        <X className="h-3 w-3" />
+                        <X size={11} strokeWidth={1.5} />
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <label className="w-24 h-16 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors">
+                  <label
+                    style={{
+                      width: 96,
+                      height: 64,
+                      border: '2px dashed hsl(var(--ds-line-1))',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      transition: 'border-color 0.15s',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'hsl(var(--ds-accent))')}
+                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))')}
+                  >
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleFileSelect}
-                      className="hidden"
+                      style={{ display: 'none' }}
                       disabled={uploading}
                     />
                     {uploading ? (
-                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                      <Loader2 size={22} strokeWidth={1.5} className="animate-spin" style={{ color: 'hsl(var(--ds-fg-3))' }} />
                     ) : (
-                      <Upload className="h-6 w-6 text-muted-foreground" />
+                      <Upload size={22} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
                     )}
                   </label>
                 )}
-                <p className="text-sm text-muted-foreground">
+                <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
                   {photoUrl ? 'Clique no ícone de corte para ajustar' : 'Clique para fazer upload'}
                 </p>
               </div>
             </div>
 
             {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome *</Label>
+            <div>
+              <label htmlFor="name" style={fieldLabel}>
+                Nome <span style={{ marginLeft: 4, color: 'hsl(var(--ds-danger))' }}>*</span>
+              </label>
               <Input
                 id="name"
                 value={name}
@@ -272,8 +313,8 @@ export function TeamMemberDialog({
             </div>
 
             {/* Position */}
-            <div className="space-y-2">
-              <Label htmlFor="position">Cargo</Label>
+            <div>
+              <label htmlFor="position" style={fieldLabel}>Cargo</label>
               <Input
                 id="position"
                 value={position}
@@ -283,9 +324,9 @@ export function TeamMemberDialog({
             </div>
 
             {/* Tags */}
-            <div className="space-y-2">
-              <Label>Tags</Label>
-              <div className="flex gap-2">
+            <div>
+              <label style={fieldLabel}>Tags</label>
+              <div style={{ display: 'flex', gap: 8 }}>
                 <Input
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
@@ -297,22 +338,46 @@ export function TeamMemberDialog({
                     }
                   }}
                 />
-                <Button type="button" variant="outline" size="icon" onClick={handleAddTag}>
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ width: 36, height: 36, padding: 0, justifyContent: 'center' }}
+                  onClick={handleAddTag}
+                >
+                  <Plus size={14} strokeWidth={1.5} />
+                </button>
               </div>
               {tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                   {tags.map((tag, index) => (
-                    <Badge
+                    <span
                       key={index}
-                      variant="secondary"
-                      className="bg-success/10 text-success border-success/20 cursor-pointer hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+                      className="pill"
+                      style={{
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        color: 'hsl(var(--ds-success))',
+                        borderColor: 'hsl(var(--ds-success) / 0.3)',
+                        background: 'hsl(var(--ds-success) / 0.08)',
+                        transition: 'all 0.15s',
+                      }}
                       onClick={() => handleRemoveTag(tag)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = 'hsl(var(--ds-danger))';
+                        e.currentTarget.style.borderColor = 'hsl(var(--ds-danger) / 0.3)';
+                        e.currentTarget.style.background = 'hsl(var(--ds-danger) / 0.08)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = 'hsl(var(--ds-success))';
+                        e.currentTarget.style.borderColor = 'hsl(var(--ds-success) / 0.3)';
+                        e.currentTarget.style.background = 'hsl(var(--ds-success) / 0.08)';
+                      }}
                     >
                       {tag}
-                      <X className="h-3 w-3 ml-1" />
-                    </Badge>
+                      <X size={11} strokeWidth={1.5} />
+                    </span>
                   ))}
                 </div>
               )}
@@ -320,13 +385,18 @@ export function TeamMemberDialog({
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <button type="button" className="btn" onClick={() => onOpenChange(false)}>
               Cancelar
-            </Button>
-            <Button onClick={handleSubmit} disabled={!name.trim() || isSaving}>
-              {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {isEditing ? 'Salvar' : 'Adicionar'}
-            </Button>
+            </button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleSubmit}
+              disabled={!name.trim() || isSaving}
+            >
+              {isSaving && <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />}
+              <span>{isEditing ? 'Salvar' : 'Adicionar'}</span>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

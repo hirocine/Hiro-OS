@@ -1,14 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Bookmark, Plus, Search, Pencil, Trash2, ExternalLink, Image as ImageIcon, Instagram, Youtube, Linkedin, Globe } from 'lucide-react';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +20,6 @@ import {
   CATEGORY_OPTIONS,
 } from '@/components/Marketing/MarketingReferenceDialog';
 import { MarketingReferenceLightbox } from '@/components/Marketing/MarketingReferenceLightbox';
-import { cn } from '@/lib/utils';
 
 const PLATFORM_ICONS: Record<string, typeof Instagram> = {
   instagram: Instagram,
@@ -35,15 +28,6 @@ const PLATFORM_ICONS: Record<string, typeof Instagram> = {
   tiktok: Globe,
   website: Globe,
   other: Globe,
-};
-
-const PLATFORM_BADGE_CLASS: Record<string, string> = {
-  instagram: 'bg-pink-500/15 text-pink-400 border-pink-500/30',
-  youtube: 'bg-red-500/15 text-red-400 border-red-500/30',
-  tiktok: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
-  linkedin: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  website: 'bg-muted text-muted-foreground border-border',
-  other: 'bg-muted text-muted-foreground border-border',
 };
 
 export default function MarketingReferences() {
@@ -96,183 +80,238 @@ export default function MarketingReferences() {
   };
 
   return (
-    <ResponsiveContainer>
-      <PageHeader
-        title="Referências"
-        subtitle="Banco de inspirações — links, imagens e ideias visuais"
-        actions={
-          <Button onClick={handleNew}>
-            <Plus className="h-4 w-4 mr-1.5" /> Nova referência
-          </Button>
-        }
-      />
-
-      <div className="flex flex-col md:flex-row gap-3 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por título..."
-            className="pl-9 h-10"
-          />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Referências.</h1>
+            <p className="ph-sub">Banco de inspirações — links, imagens e ideias visuais.</p>
+          </div>
+          <div className="ph-actions">
+            <button className="btn primary" onClick={handleNew} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Nova referência</span>
+            </button>
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:w-auto md:flex">
-          <MultiSelect
-            options={allTags}
-            value={filterTags}
-            onValueChange={setFilterTags}
-            placeholder="Tags"
-            className="md:w-48"
-          />
-          <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="h-10 md:w-44"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas categorias</SelectItem>
-              {CATEGORY_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={filterPlatform} onValueChange={setFilterPlatform}>
-            <SelectTrigger className="h-10 md:w-44"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas plataformas</SelectItem>
-              {PLATFORM_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
+
+        <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: 240 }}>
+            <Search
+              size={14}
+              strokeWidth={1.5}
+              style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'hsl(var(--ds-fg-4))', pointerEvents: 'none' }}
+            />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por título…"
+              style={{ paddingLeft: 34 }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <MultiSelect
+              options={allTags}
+              value={filterTags}
+              onValueChange={setFilterTags}
+              placeholder="Tags"
+              className="md:w-48"
+            />
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="h-10 md:w-44"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas categorias</SelectItem>
+                {CATEGORY_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={filterPlatform} onValueChange={setFilterPlatform}>
+              <SelectTrigger className="h-10 md:w-44"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas plataformas</SelectItem>
+                {PLATFORM_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-64 rounded-xl" />
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <EmptyState
-          icon={Bookmark}
-          title={references.length === 0 ? 'Nenhuma referência ainda' : 'Nada encontrado'}
-          description={
-            references.length === 0
-              ? 'Comece adicionando inspirações de marketing — links, imagens, posts.'
-              : 'Tente ajustar os filtros ou a busca.'
-          }
-          action={references.length === 0 ? { label: 'Nova referência', onClick: handleNew } : undefined}
-        />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((ref) => {
-            const PlatformIcon = ref.platform ? PLATFORM_ICONS[ref.platform] ?? Globe : null;
-            const platformClass = ref.platform ? PLATFORM_BADGE_CLASS[ref.platform] : '';
-            const platformLabel = PLATFORM_OPTIONS.find((p) => p.value === ref.platform)?.label;
-            return (
-              <div
-                key={ref.id}
-                className="group relative rounded-xl border border-border bg-card overflow-hidden hover:border-foreground/20 transition cursor-pointer"
-                onClick={() => setLightbox(ref)}
-              >
-                <div className="aspect-[4/3] bg-muted/30 flex items-center justify-center overflow-hidden">
-                  {ref.image_url ? (
-                    <img
-                      src={ref.image_url}
-                      alt={ref.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                      {PlatformIcon ? <PlatformIcon className="h-10 w-10" /> : <ImageIcon className="h-10 w-10" />}
-                      {ref.source_url && <span className="text-xs">Apenas link</span>}
-                    </div>
-                  )}
-                </div>
-
-                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="h-7 w-7"
-                    onClick={(e) => { e.stopPropagation(); handleEdit(ref); }}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="h-7 w-7"
-                    onClick={(e) => { e.stopPropagation(); handleAskDelete(ref); }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                  {ref.source_url && (
-                    <a
-                      href={ref.source_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button size="icon" variant="secondary" className="h-7 w-7">
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </Button>
-                    </a>
-                  )}
-                </div>
-
-                <div className="p-3 space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-sm font-medium leading-tight line-clamp-2">{ref.title}</h3>
+        <div style={{ marginTop: 20 }}>
+          {loading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} style={{ height: 256, border: '1px solid hsl(var(--ds-line-1))' }} />
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="empties">
+              <div className="empty" style={{ borderRight: 0 }}>
+                <div className="glyph"><Bookmark strokeWidth={1.25} /></div>
+                <h5>{references.length === 0 ? 'Nenhuma referência ainda' : 'Nada encontrado'}</h5>
+                <p>
+                  {references.length === 0
+                    ? 'Comece adicionando inspirações de marketing — links, imagens, posts.'
+                    : 'Tente ajustar os filtros ou a busca.'}
+                </p>
+                {references.length === 0 && (
+                  <div className="actions">
+                    <button className="btn primary" onClick={handleNew} type="button">
+                      <Plus size={14} strokeWidth={1.5} />
+                      <span>Nova referência</span>
+                    </button>
                   </div>
-                  <div className="flex flex-wrap gap-1">
-                    {platformLabel && (
-                      <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 h-5', platformClass)}>
-                        {platformLabel}
-                      </Badge>
-                    )}
-                    {ref.tags.slice(0, 3).map((t) => (
-                      <Badge key={t} variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
-                        {t}
-                      </Badge>
-                    ))}
-                    {ref.tags.length > 3 && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
-                        +{ref.tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
-            );
-          })}
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+              {filtered.map((ref) => {
+                const PlatformIcon = ref.platform ? PLATFORM_ICONS[ref.platform] ?? Globe : null;
+                const platformLabel = PLATFORM_OPTIONS.find((p) => p.value === ref.platform)?.label;
+                return (
+                  <div
+                    key={ref.id}
+                    className="group"
+                    onClick={() => setLightbox(ref)}
+                    style={{
+                      position: 'relative',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      background: 'hsl(var(--ds-surface))',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ aspectRatio: '4 / 3', background: 'hsl(var(--ds-line-2) / 0.3)', display: 'grid', placeItems: 'center', overflow: 'hidden' }}>
+                      {ref.image_url ? (
+                        <img
+                          src={ref.image_url}
+                          alt={ref.title}
+                          loading="lazy"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-fg-4))' }}>
+                          {PlatformIcon ? <PlatformIcon size={32} strokeWidth={1.25} /> : <ImageIcon size={32} strokeWidth={1.25} />}
+                          {ref.source_url && <span style={{ fontSize: 11 }}>Apenas link</span>}
+                        </div>
+                      )}
+                    </div>
+
+                    <div
+                      className="ref-actions"
+                      style={{
+                        position: 'absolute', top: 8, right: 8,
+                        display: 'flex', gap: 4, opacity: 0, transition: 'opacity .15s',
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleEdit(ref); }}
+                        style={{
+                          width: 28, height: 28, display: 'grid', placeItems: 'center',
+                          background: 'hsl(var(--ds-surface))', border: '1px solid hsl(var(--ds-line-1))',
+                          color: 'hsl(var(--ds-fg-2))', cursor: 'pointer',
+                        }}
+                        aria-label="Editar"
+                      >
+                        <Pencil size={13} strokeWidth={1.5} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleAskDelete(ref); }}
+                        style={{
+                          width: 28, height: 28, display: 'grid', placeItems: 'center',
+                          background: 'hsl(var(--ds-surface))', border: '1px solid hsl(var(--ds-line-1))',
+                          color: 'hsl(var(--ds-fg-2))', cursor: 'pointer',
+                        }}
+                        aria-label="Excluir"
+                      >
+                        <Trash2 size={13} strokeWidth={1.5} />
+                      </button>
+                      {ref.source_url && (
+                        <a
+                          href={ref.source_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{
+                            width: 28, height: 28, display: 'grid', placeItems: 'center',
+                            background: 'hsl(var(--ds-surface))', border: '1px solid hsl(var(--ds-line-1))',
+                            color: 'hsl(var(--ds-fg-2))',
+                          }}
+                          aria-label="Abrir"
+                        >
+                          <ExternalLink size={13} strokeWidth={1.5} />
+                        </a>
+                      )}
+                    </div>
+
+                    <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <h3
+                        style={{
+                          fontSize: 13, fontWeight: 500, lineHeight: 1.35,
+                          color: 'hsl(var(--ds-fg-1))',
+                          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {ref.title}
+                      </h3>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                        {platformLabel && (
+                          <span className="pill" style={{ fontSize: 10 }}>
+                            {platformLabel}
+                          </span>
+                        )}
+                        {ref.tags.slice(0, 3).map((t) => (
+                          <span key={t} className="pill muted" style={{ fontSize: 10 }}>
+                            {t}
+                          </span>
+                        ))}
+                        {ref.tags.length > 3 && (
+                          <span className="pill muted" style={{ fontSize: 10 }}>
+                            +{ref.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <style>{`
+                      .group:hover .ref-actions { opacity: 1; }
+                    `}</style>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
 
-      <MarketingReferenceDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        reference={editing}
-      />
+        <MarketingReferenceDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          reference={editing}
+        />
 
-      <MarketingReferenceLightbox
-        reference={lightbox}
-        onOpenChange={(o) => !o && setLightbox(null)}
-        onEdit={handleEdit}
-        onDelete={handleAskDelete}
-      />
+        <MarketingReferenceLightbox
+          reference={lightbox}
+          onOpenChange={(o) => !o && setLightbox(null)}
+          onEdit={handleEdit}
+          onDelete={handleAskDelete}
+        />
 
-      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir referência?</AlertDialogTitle>
-            <AlertDialogDescription>
-              "{confirmDelete?.title}" será removido permanentemente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete}>Excluir</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </ResponsiveContainer>
+        <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir referência?</AlertDialogTitle>
+              <AlertDialogDescription>
+                "{confirmDelete?.title}" será removido permanentemente.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConfirmDelete}>Excluir</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </div>
   );
 }

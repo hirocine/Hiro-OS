@@ -1,13 +1,8 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Check, Package } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Equipment } from '@/types/equipment';
-import { LucideIcon } from 'lucide-react';
+import { type LucideIcon } from 'lucide-react';
 
 interface EquipmentSelectionStepProps {
   availableItems: Equipment[];
@@ -24,6 +19,16 @@ interface EquipmentSelectionStepProps {
   onSearchChange?: (value: string) => void;
   searchLabel?: string;
 }
+
+const eyebrowLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
 
 export function EquipmentSelectionStep({
   availableItems,
@@ -51,11 +56,11 @@ export function EquipmentSelectionStep({
     : availableItems;
 
   return (
-    <div className="space-y-6 flex-1 overflow-y-auto animate-fade-in">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, flex: 1, overflowY: 'auto' }} className="animate-fade-in">
       {/* Search Input (optional) */}
       {onSearchChange && searchLabel && (
-        <div className="space-y-2">
-          <Label htmlFor="search-equipment">{searchLabel}</Label>
+        <div>
+          <label htmlFor="search-equipment" style={eyebrowLabel}>{searchLabel}</label>
           <Input
             id="search-equipment"
             placeholder="Digite nome ou marca..."
@@ -66,118 +71,164 @@ export function EquipmentSelectionStep({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 32 }} className="lg:[grid-template-columns:1fr_1fr]">
         {/* Available Items */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-            <Icon className="h-5 w-5" />
-            <h4 className="font-medium">{availableTitle}</h4>
-            <Badge variant="secondary">
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginBottom: 16 }}>
+            <Icon size={18} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-2))' }} />
+            <h4 style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontSize: 14,
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-1))',
+            }}>
+              {availableTitle}
+            </h4>
+            <span className="pill muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
               {filteredItems.length} disponíveis
-            </Badge>
+            </span>
           </div>
 
           {loading ? (
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                <div key={i} style={{
+                  height: 96,
+                  background: 'hsl(var(--ds-line-2) / 0.3)',
+                }} className="animate-pulse" />
               ))}
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-              <Card className="border-dashed">
-                <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
-                  <div className="text-center text-sm text-muted-foreground space-y-2">
-                    <Icon className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="font-medium">{emptyAvailableText}</p>
-                    <p className="text-xs">Todos os itens estão em uso ou seu filtro não encontrou resultados</p>
-                  </div>
-                </CardContent>
-              </Card>
+            <div style={{ height: 500, overflowY: 'auto', flex: 1 }}>
+              <div style={{
+                border: '1px dashed hsl(var(--ds-line-1))',
+                background: 'hsl(var(--ds-surface))',
+                padding: '24px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: 120,
+              }}>
+                <div style={{ textAlign: 'center', fontSize: 13, color: 'hsl(var(--ds-fg-3))', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Icon size={28} strokeWidth={1.5} style={{ margin: '0 auto', opacity: 0.5, color: 'hsl(var(--ds-fg-3))' }} />
+                  <p style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>{emptyAvailableText}</p>
+                  <p style={{ fontSize: 11 }}>Todos os itens estão em uso ou seu filtro não encontrou resultados</p>
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+            <div style={{ height: 500, overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
               {filteredItems.map((item) => {
                 const isSelected = selectedItems.some((s) => s.id === item.id);
                 return (
-                  <Card
+                  <div
                     key={item.id}
-                    className={cn(
-                      "transition-all border-2 h-24",
-                      isSelected
-                        ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-md cursor-default"
-                        : "cursor-pointer hover:bg-accent/50 hover-scale hover:border-primary/30 bg-card"
-                    )}
                     onClick={() => !isSelected && onSelect(item)}
+                    style={{
+                      border: isSelected
+                        ? '1px solid hsl(var(--ds-success) / 0.5)'
+                        : '1px solid hsl(var(--ds-line-1))',
+                      background: isSelected
+                        ? 'hsl(var(--ds-success) / 0.08)'
+                        : 'hsl(var(--ds-surface))',
+                      cursor: isSelected ? 'default' : 'pointer',
+                      height: 96,
+                      padding: 16,
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                      }
+                    }}
                   >
-                    <CardContent className="p-4 h-full">
-                      <div className="flex items-center gap-3 h-full">
-                        <div
-                          className={cn(
-                            "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
-                            isSelected
-                              ? "bg-green-500/10 border border-green-500/30"
-                              : "bg-primary/10"
-                          )}
-                        >
-                          {isSelected ? (
-                            <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
-                          ) : item.image ? (
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="w-full h-full object-cover rounded-lg"
-                            />
-                          ) : (
-                            <Icon className="h-6 w-6 text-primary" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0 h-full">
-                          <div className="flex items-center justify-between h-full">
-                            <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <p className="font-medium text-sm truncate">
-                                    {item.name}
-                                  </p>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{item.name}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                              <p className="text-xs text-muted-foreground">
-                                {item.brand}
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant={isSelected ? "default" : "outline"}
-                              disabled={isSelected}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!isSelected) onSelect(item);
-                              }}
-                              className={
-                                isSelected
-                                  ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600"
-                                  : ""
-                              }
-                            >
-                              {isSelected ? (
-                                <>
-                                  <Check className="h-3 w-3 mr-1" />
-                                  Selecionado
-                                </>
-                              ) : (
-                                "Selecionar"
-                              )}
-                            </Button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, height: '100%' }}>
+                      <div
+                        style={{
+                          width: 48,
+                          height: 48,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          border: isSelected
+                            ? '1px solid hsl(var(--ds-success) / 0.3)'
+                            : '1px solid hsl(var(--ds-line-1))',
+                          background: isSelected
+                            ? 'hsl(var(--ds-success) / 0.1)'
+                            : 'hsl(var(--ds-line-2) / 0.3)',
+                        }}
+                      >
+                        {isSelected ? (
+                          <Check size={22} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-success))' }} />
+                        ) : item.image ? (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <Icon size={22} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+                        )}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' }}>
+                          <div style={{ flex: 1, minWidth: 0, marginRight: 12, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <p style={{
+                                  fontWeight: 500,
+                                  fontSize: 13,
+                                  color: 'hsl(var(--ds-fg-1))',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}>
+                                  {item.name}
+                                </p>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{item.name}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                              {item.brand}
+                            </p>
                           </div>
+                          <button
+                            type="button"
+                            className={isSelected ? 'btn' : 'btn'}
+                            disabled={isSelected}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!isSelected) onSelect(item);
+                            }}
+                            style={isSelected ? {
+                              height: 28,
+                              fontSize: 12,
+                              color: 'hsl(var(--ds-success))',
+                              borderColor: 'hsl(var(--ds-success) / 0.3)',
+                              background: 'hsl(var(--ds-success) / 0.08)',
+                            } : { height: 28, fontSize: 12 }}
+                          >
+                            {isSelected ? (
+                              <>
+                                <Check size={11} strokeWidth={1.5} />
+                                <span>Selecionado</span>
+                              </>
+                            ) : (
+                              'Selecionar'
+                            )}
+                          </button>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -185,60 +236,111 @@ export function EquipmentSelectionStep({
         </div>
 
         {/* Selected Items */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-            <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
-            <h4 className="font-medium">{selectedTitle}</h4>
-            <Badge variant="default">{selectedItems.length}</Badge>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginBottom: 16 }}>
+            <Check size={18} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-success))' }} />
+            <h4 style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontSize: 14,
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-1))',
+            }}>
+              {selectedTitle}
+            </h4>
+            <span
+              className="pill"
+              style={{
+                color: 'hsl(var(--ds-accent))',
+                borderColor: 'hsl(var(--ds-accent) / 0.3)',
+                background: 'hsl(var(--ds-accent) / 0.08)',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              {selectedItems.length}
+            </span>
           </div>
 
           {selectedItems.length === 0 ? (
-            <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-              <Card className="border-dashed">
-                <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
-                  <div className="text-center text-sm text-muted-foreground space-y-2">
-                    <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="font-medium">{emptySelectedText}</p>
-                    <p className="text-xs">Clique nos itens disponíveis para adicioná-los</p>
-                  </div>
-                </CardContent>
-              </Card>
+            <div style={{ height: 500, overflowY: 'auto', flex: 1 }}>
+              <div style={{
+                border: '1px dashed hsl(var(--ds-line-1))',
+                background: 'hsl(var(--ds-surface))',
+                padding: '24px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: 120,
+              }}>
+                <div style={{ textAlign: 'center', fontSize: 13, color: 'hsl(var(--ds-fg-3))', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Package size={28} strokeWidth={1.5} style={{ margin: '0 auto', opacity: 0.5, color: 'hsl(var(--ds-fg-3))' }} />
+                  <p style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>{emptySelectedText}</p>
+                  <p style={{ fontSize: 11 }}>Clique nos itens disponíveis para adicioná-los</p>
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+            <div style={{ height: 500, overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
               {selectedItems.map((item) => (
-                <Card key={item.id} className="border-primary/30 bg-primary/5 h-24 animate-fade-in">
-                  <CardContent className="p-4 h-full">
-                    <div className="flex items-center gap-3 h-full">
-                      <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div className="flex-1 min-w-0 h-full">
-                        <div className="flex items-center justify-between h-full">
-                          <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
-                            <p className="font-medium text-sm truncate">
-                              {item.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {item.brand}
-                            </p>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeselect(item.id);
-                            }}
-                          >
-                            Remover
-                          </Button>
+                <div
+                  key={item.id}
+                  className="animate-fade-in"
+                  style={{
+                    border: '1px solid hsl(var(--ds-accent) / 0.3)',
+                    background: 'hsl(var(--ds-accent) / 0.05)',
+                    height: 96,
+                    padding: 16,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, height: '100%' }}>
+                    <div style={{
+                      width: 48,
+                      height: 48,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      border: '1px solid hsl(var(--ds-success) / 0.3)',
+                      background: 'hsl(var(--ds-success) / 0.1)',
+                    }}>
+                      <Check size={22} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-success))' }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' }}>
+                        <div style={{ flex: 1, minWidth: 0, marginRight: 12, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                          <p style={{
+                            fontWeight: 500,
+                            fontSize: 13,
+                            color: 'hsl(var(--ds-fg-1))',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}>
+                            {item.name}
+                          </p>
+                          <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                            {item.brand}
+                          </p>
                         </div>
+                        <button
+                          type="button"
+                          className="btn"
+                          style={{
+                            height: 28,
+                            fontSize: 12,
+                            color: 'hsl(var(--ds-danger))',
+                            borderColor: 'hsl(var(--ds-danger) / 0.3)',
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeselect(item.id);
+                          }}
+                        >
+                          Remover
+                        </button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           )}

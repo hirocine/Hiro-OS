@@ -1,55 +1,95 @@
-import { cn } from '@/lib/utils';
 import { topEntries } from '@/lib/marketing-dashboard-utils';
 
 interface Props {
   cities: Record<string, number>;
 }
 
+const rankBg = (i: number): { bg: string; fg: string } => {
+  if (i === 0) return { bg: 'hsl(45 90% 60% / 0.15)', fg: 'hsl(45 90% 50%)' };
+  if (i === 1) return { bg: 'hsl(var(--ds-line-2))', fg: 'hsl(var(--ds-fg-2))' };
+  if (i === 2) return { bg: 'hsl(30 90% 60% / 0.15)', fg: 'hsl(30 90% 50%)' };
+  return { bg: 'hsl(var(--ds-line-2))', fg: 'hsl(var(--ds-fg-3))' };
+};
+
 export function CityRanking({ cities }: Props) {
   const list = topEntries(cities, 8);
   if (list.length === 0) {
-    return <p className="text-sm text-muted-foreground">Sem dados</p>;
+    return <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>Sem dados</p>;
   }
   const max = list[0].pct;
+
   return (
-    <ul className="space-y-2.5">
+    <ul style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' }}>
       {list.map((e, i) => {
         const isTop3 = i < 3;
         const widthPct = max > 0 ? (e.pct / max) * 100 : 0;
+        const tone = rankBg(i);
         return (
           <li
             key={e.key}
-            className={cn(
-              'rounded-lg p-3 transition-all',
-              isTop3 ? 'bg-muted/50' : 'hover:bg-muted/30',
-            )}
+            style={{
+              padding: '10px 12px',
+              background: isTop3 ? 'hsl(var(--ds-line-2) / 0.5)' : 'transparent',
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={(ev) => {
+              if (!isTop3) ev.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+            }}
+            onMouseLeave={(ev) => {
+              if (!isTop3) ev.currentTarget.style.background = 'transparent';
+            }}
           >
-            <div className="flex items-center justify-between gap-3 mb-2">
-              <div className="flex items-center gap-2.5 min-w-0">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 6 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                 <span
-                  className={cn(
-                    'shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold font-numeric',
-                    i === 0 && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-                    i === 1 && 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-                    i === 2 && 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-                    i > 2 && 'bg-muted text-muted-foreground',
-                  )}
+                  style={{
+                    flexShrink: 0,
+                    width: 22,
+                    height: 22,
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    fontVariantNumeric: 'tabular-nums',
+                    background: tone.bg,
+                    color: tone.fg,
+                  }}
                 >
                   {i + 1}
                 </span>
-                <span className="text-sm font-medium truncate">{e.key}</span>
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: 'hsl(var(--ds-fg-1))',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {e.key}
+                </span>
               </div>
-              <span className="text-sm font-numeric font-semibold shrink-0">
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  fontVariantNumeric: 'tabular-nums',
+                  color: 'hsl(var(--ds-fg-1))',
+                  flexShrink: 0,
+                }}
+              >
                 {e.pct.toFixed(1)}%
               </span>
             </div>
-            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+            <div style={{ height: 4, background: 'hsl(var(--ds-line-2))', overflow: 'hidden' }}>
               <div
-                className={cn(
-                  'h-full rounded-full transition-all duration-500',
-                  isTop3 ? 'bg-primary' : 'bg-primary/40',
-                )}
-                style={{ width: `${widthPct}%` }}
+                style={{
+                  height: '100%',
+                  width: `${widthPct}%`,
+                  background: isTop3 ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-accent) / 0.4)',
+                  transition: 'width 0.5s',
+                }}
               />
             </div>
           </li>

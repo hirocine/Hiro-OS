@@ -1,13 +1,7 @@
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { PageHeader } from '@/components/ui/page-header';
 import { Loader2, KeyRound } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -34,6 +28,16 @@ const profileSchema = z.object({
   position: z.string().max(100, 'Cargo muito longo').optional(),
   department: z.string().max(100, 'Departamento muito longo').optional(),
 });
+
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
 
 export default function Profile() {
   const { user } = useAuthContext();
@@ -82,9 +86,9 @@ export default function Profile() {
         });
       }
     } catch (error) {
-      logger.error('Error fetching profile', { 
+      logger.error('Error fetching profile', {
         module: 'profile',
-        error 
+        error
       });
       toast({
         title: "Erro ao carregar perfil",
@@ -127,7 +131,7 @@ export default function Profile() {
         module: 'profile',
         data: { userId: user.id, formData }
       });
-      
+
       const updateData = {
         user_id: user.id,
         display_name: formData.display_name || null,
@@ -135,11 +139,11 @@ export default function Profile() {
         department: formData.department || null
       };
 
-      logger.debug('Upsert data', { 
+      logger.debug('Upsert data', {
         module: 'profile',
-        data: updateData 
+        data: updateData
       });
-      
+
       const { error } = await supabase
         .from('profiles')
         .upsert(updateData, {
@@ -147,9 +151,9 @@ export default function Profile() {
         });
 
       if (error) {
-        logger.error('Upsert error', { 
+        logger.error('Upsert error', {
           module: 'profile',
-          error 
+          error
         });
         throw error;
       }
@@ -165,9 +169,9 @@ export default function Profile() {
       // Invalidate sidebar profile cache
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile', user.id] });
     } catch (error: any) {
-      logger.error('Error updating profile', { 
+      logger.error('Error updating profile', {
         module: 'profile',
-        error 
+        error
       });
       toast({
         title: "Erro ao salvar",
@@ -203,7 +207,7 @@ export default function Profile() {
         maxWidth: 512,
         maxHeight: 512
       });
-      
+
       setCropperOpen(false);
       setSelectedImageSrc('');
       await fetchProfile();
@@ -227,7 +231,7 @@ export default function Profile() {
 
   const handlePasswordReset = async () => {
     if (!user?.email) return;
-    
+
     setLoadingPasswordReset(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
@@ -257,7 +261,7 @@ export default function Profile() {
     try {
       setSaving(true);
       const result = await syncGoogleAvatarToProfile();
-      
+
       if (result.success) {
         toast({
           title: "Avatar do Google importado",
@@ -283,136 +287,160 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <ResponsiveContainer className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </ResponsiveContainer>
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
+          <Loader2 className="animate-spin" size={28} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+        </div>
+      </div>
     );
   }
 
   return (
-    <ResponsiveContainer maxWidth="4xl" className="animate-fade-in">
-      <PageHeader
-        title="Meu Perfil"
-        subtitle="Gerencie suas informações e preferências"
-        actions={
-          <Button onClick={handleSubmit} disabled={saving}>
-            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Salvar Alterações
-          </Button>
-        }
-      />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Meu Perfil.</h1>
+            <p className="ph-sub">Gerencie suas informações e preferências.</p>
+          </div>
+          <div className="ph-actions">
+            <button className="btn primary" onClick={handleSubmit} disabled={saving} type="button">
+              {saving && <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />}
+              <span>Salvar Alterações</span>
+            </button>
+          </div>
+        </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3" style={{ marginTop: 24 }}>
         {/* Avatar Section */}
-        <Card className="lg:col-span-1">
-          <CardContent className="pt-6 flex flex-col items-center space-y-4">
-            <AvatarUploadArea
-              currentAvatarUrl={avatarData.url}
-              userInitials={avatarData.initials}
-              onFileSelect={handleFileSelect}
-              onRemoveAvatar={profile?.avatar_url ? handleRemoveAvatar : undefined}
-              uploading={uploading}
-              size="lg"
-            />
-            
-            {isGoogleUser && hasGoogleAvatar && !profile?.avatar_url && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleUseGoogleAvatar}
-                disabled={saving}
-              >
-                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Usar Foto do Google
-              </Button>
+        <div
+          className="lg:col-span-1"
+          style={{
+            border: '1px solid hsl(var(--ds-line-1))',
+            background: 'hsl(var(--ds-surface))',
+            padding: '24px 18px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 16,
+          }}
+        >
+          <AvatarUploadArea
+            currentAvatarUrl={avatarData.url}
+            userInitials={avatarData.initials}
+            onFileSelect={handleFileSelect}
+            onRemoveAvatar={profile?.avatar_url ? handleRemoveAvatar : undefined}
+            uploading={uploading}
+            size="lg"
+          />
+
+          {isGoogleUser && hasGoogleAvatar && !profile?.avatar_url && (
+            <button
+              type="button"
+              className="btn"
+              onClick={handleUseGoogleAvatar}
+              disabled={saving}
+            >
+              {saving && <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />}
+              <span>Usar Foto do Google</span>
+            </button>
+          )}
+
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <p style={{ fontWeight: 500, fontSize: 18, color: 'hsl(var(--ds-fg-1))', fontFamily: '"HN Display", sans-serif' }}>
+              {avatarData.displayName || 'Nome não definido'}
+            </p>
+            <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>{user?.email}</p>
+            {avatarData.isGoogleUser && (
+              <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>Conta Google</p>
             )}
-            
-            <div className="text-center space-y-1">
-              <p className="font-medium text-lg">{avatarData.displayName || 'Nome não definido'}</p>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
-              {avatarData.isGoogleUser && (
-                <p className="text-xs text-muted-foreground">Conta Google</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Personal Info + Password Section */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Informações Pessoais</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="display_name">Nome Completo</Label>
+        <div
+          className="lg:col-span-2"
+          style={{
+            border: '1px solid hsl(var(--ds-line-1))',
+            background: 'hsl(var(--ds-surface))',
+          }}
+        >
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid hsl(var(--ds-line-1))', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>
+              Informações Pessoais
+            </span>
+          </div>
+          <div style={{ padding: 18 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label htmlFor="display_name" style={fieldLabel}>Nome Completo</label>
                 <Input
                   id="display_name"
                   value={formData.display_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
                   placeholder="Seu nome completo"
-                  className={validationErrors.display_name ? 'border-destructive' : ''}
+                  style={validationErrors.display_name ? { borderColor: 'hsl(var(--ds-danger))' } : undefined}
                 />
                 {validationErrors.display_name && (
-                  <p className="text-sm text-destructive">{validationErrors.display_name}</p>
+                  <p style={{ fontSize: 13, color: 'hsl(var(--ds-danger))', marginTop: 4 }}>{validationErrors.display_name}</p>
                 )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="position">Cargo</Label>
+                <div>
+                  <label htmlFor="position" style={fieldLabel}>Cargo</label>
                   <Input
                     id="position"
                     value={formData.position}
                     onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
                     placeholder="Ex: Editor, Cinegrafista"
-                    className={validationErrors.position ? 'border-destructive' : ''}
+                    style={validationErrors.position ? { borderColor: 'hsl(var(--ds-danger))' } : undefined}
                   />
                   {validationErrors.position && (
-                    <p className="text-sm text-destructive">{validationErrors.position}</p>
+                    <p style={{ fontSize: 13, color: 'hsl(var(--ds-danger))', marginTop: 4 }}>{validationErrors.position}</p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="department">Área</Label>
+                <div>
+                  <label htmlFor="department" style={fieldLabel}>Área</label>
                   <Input
                     id="department"
                     value={formData.department}
                     onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
                     placeholder="Ex: Pós-produção, Captação"
-                    className={validationErrors.department ? 'border-destructive' : ''}
+                    style={validationErrors.department ? { borderColor: 'hsl(var(--ds-danger))' } : undefined}
                   />
                   {validationErrors.department && (
-                    <p className="text-sm text-destructive">{validationErrors.department}</p>
+                    <p style={{ fontSize: 13, color: 'hsl(var(--ds-danger))', marginTop: 4 }}>{validationErrors.department}</p>
                   )}
                 </div>
               </div>
             </div>
 
-            <Separator className="my-6" />
+            <div style={{ height: 1, background: 'hsl(var(--ds-line-1))', margin: '24px 0' }} />
 
-            {/* Password Section - Simplified */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-muted">
-                  <KeyRound className="h-4 w-4 text-muted-foreground" />
+            {/* Password Section */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ padding: 8, background: 'hsl(var(--ds-line-2) / 0.3)' }}>
+                  <KeyRound size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
                 </div>
                 <div>
-                  <p className="font-medium text-sm">Senha</p>
-                  <p className="text-xs text-muted-foreground">Receba um email para redefinir</p>
+                  <p style={{ fontWeight: 500, fontSize: 13, color: 'hsl(var(--ds-fg-1))' }}>Senha</p>
+                  <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>Receba um email para redefinir</p>
                 </div>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm"
+              <button
+                type="button"
+                className="btn"
                 onClick={handlePasswordReset}
                 disabled={loadingPasswordReset}
               >
-                {loadingPasswordReset && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Redefinir Senha
-              </Button>
+                {loadingPasswordReset && <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />}
+                <span>Redefinir Senha</span>
+              </button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Avatar Cropper Dialog */}
@@ -423,6 +451,7 @@ export default function Profile() {
         onCropComplete={handleCropComplete}
         loading={uploading}
       />
-    </ResponsiveContainer>
+      </div>
+    </div>
   );
 }

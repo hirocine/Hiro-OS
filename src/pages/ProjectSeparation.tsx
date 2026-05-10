@@ -1,13 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { useProjectEquipment } from '@/features/projects';
 import { useSeparationChecklist } from '@/hooks/useSeparationChecklist';
@@ -15,20 +10,21 @@ import { useProjectDetails } from '@/features/projects';
 import { useToast } from '@/hooks/use-toast';
 import { SeparationDialog } from '@/components/Projects/SeparationDialog';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { 
-  Package, 
-  CheckCircle, 
-  AlertTriangle, 
-  Camera, 
-  Mic, 
-  Lightbulb, 
-  Settings, 
-  HardDrive
+import {
+  Package,
+  CheckCircle,
+  AlertTriangle,
+  Camera,
+  Mic,
+  Lightbulb,
+  Settings,
+  HardDrive,
+  type LucideIcon,
 } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 
-const categoryIcons: Record<string, any> = {
+const categoryIcons: Record<string, LucideIcon> = {
   camera: Camera,
   audio: Mic,
   lighting: Lightbulb,
@@ -36,29 +32,51 @@ const categoryIcons: Record<string, any> = {
   storage: HardDrive,
 };
 
+const sectionWrap: React.CSSProperties = {
+  border: '1px solid hsl(var(--ds-line-1))',
+  background: 'hsl(var(--ds-surface))',
+};
+
+const sectionHeader: React.CSSProperties = {
+  padding: '14px 18px',
+  borderBottom: '1px solid hsl(var(--ds-line-1))',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 10,
+};
+
+const eyebrow: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-2))',
+};
+
 export default function ProjectSeparation() {
-  const { categories: dbCategories } = useCategories();
+  useCategories();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSeparationDialog, setShowSeparationDialog] = useState(false);
-  const { user } = useAuthContext();
-  
+  useAuthContext();
+
   const { project } = useProjectDetails(id!);
   const { equipment, loading, error } = useProjectEquipment(id || '');
   const { updateProjectStep } = useProjectDetails(id!);
-  
+
   // Transform equipment data for the checklist
-  const equipmentData = equipment.map(eq => ({
+  const equipmentData = equipment.map((eq) => ({
     id: eq.id,
     name: eq.name,
     category: eq.category,
     itemType: eq.itemType,
     parentId: eq.parentId,
     patrimonyNumber: eq.patrimonyNumber,
-    brand: eq.brand
+    brand: eq.brand,
   }));
 
   const {
@@ -70,39 +88,33 @@ export default function ProjectSeparation() {
     toggleItem,
     toggleMainItemWithAccessories,
     allAccessoriesChecked,
-    getAccessoriesForItem
+    getAccessoriesForItem,
   } = useSeparationChecklist(equipmentData);
 
   const handleConfirm = async () => {
     if (!allItemsChecked || !project) return;
-    
-    // Abrir o diálogo para selecionar usuário
     setShowSeparationDialog(true);
   };
 
-  const handleSeparationConfirm = async (data: {
-    userId: string;
-    userName: string;
-    timestamp: string;
-  }) => {
+  const handleSeparationConfirm = async (data: { userId: string; userName: string; timestamp: string }) => {
     setIsSubmitting(true);
     try {
       await updateProjectStep('ready_for_pickup', notes.trim() || undefined, {
         userId: data.userId,
         userName: data.userName,
-        timestamp: data.timestamp
+        timestamp: data.timestamp,
       });
-      
+
       toast({
-        title: "Equipamentos separados",
-        description: "A separação dos equipamentos foi confirmada com sucesso.",
+        title: 'Equipamentos separados',
+        description: 'A separação dos equipamentos foi confirmada com sucesso.',
       });
       navigate(`/retiradas/${id}`);
     } catch (error) {
       toast({
-        title: "Erro ao confirmar separação",
-        description: "Não foi possível confirmar a separação. Tente novamente.",
-        variant: "destructive"
+        title: 'Erro ao confirmar separação',
+        description: 'Não foi possível confirmar a separação. Tente novamente.',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
@@ -118,13 +130,21 @@ export default function ProjectSeparation() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6 md:p-8">
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-lg font-medium">Carregando equipamentos...</p>
-            <p className="text-sm text-muted-foreground">Preparando lista de separação</p>
-          </div>
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner" style={{ textAlign: 'center', padding: '64px 0' }}>
+          <div
+            className="animate-spin"
+            style={{
+              width: 32,
+              height: 32,
+              border: '2px solid hsl(var(--ds-accent))',
+              borderTopColor: 'transparent',
+              borderRadius: '50%',
+              margin: '0 auto 16px',
+            }}
+          />
+          <p style={{ fontSize: 15, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>Carregando equipamentos…</p>
+          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>Preparando lista de separação</p>
         </div>
       </div>
     );
@@ -132,268 +152,395 @@ export default function ProjectSeparation() {
 
   if (error || !project) {
     return (
-      <div className="container mx-auto p-6 md:p-8">
-        <div className="text-center space-y-4 py-12">
-          <AlertTriangle className="w-12 h-12 text-destructive mx-auto" />
-          <h1 className="text-2xl font-bold text-destructive">Erro ao Carregar</h1>
-          <p className="text-muted-foreground">{error || 'Não foi possível carregar os dados do projeto.'}</p>
-          <Button onClick={handleCancel}>Voltar ao Projeto</Button>
+      <div className="ds-shell ds-page">
+        <div
+          className="ds-page-inner"
+          style={{
+            textAlign: 'center',
+            padding: '64px 0',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <AlertTriangle size={40} strokeWidth={1.25} style={{ color: 'hsl(var(--ds-danger))' }} />
+          <h1 className="ph-title" style={{ color: 'hsl(var(--ds-danger))' }}>
+            Erro ao Carregar.
+          </h1>
+          <p style={{ color: 'hsl(var(--ds-fg-3))' }}>{error || 'Não foi possível carregar os dados do projeto.'}</p>
+          <button className="btn primary" onClick={handleCancel} type="button">
+            Voltar ao Projeto
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 md:p-8 max-w-5xl space-y-4 md:space-y-6">
-      <BreadcrumbNav 
-        items={[
-          { label: 'Retiradas', href: '/retiradas' },
-          { label: project.name, href: `/retiradas/${id}` },
-          { label: 'Separação' }
-        ]} 
-      />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <BreadcrumbNav
+          items={[
+            { label: 'Retiradas', href: '/retiradas' },
+            { label: project.name, href: `/retiradas/${id}` },
+            { label: 'Separação' },
+          ]}
+        />
 
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Package className="w-6 h-6" />
-          Confirmar Separação dos Equipamentos
-        </h1>
-      </div>
+        {/* Header */}
+        <div className="ph">
+          <div>
+            <h1 className="ph-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Package size={20} strokeWidth={1.5} />
+              Confirmar Separação.
+            </h1>
+            <p className="ph-sub">Marque cada equipamento conforme for separando para retirada.</p>
+          </div>
+        </div>
 
-      {/* Progress Section */}
-      <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Badge variant={allItemsChecked ? "default" : "outline"} className="text-sm">
+        {/* Progress Section */}
+        <div style={sectionWrap}>
+          <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <span
+                className="pill"
+                style={
+                  allItemsChecked
+                    ? {
+                        color: 'hsl(var(--ds-success))',
+                        borderColor: 'hsl(var(--ds-success) / 0.3)',
+                        background: 'hsl(var(--ds-success) / 0.08)',
+                        fontVariantNumeric: 'tabular-nums',
+                      }
+                    : { fontVariantNumeric: 'tabular-nums' }
+                }
+              >
                 {checkedCount}/{totalCount} itens confirmados
-              </Badge>
+              </span>
               {allItemsChecked && (
-                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="font-medium">Todos os itens confirmados</span>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    fontSize: 13,
+                    color: 'hsl(var(--ds-success))',
+                  }}
+                >
+                  <CheckCircle size={14} strokeWidth={1.5} />
+                  <span style={{ fontWeight: 500 }}>Todos os itens confirmados</span>
                 </div>
               )}
             </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: 12,
+                  color: 'hsl(var(--ds-fg-3))',
+                }}
+              >
                 <span>Progresso da separação</span>
-                <span>{Math.round(progressPercentage)}%</span>
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{Math.round(progressPercentage)}%</span>
               </div>
               <Progress value={progressPercentage} className="h-2" />
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Equipment List */}
-      <div className="space-y-6 mb-6">
-        {categorizedEquipment.length === 0 ? (
+        {/* Equipment List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {categorizedEquipment.length === 0 ? (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>Nenhum equipamento encontrado para este projeto.</AlertDescription>
+            </Alert>
+          ) : (
+            categorizedEquipment.map((category) => {
+              const CategoryIcon = categoryIcons[category.category] || Settings;
+              const mainItems = category.items.filter((item) => item.itemType === 'main');
+              const standaloneAccessories = category.items.filter((item) => {
+                if (item.itemType !== 'accessory') return false;
+                if (!item.parentId) return true;
+                const parentExists = equipmentData.some((eq) => eq.id === item.parentId);
+                return !parentExists;
+              });
+
+              return (
+                <div key={category.category} style={sectionWrap}>
+                  <div style={sectionHeader}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <CategoryIcon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+                      <span style={eyebrow}>{category.category}</span>
+                    </div>
+                    <span
+                      className="pill muted"
+                      style={{ fontVariantNumeric: 'tabular-nums' }}
+                    >
+                      {category.items.length} {category.items.length === 1 ? 'item' : 'itens'}
+                    </span>
+                  </div>
+                  <div style={{ padding: 18 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
+                      {mainItems.map((mainItem) => {
+                        const accessories = getAccessoriesForItem(mainItem.id);
+                        const mainItemChecked = checkedItems[mainItem.id];
+                        const allAccessoriesCheckedForItem = allAccessoriesChecked(mainItem.id);
+
+                        return (
+                          <div key={mainItem.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {/* Main Item */}
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 12,
+                                padding: 12,
+                                border: '1px solid hsl(var(--ds-line-1))',
+                                background: 'hsl(var(--ds-surface))',
+                              }}
+                            >
+                              <Checkbox
+                                id={mainItem.id}
+                                checked={mainItemChecked}
+                                onCheckedChange={() => toggleMainItemWithAccessories(mainItem.id)}
+                                className="flex-shrink-0"
+                              />
+                              <div
+                                style={{ flex: 1, minWidth: 0, fontWeight: 500, cursor: 'pointer' }}
+                                onClick={() => toggleMainItemWithAccessories(mainItem.id)}
+                              >
+                                <span
+                                  style={{
+                                    display: 'block',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    color: 'hsl(var(--ds-fg-1))',
+                                  }}
+                                >
+                                  {mainItem.name}
+                                  {accessories.length > 0 && (
+                                    <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginLeft: 8 }}>
+                                      • {accessories.length} acessório{accessories.length > 1 ? 's' : ''}
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                              {mainItemChecked && allAccessoriesCheckedForItem && (
+                                <CheckCircle
+                                  size={14}
+                                  strokeWidth={1.5}
+                                  style={{ color: 'hsl(var(--ds-success))', flexShrink: 0 }}
+                                />
+                              )}
+                            </div>
+
+                            {/* Accessories */}
+                            {accessories.length > 0 && (
+                              <div
+                                style={{ marginLeft: 24, display: 'flex', flexDirection: 'column', gap: 4 }}
+                              >
+                                {accessories.map((accessory) => (
+                                  <div
+                                    key={accessory.id}
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 12,
+                                      padding: '8px 12px',
+                                      border: '1px dashed hsl(var(--ds-line-1))',
+                                      background: 'hsl(var(--ds-line-2) / 0.3)',
+                                    }}
+                                  >
+                                    <Checkbox
+                                      id={accessory.id}
+                                      checked={checkedItems[accessory.id] || false}
+                                      onCheckedChange={() => toggleItem(accessory.id)}
+                                      className="flex-shrink-0"
+                                    />
+                                    <div
+                                      style={{ flex: 1, minWidth: 0, fontSize: 13, cursor: 'pointer' }}
+                                      onClick={() => toggleItem(accessory.id)}
+                                    >
+                                      <span
+                                        style={{
+                                          display: 'block',
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          whiteSpace: 'nowrap',
+                                          color: 'hsl(var(--ds-fg-2))',
+                                        }}
+                                      >
+                                        {accessory.name}
+                                      </span>
+                                    </div>
+                                    {checkedItems[accessory.id] && (
+                                      <CheckCircle
+                                        size={12}
+                                        strokeWidth={1.5}
+                                        style={{ color: 'hsl(var(--ds-success))', flexShrink: 0 }}
+                                      />
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      {/* Standalone Accessories */}
+                      {standaloneAccessories.length > 0 && (
+                        <>
+                          {mainItems.length > 0 && (
+                            <div style={{ height: 1, background: 'hsl(var(--ds-line-1))', margin: '6px 0' }} />
+                          )}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <p
+                              style={{
+                                fontSize: 11,
+                                color: 'hsl(var(--ds-fg-3))',
+                                fontWeight: 500,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.14em',
+                              }}
+                            >
+                              Acessórios avulsos
+                            </p>
+                            {standaloneAccessories.map((accessory) => (
+                              <div
+                                key={accessory.id}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 12,
+                                  padding: 12,
+                                  border: '1px dashed hsl(var(--ds-line-1))',
+                                  background: 'hsl(var(--ds-line-2) / 0.3)',
+                                }}
+                              >
+                                <Checkbox
+                                  id={accessory.id}
+                                  checked={checkedItems[accessory.id] || false}
+                                  onCheckedChange={() => toggleItem(accessory.id)}
+                                  className="flex-shrink-0"
+                                />
+                                <div
+                                  style={{ flex: 1, minWidth: 0, fontSize: 13, cursor: 'pointer' }}
+                                  onClick={() => toggleItem(accessory.id)}
+                                >
+                                  <span
+                                    style={{
+                                      display: 'block',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                      color: 'hsl(var(--ds-fg-2))',
+                                    }}
+                                  >
+                                    {accessory.name}
+                                  </span>
+                                </div>
+                                {checkedItems[accessory.id] && (
+                                  <CheckCircle
+                                    size={12}
+                                    strokeWidth={1.5}
+                                    style={{ color: 'hsl(var(--ds-success))', flexShrink: 0 }}
+                                  />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Notes Section */}
+        <div style={sectionWrap}>
+          <div style={sectionHeader}>
+            <span style={eyebrow}>Observações da Separação</span>
+          </div>
+          <div style={{ padding: 18 }}>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Adicione observações sobre a separação dos equipamentos... (opcional)"
+              rows={4}
+              className="w-full"
+            />
+          </div>
+        </div>
+
+        {/* Alert */}
+        {!allItemsChecked && (
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Nenhum equipamento encontrado para este projeto.
+              Todos os equipamentos e acessórios devem ser confirmados antes de prosseguir com a separação.
             </AlertDescription>
           </Alert>
-        ) : (
-          categorizedEquipment.map((category) => {
-            const CategoryIcon = categoryIcons[category.category] || Settings;
-            const mainItems = category.items.filter(item => item.itemType === 'main');
-            // Standalone accessories: accessories without a parent in our list
-            const standaloneAccessories = category.items.filter(item => {
-              if (item.itemType !== 'accessory') return false;
-              if (!item.parentId) return true; // No parent defined
-              // Check if parent exists in our equipment list
-              const parentExists = equipmentData.some(eq => eq.id === item.parentId);
-              return !parentExists;
-            });
-            
-            return (
-              <Card key={category.category}>
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center gap-3">
-                    <CategoryIcon className="w-5 h-5 text-muted-foreground" />
-                    <span>{category.category}</span>
-                    <Badge variant="outline">
-                      {category.items.length} {category.items.length === 1 ? 'item' : 'itens'}
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 gap-3">
-                    {mainItems.map((mainItem) => {
-                      const accessories = getAccessoriesForItem(mainItem.id);
-                      const mainItemChecked = checkedItems[mainItem.id];
-                      const allAccessoriesCheckedForItem = allAccessoriesChecked(mainItem.id);
-                      
-                      return (
-                        <div key={mainItem.id} className="space-y-2">
-                          {/* Main Item */}
-                          <div className="flex items-center space-x-3 p-3 border rounded-lg bg-background hover:bg-accent/50 transition-colors">
-                            <Checkbox
-                              id={mainItem.id}
-                              checked={mainItemChecked}
-                              onCheckedChange={() => toggleMainItemWithAccessories(mainItem.id)}
-                              className="flex-shrink-0"
-                            />
-                            <div 
-                              className="flex-1 min-w-0 font-medium cursor-pointer" 
-                              onClick={() => toggleMainItemWithAccessories(mainItem.id)}
-                            >
-                              <span className="block truncate">
-                                {mainItem.name}
-                                {accessories.length > 0 && (
-                                  <span className="text-sm text-muted-foreground ml-2">
-                                    • {accessories.length} acessório{accessories.length > 1 ? 's' : ''}
-                                  </span>
-                                )}
-                              </span>
-                            </div>
-                            {mainItemChecked && allAccessoriesCheckedForItem && (
-                              <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                            )}
-                          </div>
-
-                          {/* Accessories */}
-                          {accessories.length > 0 && (
-                            <div className="ml-6 space-y-1">
-                              {accessories.map((accessory) => (
-                                <div
-                                  key={accessory.id}
-                                  className="flex items-center space-x-3 py-2 px-3 border border-dashed rounded bg-muted/30 hover:bg-muted/50 transition-colors"
-                                >
-                                  <Checkbox
-                                    id={accessory.id}
-                                    checked={checkedItems[accessory.id] || false}
-                                    onCheckedChange={() => toggleItem(accessory.id)}
-                                    className="flex-shrink-0"
-                                  />
-                                   <div 
-                                     className="flex-1 min-w-0 text-sm cursor-pointer" 
-                                     onClick={() => toggleItem(accessory.id)}
-                                   >
-                                     <span className="block truncate">
-                                       {accessory.name}
-                                     </span>
-                                   </div>
-                                  {checkedItems[accessory.id] && (
-                                    <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-
-                    {/* Standalone Accessories (orphaned or without parent) */}
-                    {standaloneAccessories.length > 0 && (
-                      <>
-                        {mainItems.length > 0 && <Separator className="my-3" />}
-                        <div className="space-y-2">
-                          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-                            Acessórios avulsos
-                          </p>
-                          {standaloneAccessories.map((accessory) => (
-                            <div
-                              key={accessory.id}
-                              className="flex items-center space-x-3 p-3 border border-dashed rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-                            >
-                              <Checkbox
-                                id={accessory.id}
-                                checked={checkedItems[accessory.id] || false}
-                                onCheckedChange={() => toggleItem(accessory.id)}
-                                className="flex-shrink-0"
-                              />
-                              <div 
-                                className="flex-1 min-w-0 text-sm cursor-pointer" 
-                                onClick={() => toggleItem(accessory.id)}
-                              >
-                                <span className="block truncate">
-                                  {accessory.name}
-                                </span>
-                              </div>
-                              {checkedItems[accessory.id] && (
-                                <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })
         )}
-      </div>
 
-      {/* Notes Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Observações da Separação</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Adicione observações sobre a separação dos equipamentos... (opcional)"
-            rows={4}
-            className="w-full"
-          />
-        </CardContent>
-      </Card>
-
-      {/* Alert */}
-      {!allItemsChecked && (
-        <Alert className="mb-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Todos os equipamentos e acessórios devem ser confirmados antes de prosseguir com a separação.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6 border-t">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={handleCancel}
-          disabled={isSubmitting}
-          className="w-full sm:w-auto"
+        {/* Action Buttons */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            gap: 12,
+            paddingTop: 24,
+            borderTop: '1px solid hsl(var(--ds-line-1))',
+            flexWrap: 'wrap',
+          }}
         >
-          Cancelar
-        </Button>
-        <Button 
-          type="button" 
-          onClick={handleConfirm}
-          disabled={!allItemsChecked || isSubmitting}
-          className="bg-foreground hover:bg-foreground/90 text-background w-full sm:min-w-[200px] sm:w-auto"
-        >
-          {isSubmitting ? (
-            <>
-              <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-              Confirmando...
-            </>
-          ) : (
-            <>
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Confirmar Separação
-            </>
-          )}
-        </Button>
-      </div>
+          <button type="button" className="btn" onClick={handleCancel} disabled={isSubmitting}>
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={handleConfirm}
+            disabled={!allItemsChecked || isSubmitting}
+            style={{ minWidth: 200 }}
+          >
+            {isSubmitting ? (
+              <>
+                <div
+                  className="animate-spin"
+                  style={{
+                    width: 14,
+                    height: 14,
+                    border: '2px solid currentColor',
+                    borderTopColor: 'transparent',
+                    borderRadius: '50%',
+                  }}
+                />
+                <span>Confirmando...</span>
+              </>
+            ) : (
+              <>
+                <CheckCircle size={14} strokeWidth={1.5} />
+                <span>Confirmar Separação</span>
+              </>
+            )}
+          </button>
+        </div>
 
-      <SeparationDialog
-        open={showSeparationDialog}
-        onOpenChange={setShowSeparationDialog}
-        onConfirm={handleSeparationConfirm}
-        loading={isSubmitting}
-      />
+        <SeparationDialog
+          open={showSeparationDialog}
+          onOpenChange={setShowSeparationDialog}
+          onConfirm={handleSeparationConfirm}
+          loading={isSubmitting}
+        />
+      </div>
     </div>
   );
 }

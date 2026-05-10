@@ -1,12 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { PageHeader } from '@/components/ui/page-header';
-import { Clock, HardDrive, CheckCircle2, FolderOpen, Share2 } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { SSDKanbanBoard } from '@/components/SSD/SSDKanbanBoard';
 import { useSSDs } from '@/features/ssds';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { formatRelativeTime } from '@/lib/utils';
-import { StatsCard, StatsCardGrid, StatsCardSkeleton } from '@/components/ui/stats-card';
 
 const SSDs = () => {
   const { ssds, ssdsByStatus, ssdAllocations, loading, updateSSDStatus, updateSSDOrder, refetch } = useSSDs();
@@ -24,92 +20,63 @@ const SSDs = () => {
     const available = ssdsByStatus.available.length;
     const inUse = ssdsByStatus.in_use.length;
     const loaned = ssdsByStatus.loaned.length;
-
     return { total, totalCapacity, available, inUse, loaned };
   }, [ssds, ssdsByStatus]);
 
-  if (loading) {
-    return (
-      <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-        <PageHeader
-          title="Controle de SSDs e HDs"
-          subtitle="Gerencie seus SSDs e HDs de forma visual"
-        />
-
-        <div className="mt-6">
-          <StatsCardGrid columns={4}>
-            {[1, 2, 3, 4].map(i => <StatsCardSkeleton key={i} />)}
-          </StatsCardGrid>
-        </div>
-
-        {/* Kanban columns skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-          {[1, 2, 3].map((col) => (
-            <div key={col} className="rounded-lg border bg-card p-4 space-y-3 animate-pulse">
-              <div className="flex items-center justify-between mb-4">
-                <Skeleton className="h-5 w-24" />
-                <Skeleton className="h-5 w-8 rounded-full" />
-              </div>
-              {Array.from({ length: col === 1 ? 3 : 2 }).map((_, i) => (
-                <div key={i} className="rounded-lg border bg-background p-3 space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                  <div className="flex justify-between items-center pt-1">
-                    <Skeleton className="h-3 w-16" />
-                    <Skeleton className="h-5 w-14 rounded-full" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </ResponsiveContainer>
-    );
-  }
-
-  const statsCards = [
-    { title: 'Total de SSDs/HDs', value: stats.total, icon: HardDrive, color: 'text-primary', bgColor: 'bg-primary/10', description: `${stats.totalCapacity.toFixed(0)} GB capacidade total` },
-    { title: 'Disponíveis', value: stats.available, icon: CheckCircle2, color: 'text-success', bgColor: 'bg-success/10', description: 'Prontos para uso' },
-    { title: 'Em Projetos', value: stats.inUse, icon: FolderOpen, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-500/10', description: 'Alocados em projetos' },
-    { title: 'Emprestados', value: stats.loaned, icon: Share2, color: 'text-warning', bgColor: 'bg-warning/10', description: 'Fora do estoque' },
-  ];
-
   return (
-    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-      <PageHeader
-        title="Controle de SSDs e HDs"
-        subtitle={
-          <>
-            Gerencie seus SSDs e HDs de forma visual. Cadastre novos itens pelo Inventário.
-            {lastUpdate && (
-              <span className="text-muted-foreground/50"> • </span>
-            )}
-            {lastUpdate && (
-              <span className="text-xs text-muted-foreground/70 inline-flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                Atualizado {formatRelativeTime(lastUpdate)}
-              </span>
-            )}
-          </>
-        }
-      />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Armazenamento.</h1>
+            <p className="ph-sub">
+              Controle de SSDs e HDs. Cadastre novos itens pelo Inventário.
+              {lastUpdate && (
+                <span className="meta">
+                  <Clock size={12} strokeWidth={1.5} />
+                  Atualizado {formatRelativeTime(lastUpdate)}
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
 
-      <div className="mt-6">
-        <StatsCardGrid columns={4}>
-          {statsCards.map(card => <StatsCard key={card.title} {...card} />)}
-        </StatsCardGrid>
-      </div>
+        <div className="summary" style={{ marginTop: 24 }}>
+          <div className="stat">
+            <span className="stat-lbl">Total</span>
+            <span className="stat-num">{loading ? '—' : stats.total}</span>
+            <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>
+              {loading ? '' : `${stats.totalCapacity.toFixed(0)} GB capacidade`}
+            </span>
+          </div>
+          <div className="stat success">
+            <span className="stat-lbl">Disponíveis</span>
+            <span className="stat-num">{loading ? '—' : stats.available}</span>
+            <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', marginTop: 2 }}>Prontos para uso</span>
+          </div>
+          <div className="stat">
+            <span className="stat-lbl">Em projetos</span>
+            <span className="stat-num" style={{ color: 'hsl(var(--ds-info))' }}>{loading ? '—' : stats.inUse}</span>
+            <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', marginTop: 2 }}>Alocados</span>
+          </div>
+          <div className={'stat' + (stats.loaned > 0 ? ' warn' : ' muted')}>
+            <span className="stat-lbl">Emprestados</span>
+            <span className="stat-num">{loading ? '—' : stats.loaned}</span>
+            <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', marginTop: 2 }}>Fora do estoque</span>
+          </div>
+        </div>
 
-      <div className="mt-6">
-        <SSDKanbanBoard
-          ssdsByStatus={ssdsByStatus}
-          ssdAllocations={ssdAllocations}
-          onStatusChange={updateSSDStatus}
-          onReorder={updateSSDOrder}
-          onUpdate={refetch}
-        />
+        <div style={{ marginTop: 24 }}>
+          <SSDKanbanBoard
+            ssdsByStatus={ssdsByStatus}
+            ssdAllocations={ssdAllocations}
+            onStatusChange={updateSSDStatus}
+            onReorder={updateSSDOrder}
+            onUpdate={refetch}
+          />
+        </div>
       </div>
-    </ResponsiveContainer>
+    </div>
   );
 };
 

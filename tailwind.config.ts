@@ -152,7 +152,92 @@ export default {
 					"danger-soft": "#FBE7E7",
 					info: "#1F6FB8",
 					"info-soft": "#E1EDF8",
-				}
+				},
+				// === HIRO DS (Phase 1, additive) — namespaced under `ds` ===
+				ds: {
+					background: 'hsl(var(--ds-background))',
+					foreground: 'hsl(var(--ds-foreground))',
+					primary: {
+						DEFAULT: 'hsl(var(--ds-primary))',
+						foreground: 'hsl(var(--ds-primary-foreground))',
+					},
+					secondary: {
+						DEFAULT: 'hsl(var(--ds-secondary))',
+						foreground: 'hsl(var(--ds-secondary-foreground))',
+					},
+					muted: {
+						DEFAULT: 'hsl(var(--ds-muted))',
+						foreground: 'hsl(var(--ds-muted-foreground))',
+					},
+					accent: {
+						DEFAULT: 'hsl(var(--ds-accent))',
+						foreground: 'hsl(var(--ds-accent-foreground))',
+						bright: 'hsl(var(--ds-accent-bright))',
+						soft: 'hsl(var(--ds-accent-soft))',
+						deep: 'hsl(var(--ds-accent-deep))',
+					},
+					destructive: {
+						DEFAULT: 'hsl(var(--ds-destructive))',
+						foreground: 'hsl(var(--ds-destructive-foreground))',
+					},
+					border: 'hsl(var(--ds-border))',
+					input: 'hsl(var(--ds-input))',
+					ring: 'hsl(var(--ds-ring))',
+					card: {
+						DEFAULT: 'hsl(var(--ds-card))',
+						foreground: 'hsl(var(--ds-card-foreground))',
+					},
+					popover: {
+						DEFAULT: 'hsl(var(--ds-popover))',
+						foreground: 'hsl(var(--ds-popover-foreground))',
+					},
+					surface: {
+						DEFAULT: 'hsl(var(--ds-surface))',
+						2: 'hsl(var(--ds-surface-2))',
+						3: 'hsl(var(--ds-surface-3))',
+					},
+					fg: {
+						1: 'hsl(var(--ds-fg-1))',
+						2: 'hsl(var(--ds-fg-2))',
+						3: 'hsl(var(--ds-fg-3))',
+						4: 'hsl(var(--ds-fg-4))',
+					},
+					line: {
+						1: 'hsl(var(--ds-line-1))',
+						2: 'hsl(var(--ds-line-2))',
+						3: 'hsl(var(--ds-line-3))',
+					},
+					warn:    'hsl(var(--ds-warn))',
+					info:    'hsl(var(--ds-info))',
+					success: 'hsl(var(--ds-success))',
+				},
+			},
+			fontFamily: {
+				// Phase 1: new keys, do not override default `sans`
+				display: ['"HN Display"', '"Helvetica Now Display"', 'Helvetica', 'Arial', 'system-ui', 'sans-serif'],
+				hn:      ['"HN Text"', '"Helvetica Now Text"', 'Helvetica', 'Arial', 'system-ui', 'sans-serif'],
+			},
+			spacing: {
+				'page-x':   'clamp(20px, 4vw, 64px)',
+				'rhythm-1': '24px',
+				'rhythm-2': '40px',
+				'rhythm-3': '64px',
+				'rhythm-4': '120px',
+				rail:       '64px',
+				side:       '256px',
+				topbar:     '56px',
+			},
+			borderRadius: {
+				pill: '999px',
+			},
+			transitionDuration: {
+				fast: '120ms',
+				slow: '320ms',
+				page: '400ms',
+			},
+			transitionTimingFunction: {
+				'ds-out': 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+				'ds-in':  'cubic-bezier(0.4, 0, 1, 1)',
 			},
 			keyframes: {
 				shimmer: {
@@ -258,6 +343,15 @@ export default {
 						opacity: '0',
 						transform: 'translateX(-10px)'
 					}
+				},
+				// === HIRO DS animations ===
+				'mask-up': {
+					from: { transform: 'translateY(8px)', clipPath: 'inset(100% 0 0 0)' },
+					to:   { transform: 'translateY(0)',   clipPath: 'inset(0 0 0 0)'  },
+				},
+				'fade-up': {
+					from: { opacity: '0', transform: 'translateY(8px)' },
+					to:   { opacity: '1', transform: 'translateY(0)' },
 				}
 			},
 			animation: {
@@ -271,7 +365,9 @@ export default {
 				'sidebar-expand': 'sidebar-expand 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
 				'sidebar-collapse': 'sidebar-collapse 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
 				'text-fade-in': 'text-fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-				'text-fade-out': 'text-fade-out 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+				'text-fade-out': 'text-fade-out 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+				'mask-up': 'mask-up 320ms cubic-bezier(0.2, 0.8, 0.2, 1)',
+				'fade-up': 'fade-up 200ms cubic-bezier(0.2, 0.8, 0.2, 1)'
 			},
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
@@ -279,7 +375,11 @@ export default {
 			},
 			boxShadow: {
 				'elegant': 'var(--shadow-elegant)',
-				'card': 'var(--shadow-card)'
+				'card': 'var(--shadow-card)',
+				// === HIRO DS hairlines & focus ring ===
+				'ds-hairline':   '0 1px 0 hsl(var(--ds-line-1))',
+				'ds-hairline-b': 'inset 0 -1px 0 hsl(var(--ds-line-1))',
+				'ds-focus-ring': '0 0 0 2px hsl(var(--ds-background)), 0 0 0 4px hsl(var(--ds-ring))'
 			},
 			gridTemplateColumns: {
 				'13': 'repeat(13, minmax(0, 1fr))'

@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Plus, Trash2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 
 export interface ProjectAllocation {
   id?: string;
@@ -21,7 +18,7 @@ interface ProjectAllocationListProps {
 export const ProjectAllocationList = ({
   allocations,
   totalCapacity,
-  onChange
+  onChange,
 }: ProjectAllocationListProps) => {
   const [localAllocations, setLocalAllocations] = useState<ProjectAllocation[]>(allocations);
 
@@ -33,10 +30,14 @@ export const ProjectAllocationList = ({
   const freeSpace = totalCapacity - totalAllocated;
   const utilizationPercent = totalCapacity > 0 ? (totalAllocated / totalCapacity) * 100 : 0;
 
-  const getBadgeVariant = () => {
-    if (utilizationPercent > 80) return 'destructive';
-    if (utilizationPercent > 50) return 'default';
-    return 'success';
+  const getBadgeStyle = (): React.CSSProperties => {
+    if (utilizationPercent > 80) {
+      return { color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' };
+    }
+    if (utilizationPercent > 50) {
+      return { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' };
+    }
+    return { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' };
   };
 
   const handleAdd = () => {
@@ -55,88 +56,141 @@ export const ProjectAllocationList = ({
     const newAllocations = [...localAllocations];
     newAllocations[index] = {
       ...newAllocations[index],
-      [field]: field === 'allocated_gb' 
-        ? (value === '' ? 0 : parseFloat(value as string) || 0)
-        : value
+      [field]:
+        field === 'allocated_gb'
+          ? value === ''
+            ? 0
+            : parseFloat(value as string) || 0
+          : value,
     };
     setLocalAllocations(newAllocations);
     onChange(newAllocations);
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Projetos Alocados</h3>
-        <Badge variant={getBadgeVariant()}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <h3
+          style={{
+            fontSize: 11,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+            color: 'hsl(var(--ds-fg-3))',
+          }}
+        >
+          Projetos Alocados
+        </h3>
+        <span
+          className="pill"
+          style={{ ...getBadgeStyle(), fontVariantNumeric: 'tabular-nums' }}
+        >
           {freeSpace.toFixed(0)} GB livres de {totalCapacity} GB
-        </Badge>
+        </span>
       </div>
 
       {localAllocations.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-4">
+        <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', textAlign: 'center', padding: '16px 0' }}>
           Nenhum projeto alocado ainda
         </p>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {localAllocations.map((allocation, index) => (
-            <div key={allocation.id || `temp-${index}`} className="flex gap-2 items-end">
-              <div className="flex-1">
-                <Label htmlFor={`project-name-${index}`} className="text-xs">
+            <div
+              key={allocation.id || `temp-${index}`}
+              style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}
+            >
+              <div style={{ flex: 1 }}>
+                <label
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    fontWeight: 500,
+                    color: 'hsl(var(--ds-fg-3))',
+                    display: 'block',
+                    marginBottom: 4,
+                  }}
+                >
                   Nome do Projeto
-                </Label>
+                </label>
                 <Input
-                  id={`project-name-${index}`}
                   value={allocation.project_name}
                   onChange={(e) => handleChange(index, 'project_name', e.target.value)}
                   placeholder="Ex: Projeto X"
-                  className="h-10"
                 />
               </div>
-              <div className="w-32">
-                <Label htmlFor={`project-gb-${index}`} className="text-xs">
+              <div style={{ width: 110 }}>
+                <label
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    fontWeight: 500,
+                    color: 'hsl(var(--ds-fg-3))',
+                    display: 'block',
+                    marginBottom: 4,
+                  }}
+                >
                   GB
-                </Label>
+                </label>
                 <Input
-                  id={`project-gb-${index}`}
                   type="number"
                   step="1"
                   min="0"
                   value={allocation.allocated_gb || ''}
                   onChange={(e) => handleChange(index, 'allocated_gb', e.target.value)}
                   placeholder="0"
-                  className="h-10"
+                  style={{ fontVariantNumeric: 'tabular-nums' }}
                 />
               </div>
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="icon"
                 onClick={() => handleRemove(index)}
-                className="h-10 w-10 shrink-0"
+                style={{
+                  width: 38,
+                  height: 38,
+                  display: 'grid',
+                  placeItems: 'center',
+                  background: 'transparent',
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  color: 'hsl(var(--ds-fg-3))',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  transition: 'color 0.15s, border-color 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'hsl(var(--ds-danger))';
+                  e.currentTarget.style.borderColor = 'hsl(var(--ds-danger) / 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'hsl(var(--ds-fg-3))';
+                  e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                }}
+                aria-label="Remover alocação"
               >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+                <Trash2 size={14} strokeWidth={1.5} />
+              </button>
             </div>
           ))}
         </div>
       )}
 
       {totalAllocated > totalCapacity && (
-        <p className="text-sm text-destructive">
+        <p style={{ fontSize: 12, color: 'hsl(var(--ds-danger))' }}>
           ⚠️ A capacidade total foi ultrapassada em {(totalAllocated - totalCapacity).toFixed(0)} GB
         </p>
       )}
 
-      <Button
+      <button
         type="button"
-        variant="outline"
-        size="sm"
+        className="btn"
         onClick={handleAdd}
-        className="w-full"
+        style={{ width: '100%', justifyContent: 'center' }}
       >
-        <Plus className="mr-2 h-4 w-4" />
-        Adicionar Projeto
-      </Button>
+        <Plus size={14} strokeWidth={1.5} />
+        <span>Adicionar Projeto</span>
+      </button>
     </div>
   );
 };

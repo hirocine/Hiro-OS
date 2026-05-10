@@ -1,15 +1,11 @@
 import { useState, useEffect } from 'react';
-import { 
+import {
   ResponsiveDialog,
   ResponsiveDialogContent,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
-  ResponsiveDialogFooter
+  ResponsiveDialogFooter,
 } from '@/components/ui/responsive-dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { RotateCcw, Clock, Package, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
@@ -33,7 +29,7 @@ interface UndoDeleteDialogProps {
   onRestore: (equipmentId: string) => Promise<void>;
 }
 
-const UNDO_TIMEOUT = 30; // 30 segundos para desfazer
+const UNDO_TIMEOUT = 30;
 
 export function UndoDeleteDialog({ open, onOpenChange, deletedEquipment, onRestore }: UndoDeleteDialogProps) {
   const [timeLeft, setTimeLeft] = useState(UNDO_TIMEOUT);
@@ -44,19 +40,16 @@ export function UndoDeleteDialog({ open, onOpenChange, deletedEquipment, onResto
   useEffect(() => {
     if (!open || !deletedEquipment) return;
 
-    // Calcular o tempo restante baseado na data de exclusão
     const elapsed = Math.floor((Date.now() - deletedEquipment.deletedAt.getTime()) / 1000);
     const remaining = Math.max(0, UNDO_TIMEOUT - elapsed);
-    
+
     setTimeLeft(remaining);
 
-    // Se o tempo já expirou, fechar o diálogo
     if (remaining <= 0) {
       onOpenChange(false);
       return;
     }
 
-    // Configurar timer
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -76,31 +69,25 @@ export function UndoDeleteDialog({ open, onOpenChange, deletedEquipment, onResto
 
     setRestoring(true);
     try {
-      logger.debug('Restoring deleted equipment', { 
+      logger.debug('Restoring deleted equipment', {
         module: 'equipment',
-        data: {
-          equipmentId: deletedEquipment.id,
-          equipmentName: deletedEquipment.name 
-        }
+        data: { equipmentId: deletedEquipment.id, equipmentName: deletedEquipment.name },
       });
 
       await onRestore(deletedEquipment.id);
-      
+
       toast({
-        title: "Equipamento Restaurado",
+        title: 'Equipamento Restaurado',
         description: `${deletedEquipment.name} foi restaurado com sucesso`,
       });
 
       onOpenChange(false);
     } catch (error) {
-      logger.error('Error restoring equipment', { 
-        module: 'equipment',
-        error 
-      });
+      logger.error('Error restoring equipment', { module: 'equipment', error });
       toast({
-        title: "Erro ao Restaurar",
-        description: "Não foi possível restaurar o equipamento. Tente novamente.",
-        variant: "destructive"
+        title: 'Erro ao Restaurar',
+        description: 'Não foi possível restaurar o equipamento. Tente novamente.',
+        variant: 'destructive',
       });
     } finally {
       setRestoring(false);
@@ -113,63 +100,90 @@ export function UndoDeleteDialog({ open, onOpenChange, deletedEquipment, onResto
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className={isMobile ? "" : "max-w-md"}>
+      <ResponsiveDialogContent className={isMobile ? '' : 'max-w-md'}>
         <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle className="flex items-center gap-2">
-            <RotateCcw className="h-5 w-5" />
-            Desfazer Exclusão
+          <ResponsiveDialogTitle>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                fontFamily: '"HN Display", sans-serif',
+              }}
+            >
+              <RotateCcw size={18} strokeWidth={1.5} />
+              Desfazer Exclusão
+            </span>
           </ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
 
-        <div className="space-y-4">
-          {/* Timer Visual */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'hsl(var(--ds-fg-3))' }}>
+                <Clock size={13} strokeWidth={1.5} />
                 Tempo restante
               </span>
-              <span className="font-mono font-medium">
+              <span style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))' }}>
                 {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
               </span>
             </div>
-            <Progress 
-              value={progressPercentage} 
-              className="h-2"
-            />
+            <div style={{ height: 4, background: 'hsl(var(--ds-line-2))', overflow: 'hidden' }}>
+              <div
+                style={{
+                  height: '100%',
+                  width: `${progressPercentage}%`,
+                  background: 'hsl(var(--ds-accent))',
+                  transition: 'width 1s linear',
+                }}
+              />
+            </div>
           </div>
 
-          {/* Informações do Equipamento */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Package className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div className="space-y-1 flex-1">
-                  <h4 className="font-medium">{deletedEquipment.name}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {deletedEquipment.brand} • {deletedEquipment.category}
-                  </p>
-                  {deletedEquipment.patrimony_number && (
-                    <Badge variant="outline" className="text-xs">
-                      #{deletedEquipment.patrimony_number}
-                    </Badge>
-                  )}
-                </div>
+          <div
+            style={{
+              border: '1px solid hsl(var(--ds-line-1))',
+              background: 'hsl(var(--ds-surface))',
+              padding: 14,
+            }}
+          >
+            <div style={{ display: 'inline-flex', alignItems: 'flex-start', gap: 10 }}>
+              <Package size={18} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))', marginTop: 2 }} />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <h4 style={{ fontSize: 14, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                  {deletedEquipment.name}
+                </h4>
+                <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>
+                  {deletedEquipment.brand} • {deletedEquipment.category}
+                </p>
+                {deletedEquipment.patrimony_number && (
+                  <span className="pill muted" style={{ fontSize: 10, alignSelf: 'flex-start' }}>
+                    #{deletedEquipment.patrimony_number}
+                  </span>
+                )}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Status de Restauração */}
-          {deletedEquipment.canRestore ? (
-            <div className="text-sm text-muted-foreground">
-              <p>Este equipamento pode ser restaurado. Clique em "Desfazer" para cancelar a exclusão.</p>
             </div>
+          </div>
+
+          {deletedEquipment.canRestore ? (
+            <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', lineHeight: 1.5 }}>
+              Este equipamento pode ser restaurado. Clique em "Desfazer" para cancelar a exclusão.
+            </p>
           ) : (
-            <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <AlertTriangle className="h-4 w-4 text-destructive" />
-              <div className="text-sm">
-                <p className="font-medium text-destructive">Não é possível restaurar</p>
-                <p className="text-muted-foreground">
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'flex-start',
+                gap: 10,
+                padding: 12,
+                background: 'hsl(var(--ds-danger) / 0.08)',
+                border: '1px solid hsl(var(--ds-danger) / 0.2)',
+              }}
+            >
+              <AlertTriangle size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-danger))', marginTop: 2, flexShrink: 0 }} />
+              <div style={{ fontSize: 12 }}>
+                <p style={{ fontWeight: 500, color: 'hsl(var(--ds-danger))' }}>Não é possível restaurar</p>
+                <p style={{ color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
                   Este equipamento possui dependências que impedem a restauração.
                 </p>
               </div>
@@ -179,26 +193,36 @@ export function UndoDeleteDialog({ open, onOpenChange, deletedEquipment, onResto
 
         <ResponsiveDialogFooter>
           <MobileFriendlyFormActions>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <button type="button" className="btn" onClick={() => onOpenChange(false)}>
               Fechar
-            </Button>
-            <Button 
+            </button>
+            <button
+              type="button"
+              className="btn primary"
               onClick={handleRestore}
               disabled={!deletedEquipment.canRestore || restoring || timeLeft <= 0}
-              className="gap-2"
             >
               {restoring ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Restaurando...
+                  <div
+                    className="animate-spin"
+                    style={{
+                      width: 14,
+                      height: 14,
+                      border: '2px solid currentColor',
+                      borderTopColor: 'transparent',
+                      borderRadius: '50%',
+                    }}
+                  />
+                  <span>Restaurando…</span>
                 </>
               ) : (
                 <>
-                  <RotateCcw className="h-4 w-4" />
-                  Desfazer
+                  <RotateCcw size={14} strokeWidth={1.5} />
+                  <span>Desfazer</span>
                 </>
               )}
-            </Button>
+            </button>
           </MobileFriendlyFormActions>
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>

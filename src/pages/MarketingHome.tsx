@@ -3,14 +3,10 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight, Calendar, Plus, Trophy, Bell, CheckCircle,
   FileText, Eye, Heart, UserPlus, TrendingUp, TrendingDown, X, Minus,
+  type LucideIcon,
 } from 'lucide-react';
 import { format, parseISO, subDays, isAfter, isBefore, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -25,7 +21,53 @@ import { getPillarColor } from '@/lib/marketing-colors';
 import {
   POST_PLATFORMS, POST_STATUSES, getPostPlatformLabel,
 } from '@/lib/marketing-posts-config';
-import { cn } from '@/lib/utils';
+
+const HN_DISPLAY: React.CSSProperties = { fontFamily: '"HN Display", sans-serif' };
+
+function HairlineCard({
+  icon: Icon,
+  title,
+  right,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  right?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+      <div
+        style={{
+          padding: '14px 18px',
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <Icon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-2))',
+            }}
+          >
+            {title}
+          </span>
+        </div>
+        {right}
+      </div>
+      <div style={{ padding: 18 }}>{children}</div>
+    </div>
+  );
+}
 
 function formatNumber(n: number) {
   if (n >= 1000) return `${(n / 1000).toFixed(1).replace('.0', '')}k`;
@@ -41,8 +83,16 @@ function getPostTimestamp(p: MarketingPost): Date | null {
 function VariationBadge({ current, previous }: { current: number; previous: number }) {
   if (previous === 0) {
     return (
-      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-        <Minus className="h-3 w-3" />
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          fontSize: 11,
+          color: 'hsl(var(--ds-fg-3))',
+        }}
+      >
+        <Minus size={12} strokeWidth={1.5} />
         Sem comparação ainda
       </span>
     );
@@ -50,22 +100,37 @@ function VariationBadge({ current, previous }: { current: number; previous: numb
   const diff = ((current - previous) / previous) * 100;
   if (!Number.isFinite(diff)) {
     return (
-      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-        <Minus className="h-3 w-3" />
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          fontSize: 11,
+          color: 'hsl(var(--ds-fg-3))',
+        }}
+      >
+        <Minus size={12} strokeWidth={1.5} />
         Sem comparação ainda
       </span>
     );
   }
   const up = diff >= 0;
   const Icon = up ? TrendingUp : TrendingDown;
+  const tone = up ? 'hsl(var(--ds-success))' : 'hsl(var(--ds-danger))';
   return (
-    <span className={cn(
-      'inline-flex items-center gap-1 text-xs font-medium',
-      up ? 'text-emerald-500' : 'text-red-500'
-    )}>
-      <Icon className="h-3 w-3" />
-      <span className="font-numeric">{Math.abs(diff).toFixed(0)}%</span>
-      <span className="text-muted-foreground font-normal ml-0.5">vs semana passada</span>
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+        fontSize: 11,
+        fontWeight: 500,
+        color: tone,
+      }}
+    >
+      <Icon size={12} strokeWidth={1.5} />
+      <span style={{ fontVariantNumeric: 'tabular-nums' }}>{Math.abs(diff).toFixed(0)}%</span>
+      <span style={{ color: 'hsl(var(--ds-fg-3))', fontWeight: 400, marginLeft: 2 }}>vs semana passada</span>
     </span>
   );
 }
@@ -73,23 +138,50 @@ function VariationBadge({ current, previous }: { current: number; previous: numb
 interface KpiProps {
   label: string;
   value: string | number;
-  icon: typeof FileText;
+  icon: LucideIcon;
   current: number;
   previous: number;
 }
 
 function KpiCard({ label, value, icon: Icon, current, previous }: KpiProps) {
   return (
-    <Card>
-      <CardContent className="p-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground uppercase tracking-wide">{label}</span>
-          <Icon className="h-4 w-4 text-muted-foreground" />
-        </div>
-        <div className="text-2xl font-semibold font-numeric">{value}</div>
-        <VariationBadge current={current} previous={previous} />
-      </CardContent>
-    </Card>
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        padding: '16px 18px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span
+          style={{
+            fontSize: 11,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+            color: 'hsl(var(--ds-fg-3))',
+          }}
+        >
+          {label}
+        </span>
+        <Icon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+      </div>
+      <div
+        style={{
+          fontSize: 24,
+          fontWeight: 600,
+          color: 'hsl(var(--ds-fg-1))',
+          fontVariantNumeric: 'tabular-nums',
+          ...HN_DISPLAY,
+        }}
+      >
+        {value}
+      </div>
+      <VariationBadge current={current} previous={previous} />
+    </div>
   );
 }
 
@@ -198,7 +290,7 @@ export default function MarketingHome() {
       };
     });
   }, [posts, pillars]);
-  
+
 
   // === Posts publicados nos últimos 30 dias (para Estratégia) ===
   const postsThisMonth = useMemo(() => {
@@ -263,94 +355,109 @@ export default function MarketingHome() {
   }, [posts, distribution]);
 
   return (
-    <ResponsiveContainer>
-      <div className="space-y-5">
-        <PageHeader
-          title="Marketing"
-          subtitle="Centro de operações do conteúdo"
-          actions={
-            <Button onClick={() => openCreate()}>
-              <Plus className="h-4 w-4 mr-2" /> Novo Post
-            </Button>
-          }
-        />
-
-        {/* KPIs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard
-            label="📝 Posts publicados"
-            value={kpis.posts.current}
-            icon={FileText}
-            current={kpis.posts.current}
-            previous={kpis.posts.previous}
-          />
-          <KpiCard
-            label="👁️ Views totais"
-            value={formatNumber(kpis.views.current)}
-            icon={Eye}
-            current={kpis.views.current}
-            previous={kpis.views.previous}
-          />
-          <KpiCard
-            label="❤️ Engajamento médio"
-            value={`${kpis.engagement.current.toFixed(1)}%`}
-            icon={Heart}
-            current={kpis.engagement.current}
-            previous={kpis.engagement.previous}
-          />
-          <KpiCard
-            label="🚀 Novos seguidores"
-            value={formatNumber(kpis.followers.current)}
-            icon={UserPlus}
-            current={kpis.followers.current}
-            previous={kpis.followers.previous}
-          />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Marketing.</h1>
+            <p className="ph-sub">Centro de operações do conteúdo.</p>
+          </div>
+          <div className="ph-actions">
+            <button className="btn primary" onClick={() => openCreate()} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Novo Post</span>
+            </button>
+          </div>
         </div>
 
-        {/* Calendário full-width */}
-        <Card>
-          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 space-y-0">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Calendário de Posts
-            </CardTitle>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-muted-foreground">Filtros:</span>
-              <Select value={platformFilter || 'all'} onValueChange={(v) => setPlatformFilter(v === 'all' ? '' : v)}>
-                <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue placeholder="Plataforma" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas plataformas</SelectItem>
-                  {POST_PLATFORMS.map((p) => (
-                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={pillarFilter || 'all'} onValueChange={(v) => setPillarFilter(v === 'all' ? '' : v)}>
-                <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue placeholder="Pilar" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos pilares</SelectItem>
-                  {pillars.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
-                <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos status</SelectItem>
-                  {POST_STATUSES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {hasActiveFilter && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 text-xs">
-                  <X className="h-3 w-3 mr-1" /> Limpar
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 24 }}>
+
+          {/* KPIs */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+              gap: 12,
+            }}
+          >
+            <KpiCard
+              label="📝 Posts publicados"
+              value={kpis.posts.current}
+              icon={FileText}
+              current={kpis.posts.current}
+              previous={kpis.posts.previous}
+            />
+            <KpiCard
+              label="👁️ Views totais"
+              value={formatNumber(kpis.views.current)}
+              icon={Eye}
+              current={kpis.views.current}
+              previous={kpis.views.previous}
+            />
+            <KpiCard
+              label="❤️ Engajamento médio"
+              value={`${kpis.engagement.current.toFixed(1)}%`}
+              icon={Heart}
+              current={kpis.engagement.current}
+              previous={kpis.engagement.previous}
+            />
+            <KpiCard
+              label="🚀 Novos seguidores"
+              value={formatNumber(kpis.followers.current)}
+              icon={UserPlus}
+              current={kpis.followers.current}
+              previous={kpis.followers.previous}
+            />
+          </div>
+
+          {/* Calendário full-width */}
+          <HairlineCard
+            icon={Calendar}
+            title="Calendário de Posts"
+            right={
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>Filtros:</span>
+                <Select value={platformFilter || 'all'} onValueChange={(v) => setPlatformFilter(v === 'all' ? '' : v)}>
+                  <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue placeholder="Plataforma" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas plataformas</SelectItem>
+                    {POST_PLATFORMS.map((p) => (
+                      <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={pillarFilter || 'all'} onValueChange={(v) => setPillarFilter(v === 'all' ? '' : v)}>
+                  <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue placeholder="Pilar" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos pilares</SelectItem>
+                    {pillars.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
+                  <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos status</SelectItem>
+                    {POST_STATUSES.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {hasActiveFilter && (
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={clearFilters}
+                    style={{ height: 32, fontSize: 12 }}
+                  >
+                    <X size={12} strokeWidth={1.5} />
+                    <span>Limpar</span>
+                  </button>
+                )}
+              </div>
+            }
+          >
             <PostsCalendar
               posts={filteredPosts}
               pillars={pillars}
@@ -358,138 +465,242 @@ export default function MarketingHome() {
               onEdit={openEdit}
               onDelete={deletePost}
             />
-          </CardContent>
-        </Card>
+          </HairlineCard>
 
-        {/* Estratégia ativa */}
-        <StrategyOverview
-          persona={activePersona}
-          pillars={pillars}
-          postsThisMonth={postsThisMonth}
-        />
+          {/* Estratégia ativa */}
+          <StrategyOverview
+            persona={activePersona}
+            pillars={pillars}
+            postsThisMonth={postsThisMonth}
+          />
 
-        {/* Insights grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Top 5 posts */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Trophy className="h-4 w-4" /> Top 5 posts
-              </CardTitle>
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/marketing/social-media/calendario?view=ranking">
-                  Ver ranking completo <ArrowRight className="h-4 w-4 ml-1" />
+          {/* Insights grid */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+              gap: 16,
+            }}
+          >
+            {/* Top 5 posts */}
+            <HairlineCard
+              icon={Trophy}
+              title="Top 5 posts"
+              right={
+                <Link
+                  to="/marketing/social-media/calendario?view=ranking"
+                  className="btn"
+                  style={{ height: 28, fontSize: 12, textDecoration: 'none' }}
+                >
+                  <span>Ver ranking</span>
+                  <ArrowRight size={12} strokeWidth={1.5} />
                 </Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
+              }
+            >
               {topPosts.length === 0 ? (
                 <EmptyState compact icon={Trophy} title="" description="Nenhum post publicado ainda" />
               ) : (
-                <ul className="divide-y divide-border">
+                <ul style={{ display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' }}>
                   {topPosts.map((p, i) => (
-                    <li key={p.id} className="flex items-center gap-3 py-2.5">
-                      <span className="w-5 text-sm font-semibold text-muted-foreground font-numeric">{i + 1}</span>
+                    <li
+                      key={p.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        padding: '10px 0',
+                        borderBottom: i < topPosts.length - 1 ? '1px solid hsl(var(--ds-line-1))' : 'none',
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 20,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: 'hsl(var(--ds-fg-3))',
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        {i + 1}
+                      </span>
                       {p.cover_url ? (
-                        <img src={p.cover_url} alt="" className="w-10 h-10 rounded-md object-cover shrink-0" />
+                        <img
+                          src={p.cover_url}
+                          alt=""
+                          style={{
+                            width: 40,
+                            height: 40,
+                            objectFit: 'cover',
+                            flexShrink: 0,
+                            border: '1px solid hsl(var(--ds-line-1))',
+                          }}
+                        />
                       ) : (
-                        <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center shrink-0">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
+                        <div
+                          style={{
+                            width: 40,
+                            height: 40,
+                            background: 'hsl(var(--ds-line-2) / 0.3)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            border: '1px solid hsl(var(--ds-line-1))',
+                          }}
+                        >
+                          <FileText size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
                         </div>
                       )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{p.title}</p>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 500,
+                            color: 'hsl(var(--ds-fg-1))',
+                            margin: 0,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {p.title}
+                        </p>
                         {p.platform && (
-                          <Badge variant="outline" className="text-[10px] mt-0.5">
+                          <span className="pill muted" style={{ fontSize: 10, marginTop: 2 }}>
                             {getPostPlatformLabel(p.platform)}
-                          </Badge>
+                          </span>
                         )}
                       </div>
-                      <span className="text-xs text-muted-foreground font-numeric shrink-0">
+                      <span
+                        style={{
+                          fontSize: 11,
+                          color: 'hsl(var(--ds-fg-3))',
+                          fontVariantNumeric: 'tabular-nums',
+                          flexShrink: 0,
+                        }}
+                      >
                         {formatNumber(p.views || 0)} views
                       </span>
                     </li>
                   ))}
                 </ul>
               )}
-            </CardContent>
-          </Card>
+            </HairlineCard>
 
-          {/* Próximos posts */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Calendar className="h-4 w-4" /> Próximos posts
-              </CardTitle>
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/marketing/dashboard">
-                  Ver todos <ArrowRight className="h-4 w-4 ml-1" />
+            {/* Próximos posts */}
+            <HairlineCard
+              icon={Calendar}
+              title="Próximos posts"
+              right={
+                <Link
+                  to="/marketing/dashboard"
+                  className="btn"
+                  style={{ height: 28, fontSize: 12, textDecoration: 'none' }}
+                >
+                  <span>Ver todos</span>
+                  <ArrowRight size={12} strokeWidth={1.5} />
                 </Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
+              }
+            >
               {upcomingPosts.length === 0 ? (
                 <EmptyState compact icon={Calendar} title="" description="Nenhum post agendado. Use o calendário acima pra criar." />
               ) : (
-                <ul className="divide-y divide-border">
-                  {upcomingPosts.map((p) => {
+                <ul style={{ display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' }}>
+                  {upcomingPosts.map((p, i) => {
                     const d = parseISO(p.scheduled_at!);
                     const pillar = pillars.find((pp) => pp.id === p.pillar_id);
                     const color = pillar ? getPillarColor(pillar.color) : null;
                     return (
-                      <li key={p.id} className="flex items-center gap-3 py-2.5">
-                        <div className="w-24 shrink-0 text-xs text-muted-foreground">
-                          <span className="capitalize">{format(d, "EEE, dd/MM", { locale: ptBR })}</span>
-                          <span className="block">às {format(d, "HH'h'", { locale: ptBR })}</span>
+                      <li
+                        key={p.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12,
+                          padding: '10px 0',
+                          borderBottom: i < upcomingPosts.length - 1 ? '1px solid hsl(var(--ds-line-1))' : 'none',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 88,
+                            flexShrink: 0,
+                            fontSize: 11,
+                            color: 'hsl(var(--ds-fg-3))',
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
+                          <span style={{ textTransform: 'capitalize' }}>{format(d, "EEE, dd/MM", { locale: ptBR })}</span>
+                          <span style={{ display: 'block' }}>às {format(d, "HH'h'", { locale: ptBR })}</span>
                         </div>
                         <span
-                          className="h-2.5 w-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: color?.hex || 'hsl(var(--muted))' }}
+                          style={{
+                            height: 10,
+                            width: 10,
+                            borderRadius: '50%',
+                            flexShrink: 0,
+                            background: color?.hex || 'hsl(var(--ds-line-3))',
+                          }}
                         />
                         {p.platform && (
-                          <Badge variant="outline" className="text-[10px] shrink-0">
+                          <span className="pill muted" style={{ fontSize: 10, flexShrink: 0 }}>
                             {getPostPlatformLabel(p.platform)}
-                          </Badge>
+                          </span>
                         )}
-                        <p className="text-sm font-medium truncate flex-1">{p.title}</p>
+                        <p
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 500,
+                            color: 'hsl(var(--ds-fg-1))',
+                            margin: 0,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            flex: 1,
+                          }}
+                        >
+                          {p.title}
+                        </p>
                       </li>
                     );
                   })}
                 </ul>
               )}
-            </CardContent>
-          </Card>
+            </HairlineCard>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Bell className="h-4 w-4" /> Alertas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+            <HairlineCard icon={Bell} title="Alertas">
               {alerts.length === 0 ? (
                 <EmptyState compact icon={CheckCircle} title="" description="Tudo em ordem" />
               ) : (
-                <ul className="space-y-2">
+                <ul style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' }}>
                   {alerts.map((a, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm">
-                      <span className="shrink-0">{a.icon}</span>
-                      <span className="flex-1">{a.text}</span>
+                    <li
+                      key={i}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 8,
+                        fontSize: 13,
+                        color: 'hsl(var(--ds-fg-1))',
+                      }}
+                    >
+                      <span style={{ flexShrink: 0 }}>{a.icon}</span>
+                      <span style={{ flex: 1 }}>{a.text}</span>
                     </li>
                   ))}
                 </ul>
               )}
-            </CardContent>
-          </Card>
+            </HairlineCard>
+          </div>
         </div>
-      </div>
 
-      <MarketingPostDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        post={editingPost}
-        defaultDate={defaultDate}
-      />
-    </ResponsiveContainer>
+        <MarketingPostDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          post={editingPost}
+          defaultDate={defaultDate}
+        />
+      </div>
+    </div>
   );
 }

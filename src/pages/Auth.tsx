@@ -178,7 +178,7 @@ export default function Auth() {
           <img
             src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png"
             alt="Hiro OS"
-            className="h-10 w-10 rounded-xl"
+            className="h-10 w-10 "
           />
           <span className="text-white font-semibold text-lg">Hiro OS®</span>
         </div>
@@ -200,7 +200,7 @@ export default function Auth() {
             <img
               src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png"
               alt="Hiro OS"
-              className="h-9 w-9 rounded-xl"
+              className="h-9 w-9 "
             />
             <span className="text-white font-semibold">Hiro OS®</span>
           </div>

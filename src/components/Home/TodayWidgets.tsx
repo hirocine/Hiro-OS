@@ -1,9 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { Film, CheckSquare, Video, ArrowRight } from 'lucide-react';
+import { Film, CheckSquare, Video, ArrowRight, type LucideIcon } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { usePostProduction } from '@/features/post-production/hooks/usePostProduction';
 import { PP_PRIORITY_ORDER, PP_PRIORITY_CONFIG } from '@/features/post-production/types';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
@@ -11,6 +8,102 @@ import { useRecordingsToday, getEventTitle } from '@/hooks/useRecordingsCalendar
 import { useAuthContext } from '@/contexts/AuthContext';
 
 const today = new Date().toLocaleDateString('en-CA');
+
+interface WidgetCardProps {
+  Icon: LucideIcon;
+  label: string;
+  count: number;
+  countSuffix: string;
+  emptyText: string;
+  dotColor: string;
+  onClick: () => void;
+  children?: React.ReactNode;
+}
+
+function WidgetCard({ Icon, label, count, countSuffix, emptyText, dotColor, onClick, children }: WidgetCardProps) {
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className="group"
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        cursor: 'pointer',
+        transition: 'background 0.15s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'hsl(var(--ds-surface-2))';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'hsl(var(--ds-surface))';
+      }}
+    >
+      <div
+        style={{
+          padding: '14px 18px',
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 10,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Icon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-2))',
+            }}
+          >
+            {label}
+          </span>
+        </div>
+        <ArrowRight
+          size={14}
+          strokeWidth={1.5}
+          style={{ color: 'hsl(var(--ds-fg-4))' }}
+        />
+      </div>
+      <div style={{ padding: 18 }}>
+        <div style={{ marginBottom: 14 }}>
+          <span
+            style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontSize: 32,
+              fontWeight: 600,
+              fontVariantNumeric: 'tabular-nums',
+              color: 'hsl(var(--ds-fg-1))',
+              lineHeight: 1,
+            }}
+          >
+            {count}
+          </span>
+          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>{countSuffix}</p>
+        </div>
+        <div style={{ height: 1, background: 'hsl(var(--ds-line-1))', marginBottom: 12 }} />
+        {children ? (
+          children
+        ) : (
+          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>{emptyText}</p>
+        )}
+        {/* dotColor used for inline dots in children list */}
+        <span style={{ display: 'none' }} data-dot-color={dotColor} />
+      </div>
+    </div>
+  );
+}
 
 export default function TodayWidgets() {
   const navigate = useNavigate();
@@ -33,143 +126,124 @@ export default function TodayWidgets() {
       return aToday - bToday;
     });
 
-  // Gravações do dia
-  
+  const rowStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  };
+  const itemTextStyle: React.CSSProperties = {
+    fontSize: 13,
+    color: 'hsl(var(--ds-fg-1))',
+    flex: 1,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  };
+  const dot = (color: string): React.CSSProperties => ({
+    width: 6,
+    height: 6,
+    borderRadius: 9999,
+    background: color,
+    flexShrink: 0,
+  });
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Entregas hoje */}
-      <Card
-        className="hover:shadow-md transition-shadow cursor-pointer group"
+      <WidgetCard
+        Icon={Film}
+        label="Entregas hoje"
+        count={todayDeliveries.length}
+        countSuffix="vídeo(s) para entregar"
+        emptyText="Nenhuma entrega para hoje"
+        dotColor="hsl(var(--ds-info))"
         onClick={() => navigate('/esteira-de-pos')}
       >
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <Film className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        {todayDeliveries.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {todayDeliveries.slice(0, 3).map(item => (
+              <div key={item.id} style={rowStyle}>
+                <span style={dot('hsl(var(--ds-info))')} />
+                <span style={itemTextStyle}>{item.title}</span>
+                <span
+                  className={`pill ${PP_PRIORITY_CONFIG[item.priority].color}`}
+                  style={{ fontSize: 10, flexShrink: 0 }}
+                >
+                  {PP_PRIORITY_CONFIG[item.priority].label}
+                </span>
               </div>
-              <span className="text-sm font-medium text-muted-foreground">Entregas hoje</span>
-            </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity" />
+            ))}
           </div>
-          <div className="mb-3">
-            <span className="text-3xl font-bold">{todayDeliveries.length}</span>
-            <p className="text-sm text-muted-foreground">vídeo(s) para entregar</p>
-          </div>
-          {todayDeliveries.length > 0 ? (
-            <>
-              <Separator className="mb-3" />
-              <div className="space-y-2">
-                {todayDeliveries.slice(0, 3).map(item => (
-                  <div key={item.id} className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                    <span className="text-sm truncate flex-1">{item.title}</span>
-                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 shrink-0 ${PP_PRIORITY_CONFIG[item.priority].color}`}>
-                      {PP_PRIORITY_CONFIG[item.priority].label}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              <Separator className="mb-3" />
-              <p className="text-sm text-muted-foreground">Nenhuma entrega para hoje</p>
-            </>
-          )}
-        </CardContent>
-      </Card>
+        ) : (
+          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>Nenhuma entrega para hoje</p>
+        )}
+      </WidgetCard>
 
       {/* Minhas tarefas */}
-      <Card
-        className="hover:shadow-md transition-shadow cursor-pointer group"
+      <WidgetCard
+        Icon={CheckSquare}
+        label="Minhas tarefas"
+        count={myTasks.length}
+        countSuffix="tarefa(s) pendente(s)"
+        emptyText="Nenhuma tarefa pendente"
+        dotColor="hsl(var(--ds-warn))"
         onClick={() => navigate('/tarefas')}
       >
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                <CheckSquare className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        {myTasks.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {myTasks.slice(0, 3).map(task => (
+              <div key={task.id} style={rowStyle}>
+                <span style={dot('hsl(var(--ds-warn))')} />
+                <span style={itemTextStyle}>{task.title}</span>
+                <span
+                  className="pill muted"
+                  style={{ fontSize: 10, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {task.due_date === today
+                    ? 'hoje'
+                    : task.due_date
+                      ? format(parseISO(task.due_date), 'dd/MM')
+                      : '—'}
+                </span>
               </div>
-              <span className="text-sm font-medium text-muted-foreground">Minhas tarefas</span>
-            </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity" />
+            ))}
           </div>
-          <div className="mb-3">
-            <span className="text-3xl font-bold">{myTasks.length}</span>
-            <p className="text-sm text-muted-foreground">tarefa(s) pendente(s)</p>
-          </div>
-          {myTasks.length > 0 ? (
-            <>
-              <Separator className="mb-3" />
-              <div className="space-y-2">
-                {myTasks.slice(0, 3).map(task => (
-                  <div key={task.id} className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                    <span className="text-sm truncate flex-1">{task.title}</span>
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0 text-muted-foreground">
-                      {task.due_date === today
-                        ? 'hoje'
-                        : task.due_date
-                          ? format(parseISO(task.due_date), 'dd/MM')
-                          : '—'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              <Separator className="mb-3" />
-              <p className="text-sm text-muted-foreground">Nenhuma tarefa pendente</p>
-            </>
-          )}
-        </CardContent>
-      </Card>
+        ) : (
+          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>Nenhuma tarefa pendente</p>
+        )}
+      </WidgetCard>
 
       {/* Gravações do dia */}
-      <Card
-        className="hover:shadow-md transition-shadow cursor-pointer group"
+      <WidgetCard
+        Icon={Video}
+        label="Gravações do dia"
+        count={recordingEvents.length}
+        countSuffix={recordingEvents.length === 1 ? 'gravação agendada' : 'gravações agendadas'}
+        emptyText={recordingsLoading ? 'Carregando...' : 'Nenhuma gravação hoje'}
+        dotColor="hsl(var(--ds-success))"
         onClick={() => navigate('/retiradas')}
       >
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <Video className="h-4 w-4 text-green-600 dark:text-green-400" />
+        {recordingEvents.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {recordingEvents.slice(0, 3).map(e => (
+              <div key={e.id} style={rowStyle}>
+                <span style={dot('hsl(var(--ds-success))')} />
+                <span style={itemTextStyle}>{getEventTitle(e.summary)}</span>
+                <span
+                  className="pill muted"
+                  style={{ fontSize: 10, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {e.allDay ? 'Dia todo' : new Date(e.start).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
               </div>
-              <span className="text-sm font-medium text-muted-foreground">Gravações do dia</span>
-            </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity" />
+            ))}
           </div>
-          <div className="mb-3">
-            <span className="text-3xl font-bold">{recordingEvents.length}</span>
-            <p className="text-sm text-muted-foreground">{recordingEvents.length === 1 ? 'gravação agendada' : 'gravações agendadas'}</p>
-          </div>
-          {recordingEvents.length > 0 ? (
-            <>
-              <Separator className="mb-3" />
-              <div className="space-y-2">
-                {recordingEvents.slice(0, 3).map(e => (
-                  <div key={e.id} className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
-                    <span className="text-sm truncate flex-1">{getEventTitle(e.summary)}</span>
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0 text-muted-foreground">
-                      {e.allDay ? 'Dia todo' : new Date(e.start).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              <Separator className="mb-3" />
-              <p className="text-sm text-muted-foreground">{recordingsLoading ? 'Carregando...' : 'Nenhuma gravação hoje'}</p>
-            </>
-          )}
-        </CardContent>
-      </Card>
+        ) : (
+          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
+            {recordingsLoading ? 'Carregando...' : 'Nenhuma gravação hoje'}
+          </p>
+        )}
+      </WidgetCard>
     </div>
   );
 }

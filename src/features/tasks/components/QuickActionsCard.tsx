@@ -1,58 +1,87 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ListTodo, User, Plus } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { TaskDialog } from './TaskDialog';
+
+const cardWrap: React.CSSProperties = {
+  border: '1px solid hsl(var(--ds-line-1))',
+  background: 'hsl(var(--ds-surface))',
+};
+
+const cardHeader: React.CSSProperties = {
+  padding: '14px 18px',
+  borderBottom: '1px solid hsl(var(--ds-line-1))',
+};
+
+const cardTitle: React.CSSProperties = {
+  fontFamily: '"HN Display", sans-serif',
+  fontSize: 14,
+  fontWeight: 600,
+  color: 'hsl(var(--ds-fg-1))',
+};
 
 export function QuickActionsCard() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const actions = [
-    {
-      label: 'Todas as Tarefas',
-      icon: ListTodo,
-      to: '/tarefas',
-      color: 'text-primary',
-      bg: 'bg-primary/10',
-    },
-    {
-      label: 'Minhas Tarefas',
-      icon: User,
-      to: '/tarefas',
-      color: 'text-orange-500',
-      bg: 'bg-orange-500/10',
-    },
+    { label: 'Todas as Tarefas', Icon: ListTodo, to: '/tarefas', tone: 'hsl(var(--ds-accent))' },
+    { label: 'Minhas Tarefas', Icon: User, to: '/tarefas', tone: 'hsl(var(--ds-warning))' },
   ];
 
   return (
     <>
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Ações Rápidas</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="space-y-2">
-            {actions.map(action => (
-              <Link
-                key={action.label}
-                to={action.to}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+      <div style={cardWrap}>
+        <div style={cardHeader}>
+          <span style={cardTitle}>Ações Rápidas</span>
+        </div>
+        <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {actions.map((action) => (
+            <Link
+              key={action.label}
+              to={action.to}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: 10,
+                textDecoration: 'none',
+                color: 'hsl(var(--ds-fg-1))',
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  display: 'grid',
+                  placeItems: 'center',
+                  background: `${action.tone.replace(')', ' / 0.1)')}`,
+                  color: action.tone,
+                }}
               >
-                <div className={`p-2 rounded-lg ${action.bg}`}>
-                  <action.icon className={`w-4 h-4 ${action.color}`} />
-                </div>
-                <span className="text-sm font-medium">{action.label}</span>
-              </Link>
-            ))}
-            
-            <Button className="w-full mt-3" onClick={() => setDialogOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Nova Tarefa
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+                <action.Icon size={14} strokeWidth={1.5} />
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 500 }}>{action.label}</span>
+            </Link>
+          ))}
+
+          <button
+            type="button"
+            className="btn primary"
+            style={{ width: '100%', justifyContent: 'center', marginTop: 6 }}
+            onClick={() => setDialogOpen(true)}
+          >
+            <Plus size={14} strokeWidth={1.5} />
+            <span>Nova Tarefa</span>
+          </button>
+        </div>
+      </div>
 
       <TaskDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </>

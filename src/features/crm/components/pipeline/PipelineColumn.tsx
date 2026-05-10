@@ -1,5 +1,4 @@
 import { useDroppable } from '@dnd-kit/core';
-import { cn } from '@/lib/utils';
 import { DealCard } from './DealCard';
 import { formatBRL, type DealWithRelations, type PipelineStage } from '../../types/crm.types';
 
@@ -15,21 +14,76 @@ export function PipelineColumn({ stage, deals }: PipelineColumnProps) {
   return (
     <div
       ref={setNodeRef}
-      className={cn(
-        'flex flex-col min-w-[280px] max-w-[320px] bg-muted/30 rounded-lg border transition-all duration-200',
-        isOver && 'ring-2 ring-primary/30 bg-primary/5',
-      )}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        minWidth: 280,
+        maxWidth: 320,
+        background: 'hsl(var(--ds-line-2) / 0.3)',
+        border: '1px solid hsl(var(--ds-line-1))',
+        boxShadow: isOver ? 'inset 0 0 0 1px hsl(var(--ds-accent))' : undefined,
+        transition: 'box-shadow 0.2s, background 0.2s',
+      }}
     >
-      <div className="p-3 border-b">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: stage.color ?? '#6366f1' }} />
-          <h3 className="text-sm font-medium truncate">{stage.name}</h3>
-          <span className="ml-auto text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">{deals.length}</span>
+      <div style={{ padding: 12, borderBottom: '1px solid hsl(var(--ds-line-1))' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              flexShrink: 0,
+              background: stage.color ?? 'hsl(var(--ds-accent))',
+            }}
+          />
+          <h3
+            style={{
+              fontSize: 13,
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-1))',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {stage.name}
+          </h3>
+          <span
+            style={{
+              marginLeft: 'auto',
+              fontSize: 11,
+              color: 'hsl(var(--ds-fg-3))',
+              background: 'hsl(var(--ds-line-2))',
+              padding: '1px 8px',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {deals.length}
+          </span>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">{formatBRL(totalValue)}</p>
+        <p
+          style={{
+            fontSize: 11,
+            color: 'hsl(var(--ds-fg-3))',
+            marginTop: 4,
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          {formatBRL(totalValue)}
+        </p>
       </div>
-      <div className="flex-1 p-2 space-y-2 overflow-y-auto max-h-[calc(100vh-320px)]">
-        {deals.map(deal => (
+      <div
+        style={{
+          flex: 1,
+          padding: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          overflowY: 'auto',
+          maxHeight: 'calc(100vh - 320px)',
+        }}
+      >
+        {deals.map((deal) => (
           <div key={deal.id} data-deal-id={deal.id}>
             <DealCard deal={deal} />
           </div>

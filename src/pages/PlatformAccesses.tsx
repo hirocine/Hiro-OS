@@ -1,29 +1,33 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PlatformAccessGrid } from '@/features/platform-accesses';
 
 export default function PlatformAccesses() {
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   return (
-    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-      <PageHeader
-        title="Plataformas"
-        subtitle="Gerencie senhas e credenciais de forma segura com criptografia"
-        actions={
-          <Button onClick={() => setShowAddDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Acesso
-          </Button>
-        }
-      />
-      <PlatformAccessGrid 
-        showAddDialog={showAddDialog}
-        setShowAddDialog={setShowAddDialog}
-      />
-    </ResponsiveContainer>
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Plataformas.</h1>
+            <p className="ph-sub">Gerencie senhas e credenciais de forma segura com criptografia.</p>
+          </div>
+          <div className="ph-actions">
+            <button className="btn primary" onClick={() => setShowAddDialog(true)} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Novo Acesso</span>
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 32 }}>
+          <PlatformAccessGrid
+            showAddDialog={showAddDialog}
+            setShowAddDialog={setShowAddDialog}
+          />
+        </div>
+      </div>
+    </div>
   );
 }

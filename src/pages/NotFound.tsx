@@ -1,5 +1,5 @@
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
 
 const NotFound = () => {
@@ -9,21 +9,39 @@ const NotFound = () => {
     logger.error('User attempted to access non-existent route', {
       module: 'navigation',
       action: '404_error',
-      data: { 
+      data: {
         pathname: location.pathname,
         search: location.search,
-        hash: location.hash
-      }
+        hash: location.hash,
+      },
     });
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-muted-foreground mb-4">Oops! Page not found</p>
-        <a href="/" className="text-primary hover:text-primary/80 underline">
-          Return to Home
+    <div className="ds-shell" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'hsl(var(--ds-bg))' }}>
+      <div style={{ textAlign: 'center', padding: 32 }}>
+        <div
+          style={{
+            fontFamily: '"HN Display", sans-serif',
+            fontSize: 96,
+            fontWeight: 600,
+            letterSpacing: '-0.04em',
+            lineHeight: 1,
+            color: 'hsl(var(--ds-fg-1))',
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          404
+        </div>
+        <p style={{ fontSize: 16, color: 'hsl(var(--ds-fg-3))', marginTop: 16, marginBottom: 24 }}>
+          Página não encontrada.
+        </p>
+        <a
+          href="/"
+          className="btn"
+          style={{ display: 'inline-flex' }}
+        >
+          Voltar para o início
         </a>
       </div>
     </div>

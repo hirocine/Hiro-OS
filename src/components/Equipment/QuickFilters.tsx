@@ -1,9 +1,6 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Check, Camera, Mic, Zap, Package, HardDrive, Wrench, User, Clock, ImageIcon, DollarSign } from 'lucide-react';
+import { Check, Camera, Mic, Zap, Package, HardDrive, Wrench, User, Clock, Image as ImageIcon, DollarSign } from 'lucide-react';
 import type { EquipmentFilters, EquipmentCategory } from '@/types/equipment';
-import { cn } from '@/lib/utils';
 
 interface QuickFiltersProps {
   filters: EquipmentFilters;
@@ -19,68 +16,41 @@ interface QuickFiltersProps {
 }
 
 const quickFilterConfigs = [
-  {
-    key: 'available',
-    label: 'Disponível',
-    icon: Check,
-    filter: { status: 'available' as const, loanStatus: 'available' as const },
-    variant: 'default' as const
-  },
-  {
-    key: 'maintenance',
-    label: 'Manutenção',
-    icon: Wrench,
-    filter: { status: 'maintenance' as const },
-    variant: 'secondary' as const
-  },
-  {
-    key: 'onLoan',
-    label: 'Emprestado',
-    icon: User,
-    filter: { loanStatus: 'on_loan' as const },
-    variant: 'outline' as const
-  },
-  {
-    key: 'overdue',
-    label: 'Atrasado',
-    icon: Clock,
-    filter: { loanStatus: 'overdue' as const },
-    variant: 'destructive' as const
-  },
-  {
-    key: 'withoutImage',
-    label: 'Sem Imagem',
-    icon: ImageIcon,
-    filter: { hasImage: false },
-    variant: 'outline' as const
-  },
-  {
-    key: 'highValue',
-    label: 'Alto Valor',
-    icon: DollarSign,
-    filter: { minValue: 5000 },
-    variant: 'outline' as const
-  }
+  { key: 'available',    label: 'Disponível', Icon: Check,     filter: { status: 'available' as const, loanStatus: 'available' as const } },
+  { key: 'maintenance',  label: 'Manutenção', Icon: Wrench,    filter: { status: 'maintenance' as const } },
+  { key: 'onLoan',       label: 'Emprestado', Icon: User,      filter: { loanStatus: 'on_loan' as const } },
+  { key: 'overdue',      label: 'Atrasado',   Icon: Clock,     filter: { loanStatus: 'overdue' as const } },
+  { key: 'withoutImage', label: 'Sem Imagem', Icon: ImageIcon, filter: { hasImage: false } },
+  { key: 'highValue',    label: 'Alto Valor', Icon: DollarSign,filter: { minValue: 5000 } },
 ];
 
 const categoryConfigs = [
-  { key: 'camera', label: 'Câmeras', icon: Camera },
-  { key: 'audio', label: 'Áudio', icon: Mic },
-  { key: 'lighting', label: 'Iluminação', icon: Zap },
-  { key: 'accessories', label: 'Acessórios', icon: Package },
-  { key: 'storage', label: 'Armazenamento', icon: HardDrive }
+  { key: 'camera',      label: 'Câmeras',       Icon: Camera },
+  { key: 'audio',       label: 'Áudio',         Icon: Mic },
+  { key: 'lighting',    label: 'Iluminação',    Icon: Zap },
+  { key: 'accessories', label: 'Acessórios',    Icon: Package },
+  { key: 'storage',     label: 'Armazenamento', Icon: HardDrive },
 ];
 
-export function QuickFilters({ filters, onFiltersChange, stats }: QuickFiltersProps) {
+const sectionLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 10,
+};
+
+function QuickFiltersBase({ filters, onFiltersChange, stats }: QuickFiltersProps) {
   const applyQuickFilter = (quickFilter: Partial<EquipmentFilters>) => {
-    // Se o filtro já está ativo, remove ele
-    const isActive = Object.entries(quickFilter).every(([key, value]) => 
-      filters[key as keyof EquipmentFilters] === value
+    const isActive = Object.entries(quickFilter).every(
+      ([key, value]) => filters[key as keyof EquipmentFilters] === value
     );
 
     if (isActive) {
       const newFilters = { ...filters };
-      Object.keys(quickFilter).forEach(key => {
+      Object.keys(quickFilter).forEach((key) => {
         delete newFilters[key as keyof EquipmentFilters];
       });
       onFiltersChange(newFilters);
@@ -100,80 +70,76 @@ export function QuickFilters({ filters, onFiltersChange, stats }: QuickFiltersPr
   };
 
   const isQuickFilterActive = (quickFilter: Partial<EquipmentFilters>) => {
-    return Object.entries(quickFilter).every(([key, value]) => 
-      filters[key as keyof EquipmentFilters] === value
+    return Object.entries(quickFilter).every(
+      ([key, value]) => filters[key as keyof EquipmentFilters] === value
     );
   };
 
   return (
-    <div className="space-y-4">
-      {/* Filtros de Status */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       <div>
-        <h4 className="text-sm font-medium mb-2 text-muted-foreground">Status Rápido</h4>
-        <div className="flex flex-wrap gap-2">
+        <span style={sectionLabel}>Status Rápido</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {quickFilterConfigs.map((config) => {
-            const Icon = config.icon;
             const isActive = isQuickFilterActive(config.filter);
             const count = stats?.[config.key as keyof typeof stats] as number;
-
             return (
-              <Button
+              <button
                 key={config.key}
-                variant={isActive ? 'default' : 'outline'}
-                size="sm"
+                type="button"
                 onClick={() => applyQuickFilter(config.filter)}
-                className={cn(
-                  "flex items-center gap-2 h-8",
-                  isActive && "bg-primary text-primary-foreground"
-                )}
+                className={'pill' + (isActive ? ' acc' : '')}
+                style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
               >
-                <Icon className="h-3 w-3" />
+                <config.Icon size={11} strokeWidth={1.5} />
                 <span>{config.label}</span>
                 {count !== undefined && (
-                  <Badge 
-                    variant={isActive ? 'secondary' : 'outline'} 
-                    className="ml-1 text-xs h-4 px-1"
+                  <span
+                    style={{
+                      fontVariantNumeric: 'tabular-nums',
+                      color: isActive ? 'currentColor' : 'hsl(var(--ds-fg-4))',
+                      opacity: isActive ? 0.7 : 1,
+                      fontSize: 10,
+                    }}
                   >
                     {count}
-                  </Badge>
+                  </span>
                 )}
-              </Button>
+              </button>
             );
           })}
         </div>
       </div>
 
-      {/* Filtros de Categoria */}
       <div>
-        <h4 className="text-sm font-medium mb-2 text-muted-foreground">Categorias</h4>
-        <div className="flex flex-wrap gap-2">
+        <span style={sectionLabel}>Categorias</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {categoryConfigs.map((config) => {
-            const Icon = config.icon;
             const isActive = filters.category === config.key;
             const count = stats?.byCategory?.[config.key as EquipmentCategory];
-
             return (
-              <Button
+              <button
                 key={config.key}
-                variant={isActive ? 'default' : 'outline'}
-                size="sm"
+                type="button"
                 onClick={() => applyCategoryFilter(config.key as EquipmentCategory)}
-                className={cn(
-                  "flex items-center gap-2 h-8",
-                  isActive && "bg-primary text-primary-foreground"
-                )}
+                className={'pill' + (isActive ? ' acc' : '')}
+                style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
               >
-                <Icon className="h-3 w-3" />
+                <config.Icon size={11} strokeWidth={1.5} />
                 <span>{config.label}</span>
                 {count !== undefined && (
-                  <Badge 
-                    variant={isActive ? 'secondary' : 'outline'} 
-                    className="ml-1 text-xs h-4 px-1"
+                  <span
+                    style={{
+                      fontVariantNumeric: 'tabular-nums',
+                      color: isActive ? 'currentColor' : 'hsl(var(--ds-fg-4))',
+                      opacity: isActive ? 0.7 : 1,
+                      fontSize: 10,
+                    }}
                   >
                     {count}
-                  </Badge>
+                  </span>
                 )}
-              </Button>
+              </button>
             );
           })}
         </div>
@@ -182,5 +148,5 @@ export function QuickFilters({ filters, onFiltersChange, stats }: QuickFiltersPr
   );
 }
 
-// Componente otimizado com React.memo
-export default React.memo(QuickFilters);
+export const QuickFilters = React.memo(QuickFiltersBase);
+export default QuickFilters;

@@ -3,8 +3,6 @@ import { CSS } from '@dnd-kit/utilities';
 import { Equipment } from '@/types/equipment';
 import { SSDStatus } from '@/features/ssds';
 import { SSDCard } from './SSDCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 
 interface SSDKanbanColumnProps {
   status: SSDStatus;
@@ -15,23 +13,17 @@ interface SSDKanbanColumnProps {
 
 const getStatusLabel = (status: SSDStatus) => {
   switch (status) {
-    case 'available':
-      return 'Livres';
-    case 'in_use':
-      return 'Em uso (Interno)';
-    case 'loaned':
-      return 'Em uso (Externo)';
+    case 'available': return 'Livres';
+    case 'in_use': return 'Em uso (Interno)';
+    case 'loaned': return 'Em uso (Externo)';
   }
 };
 
-const getStatusColor = (status: SSDStatus) => {
+const statusTone = (status: SSDStatus): { color: string } => {
   switch (status) {
-    case 'available':
-      return 'bg-success/10 text-success border-success/20';
-    case 'in_use':
-      return 'bg-primary/10 text-primary border-primary/20';
-    case 'loaned':
-      return 'bg-destructive/10 text-destructive border-destructive/20';
+    case 'available': return { color: 'hsl(var(--ds-success))' };
+    case 'in_use': return { color: 'hsl(var(--ds-accent))' };
+    case 'loaned': return { color: 'hsl(var(--ds-danger))' };
   }
 };
 
@@ -42,14 +34,7 @@ interface SortableItemProps {
 }
 
 const SortableItem = ({ ssd, status, onCardClick }: SortableItemProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: ssd.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ssd.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -58,43 +43,78 @@ const SortableItem = ({ ssd, status, onCardClick }: SortableItemProps) => {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <SSDCard
-        ssd={ssd}
-        isDragging={isDragging}
-        kanbanStatus={status}
-        onClick={() => onCardClick(ssd)}
-      />
+      <SSDCard ssd={ssd} isDragging={isDragging} kanbanStatus={status} onClick={() => onCardClick(ssd)} />
     </div>
   );
 };
 
-export const SSDKanbanColumn = ({ status, ssds, isDragging, onCardClick }: SSDKanbanColumnProps) => {
+export const SSDKanbanColumn = ({ status, ssds, onCardClick }: SSDKanbanColumnProps) => {
+  const tone = statusTone(status);
   return (
-    <Card className="flex flex-col h-full">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base">{getStatusLabel(status)}</CardTitle>
-          <Badge variant="outline" className={getStatusColor(status)}>
-            {ssds.length}
-          </Badge>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        background: 'hsl(var(--ds-surface))',
+        border: '1px solid hsl(var(--ds-line-1))',
+      }}
+    >
+      <div
+        style={{
+          padding: '14px 18px',
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+        }}
+      >
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: tone.color }} />
+          <span
+            style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontSize: 14,
+              fontWeight: 600,
+              color: 'hsl(var(--ds-fg-1))',
+            }}
+          >
+            {getStatusLabel(status)}
+          </span>
         </div>
-      </CardHeader>
-      <CardContent className="flex-1 space-y-3 overflow-auto">
+        <span
+          style={{
+            fontSize: 11,
+            fontVariantNumeric: 'tabular-nums',
+            color: tone.color,
+            background: `${tone.color.replace(')', ' / 0.1)')}`,
+            padding: '2px 8px',
+          }}
+        >
+          {ssds.length}
+        </span>
+      </div>
+      <div
+        style={{
+          flex: 1,
+          padding: 12,
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+        }}
+      >
         {ssds.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">
+          <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', textAlign: 'center', padding: '32px 0' }}>
             Nenhum SSD/HD nesta categoria
           </p>
         ) : (
           ssds.map((ssd) => (
-            <SortableItem
-              key={ssd.id}
-              ssd={ssd}
-              status={status}
-              onCardClick={onCardClick}
-            />
+            <SortableItem key={ssd.id} ssd={ssd} status={status} onCardClick={onCardClick} />
           ))
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

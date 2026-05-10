@@ -1,16 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   BarChart3,
   Trophy,
-  PieChart as PieIcon,
   Layers,
   Image as ImageIcon,
-  CheckCircle,
   Calendar as CalendarIcon,
 } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Skeleton } from '@/components/ui/skeleton';
 import { KpiCard } from './KpiCard';
 import { ChartTooltip } from './ChartTooltip';
 import {
@@ -20,10 +14,6 @@ import {
   XAxis,
   YAxis,
   Tooltip as RTooltip,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
   ResponsiveContainer as RechartsContainer,
 } from 'recharts';
 import { pctChange, fmtChartDate, type DailySnapshot } from '@/lib/marketing-dashboard-utils';
@@ -90,37 +80,67 @@ interface Props {
   onNavigate: (path: string) => void;
 }
 
+const cardWrap: React.CSSProperties = {
+  border: '1px solid hsl(var(--ds-line-1))',
+  background: 'hsl(var(--ds-surface))',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 12,
+};
+
+const cardWrapPadded: React.CSSProperties = {
+  ...cardWrap,
+  padding: '14px 18px',
+};
+
+const cardTitle: React.CSSProperties = {
+  fontFamily: '"HN Display", sans-serif',
+  fontSize: 14,
+  fontWeight: 600,
+  color: 'hsl(var(--ds-fg-1))',
+};
+
+const tableHeadCell: React.CSSProperties = {
+  padding: '8px 12px',
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  textAlign: 'left',
+};
+
+const tableCell: React.CSSProperties = {
+  padding: '10px 12px',
+  fontSize: 12,
+  color: 'hsl(var(--ds-fg-2))',
+  borderTop: '1px solid hsl(var(--ds-line-2))',
+};
+
 export function ContentPerformanceSection({
   loading,
   publishedPostsLength,
   topPosts,
   snapshots,
   kpis,
-  platformData,
   pillarPerformance,
   formatPerformance,
-  alerts,
   periodLabel,
   onNavigate,
 }: Props) {
   if (loading) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between pt-2">
-          <Skeleton className="h-4 w-48" />
-          <Skeleton className="h-3 w-24" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span className="sk line" style={{ width: 200 }} />
+          <span className="sk line" style={{ width: 80 }} />
         </div>
         {[1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardHeader className="pb-2">
-              <Skeleton className="h-4 w-40" />
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-              <Skeleton className="h-4 w-4/6" />
-            </CardContent>
-          </Card>
+          <div key={i} style={cardWrapPadded}>
+            <span className="sk line" style={{ width: 160 }} />
+            <span className="sk line" style={{ width: '100%' }} />
+            <span className="sk line" style={{ width: '85%' }} />
+          </div>
         ))}
       </div>
     );
@@ -128,29 +148,48 @@ export function ContentPerformanceSection({
 
   return (
     <>
-      <div className="flex items-center justify-between pt-2">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingTop: 8,
+        }}
+      >
+        <h2
+          style={{
+            fontSize: 11,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+            color: 'hsl(var(--ds-fg-3))',
+          }}
+        >
           Performance dos conteúdos
         </h2>
-        <span className="text-xs text-muted-foreground font-numeric">
+        <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', fontVariantNumeric: 'tabular-nums' }}>
           {periodLabel}
         </span>
       </div>
 
       {!loading && publishedPostsLength === 0 ? (
-        <Card>
-          <CardContent className="py-8">
-            <EmptyState
-              icon={BarChart3}
-              title="Publique seu primeiro post para ver métricas aqui"
-              description='Quando você marcar posts como "Publicado" e adicionar métricas, esta seção vai consolidar a performance.'
-              action={{ label: 'Ir ao Calendário', onClick: () => onNavigate('/marketing') }}
-            />
-          </CardContent>
-        </Card>
+        <div className="empties">
+          <div className="empty" style={{ borderRight: 0 }}>
+            <div className="glyph">
+              <BarChart3 strokeWidth={1.25} />
+            </div>
+            <h5>Publique seu primeiro post para ver métricas aqui</h5>
+            <p>Quando você marcar posts como "Publicado" e adicionar métricas, esta seção vai consolidar a performance.</p>
+            <div className="actions">
+              <button className="btn primary" onClick={() => onNavigate('/marketing')} type="button">
+                <span>Ir ao Calendário</span>
+              </button>
+            </div>
+          </div>
+        </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
             <KpiCard
               emoji="📊"
               label="Posts publicados"
@@ -177,238 +216,343 @@ export function ContentPerformanceSection({
             />
           </div>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Evolução de views</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
+          <div style={cardWrapPadded}>
+            <span style={cardTitle}>Evolução de views</span>
+            <div style={{ height: 240 }}>
               {snapshots.length === 0 ? (
-                  <div className="h-full flex items-center justify-center px-4">
-                    <EmptyState
-                      compact
-                      icon={CalendarIcon}
-                      title=""
-                      description={
-                        publishedPostsLength === 0
-                          ? 'Sem dados de evolução. Publique posts para começar a ver a curva.'
-                          : 'Sem dados de evolução no período. Os números aparecem conforme posts são sincronizados.'
-                      }
-                    />
-                  </div>
-                ) : snapshots.length < 2 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center px-6 gap-2">
-                    <CalendarIcon className="h-8 w-8 text-muted-foreground/60" />
-                    <p className="text-sm font-medium text-foreground">
-                      Construindo histórico de views
-                    </p>
-                    <p className="text-xs text-muted-foreground max-w-sm">
-                      A API do Instagram não fornece histórico de views por dia.
-                      O gráfico ganha forma à medida que cada dia é capturado pelo sistema.
-                    </p>
-                    <p className="text-xs text-muted-foreground font-numeric mt-1">
-                      {snapshots.length}/7 dias coletados
-                    </p>
-                  </div>
-                ) : (
-                  <RechartsContainer width="100%" height="100%">
-                    <AreaChart data={snapshots} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                      <defs>
-                        <linearGradient id="postsViewsGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                        tickFormatter={fmtChartDate}
-                        axisLine={false}
-                        tickLine={false}
-                      />
-                      <YAxis
-                        tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
-                        tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', fontFamily: 'Inter, system-ui, sans-serif', style: { fontVariantNumeric: 'tabular-nums' } } as any}
-                        axisLine={false}
-                        tickLine={false}
-                      />
-                      <RTooltip content={<ChartTooltip unit="views" />} />
-                      <Area
-                        type="monotone"
-                        dataKey="views"
-                        stroke="hsl(var(--primary))"
-                        strokeWidth={2.5}
-                        fill="url(#postsViewsGradient)"
-                        dot={false}
-                        activeDot={{ fill: 'hsl(var(--primary))', r: 5, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
-                      />
-                    </AreaChart>
-                  </RechartsContainer>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Top 5 posts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {topPosts.length === 0 ? (
-                <div className="px-4 py-6">
-                  <EmptyState
-                    icon={Trophy}
-                    title={publishedPostsLength === 0 ? 'Nenhum post publicado ainda' : 'Nenhum post no período'}
-                    description={
-                      publishedPostsLength === 0
-                        ? 'Marque um post como "Publicado" para começar a rastrear performance.'
-                        : `Você tem ${publishedPostsLength} post${publishedPostsLength === 1 ? '' : 's'} no total, mas nenhum no período selecionado. Tente expandir o período.`
-                    }
-                  />
+                <div
+                  style={{
+                    height: '100%',
+                    display: 'grid',
+                    placeItems: 'center',
+                    padding: 16,
+                    textAlign: 'center',
+                    color: 'hsl(var(--ds-fg-3))',
+                    fontSize: 12,
+                  }}
+                >
+                  {publishedPostsLength === 0
+                    ? 'Sem dados de evolução. Publique posts para começar a ver a curva.'
+                    : 'Sem dados de evolução no período. Os números aparecem conforme posts são sincronizados.'}
+                </div>
+              ) : snapshots.length < 2 ? (
+                <div
+                  style={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    padding: 24,
+                    gap: 8,
+                  }}
+                >
+                  <CalendarIcon size={28} strokeWidth={1.25} style={{ color: 'hsl(var(--ds-fg-4))' }} />
+                  <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                    Construindo histórico de views
+                  </p>
+                  <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', maxWidth: 360, lineHeight: 1.4 }}>
+                    A API do Instagram não fornece histórico de views por dia. O gráfico ganha forma à
+                    medida que cada dia é capturado pelo sistema.
+                  </p>
+                  <p
+                    style={{
+                      fontSize: 11,
+                      color: 'hsl(var(--ds-fg-4))',
+                      fontVariantNumeric: 'tabular-nums',
+                      marginTop: 4,
+                    }}
+                  >
+                    {snapshots.length}/7 dias coletados
+                  </p>
                 </div>
               ) : (
-                <ul className="divide-y divide-border">
-                  {topPosts.map((p, i) => (
-                    <li key={p.id} className="flex items-center gap-3 py-2.5">
-                      <span className="w-5 text-xs text-muted-foreground font-numeric">{i + 1}</span>
-                      {p.cover_url ? (
-                        <img
-                          src={p.cover_url}
-                          alt={p.title}
-                          className="h-10 w-10 rounded-md object-cover"
-                        />
-                      ) : (
-                        <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
-                          <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">{p.title}</div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {p.platform && (
-                            <Badge variant="secondary" className="text-[10px]">
-                              {getPostPlatformLabel(p.platform)}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-sm font-semibold font-numeric">
-                        {(p.views ?? 0).toLocaleString('pt-BR')} views
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                <RechartsContainer width="100%" height="100%">
+                  <AreaChart data={snapshots} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                    <defs>
+                      <linearGradient id="postsViewsGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--ds-accent))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--ds-accent))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--ds-line-2))" vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 10, fill: 'hsl(var(--ds-fg-4))' }}
+                      tickFormatter={fmtChartDate}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
+                      tick={{ fontSize: 10, fill: 'hsl(var(--ds-fg-4))' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <RTooltip content={<ChartTooltip unit="views" />} />
+                    <Area
+                      type="monotone"
+                      dataKey="views"
+                      stroke="hsl(var(--ds-accent))"
+                      strokeWidth={2}
+                      fill="url(#postsViewsGradient)"
+                      dot={false}
+                      activeDot={{ fill: 'hsl(var(--ds-accent))', r: 5, strokeWidth: 2, stroke: 'hsl(var(--ds-surface))' }}
+                    />
+                  </AreaChart>
+                </RechartsContainer>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Performance por pilar</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {pillarPerformance.length === 0 ? (
-                  <div className="px-4 py-6">
-                    <EmptyState
-                      icon={Layers}
-                      title={publishedPostsLength > 0 ? 'Posts sem pilar atribuído' : 'Sem posts publicados ainda'}
-                      description={
-                        publishedPostsLength > 0
-                          ? `Você tem ${publishedPostsLength} post${publishedPostsLength === 1 ? '' : 's'} publicado${publishedPostsLength === 1 ? '' : 's'} sem pilar. Edite os posts para classificá-los e ver a distribuição.`
-                          : 'Quando você publicar posts e atribuir pilares, a distribuição aparece aqui.'
-                      }
-                      action={
-                        publishedPostsLength > 0
-                          ? { label: 'Ir aos posts', onClick: () => onNavigate('/marketing/social-media/calendario') }
-                          : undefined
-                      }
-                    />
-                  </div>
-                ) : (
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-left text-xs text-muted-foreground">
-                        <th className="px-4 py-2 font-medium">Pilar</th>
-                        <th className="px-2 py-2 font-medium text-right">Posts</th>
-                        <th className="px-2 py-2 font-medium text-right">Views méd.</th>
-                        <th className="px-4 py-2 font-medium text-right">Eng. %</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pillarPerformance.map((r) => (
-                        <tr key={r.id} className="border-t border-border">
-                          <td className="px-4 py-2">
-                            <div className="flex items-center gap-2">
-                              <span
-                                className="h-2.5 w-2.5 rounded-full"
-                                style={{ backgroundColor: getPillarColor(r.color).hex }}
-                              />
-                              <span className="truncate">{r.name}</span>
-                            </div>
-                          </td>
-                          <td className="px-2 py-2 text-right font-numeric">{r.posts}</td>
-                          <td className="px-2 py-2 text-right font-numeric">
-                            {r.avgViews.toLocaleString('pt-BR')}
-                          </td>
-                          <td className="px-4 py-2 text-right font-numeric">{r.avgEng.toFixed(2)}%</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </CardContent>
-            </Card>
+          <div style={cardWrapPadded}>
+            <span style={cardTitle}>Top 5 posts</span>
+            {topPosts.length === 0 ? (
+              <div
+                style={{
+                  padding: 24,
+                  textAlign: 'center',
+                  color: 'hsl(var(--ds-fg-3))',
+                  fontSize: 12,
+                }}
+              >
+                <Trophy size={28} strokeWidth={1.25} style={{ margin: '0 auto 8px', display: 'block' }} />
+                <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))', marginBottom: 4 }}>
+                  {publishedPostsLength === 0 ? 'Nenhum post publicado ainda' : 'Nenhum post no período'}
+                </div>
+                <div>
+                  {publishedPostsLength === 0
+                    ? 'Marque um post como "Publicado" para começar a rastrear performance.'
+                    : `Você tem ${publishedPostsLength} post${publishedPostsLength === 1 ? '' : 's'} no total, mas nenhum no período selecionado. Tente expandir o período.`}
+                </div>
+              </div>
+            ) : (
+              <ul style={{ display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' }}>
+                {topPosts.map((p, i) => (
+                  <li
+                    key={p.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '10px 0',
+                      borderTop: i === 0 ? 0 : '1px solid hsl(var(--ds-line-2))',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 20,
+                        fontSize: 11,
+                        color: 'hsl(var(--ds-fg-4))',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {i + 1}
+                    </span>
+                    {p.cover_url ? (
+                      <img
+                        src={p.cover_url}
+                        alt={p.title}
+                        style={{ width: 36, height: 36, objectFit: 'cover', flexShrink: 0 }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          background: 'hsl(var(--ds-line-2))',
+                          display: 'grid',
+                          placeItems: 'center',
+                          color: 'hsl(var(--ds-fg-4))',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <ImageIcon size={14} strokeWidth={1.5} />
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 500,
+                          color: 'hsl(var(--ds-fg-1))',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {p.title}
+                      </div>
+                      {p.platform && (
+                        <span className="pill muted" style={{ fontSize: 10, marginTop: 4 }}>
+                          {getPostPlatformLabel(p.platform)}
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: 'hsl(var(--ds-fg-1))',
+                        fontVariantNumeric: 'tabular-nums',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {(p.views ?? 0).toLocaleString('pt-BR')} views
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Performance por formato</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {formatPerformance.length === 0 ? (
-                  <div className="px-4 py-6">
-                    <EmptyState
-                      icon={ImageIcon}
-                      title={publishedPostsLength > 0 ? 'Posts sem formato definido' : 'Sem posts publicados ainda'}
-                      description={
-                        publishedPostsLength > 0
-                          ? `Você tem ${publishedPostsLength} post${publishedPostsLength === 1 ? '' : 's'} publicado${publishedPostsLength === 1 ? '' : 's'} sem formato. Edite os posts e selecione o formato (Reels, Carrossel, etc) para ver a performance.`
-                          : 'Quando você publicar posts e definir o formato, a performance aparece aqui.'
-                      }
-                      action={
-                        publishedPostsLength > 0
-                          ? { label: 'Ir aos posts', onClick: () => onNavigate('/marketing/social-media/calendario') }
-                          : undefined
-                      }
-                    />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            <div style={cardWrap}>
+              <div style={{ padding: '14px 18px', borderBottom: pillarPerformance.length === 0 ? 0 : '1px solid hsl(var(--ds-line-2))' }}>
+                <span style={cardTitle}>Performance por pilar</span>
+              </div>
+              {pillarPerformance.length === 0 ? (
+                <div
+                  style={{
+                    padding: 24,
+                    textAlign: 'center',
+                    color: 'hsl(var(--ds-fg-3))',
+                    fontSize: 12,
+                  }}
+                >
+                  <Layers size={28} strokeWidth={1.25} style={{ margin: '0 auto 8px', display: 'block' }} />
+                  <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))', marginBottom: 4 }}>
+                    {publishedPostsLength > 0 ? 'Posts sem pilar atribuído' : 'Sem posts publicados ainda'}
                   </div>
-                ) : (
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-left text-xs text-muted-foreground">
-                        <th className="px-4 py-2 font-medium">Formato</th>
-                        <th className="px-2 py-2 font-medium text-right">Posts</th>
-                        <th className="px-2 py-2 font-medium text-right">Views méd.</th>
-                        <th className="px-4 py-2 font-medium text-right">Eng. %</th>
+                  <div>
+                    {publishedPostsLength > 0
+                      ? `Você tem ${publishedPostsLength} post${publishedPostsLength === 1 ? '' : 's'} publicado${publishedPostsLength === 1 ? '' : 's'} sem pilar. Edite os posts para classificá-los e ver a distribuição.`
+                      : 'Quando você publicar posts e atribuir pilares, a distribuição aparece aqui.'}
+                  </div>
+                  {publishedPostsLength > 0 && (
+                    <button
+                      type="button"
+                      className="btn"
+                      style={{ marginTop: 12 }}
+                      onClick={() => onNavigate('/marketing/social-media/calendario')}
+                    >
+                      Ir aos posts
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th style={tableHeadCell}>Pilar</th>
+                      <th style={{ ...tableHeadCell, textAlign: 'right' }}>Posts</th>
+                      <th style={{ ...tableHeadCell, textAlign: 'right' }}>Views méd.</th>
+                      <th style={{ ...tableHeadCell, textAlign: 'right' }}>Eng. %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pillarPerformance.map((r) => (
+                      <tr key={r.id}>
+                        <td style={tableCell}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                            <span
+                              style={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: '50%',
+                                background: getPillarColor(r.color).hex,
+                              }}
+                            />
+                            <span
+                              style={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {r.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td style={{ ...tableCell, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                          {r.posts}
+                        </td>
+                        <td style={{ ...tableCell, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                          {r.avgViews.toLocaleString('pt-BR')}
+                        </td>
+                        <td style={{ ...tableCell, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                          {r.avgEng.toFixed(2)}%
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {formatPerformance.map((r) => (
-                        <tr key={r.key} className="border-t border-border">
-                          <td className="px-4 py-2 truncate">{r.label}</td>
-                          <td className="px-2 py-2 text-right font-numeric">{r.posts}</td>
-                          <td className="px-2 py-2 text-right font-numeric">
-                            {r.avgViews.toLocaleString('pt-BR')}
-                          </td>
-                          <td className="px-4 py-2 text-right font-numeric">{r.avgEng.toFixed(2)}%</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </CardContent>
-            </Card>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            <div style={cardWrap}>
+              <div style={{ padding: '14px 18px', borderBottom: formatPerformance.length === 0 ? 0 : '1px solid hsl(var(--ds-line-2))' }}>
+                <span style={cardTitle}>Performance por formato</span>
+              </div>
+              {formatPerformance.length === 0 ? (
+                <div
+                  style={{
+                    padding: 24,
+                    textAlign: 'center',
+                    color: 'hsl(var(--ds-fg-3))',
+                    fontSize: 12,
+                  }}
+                >
+                  <ImageIcon size={28} strokeWidth={1.25} style={{ margin: '0 auto 8px', display: 'block' }} />
+                  <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))', marginBottom: 4 }}>
+                    {publishedPostsLength > 0 ? 'Posts sem formato definido' : 'Sem posts publicados ainda'}
+                  </div>
+                  <div>
+                    {publishedPostsLength > 0
+                      ? `Você tem ${publishedPostsLength} post${publishedPostsLength === 1 ? '' : 's'} publicado${publishedPostsLength === 1 ? '' : 's'} sem formato. Edite os posts e selecione o formato (Reels, Carrossel, etc) para ver a performance.`
+                      : 'Quando você publicar posts e definir o formato, a performance aparece aqui.'}
+                  </div>
+                  {publishedPostsLength > 0 && (
+                    <button
+                      type="button"
+                      className="btn"
+                      style={{ marginTop: 12 }}
+                      onClick={() => onNavigate('/marketing/social-media/calendario')}
+                    >
+                      Ir aos posts
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th style={tableHeadCell}>Formato</th>
+                      <th style={{ ...tableHeadCell, textAlign: 'right' }}>Posts</th>
+                      <th style={{ ...tableHeadCell, textAlign: 'right' }}>Views méd.</th>
+                      <th style={{ ...tableHeadCell, textAlign: 'right' }}>Eng. %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {formatPerformance.map((r) => (
+                      <tr key={r.key}>
+                        <td style={tableCell}>{r.label}</td>
+                        <td style={{ ...tableCell, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                          {r.posts}
+                        </td>
+                        <td style={{ ...tableCell, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                          {r.avgViews.toLocaleString('pt-BR')}
+                        </td>
+                        <td style={{ ...tableCell, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                          {r.avgEng.toFixed(2)}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
         </>
       )}

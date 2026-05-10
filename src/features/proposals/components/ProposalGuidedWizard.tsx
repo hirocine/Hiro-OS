@@ -1,16 +1,11 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,7 +14,8 @@ import {
   Building2, Target, FileText, Package, DollarSign,
   CalendarIcon, Plus, Trash2, MessageSquare, Video, Film,
   ListChecks, MessageSquareQuote, Paperclip, FileIcon, X,
-  Copy, ExternalLink
+  Copy, ExternalLink,
+  type LucideIcon,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -41,7 +37,7 @@ const extractVimeoId = (raw: string): string => {
   const match = raw.match(/(\d{6,})/);
   return match ? match[1] : raw;
 };
-import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem, ProposalCase, PaymentOption } from '../types';
+import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem, PaymentOption } from '../types';
 import { PaymentOptionsEditor } from './PaymentOptionsEditor';
 import { buildPaymentOption, DEFAULT_PRESET_PARAMS } from '../lib/paymentPresets';
 import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES, CASE_TAG_OPTIONS, DOR_EMOJI_OPTIONS } from '../types';
@@ -85,6 +81,62 @@ const STEPS = [
   { key: 'revisao', label: 'Revisão', icon: Check },
 ];
 
+// ── DS style helpers ──
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const FieldLabel = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
+  <label style={fieldLabel}>
+    {children}
+    {required && <span style={{ marginLeft: 4, color: 'hsl(var(--ds-danger))' }}>*</span>}
+  </label>
+);
+
+const sectionHeaderStyle: React.CSSProperties = {
+  padding: '14px 18px',
+  borderBottom: '1px solid hsl(var(--ds-line-1))',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 10,
+};
+
+const sectionTitleStyle: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-2))',
+};
+
+const SectionShell: React.FC<{
+  icon?: LucideIcon;
+  title?: string;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+  padding?: number | string;
+}> = ({ icon: Icon, title, actions, children, padding = 18 }) => (
+  <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+    {(title || Icon || actions) && (
+      <div style={sectionHeaderStyle}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {Icon && <Icon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />}
+          {title && <span style={sectionTitleStyle}>{title}</span>}
+        </div>
+        {actions}
+      </div>
+    )}
+    <div style={{ padding }}>{children}</div>
+  </div>
+);
+
 // Vimeo thumbnail component - defined at module level to avoid re-creation on every render
 function VimeoThumbnail({ videoId, videoHash, alt, className }: { videoId: string; videoHash?: string; alt?: string; className?: string }) {
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
@@ -106,7 +158,14 @@ function VimeoThumbnail({ videoId, videoHash, alt, className }: { videoId: strin
       });
   }, [videoId, videoHash]);
   if (failed || !thumbUrl) {
-    return <div className={`bg-muted flex items-center justify-center ${className || ''}`}><Film className="h-6 w-6 text-muted-foreground/30" /></div>;
+    return (
+      <div
+        className={className || ''}
+        style={{ background: 'hsl(var(--ds-line-2) / 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Film size={24} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-4))' }} />
+      </div>
+    );
   }
   return (
     <img src={thumbUrl} alt={alt || ''} className={`object-cover ${className || ''}`} loading="lazy"
@@ -123,8 +182,8 @@ export function ProposalGuidedWizard() {
   const navigate = useNavigate();
   const { createProposal } = useProposals();
   const {
-    enrichClient, parseTranscript, suggestPainPoints, analyzeTranscript, finalizeTranscript,
-    isEnriching, isParsing, isSuggesting, isAnalyzing, isFinalizing,
+    enrichClient, suggestPainPoints, analyzeTranscript, finalizeTranscript,
+    isEnriching, isAnalyzing, isFinalizing,
   } = useProposalAI();
   const { data: painPointsBank = [] } = usePainPoints();
   const { data: casesBank = [], createCase } = useProposalCases();
@@ -134,7 +193,7 @@ export function ProposalGuidedWizard() {
   const [step, setStep] = useState(0);
   const [loadingMsg, setLoadingMsg] = useState(0);
   const [transcript, setTranscript] = useState('');
-  const [skippedBriefing, setSkippedBriefing] = useState(false);
+  const [, setSkippedBriefing] = useState(false);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [isExtractingPdf, setIsExtractingPdf] = useState(false);
 
@@ -551,9 +610,18 @@ export function ProposalGuidedWizard() {
 
   const aiBadge = (field: string) =>
     aiFilledFields.has(field) ? (
-      <Badge variant="outline" className="text-xs gap-1 font-normal ml-2">
-        <Sparkles className="h-3 w-3" /> IA
-      </Badge>
+      <span
+        className="pill"
+        style={{
+          marginLeft: 8,
+          gap: 4,
+          color: 'hsl(var(--ds-accent))',
+          borderColor: 'hsl(var(--ds-accent) / 0.3)',
+          background: 'hsl(var(--ds-accent) / 0.08)',
+        }}
+      >
+        <Sparkles size={10} strokeWidth={1.5} /> IA
+      </span>
     ) : null;
 
   // ── Success screen ──
@@ -566,7 +634,7 @@ export function ProposalGuidedWizard() {
           subtitle="O link público está pronto para compartilhar com o cliente"
         />
 
-        <div className="rounded-xl border border-border overflow-hidden" style={{ height: '500px' }}>
+        <div style={{ border: '1px solid hsl(var(--ds-line-1))', height: 500, overflow: 'hidden', background: 'hsl(var(--ds-surface))' }}>
           <iframe
             src={`/orcamento/${generatedSlug}?v=${Date.now()}`}
             className="w-full h-full"
@@ -575,27 +643,49 @@ export function ProposalGuidedWizard() {
         </div>
 
         <div className="flex justify-between items-start">
-          <Button variant="outline" onClick={() => navigate('/orcamentos')}>
-            <ArrowLeft className="h-4 w-4 mr-1" /> Voltar para Orçamentos
-          </Button>
+          <button type="button" className="btn" onClick={() => navigate('/orcamentos')}>
+            <ArrowLeft size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Voltar para Orçamentos
+          </button>
           <div className="flex flex-col items-end gap-3">
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => copyToClipboard(publicUrl).then(ok => ok && toast.success('Link copiado!'))}>
-              <Copy className="h-4 w-4 mr-1" /> Copiar Link
-            </Button>
-            {generatedProposalId && (
-              <Button variant="outline" onClick={() => navigate(`/orcamentos/${generatedProposalId}`)}>
-                Editar Proposta
-              </Button>
-            )}
-            <Button onClick={() => window.open(publicUrl, '_blank')}>
-              Ver Proposta <ExternalLink className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-          <a href={publicUrl} target="_blank" rel="noopener noreferrer"
-             className="text-xs font-mono text-muted-foreground hover:underline">
-            {publicUrl}
-          </a>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                className="btn"
+                onClick={() => copyToClipboard(publicUrl).then(ok => ok && toast.success('Link copiado!'))}
+              >
+                <Copy size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Copiar Link
+              </button>
+              {generatedProposalId && (
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => navigate(`/orcamentos/${generatedProposalId}`)}
+                >
+                  Editar Proposta
+                </button>
+              )}
+              <button
+                type="button"
+                className="btn primary"
+                onClick={() => window.open(publicUrl, '_blank')}
+              >
+                Ver Proposta <ExternalLink size={14} strokeWidth={1.5} style={{ marginLeft: 4 }} />
+              </button>
+            </div>
+            <a
+              href={publicUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontSize: 11,
+                fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+                color: 'hsl(var(--ds-fg-3))',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+              className="hover:underline"
+            >
+              {publicUrl}
+            </a>
           </div>
         </div>
       </div>
@@ -651,6 +741,35 @@ export function ProposalGuidedWizard() {
     9: 'Revisão Final',
   };
 
+  // Bottom nav buttons (reused across steps)
+  const NavButtons = ({
+    nextLabel = 'Continuar',
+    onNext,
+    nextDisabled = false,
+    nextLeading,
+  }: {
+    nextLabel?: string;
+    onNext?: () => void;
+    nextDisabled?: boolean;
+    nextLeading?: React.ReactNode;
+  }) => (
+    <div className="flex justify-between">
+      <button type="button" className="btn" onClick={goBack}>
+        <ArrowLeft size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Voltar
+      </button>
+      <button
+        type="button"
+        className="btn primary"
+        onClick={onNext || goNext}
+        disabled={nextDisabled}
+      >
+        {nextLeading}
+        {nextLabel}
+        <ArrowRight size={14} strokeWidth={1.5} style={{ marginLeft: 4 }} />
+      </button>
+    </div>
+  );
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 w-full">
       {/* ── PageHeader fixo ── */}
@@ -667,15 +786,34 @@ export function ProposalGuidedWizard() {
               <button
                 key={s.key}
                 onClick={() => i < step && setStep(i)}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all text-xs whitespace-nowrap',
-                  isActive ? 'bg-primary/10 text-primary font-medium' :
-                  isDone ? 'cursor-pointer hover:bg-muted text-muted-foreground' :
-                  'opacity-40 text-muted-foreground'
-                )}
+                className="flex items-center gap-1.5 whitespace-nowrap"
+                style={{
+                  padding: '6px 10px',
+                  border: '1px solid',
+                  borderColor: isActive
+                    ? 'hsl(var(--ds-accent) / 0.4)'
+                    : isDone
+                      ? 'hsl(var(--ds-line-1))'
+                      : 'hsl(var(--ds-line-1))',
+                  background: isActive
+                    ? 'hsl(var(--ds-accent) / 0.08)'
+                    : 'transparent',
+                  color: isActive
+                    ? 'hsl(var(--ds-accent))'
+                    : isDone
+                      ? 'hsl(var(--ds-fg-2))'
+                      : 'hsl(var(--ds-fg-4))',
+                  fontSize: 11,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  fontWeight: 500,
+                  cursor: i > step ? 'default' : 'pointer',
+                  opacity: i > step ? 0.45 : 1,
+                  transition: 'all 0.15s',
+                }}
                 disabled={i > step}
               >
-                <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                <Icon size={12} strokeWidth={1.5} />
                 <span className="hidden sm:inline">{s.label}</span>
               </button>
             );
@@ -692,11 +830,14 @@ export function ProposalGuidedWizard() {
 
           {isLoadingAI ? (
             <div className="w-full max-w-2xl space-y-4 animate-fade-in">
-              <Skeleton className="h-16 rounded-lg" />
-              <Skeleton className="h-16 rounded-lg" />
-              <Skeleton className="h-16 rounded-lg" />
-              <Skeleton className="h-12 rounded-lg w-2/3 mx-auto" />
-              <p className="text-sm text-muted-foreground text-center animate-pulse">
+              <Skeleton className="h-16" />
+              <Skeleton className="h-16" />
+              <Skeleton className="h-16" />
+              <Skeleton className="h-12 w-2/3 mx-auto" />
+              <p
+                className="text-center animate-pulse"
+                style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}
+              >
                 {activeLoadingMessages[loadingMsg % activeLoadingMessages.length]}
               </p>
             </div>
@@ -704,34 +845,91 @@ export function ProposalGuidedWizard() {
             <>
               {attachedFile && (
                 <div className="w-full max-w-2xl mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-muted/50 max-w-xs">
-                    <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
-                      <FileIcon className="h-5 w-5 text-muted-foreground" />
+                  <div
+                    className="flex items-center gap-3 max-w-xs"
+                    style={{
+                      padding: 10,
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      background: 'hsl(var(--ds-line-2) / 0.3)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        background: 'hsl(var(--ds-line-2) / 0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <FileIcon size={18} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{attachedFile.name}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p
+                        className="truncate"
+                        style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}
+                      >
+                        {attachedFile.name}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 11,
+                          color: 'hsl(var(--ds-fg-3))',
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
                         {(attachedFile.size / (1024 * 1024)).toFixed(2)}MB · {attachedFile.name.split('.').pop()?.toUpperCase()}
                       </p>
                     </div>
-                    <button onClick={() => setAttachedFile(null)} className="flex-shrink-0 p-1 rounded-md hover:bg-muted">
-                      <X className="h-4 w-4 text-muted-foreground" />
+                    <button
+                      onClick={() => setAttachedFile(null)}
+                      className="flex-shrink-0"
+                      style={{
+                        width: 28,
+                        height: 28,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
+                      <X size={14} strokeWidth={1.5} />
                     </button>
                   </div>
                 </div>
               )}
               <div className="w-full max-w-2xl">
-                <div className="rounded-xl border border-border bg-background flex flex-col">
+                <div
+                  style={{
+                    border: '1px solid hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-surface))',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
                   <Textarea
                     value={transcript}
                     onChange={e => setTranscript(e.target.value)}
                     placeholder="Cole aqui o resumo da reunião do Google Meet, transcrição ou briefing do projeto..."
-                    className="min-h-[280px] text-sm border-0 focus-visible:ring-0 scrollbar-thin resize-none rounded-b-none"
+                    className="min-h-[280px] text-sm border-0 focus-visible:ring-0 scrollbar-thin resize-none"
+                    style={{ borderRadius: 0 }}
                   />
-                   <div className="flex items-center justify-between p-3 border-t border-border">
+                   <div
+                    className="flex items-center justify-between"
+                    style={{
+                      padding: '10px 12px',
+                      borderTop: '1px solid hsl(var(--ds-line-1))',
+                    }}
+                   >
                     <button
                       onClick={() => { setSkippedBriefing(true); setStep(1); }}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      style={{
+                        fontSize: 11,
+                        color: 'hsl(var(--ds-fg-3))',
+                        transition: 'color 0.15s',
+                      }}
                     >
                       Preencher manualmente →
                     </button>
@@ -743,30 +941,34 @@ export function ProposalGuidedWizard() {
                         onChange={handlePdfUpload}
                         className="hidden"
                       />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
+                      <button
+                        type="button"
+                        className="btn"
                         onClick={() => pdfInputRef.current?.click()}
+                        style={{ height: 30, padding: '0 10px', fontSize: 11 }}
                       >
-                        <Paperclip className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Anexar</span>
-                      </Button>
-                      <Button
-                        size="sm"
+                        <Paperclip size={12} strokeWidth={1.5} />
+                        <span className="hidden sm:inline" style={{ marginLeft: 4 }}>Anexar</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn primary"
                         onClick={handleAnalyzeBriefing}
                         disabled={(!transcript.trim() && !attachedFile) || isExtractingPdf}
-                        className="gap-1.5"
+                        style={{ height: 30, padding: '0 12px', fontSize: 11 }}
                       >
-                        <Sparkles className="h-3.5 w-3.5" />
+                        <Sparkles size={12} strokeWidth={1.5} style={{ marginRight: 4 }} />
                         Analisar
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="w-full max-w-2xl flex items-center justify-end gap-1.5 text-xs text-muted-foreground/50 mt-1">
-                <Sparkles className="h-3 w-3" />
+              <div
+                className="w-full max-w-2xl flex items-center justify-end gap-1.5 mt-1"
+                style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))' }}
+              >
+                <Sparkles size={10} strokeWidth={1.5} />
                 <span>Powered by Claude · Anthropic</span>
               </div>
             </>
@@ -780,17 +982,23 @@ export function ProposalGuidedWizard() {
         <div className="flex flex-col space-y-6">
           {isLoadingAI ? (
             <div className="w-full space-y-4 py-12 animate-fade-in">
-              <Skeleton className="h-14 rounded-lg" />
-              <Skeleton className="h-14 rounded-lg" />
-              <Skeleton className="h-14 rounded-lg" />
-              <Skeleton className="h-10 rounded-lg w-1/2" />
-              <p className="text-sm text-muted-foreground animate-pulse">
+              <Skeleton className="h-14" />
+              <Skeleton className="h-14" />
+              <Skeleton className="h-14" />
+              <Skeleton className="h-10 w-1/2" />
+              <p
+                className="animate-pulse"
+                style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}
+              >
                 {activeLoadingMessages[loadingMsg % activeLoadingMessages.length]}
               </p>
             </div>
           ) : (
             <>
-              <p className="text-sm text-muted-foreground animate-fade-in">
+              <p
+                className="animate-fade-in"
+                style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}
+              >
                 {analyzeResultState.confirmed.summary}
               </p>
 
@@ -801,49 +1009,85 @@ export function ProposalGuidedWizard() {
                     className="animate-in fade-in slide-in-from-bottom-4 duration-500"
                     style={{ animationDelay: `${i * 200}ms`, animationFillMode: 'both' }}
                   >
-                    <Card>
-                      <CardContent className="pt-5 pb-5 space-y-3">
-                        <div className="flex items-start gap-3">
-                          <span className="text-2xl">{q.emoji}</span>
-                          <p className="text-sm font-semibold text-foreground pt-1">{q.text}</p>
-                        </div>
-                        <div className="flex flex-col gap-2 pl-10">
-                          {q.options.map(opt => {
-                            const isSelected = answers[q.id] === opt.id;
-                            return (
-                              <button
-                                key={opt.id}
-                                onClick={() => setAnswers(prev => ({ ...prev, [q.id]: opt.id }))}
-                                className={cn(
-                                  'text-left rounded-lg border px-4 py-3 transition-all',
-                                  isSelected
-                                    ? 'border-primary bg-primary/5'
-                                    : 'border-border hover:bg-muted/50'
-                                )}
+                    <div
+                      style={{
+                        border: '1px solid hsl(var(--ds-line-1))',
+                        background: 'hsl(var(--ds-surface))',
+                        padding: 18,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                        <span style={{ fontSize: 22 }}>{q.emoji}</span>
+                        <p
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: 'hsl(var(--ds-fg-1))',
+                            paddingTop: 2,
+                          }}
+                        >
+                          {q.text}
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 40, marginTop: 12 }}>
+                        {q.options.map(opt => {
+                          const isSelected = answers[q.id] === opt.id;
+                          return (
+                            <button
+                              key={opt.id}
+                              onClick={() => setAnswers(prev => ({ ...prev, [q.id]: opt.id }))}
+                              style={{
+                                textAlign: 'left',
+                                padding: '12px 14px',
+                                border: '1px solid',
+                                borderColor: isSelected
+                                  ? 'hsl(var(--ds-accent))'
+                                  : 'hsl(var(--ds-line-1))',
+                                background: isSelected
+                                  ? 'hsl(var(--ds-accent) / 0.06)'
+                                  : 'transparent',
+                                transition: 'all 0.15s',
+                              }}
+                            >
+                              <p
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: isSelected ? 500 : 400,
+                                  color: 'hsl(var(--ds-fg-1))',
+                                }}
                               >
-                                <p className={cn('text-sm', isSelected ? 'font-medium text-foreground' : 'text-foreground')}>
-                                  {opt.label}
+                                {opt.label}
+                              </p>
+                              {opt.description && (
+                                <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
+                                  {opt.description}
                                 </p>
-                                {opt.description && (
-                                  <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </CardContent>
-                    </Card>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
 
               <div className="flex justify-between pt-6">
-                <Button variant="ghost" onClick={() => { setShowQuestions(false); setAnalyzeResultState(null); setAnswers({}); }}>
-                  <ArrowLeft className="h-4 w-4 mr-1" /> Voltar
-                </Button>
-                <Button onClick={handleContinueFromQuestions} disabled={!allQuestionsAnswered}>
-                  Continuar <ArrowRight className="h-4 w-4 ml-1" />
-                </Button>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => { setShowQuestions(false); setAnalyzeResultState(null); setAnswers({}); }}
+                >
+                  <ArrowLeft size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Voltar
+                </button>
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={handleContinueFromQuestions}
+                  disabled={!allQuestionsAnswered}
+                >
+                  Continuar <ArrowRight size={14} strokeWidth={1.5} style={{ marginLeft: 4 }} />
+                </button>
               </div>
             </>
           )}
@@ -856,81 +1100,148 @@ export function ProposalGuidedWizard() {
       {step === 1 && (
         <div className="space-y-6">
 
-          <Card>
-            <CardContent className="pt-6 space-y-4">
+          <SectionShell icon={Building2} title="Dados do Projeto">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div className="grid grid-cols-2 gap-4 items-end">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Nº do Projeto</Label>
-                  <Input value={projectNumber} onChange={e => { setProjectNumber(e.target.value); setStep1Errors(p => ({ ...p, projectNumber: false })); }} placeholder="Ex: 001" maxLength={4} className={step1Errors.projectNumber ? 'border-destructive' : ''} />
+                <div>
+                  <FieldLabel>Nº do Projeto</FieldLabel>
+                  <Input
+                    value={projectNumber}
+                    onChange={e => { setProjectNumber(e.target.value); setStep1Errors(p => ({ ...p, projectNumber: false })); }}
+                    placeholder="Ex: 001"
+                    maxLength={4}
+                    style={step1Errors.projectNumber ? { borderColor: 'hsl(var(--ds-danger))' } : undefined}
+                  />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs flex items-center">Nome do Cliente {aiBadge('client_name')}</Label>
-                  <Input value={clientName} onChange={e => { setClientName(e.target.value); setStep1Errors(p => ({ ...p, clientName: false })); }} placeholder="Ex: Cacau Show" className={step1Errors.clientName ? 'border-destructive' : ''} />
+                <div>
+                  <FieldLabel>
+                    <span style={{ display: 'inline-flex', alignItems: 'center' }}>Nome do Cliente {aiBadge('client_name')}</span>
+                  </FieldLabel>
+                  <Input
+                    value={clientName}
+                    onChange={e => { setClientName(e.target.value); setStep1Errors(p => ({ ...p, clientName: false })); }}
+                    placeholder="Ex: Cacau Show"
+                    style={step1Errors.clientName ? { borderColor: 'hsl(var(--ds-danger))' } : undefined}
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 items-end">
-                <div className="space-y-1.5">
-                  <Label className="text-xs flex items-center">Nome do Projeto {aiBadge('project_name')}</Label>
-                  <Input value={projectName} onChange={e => { setProjectName(e.target.value); setStep1Errors(p => ({ ...p, projectName: false })); }} placeholder="Ex: Campanha Natal 2026" className={step1Errors.projectName ? 'border-destructive' : ''} />
+                <div>
+                  <FieldLabel>
+                    <span style={{ display: 'inline-flex', alignItems: 'center' }}>Nome do Projeto {aiBadge('project_name')}</span>
+                  </FieldLabel>
+                  <Input
+                    value={projectName}
+                    onChange={e => { setProjectName(e.target.value); setStep1Errors(p => ({ ...p, projectName: false })); }}
+                    placeholder="Ex: Campanha Natal 2026"
+                    style={step1Errors.projectName ? { borderColor: 'hsl(var(--ds-danger))' } : undefined}
+                  />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs flex items-center">Responsável {aiBadge('client_responsible')}</Label>
+                <div>
+                  <FieldLabel>
+                    <span style={{ display: 'inline-flex', alignItems: 'center' }}>Responsável {aiBadge('client_responsible')}</span>
+                  </FieldLabel>
                   <Input value={clientResponsible} onChange={e => setClientResponsible(e.target.value)} placeholder="Ex: João Silva" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 items-end">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">WhatsApp para Aprovação</Label>
+                <div>
+                  <FieldLabel>WhatsApp para Aprovação</FieldLabel>
                   <div className="relative">
-                    <Input value={whatsappNumber} onChange={e => { setWhatsappNumber(formatWhatsApp(e.target.value)); setStep1Errors(p => ({ ...p, whatsapp: false })); }} placeholder="+55 (11) 95151-3862" maxLength={20} className={cn('pr-20', step1Errors.whatsapp ? 'border-destructive' : '')} />
+                    <Input
+                      value={whatsappNumber}
+                      onChange={e => { setWhatsappNumber(formatWhatsApp(e.target.value)); setStep1Errors(p => ({ ...p, whatsapp: false })); }}
+                      placeholder="+55 (11) 95151-3862"
+                      maxLength={20}
+                      className="pr-20"
+                      style={{
+                        fontVariantNumeric: 'tabular-nums',
+                        ...(step1Errors.whatsapp ? { borderColor: 'hsl(var(--ds-danger))' } : {}),
+                      }}
+                    />
                     {whatsappNumber.replace(/\D/g, '').length >= 12 && (
-                      <button type="button" onClick={() => window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`, '_blank')} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-green-600 hover:text-green-700 font-medium">
+                      <button
+                        type="button"
+                        onClick={() => window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`, '_blank')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2"
+                        style={{
+                          fontSize: 11,
+                          color: 'hsl(var(--ds-success))',
+                          fontWeight: 500,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                        }}
+                      >
                         Testar →
                       </button>
                     )}
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Validade da Proposta</Label>
+                <div>
+                  <FieldLabel>Validade da Proposta</FieldLabel>
                   <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !validityDate && 'text-muted-foreground', step1Errors.validityDate && 'border-destructive')}>
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                      <button
+                        type="button"
+                        className="btn"
+                        style={{
+                          width: '100%',
+                          justifyContent: 'flex-start',
+                          fontWeight: 400,
+                          color: validityDate ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+                          fontVariantNumeric: 'tabular-nums',
+                          ...(step1Errors.validityDate ? { borderColor: 'hsl(var(--ds-danger))' } : {}),
+                        }}
+                      >
+                        <CalendarIcon size={14} strokeWidth={1.5} style={{ marginRight: 8 }} />
                         {validityDate ? format(validityDate, 'dd/MM/yyyy', { locale: ptBR }) : 'Selecionar data'}
-                      </Button>
+                      </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={validityDate} onSelect={(date) => { setValidityDate(date); setCalendarOpen(false); setStep1Errors(p => ({ ...p, validityDate: false })); }} locale={ptBR} className="pointer-events-auto" /></PopoverContent>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={validityDate}
+                        onSelect={(date) => { setValidityDate(date); setCalendarOpen(false); setStep1Errors(p => ({ ...p, validityDate: false })); }}
+                        locale={ptBR}
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
                   </Popover>
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs flex items-center">Descrição da empresa {aiBadge('company_description')}</Label>
+              <div>
+                <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+                  <label style={{ ...fieldLabel, marginBottom: 0, display: 'inline-flex', alignItems: 'center' }}>
+                    Descrição da empresa {aiBadge('company_description')}
+                  </label>
                   {!aiFilledFields.has('company_description') && clientName.trim() && (
-                    <Button variant="outline" size="sm" disabled={isEnriching} onClick={async () => {
-                      const desc = await enrichClient(clientName);
-                      if (desc) {
-                        setCompanyDescription(desc);
-                        setAiFilledFields(prev => new Set([...prev, 'company_description']));
-                        toast.success('Descrição preenchida!');
-                      }
-                    }}>
-                      {isEnriching ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                    <button
+                      type="button"
+                      className="btn"
+                      disabled={isEnriching}
+                      style={{ height: 28, padding: '0 10px', fontSize: 11 }}
+                      onClick={async () => {
+                        const desc = await enrichClient(clientName);
+                        if (desc) {
+                          setCompanyDescription(desc);
+                          setAiFilledFields(prev => new Set([...prev, 'company_description']));
+                          toast.success('Descrição preenchida!');
+                        }
+                      }}
+                    >
+                      {isEnriching
+                        ? <Loader2 size={12} strokeWidth={1.5} className="animate-spin" style={{ marginRight: 4 }} />
+                        : <Sparkles size={12} strokeWidth={1.5} style={{ marginRight: 4 }} />}
                       Buscar com IA
-                    </Button>
+                    </button>
                   )}
                 </div>
                 <Textarea value={companyDescription} onChange={e => setCompanyDescription(e.target.value)} rows={4} placeholder="Descrição breve da empresa do cliente..." />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </SectionShell>
 
-          <div className="flex justify-between">
-            <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
-            <Button onClick={goNext}>
-              Continuar <ArrowRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
+          <NavButtons />
         </div>
       )}
 
@@ -940,19 +1251,22 @@ export function ProposalGuidedWizard() {
       {step === 2 && (
         <div className="space-y-6">
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-1.5">
-                <Label className="text-xs flex items-center">Objetivo {aiBadge('objetivo')}</Label>
-                <Textarea value={objetivo} onChange={e => setObjetivo(e.target.value)} rows={10} placeholder="O objetivo deste projeto é desenvolver..." className="scrollbar-thin" />
-              </div>
-            </CardContent>
-          </Card>
+          <SectionShell icon={Target} title="Objetivo">
+            <div>
+              <FieldLabel>
+                <span style={{ display: 'inline-flex', alignItems: 'center' }}>Objetivo {aiBadge('objetivo')}</span>
+              </FieldLabel>
+              <Textarea
+                value={objetivo}
+                onChange={e => setObjetivo(e.target.value)}
+                rows={10}
+                placeholder="O objetivo deste projeto é desenvolver..."
+                className="scrollbar-thin"
+              />
+            </div>
+          </SectionShell>
 
-          <div className="flex justify-between">
-            <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
-            <Button onClick={goNext}>Continuar <ArrowRight className="h-4 w-4 ml-1" /></Button>
-          </div>
+          <NavButtons />
         </div>
       )}
 
@@ -962,50 +1276,118 @@ export function ProposalGuidedWizard() {
       {step === 3 && (
         <div className="space-y-6">
 
+          {/* AI suggestion button */}
+          {dores.length === 0 && clientName.trim() && (
+            <button
+              type="button"
+              className="btn"
+              onClick={handleSuggestDores}
+              style={{ alignSelf: 'flex-start' }}
+            >
+              <Sparkles size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Sugerir dores com IA
+            </button>
+          )}
+
           {/* Selected dores */}
           {dores.length > 0 && (
             <div className="space-y-3">
-              <Label className="text-xs text-muted-foreground">Dores selecionadas ({dores.length}/3)</Label>
+              <label style={fieldLabel}>
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>Dores selecionadas ({dores.length}/3)</span>
+              </label>
               {dores.map((dor, i) => (
-                <Card key={i} className="border-primary/30">
-                  <CardContent className="pt-4 pb-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <button className="text-lg hover:bg-muted rounded p-0.5 transition-colors" title="Trocar emoji">{dor.label}</button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-3" align="start">
-                              <div className="grid grid-cols-6 gap-1">
-                                {DOR_EMOJI_OPTIONS.map(opt => (
-                                  <button
-                                    key={opt.value}
-                                    className={cn('text-lg p-1.5 rounded hover:bg-muted transition-colors', dor.label === opt.value && 'bg-primary/10')}
-                                    onClick={() => { const u = [...dores]; u[i] = { ...u[i], label: opt.value }; setDores(u); }}
-                                    title={opt.label}
-                                  >
-                                    {opt.value}
-                                  </button>
-                                ))}
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                          <Input value={dor.title} onChange={e => {
+                <div
+                  key={i}
+                  style={{
+                    border: '1px solid hsl(var(--ds-accent) / 0.3)',
+                    background: 'hsl(var(--ds-surface))',
+                    padding: 14,
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              style={{
+                                fontSize: 18,
+                                padding: 2,
+                                border: '1px solid hsl(var(--ds-line-1))',
+                                background: 'hsl(var(--ds-surface))',
+                                width: 30,
+                                height: 30,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                              title="Trocar emoji"
+                            >
+                              {dor.label}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-3" align="start">
+                            <div className="grid grid-cols-6 gap-1">
+                              {DOR_EMOJI_OPTIONS.map(opt => (
+                                <button
+                                  key={opt.value}
+                                  style={{
+                                    fontSize: 18,
+                                    padding: 6,
+                                    background: dor.label === opt.value ? 'hsl(var(--ds-accent) / 0.1)' : 'transparent',
+                                    transition: 'background 0.15s',
+                                  }}
+                                  onClick={() => { const u = [...dores]; u[i] = { ...u[i], label: opt.value }; setDores(u); }}
+                                  title={opt.label}
+                                >
+                                  {opt.value}
+                                </button>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                        <Input
+                          value={dor.title}
+                          onChange={e => {
                             const u = [...dores]; u[i] = { ...u[i], title: e.target.value }; setDores(u);
-                          }} className="text-sm font-medium h-8" />
-                        </div>
-                        <Textarea value={dor.desc} onChange={e => {
-                          const u = [...dores]; u[i] = { ...u[i], desc: e.target.value }; setDores(u);
-                        }} rows={2} className="text-sm scrollbar-thin" />
+                          }}
+                          style={{ fontSize: 13, fontWeight: 500, height: 32 }}
+                        />
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => setDores(dores.filter((_, j) => j !== i))}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <Textarea
+                        value={dor.desc}
+                        onChange={e => {
+                          const u = [...dores]; u[i] = { ...u[i], desc: e.target.value }; setDores(u);
+                        }}
+                        rows={2}
+                        className="scrollbar-thin"
+                        style={{ fontSize: 13 }}
+                      />
                     </div>
-                    {aiFilledFields.has('dores') && <Badge variant="outline" className="text-xs gap-1 mt-2"><Sparkles className="h-3 w-3" /> Sugerido pela IA</Badge>}
-                  </CardContent>
-                </Card>
+                    <button
+                      type="button"
+                      className="btn"
+                      onClick={() => setDores(dores.filter((_, j) => j !== i))}
+                      style={{ width: 32, height: 32, padding: 0, justifyContent: 'center', color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' }}
+                    >
+                      <Trash2 size={14} strokeWidth={1.5} />
+                    </button>
+                  </div>
+                  {aiFilledFields.has('dores') && (
+                    <span
+                      className="pill"
+                      style={{
+                        marginTop: 8,
+                        gap: 4,
+                        color: 'hsl(var(--ds-accent))',
+                        borderColor: 'hsl(var(--ds-accent) / 0.3)',
+                        background: 'hsl(var(--ds-accent) / 0.08)',
+                      }}
+                    >
+                      <Sparkles size={10} strokeWidth={1.5} /> Sugerido pela IA
+                    </span>
+                  )}
+                </div>
               ))}
             </div>
           )}
@@ -1013,32 +1395,82 @@ export function ProposalGuidedWizard() {
           {/* Bank of pain points */}
           {painPointsBank.length > 0 && dores.length < 3 && (
             <div className="space-y-2">
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Banco de dores</p>
+              <p
+                style={{
+                  fontSize: 11,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  fontWeight: 500,
+                  color: 'hsl(var(--ds-fg-3))',
+                }}
+              >
+                Banco de dores
+              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pr-1">
                 {painPointsBank.filter(pp => !dores.find(d => d.title === pp.title)).map(pp => (
                   <button
                     key={pp.id}
                     onClick={() => toggleBankDor(pp)}
-                    className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/40 hover:bg-muted/40 transition-all text-left group"
+                    className="flex items-start gap-3 text-left group"
+                    style={{
+                      padding: 12,
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      background: 'hsl(var(--ds-surface))',
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'hsl(var(--ds-accent) / 0.4)';
+                      e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                      e.currentTarget.style.background = 'hsl(var(--ds-surface))';
+                    }}
                   >
-                    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center text-lg shrink-0">
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        background: 'hsl(var(--ds-line-2) / 0.4)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 18,
+                        flexShrink: 0,
+                      }}
+                    >
                       {pp.label}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium leading-tight">{pp.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{pp.description}</p>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))', lineHeight: 1.3 }}>
+                        {pp.title}
+                      </p>
+                      <p
+                        className="line-clamp-2"
+                        style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}
+                      >
+                        {pp.description}
+                      </p>
                     </div>
-                    <Plus className="h-4 w-4 text-muted-foreground shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Plus
+                      size={14}
+                      strokeWidth={1.5}
+                      style={{
+                        color: 'hsl(var(--ds-fg-3))',
+                        flexShrink: 0,
+                        marginTop: 4,
+                        opacity: 0,
+                        transition: 'opacity 0.15s',
+                      }}
+                      className="group-hover:opacity-100"
+                    />
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="flex justify-between">
-            <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
-            <Button onClick={goNext}>Continuar <ArrowRight className="h-4 w-4 ml-1" /></Button>
-          </div>
+          <NavButtons />
         </div>
       )}
 
@@ -1056,28 +1488,63 @@ export function ProposalGuidedWizard() {
                    <button
                     key={c.id}
                     onClick={() => toggleCase(c.id)}
-                    className={cn(
-                      'relative flex items-center gap-3 p-3 rounded-lg border transition-all text-left',
-                      isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
-                    )}
+                    className="relative flex items-center gap-3 text-left"
+                    style={{
+                      padding: 12,
+                      border: '1px solid',
+                      borderColor: isSelected ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-line-1))',
+                      background: isSelected ? 'hsl(var(--ds-accent) / 0.06)' : 'hsl(var(--ds-surface))',
+                      transition: 'all 0.15s',
+                    }}
                   >
                     <Checkbox checked={isSelected} className="absolute top-2 right-2 z-10" />
                     {c.vimeo_id ? (
-                      <div className="w-24 h-16 rounded overflow-hidden shrink-0">
-                        <VimeoThumbnail videoId={extractVimeoId(c.vimeo_id)} videoHash={c.vimeo_hash || undefined} alt={c.campaign_name} className="w-full h-full" />
+                      <div style={{ width: 96, height: 64, overflow: 'hidden', flexShrink: 0 }}>
+                        <VimeoThumbnail
+                          videoId={extractVimeoId(c.vimeo_id)}
+                          videoHash={c.vimeo_hash || undefined}
+                          alt={c.campaign_name}
+                          className="w-full h-full"
+                        />
                       </div>
                     ) : (
-                      <div className="w-24 h-16 rounded bg-muted flex items-center justify-center shrink-0">
-                        <Video className="h-6 w-6 text-muted-foreground" />
+                      <div
+                        style={{
+                          width: 96,
+                          height: 64,
+                          background: 'hsl(var(--ds-line-2) / 0.3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Video size={20} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{c.client_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{c.campaign_name}</p>
+                      <p
+                        className="truncate"
+                        style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}
+                      >
+                        {c.client_name}
+                      </p>
+                      <p
+                        className="truncate"
+                        style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}
+                      >
+                        {c.campaign_name}
+                      </p>
                       {c.tags?.length > 0 && (
                         <div className="flex gap-1 mt-1.5 flex-wrap">
                           {c.tags.map(tag => (
-                            <Badge key={tag} variant="outline" className="text-[10px] px-1.5 py-0">{tag}</Badge>
+                            <span
+                              key={tag}
+                              className="pill muted"
+                              style={{ fontSize: 10, padding: '1px 6px' }}
+                            >
+                              {tag}
+                            </span>
                           ))}
                         </div>
                       )}
@@ -1087,75 +1554,98 @@ export function ProposalGuidedWizard() {
               })}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">Nenhum case cadastrado no banco.</p>
+            <p
+              className="text-center"
+              style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', padding: '32px 0' }}
+            >
+              Nenhum case cadastrado no banco.
+            </p>
           )}
 
-          <Button variant="outline" className="w-full gap-2" onClick={() => setShowNewCaseDialog(true)}>
-            <Plus className="h-4 w-4" /> Criar novo case
-          </Button>
+          <button
+            type="button"
+            className="btn"
+            style={{ width: '100%', justifyContent: 'center' }}
+            onClick={() => setShowNewCaseDialog(true)}
+          >
+            <Plus size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Criar novo case
+          </button>
 
           {/* New Case Dialog */}
           <Dialog open={showNewCaseDialog} onOpenChange={setShowNewCaseDialog}>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Novo Case</DialogTitle>
+                <DialogTitle>
+                  <span style={{ fontFamily: '"HN Display", sans-serif' }}>Novo Case</span>
+                </DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Nome do Cliente *</Label>
+                <div>
+                  <FieldLabel required>Nome do Cliente</FieldLabel>
                   <Input value={newCase.client_name} onChange={e => setNewCase(p => ({ ...p, client_name: e.target.value }))} placeholder="Ex: Empresa X" />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Nome da Campanha *</Label>
+                <div>
+                  <FieldLabel required>Nome da Campanha</FieldLabel>
                   <Input value={newCase.campaign_name} onChange={e => setNewCase(p => ({ ...p, campaign_name: e.target.value }))} placeholder="Ex: Campanha de Verão" />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">URL do Vimeo *</Label>
+                <div>
+                  <FieldLabel required>URL do Vimeo</FieldLabel>
                   <Input value={newCase.vimeo_url} onChange={e => setNewCase(p => ({ ...p, vimeo_url: e.target.value }))} placeholder="https://vimeo.com/123456789" />
                   {newCase.vimeo_url && parseVimeoUrl(newCase.vimeo_url) && (
                     <img
                       src={`https://vumbnail.com/${parseVimeoUrl(newCase.vimeo_url)!.vimeo_id}.jpg`}
                       alt="Preview"
-                      className="w-full aspect-video rounded object-cover bg-muted mt-2"
+                      className="w-full aspect-video object-cover mt-2"
+                      style={{ background: 'hsl(var(--ds-line-2) / 0.3)' }}
                     />
                   )}
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Tags</Label>
+                <div>
+                  <FieldLabel>Tags</FieldLabel>
                   <div className="flex flex-wrap gap-2">
-                    {CASE_TAG_OPTIONS.map(tag => (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => setNewCase(p => ({
-                          ...p,
-                          tags: p.tags.includes(tag) ? p.tags.filter(t => t !== tag) : [...p.tags, tag],
-                        }))}
-                        className={cn(
-                          'text-xs px-2.5 py-1 rounded-full border transition-colors',
-                          newCase.tags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'
-                        )}
-                      >
-                        {tag}
-                      </button>
-                    ))}
+                    {CASE_TAG_OPTIONS.map(tag => {
+                      const active = newCase.tags.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => setNewCase(p => ({
+                            ...p,
+                            tags: p.tags.includes(tag) ? p.tags.filter(t => t !== tag) : [...p.tags, tag],
+                          }))}
+                          style={{
+                            fontSize: 11,
+                            padding: '4px 10px',
+                            border: '1px solid',
+                            borderColor: active ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-line-1))',
+                            background: active ? 'hsl(var(--ds-accent) / 0.1)' : 'transparent',
+                            color: active ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-2))',
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          {tag}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="ghost" onClick={() => setShowNewCaseDialog(false)}>Cancelar</Button>
-                <Button onClick={handleCreateCase} disabled={createCase.isPending}>
-                  {createCase.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                <button type="button" className="btn" onClick={() => setShowNewCaseDialog(false)}>Cancelar</button>
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={handleCreateCase}
+                  disabled={createCase.isPending}
+                >
+                  {createCase.isPending ? <Loader2 size={14} strokeWidth={1.5} className="animate-spin" style={{ marginRight: 4 }} /> : null}
                   Criar Case
-                </Button>
+                </button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
 
-          <div className="flex justify-between">
-            <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
-            <Button onClick={goNext}>Continuar <ArrowRight className="h-4 w-4 ml-1" /></Button>
-          </div>
+          <NavButtons />
         </div>
       )}
 
@@ -1167,37 +1657,76 @@ export function ProposalGuidedWizard() {
 
           <div className="space-y-3">
             {entregaveis.map((ent, i) => (
-              <Card key={i}>
-                <CardContent className="pt-4 pb-4">
-                  <div className="flex items-start gap-3">
-                    <Select value={ent.icone} onValueChange={v => updateEntregavel(i, 'icone', v)}>
-                      <SelectTrigger className="w-20 h-8 text-lg"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {ICON_OPTIONS.map(opt => (
-                          <SelectItem key={opt.value} value={opt.value}>{opt.value} {opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <div className="flex-1 grid grid-cols-[1fr_80px] gap-2">
-                      <Input value={ent.titulo} onChange={e => updateEntregavel(i, 'titulo', e.target.value)} placeholder="Nome do entregável" className="h-8 text-sm" />
-                      <Input value={ent.quantidade} onChange={e => updateEntregavel(i, 'quantidade', e.target.value)} placeholder="Qtd" className="h-8 text-sm text-center" />
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => removeEntregavel(i)}><Trash2 className="h-4 w-4" /></Button>
+              <div
+                key={i}
+                style={{
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  background: 'hsl(var(--ds-surface))',
+                  padding: 14,
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <Select value={ent.icone} onValueChange={v => updateEntregavel(i, 'icone', v)}>
+                    <SelectTrigger className="w-20 h-8 text-lg"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {ICON_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.value} {opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="flex-1 grid grid-cols-[1fr_80px] gap-2">
+                    <Input value={ent.titulo} onChange={e => updateEntregavel(i, 'titulo', e.target.value)} placeholder="Nome do entregável" className="h-8 text-sm" />
+                    <Input
+                      value={ent.quantidade}
+                      onChange={e => updateEntregavel(i, 'quantidade', e.target.value)}
+                      placeholder="Qtd"
+                      className="h-8 text-sm text-center"
+                      style={{ fontVariantNumeric: 'tabular-nums' }}
+                    />
                   </div>
-                  <Textarea value={ent.descricao} onChange={e => updateEntregavel(i, 'descricao', e.target.value)} placeholder="Descrição breve..." rows={2} className="mt-2 text-sm" />
-                  {aiFilledFields.has('entregaveis') && <Badge variant="outline" className="text-xs gap-1 mt-2"><Sparkles className="h-3 w-3" /> IA</Badge>}
-                </CardContent>
-              </Card>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => removeEntregavel(i)}
+                    style={{ width: 32, height: 32, padding: 0, justifyContent: 'center', color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' }}
+                  >
+                    <Trash2 size={14} strokeWidth={1.5} />
+                  </button>
+                </div>
+                <Textarea
+                  value={ent.descricao}
+                  onChange={e => updateEntregavel(i, 'descricao', e.target.value)}
+                  placeholder="Descrição breve..."
+                  rows={2}
+                  className="mt-2 text-sm"
+                />
+                {aiFilledFields.has('entregaveis') && (
+                  <span
+                    className="pill"
+                    style={{
+                      marginTop: 8,
+                      gap: 4,
+                      color: 'hsl(var(--ds-accent))',
+                      borderColor: 'hsl(var(--ds-accent) / 0.3)',
+                      background: 'hsl(var(--ds-accent) / 0.08)',
+                    }}
+                  >
+                    <Sparkles size={10} strokeWidth={1.5} /> IA
+                  </span>
+                )}
+              </div>
             ))}
-            <Button variant="outline" onClick={addEntregavel} className="w-full gap-1">
-              <Plus className="h-4 w-4" /> Adicionar Entregável
-            </Button>
+            <button
+              type="button"
+              className="btn"
+              onClick={addEntregavel}
+              style={{ width: '100%', justifyContent: 'center' }}
+            >
+              <Plus size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Adicionar Entregável
+            </button>
           </div>
 
-          <div className="flex justify-between">
-            <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
-            <Button onClick={goNext}>Continuar <ArrowRight className="h-4 w-4 ml-1" /></Button>
-          </div>
+          <NavButtons />
         </div>
       )}
 
@@ -1222,100 +1751,172 @@ export function ProposalGuidedWizard() {
                   : 0;
 
               return (
-                <div key={cat.categoria} className="bg-muted/30 rounded-xl p-4 space-y-3">
-                  <div className="flex items-center justify-between">
+                <div
+                  key={cat.categoria}
+                  style={{
+                    border: '1px solid hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-surface))',
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: '12px 14px',
+                      borderBottom: '1px solid hsl(var(--ds-line-1))',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">{emoji}</span>
-                      <h3 className="text-sm font-semibold">{cat.categoria}</h3>
+                      <span style={{ fontSize: 16 }}>{emoji}</span>
+                      <h3
+                        style={{
+                          fontSize: 11,
+                          letterSpacing: '0.14em',
+                          textTransform: 'uppercase',
+                          fontWeight: 500,
+                          color: 'hsl(var(--ds-fg-2))',
+                        }}
+                      >
+                        {cat.categoria}
+                      </h3>
                     </div>
-                    <Badge variant="outline" className="text-xs">{activeCount}/{totalCount}</Badge>
+                    <span
+                      className="pill muted"
+                      style={{ fontSize: 10, fontVariantNumeric: 'tabular-nums' }}
+                    >
+                      {activeCount}/{totalCount}
+                    </span>
                   </div>
 
-                  {/* Flat items (Pré-produção, Pós-produção) */}
-                  {cat.itens && (
-                    <div className="space-y-1">
-                      {cat.itens.map((item, itemIdx) => (
-                        <div key={itemIdx} className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors">
-                          <Checkbox
-                            checked={item.ativo}
-                            onCheckedChange={() => toggleInclusoItem(catIdx, null, itemIdx)}
-                          />
-                          {item.custom ? (
-                            <Input
-                              value={item.nome}
-                              onChange={e => updateCustomInclusoName(catIdx, null, itemIdx, e.target.value)}
-                              placeholder="Nome do item"
-                              className="h-7 text-sm flex-1"
-                            />
-                          ) : (
-                            <span className="text-sm flex-1">{item.nome}</span>
-                          )}
-                          {item.ativo && 'quantidade' in item && (
-                            <Input
-                              value={item.quantidade || ''}
-                              onChange={e => updateInclusoQuantidade(catIdx, null, itemIdx, e.target.value)}
-                              placeholder="Qtd"
-                              className="h-7 w-16 text-sm text-center"
-                            />
-                          )}
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => addCustomInclusoItem(catIdx, null)}
-                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
-                      >
-                        <Plus className="h-3 w-3" /> Adicionar item
-                      </button>
-                    </div>
-                  )}
+                  <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-                  {/* Subcategories (Gravação) */}
-                  {cat.subcategorias && cat.subcategorias.map((sub, subIdx) => (
-                    <div key={sub.nome} className="space-y-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 pt-1">{sub.nome}</p>
-                      {sub.itens.map((item, itemIdx) => (
-                        <div key={itemIdx} className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors">
-                          <Checkbox
-                            checked={item.ativo}
-                            onCheckedChange={() => toggleInclusoItem(catIdx, subIdx, itemIdx)}
-                          />
-                          {item.custom ? (
-                            <Input
-                              value={item.nome}
-                              onChange={e => updateCustomInclusoName(catIdx, subIdx, itemIdx, e.target.value)}
-                              placeholder="Nome do item"
-                              className="h-7 text-sm flex-1"
+                    {/* Flat items (Pré-produção, Pós-produção) */}
+                    {cat.itens && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {cat.itens.map((item, itemIdx) => (
+                          <div
+                            key={itemIdx}
+                            className="flex items-center gap-2"
+                            style={{ padding: '6px 8px', transition: 'background 0.15s' }}
+                          >
+                            <Checkbox
+                              checked={item.ativo}
+                              onCheckedChange={() => toggleInclusoItem(catIdx, null, itemIdx)}
                             />
-                          ) : (
-                            <span className="text-sm flex-1">{item.nome}</span>
-                          )}
-                          {item.ativo && 'quantidade' in item && (
-                            <Input
-                              value={item.quantidade || ''}
-                              onChange={e => updateInclusoQuantidade(catIdx, subIdx, itemIdx, e.target.value)}
-                              placeholder="Qtd"
-                              className="h-7 w-16 text-sm text-center"
+                            {item.custom ? (
+                              <Input
+                                value={item.nome}
+                                onChange={e => updateCustomInclusoName(catIdx, null, itemIdx, e.target.value)}
+                                placeholder="Nome do item"
+                                className="h-7 text-sm flex-1"
+                              />
+                            ) : (
+                              <span
+                                className="flex-1"
+                                style={{ fontSize: 13, color: 'hsl(var(--ds-fg-1))' }}
+                              >
+                                {item.nome}
+                              </span>
+                            )}
+                            {item.ativo && 'quantidade' in item && (
+                              <Input
+                                value={item.quantidade || ''}
+                                onChange={e => updateInclusoQuantidade(catIdx, null, itemIdx, e.target.value)}
+                                placeholder="Qtd"
+                                className="h-7 w-16 text-sm text-center"
+                                style={{ fontVariantNumeric: 'tabular-nums' }}
+                              />
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => addCustomInclusoItem(catIdx, null)}
+                          className="flex items-center gap-1.5"
+                          style={{
+                            fontSize: 11,
+                            color: 'hsl(var(--ds-fg-3))',
+                            padding: '4px 8px',
+                            transition: 'color 0.15s',
+                          }}
+                        >
+                          <Plus size={12} strokeWidth={1.5} /> Adicionar item
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Subcategories (Gravação) */}
+                    {cat.subcategorias && cat.subcategorias.map((sub, subIdx) => (
+                      <div key={sub.nome} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <p
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.14em',
+                            color: 'hsl(var(--ds-fg-3))',
+                            padding: '4px 8px 0',
+                          }}
+                        >
+                          {sub.nome}
+                        </p>
+                        {sub.itens.map((item, itemIdx) => (
+                          <div
+                            key={itemIdx}
+                            className="flex items-center gap-2"
+                            style={{ padding: '6px 8px', transition: 'background 0.15s' }}
+                          >
+                            <Checkbox
+                              checked={item.ativo}
+                              onCheckedChange={() => toggleInclusoItem(catIdx, subIdx, itemIdx)}
                             />
-                          )}
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => addCustomInclusoItem(catIdx, subIdx)}
-                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
-                      >
-                        <Plus className="h-3 w-3" /> Adicionar item
-                      </button>
-                    </div>
-                  ))}
+                            {item.custom ? (
+                              <Input
+                                value={item.nome}
+                                onChange={e => updateCustomInclusoName(catIdx, subIdx, itemIdx, e.target.value)}
+                                placeholder="Nome do item"
+                                className="h-7 text-sm flex-1"
+                              />
+                            ) : (
+                              <span
+                                className="flex-1"
+                                style={{ fontSize: 13, color: 'hsl(var(--ds-fg-1))' }}
+                              >
+                                {item.nome}
+                              </span>
+                            )}
+                            {item.ativo && 'quantidade' in item && (
+                              <Input
+                                value={item.quantidade || ''}
+                                onChange={e => updateInclusoQuantidade(catIdx, subIdx, itemIdx, e.target.value)}
+                                placeholder="Qtd"
+                                className="h-7 w-16 text-sm text-center"
+                                style={{ fontVariantNumeric: 'tabular-nums' }}
+                              />
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => addCustomInclusoItem(catIdx, subIdx)}
+                          className="flex items-center gap-1.5"
+                          style={{
+                            fontSize: 11,
+                            color: 'hsl(var(--ds-fg-3))',
+                            padding: '4px 8px',
+                            transition: 'color 0.15s',
+                          }}
+                        >
+                          <Plus size={12} strokeWidth={1.5} /> Adicionar item
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               );
             })}
           </div>
 
-          <div className="flex justify-between">
-            <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
-            <Button onClick={goNext}>Continuar <ArrowRight className="h-4 w-4 ml-1" /></Button>
-          </div>
+          <NavButtons />
         </div>
       )}
 
@@ -1340,55 +1941,88 @@ export function ProposalGuidedWizard() {
                         setTestimonialText(t.text);
                         setTestimonialImage(t.image || '');
                       }}
-                      className={cn(
-                        'flex items-start gap-3 p-4 rounded-lg border transition-all text-left',
-                        isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
-                      )}
+                      className="flex items-start gap-3 text-left"
+                      style={{
+                        padding: 14,
+                        border: '1px solid',
+                        borderColor: isSelected ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-line-1))',
+                        background: isSelected ? 'hsl(var(--ds-accent) / 0.06)' : 'hsl(var(--ds-surface))',
+                        transition: 'all 0.15s',
+                      }}
                     >
                       <Avatar className="h-10 w-10 shrink-0">
                         {t.image && <AvatarImage src={t.image} />}
                         <AvatarFallback className="text-xs">{t.name?.slice(0, 2).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{t.name}</p>
-                        <p className="text-xs text-muted-foreground">{t.role}</p>
-                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{t.text}</p>
+                        <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{t.name}</p>
+                        <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>{t.role}</p>
+                        <p
+                          className="line-clamp-2"
+                          style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}
+                        >
+                          {t.text}
+                        </p>
                       </div>
-                      {isSelected && <Check className="h-4 w-4 text-primary shrink-0 mt-1" />}
+                      {isSelected && (
+                        <Check
+                          size={14}
+                          strokeWidth={1.5}
+                          style={{ color: 'hsl(var(--ds-accent))', flexShrink: 0, marginTop: 4 }}
+                        />
+                      )}
                     </button>
                   );
                 })}
               </div>
 
-              <Button variant="outline" className="w-full gap-2" onClick={() => setShowNewTestimonialDialog(true)}>
-                <Plus className="h-4 w-4" /> Criar novo depoimento
-              </Button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setShowNewTestimonialDialog(true)}
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                <Plus size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Criar novo depoimento
+              </button>
             </>
           ) : (
             <>
-              <Card>
-                <CardContent className="pt-6 space-y-4">
-                  <p className="text-sm text-muted-foreground">Nenhum depoimento cadastrado. Preencha manualmente:</p>
+              <SectionShell icon={MessageSquareQuote} title="Depoimento">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
+                    Nenhum depoimento cadastrado. Preencha manualmente:
+                  </p>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Nome</Label>
+                    <div>
+                      <FieldLabel>Nome</FieldLabel>
                       <Input value={testimonialName} onChange={e => setTestimonialName(e.target.value)} placeholder="Ex: João Silva" />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Cargo</Label>
+                    <div>
+                      <FieldLabel>Cargo</FieldLabel>
                       <Input value={testimonialRole} onChange={e => setTestimonialRole(e.target.value)} placeholder="Ex: CEO, Empresa X" />
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Depoimento</Label>
-                    <Textarea value={testimonialText} onChange={e => setTestimonialText(e.target.value)} rows={3} placeholder="O que o cliente disse..." className="scrollbar-thin" />
+                  <div>
+                    <FieldLabel>Depoimento</FieldLabel>
+                    <Textarea
+                      value={testimonialText}
+                      onChange={e => setTestimonialText(e.target.value)}
+                      rows={3}
+                      placeholder="O que o cliente disse..."
+                      className="scrollbar-thin"
+                    />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </SectionShell>
 
-              <Button variant="outline" className="w-full gap-2" onClick={() => setShowNewTestimonialDialog(true)}>
-                <Plus className="h-4 w-4" /> Criar novo depoimento
-              </Button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setShowNewTestimonialDialog(true)}
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                <Plus size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Criar novo depoimento
+              </button>
             </>
           )}
 
@@ -1396,42 +2030,52 @@ export function ProposalGuidedWizard() {
           <Dialog open={showNewTestimonialDialog} onOpenChange={setShowNewTestimonialDialog}>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Novo Depoimento</DialogTitle>
+                <DialogTitle>
+                  <span style={{ fontFamily: '"HN Display", sans-serif' }}>Novo Depoimento</span>
+                </DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Nome *</Label>
+                  <div>
+                    <FieldLabel required>Nome</FieldLabel>
                     <Input value={newTestimonial.name} onChange={e => setNewTestimonial(p => ({ ...p, name: e.target.value }))} placeholder="Ex: João Silva" />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Cargo</Label>
+                  <div>
+                    <FieldLabel>Cargo</FieldLabel>
                     <Input value={newTestimonial.role} onChange={e => setNewTestimonial(p => ({ ...p, role: e.target.value }))} placeholder="Ex: CEO, Empresa X" />
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Depoimento *</Label>
-                  <Textarea value={newTestimonial.text} onChange={e => setNewTestimonial(p => ({ ...p, text: e.target.value }))} rows={3} placeholder="O que o cliente disse..." className="scrollbar-thin" />
+                <div>
+                  <FieldLabel required>Depoimento</FieldLabel>
+                  <Textarea
+                    value={newTestimonial.text}
+                    onChange={e => setNewTestimonial(p => ({ ...p, text: e.target.value }))}
+                    rows={3}
+                    placeholder="O que o cliente disse..."
+                    className="scrollbar-thin"
+                  />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">URL da foto (opcional)</Label>
+                <div>
+                  <FieldLabel>URL da foto (opcional)</FieldLabel>
                   <Input value={newTestimonial.image} onChange={e => setNewTestimonial(p => ({ ...p, image: e.target.value }))} placeholder="https://..." />
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="ghost" onClick={() => setShowNewTestimonialDialog(false)}>Cancelar</Button>
-                <Button onClick={handleCreateTestimonial} disabled={createTestimonial.isPending}>
-                  {createTestimonial.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                <button type="button" className="btn" onClick={() => setShowNewTestimonialDialog(false)}>Cancelar</button>
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={handleCreateTestimonial}
+                  disabled={createTestimonial.isPending}
+                >
+                  {createTestimonial.isPending ? <Loader2 size={14} strokeWidth={1.5} className="animate-spin" style={{ marginRight: 4 }} /> : null}
                   Criar Depoimento
-                </Button>
+                </button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
 
-          <div className="flex justify-between">
-            <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
-            <Button onClick={goNext}>Continuar <ArrowRight className="h-4 w-4 ml-1" /></Button>
-          </div>
+          <NavButtons />
         </div>
       )}
 
@@ -1441,29 +2085,68 @@ export function ProposalGuidedWizard() {
       {step === 8 && (
         <div className="space-y-6">
 
-          <Card>
-            <CardContent className="pt-6 space-y-4">
+          <SectionShell icon={DollarSign} title="Investimento">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Valor de Tabela (R$)</Label>
-                  <Input type="number" value={listPrice || ''} onChange={e => setListPrice(parseFloat(e.target.value) || 0)} placeholder="0" />
+                <div>
+                  <FieldLabel>Valor de Tabela (R$)</FieldLabel>
+                  <Input
+                    type="number"
+                    value={listPrice || ''}
+                    onChange={e => setListPrice(parseFloat(e.target.value) || 0)}
+                    placeholder="0"
+                    style={{ fontVariantNumeric: 'tabular-nums' }}
+                  />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Desconto (%)</Label>
-                  <Input type="number" value={discountPct || ''} onChange={e => setDiscountPct(parseFloat(e.target.value) || 0)} placeholder="0" />
+                <div>
+                  <FieldLabel>Desconto (%)</FieldLabel>
+                  <Input
+                    type="number"
+                    value={discountPct || ''}
+                    onChange={e => setDiscountPct(parseFloat(e.target.value) || 0)}
+                    placeholder="0"
+                    style={{ fontVariantNumeric: 'tabular-nums' }}
+                  />
                 </div>
               </div>
-              <div className="flex items-center justify-between p-4 rounded-lg bg-muted">
-                <span className="text-sm text-muted-foreground">Valor Final</span>
-                <span className="text-xl font-bold">{fmt(finalValue)}</span>
+              <div
+                className="flex items-center justify-between"
+                style={{
+                  padding: 14,
+                  background: 'hsl(var(--ds-line-2) / 0.3)',
+                  border: '1px solid hsl(var(--ds-line-1))',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    fontWeight: 500,
+                    color: 'hsl(var(--ds-fg-3))',
+                  }}
+                >
+                  Valor Final
+                </span>
+                <span
+                  style={{
+                    fontFamily: '"HN Display", sans-serif',
+                    fontSize: 20,
+                    fontWeight: 700,
+                    color: 'hsl(var(--ds-fg-1))',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {fmt(finalValue)}
+                </span>
               </div>
               <PaymentOptionsEditor
                 value={paymentOptions}
                 onChange={setPaymentOptions}
                 finalValue={finalValue}
               />
-              <div className="space-y-1.5">
-                <Label className="text-xs">Observações de pagamento</Label>
+              <div>
+                <FieldLabel>Observações de pagamento</FieldLabel>
                 <Textarea
                   value={paymentNotes}
                   onChange={e => setPaymentNotes(e.target.value)}
@@ -1472,13 +2155,10 @@ export function ProposalGuidedWizard() {
                   className="scrollbar-thin"
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </SectionShell>
 
-          <div className="flex justify-between">
-            <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
-            <Button onClick={goNext}>Revisar Proposta <ArrowRight className="h-4 w-4 ml-1" /></Button>
-          </div>
+          <NavButtons nextLabel="Revisar Proposta" />
         </div>
       )}
 
@@ -1489,124 +2169,168 @@ export function ProposalGuidedWizard() {
         <div className="space-y-6">
 
           <div className="space-y-3">
-            {/* Client */}
-            <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(1)}>
-              <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Cliente</p>
-                  <p className="text-sm font-medium">{clientName || '—'} · {projectName || '—'}</p>
-                  {clientResponsible && <p className="text-xs text-muted-foreground">Resp: {clientResponsible}</p>}
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              </CardContent>
-            </Card>
-
-            {/* Objetivo */}
-            <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(2)}>
-              <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">Objetivo</p>
-                  <p className="text-sm line-clamp-2">{objetivo || '—'}</p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              </CardContent>
-            </Card>
-
-            {/* Dores */}
-            <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(3)}>
-              <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">Dores ({dores.length})</p>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {dores.map((d, i) => (
-                      <Badge key={i} variant="outline" className="text-xs whitespace-nowrap">{d.label} {d.title}</Badge>
-                    ))}
-                    {dores.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma dor selecionada</p>}
+            {/* Reusable review row */}
+            {(() => {
+              const ReviewRow = ({
+                label,
+                onClick,
+                children,
+              }: {
+                label: React.ReactNode;
+                onClick: () => void;
+                children: React.ReactNode;
+              }) => (
+                <button
+                  type="button"
+                  onClick={onClick}
+                  className="flex items-center justify-between w-full text-left"
+                  style={{
+                    padding: 14,
+                    border: '1px solid hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-surface))',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'hsl(var(--ds-surface))'; }}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p
+                      style={{
+                        fontSize: 11,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        fontWeight: 500,
+                        color: 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
+                      {label}
+                    </p>
+                    <div style={{ marginTop: 4 }}>{children}</div>
                   </div>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              </CardContent>
-            </Card>
+                  <ArrowRight size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))', flexShrink: 0 }} />
+                </button>
+              );
 
-            {/* Cases */}
-            <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(4)}>
-              <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Cases ({selectedCaseIds.length})</p>
-                  <p className="text-sm">{selectedCaseIds.length > 0 ? `${selectedCaseIds.length} case(s) selecionado(s)` : 'Nenhum case selecionado'}</p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              </CardContent>
-            </Card>
+              return (
+                <>
+                  <ReviewRow label="Cliente" onClick={() => setStep(1)}>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                      {clientName || '—'} · {projectName || '—'}
+                    </p>
+                    {clientResponsible && (
+                      <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>Resp: {clientResponsible}</p>
+                    )}
+                  </ReviewRow>
 
-            {/* Entregáveis */}
-            <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(5)}>
-              <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Entregáveis ({entregaveis.length})</p>
-                  <div className="flex gap-1 mt-1 flex-wrap">
-                    {entregaveis.map((e, i) => (
-                      <Badge key={i} variant="outline" className="text-xs">{e.icone} {e.titulo || 'Sem nome'}</Badge>
-                    ))}
-                    {entregaveis.length === 0 && <p className="text-sm text-muted-foreground">Nenhum entregável</p>}
-                  </div>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              </CardContent>
-            </Card>
+                  <ReviewRow label="Objetivo" onClick={() => setStep(2)}>
+                    <p
+                      className="line-clamp-2"
+                      style={{ fontSize: 13, color: 'hsl(var(--ds-fg-1))' }}
+                    >
+                      {objetivo || '—'}
+                    </p>
+                  </ReviewRow>
 
-            {/* Serviços Inclusos */}
-            <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(6)}>
-              <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Serviços Inclusos</p>
-                  <p className="text-sm">{countActiveInclusos()}/{totalInclusoItems()} serviços selecionados</p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              </CardContent>
-            </Card>
+                  <ReviewRow label={<span style={{ fontVariantNumeric: 'tabular-nums' }}>Dores ({dores.length})</span>} onClick={() => setStep(3)}>
+                    <div className="flex flex-wrap gap-2">
+                      {dores.map((d, i) => (
+                        <span key={i} className="pill muted" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>
+                          {d.label} {d.title}
+                        </span>
+                      ))}
+                      {dores.length === 0 && (
+                        <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>Nenhuma dor selecionada</p>
+                      )}
+                    </div>
+                  </ReviewRow>
 
-            {/* Depoimento */}
-            <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(7)}>
-              <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Depoimento</p>
-                  <p className="text-sm">{testimonialName ? `${testimonialName} — ${testimonialRole}` : 'Nenhum depoimento'}</p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              </CardContent>
-            </Card>
+                  <ReviewRow label={<span style={{ fontVariantNumeric: 'tabular-nums' }}>Cases ({selectedCaseIds.length})</span>} onClick={() => setStep(4)}>
+                    <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-1))' }}>
+                      {selectedCaseIds.length > 0
+                        ? <span style={{ fontVariantNumeric: 'tabular-nums' }}>{selectedCaseIds.length} case(s) selecionado(s)</span>
+                        : 'Nenhum case selecionado'}
+                    </p>
+                  </ReviewRow>
 
-            {/* Investimento */}
-            <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(8)}>
-              <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Investimento</p>
-                  <p className="text-sm font-bold">{fmt(finalValue)}</p>
-                  <div className="flex gap-2 mt-1 flex-wrap">
-                    {paymentOptions.map((opt, i) => (
-                      <Badge key={i} variant={opt.recomendado ? 'default' : 'outline'} className="text-xs">
-                        {opt.titulo}: {opt.valor}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              </CardContent>
-            </Card>
+                  <ReviewRow label={<span style={{ fontVariantNumeric: 'tabular-nums' }}>Entregáveis ({entregaveis.length})</span>} onClick={() => setStep(5)}>
+                    <div className="flex gap-1 flex-wrap">
+                      {entregaveis.map((e, i) => (
+                        <span key={i} className="pill muted" style={{ fontSize: 11 }}>
+                          {e.icone} {e.titulo || 'Sem nome'}
+                        </span>
+                      ))}
+                      {entregaveis.length === 0 && (
+                        <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>Nenhum entregável</p>
+                      )}
+                    </div>
+                  </ReviewRow>
+
+                  <ReviewRow label="Serviços Inclusos" onClick={() => setStep(6)}>
+                    <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>
+                      {countActiveInclusos()}/{totalInclusoItems()} serviços selecionados
+                    </p>
+                  </ReviewRow>
+
+                  <ReviewRow label="Depoimento" onClick={() => setStep(7)}>
+                    <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-1))' }}>
+                      {testimonialName ? `${testimonialName} — ${testimonialRole}` : 'Nenhum depoimento'}
+                    </p>
+                  </ReviewRow>
+
+                  <ReviewRow label="Investimento" onClick={() => setStep(8)}>
+                    <p
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: 'hsl(var(--ds-fg-1))',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {fmt(finalValue)}
+                    </p>
+                    <div className="flex gap-2 mt-1 flex-wrap">
+                      {paymentOptions.map((opt, i) => (
+                        <span
+                          key={i}
+                          className="pill"
+                          style={{
+                            fontSize: 11,
+                            fontVariantNumeric: 'tabular-nums',
+                            ...(opt.recomendado
+                              ? {
+                                  color: 'hsl(var(--ds-accent))',
+                                  borderColor: 'hsl(var(--ds-accent) / 0.3)',
+                                  background: 'hsl(var(--ds-accent) / 0.08)',
+                                }
+                              : {}),
+                          }}
+                        >
+                          {opt.titulo}: {opt.valor}
+                        </span>
+                      ))}
+                    </div>
+                  </ReviewRow>
+                </>
+              );
+            })()}
           </div>
 
           <div className="flex justify-between">
-            <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
-            <Button
-              size="lg"
+            <button type="button" className="btn" onClick={goBack}>
+              <ArrowLeft size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Voltar
+            </button>
+            <button
+              type="button"
+              className="btn primary"
               onClick={handleCreateProposal}
               disabled={createProposal.isPending || !clientName.trim() || !projectName.trim() || !validityDate}
-              className="gap-2"
+              style={{ height: 40, padding: '0 18px' }}
             >
-              {createProposal.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {createProposal.isPending
+                ? <Loader2 size={14} strokeWidth={1.5} className="animate-spin" style={{ marginRight: 6 }} />
+                : <Sparkles size={14} strokeWidth={1.5} style={{ marginRight: 6 }} />}
               Criar Proposta
-            </Button>
+            </button>
           </div>
         </div>
       )}

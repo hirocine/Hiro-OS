@@ -29,7 +29,11 @@ export function AVProjectSectionRow({ section, steps, projectId }: AVProjectSect
   const progress = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border rounded-lg overflow-hidden">
+    <Collapsible
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className="overflow-hidden border border-[hsl(var(--ds-line-1))]"
+    >
       <CollapsibleTrigger className="w-full">
         <div className="grid grid-cols-12 gap-2 items-center p-3 bg-muted/50 hover:bg-muted transition-colors">
           {/* Coluna do título (5 colunas) */}

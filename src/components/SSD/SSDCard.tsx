@@ -1,8 +1,5 @@
 import { Equipment } from '@/types/equipment';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { HardDrive } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { SSDStatus } from '@/features/ssds';
 
 interface SSDCardProps {
@@ -13,77 +10,117 @@ interface SSDCardProps {
   allocatedSpace?: number;
 }
 
-const getKanbanStatusVariant = (status: SSDStatus) => {
+const statusToneStyle = (status: SSDStatus): React.CSSProperties => {
   switch (status) {
     case 'available':
-      return 'success';
+      return { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' };
     case 'in_use':
-      return 'warning';
+      return { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' };
     case 'loaned':
-      return 'destructive';
+      return { color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' };
   }
 };
 
 const getKanbanStatusLabel = (status: SSDStatus) => {
   switch (status) {
-    case 'available':
-      return 'Livre';
-    case 'in_use':
-      return 'Em uso (Interno)';
-    case 'loaned':
-      return 'Em uso (Externo)';
+    case 'available': return 'Livre';
+    case 'in_use': return 'Em uso (Interno)';
+    case 'loaned': return 'Em uso (Externo)';
   }
 };
 
 export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick, allocatedSpace = 0 }: SSDCardProps) => {
-  // Calcular espaço livre (agora vem das props)
-  const freeSpace = (ssd.capacity || 0) - allocatedSpace;
   const shouldShowFreeSpace = (kanbanStatus === 'in_use' || kanbanStatus === 'loaned') && ssd.capacity;
-  
+
   return (
-    <Card 
-      className={cn(
-        "cursor-pointer transition-all duration-200 ease-out",
-        !isDragging && "hover:shadow-elegant hover:scale-[1.02]",
-        isDragging && "opacity-50",
-        "motion-reduce:transition-none"
-      )}
+    <div
       onClick={onClick}
+      style={{
+        background: 'hsl(var(--ds-surface))',
+        border: '1px solid hsl(var(--ds-line-1))',
+        padding: 14,
+        cursor: 'pointer',
+        opacity: isDragging ? 0.5 : 1,
+        transition: 'opacity 0.15s, border-color 0.15s, box-shadow 0.15s',
+      }}
+      onMouseEnter={(e) => {
+        if (!isDragging) {
+          e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';
+          e.currentTarget.style.boxShadow = '0 2px 8px hsl(0 0% 0% / 0.04)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
     >
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-primary/10 shrink-0 w-11 h-11 flex items-center justify-center">
-            {ssd.ssdNumber ? (
-              <span className="text-base font-bold text-primary">{ssd.ssdNumber}</span>
-            ) : (
-              <HardDrive className="h-6 w-6 text-primary" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            display: 'grid',
+            placeItems: 'center',
+            background: 'hsl(var(--ds-accent) / 0.1)',
+            color: 'hsl(var(--ds-accent))',
+            flexShrink: 0,
+          }}
+        >
+          {ssd.ssdNumber ? (
+            <span
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 14,
+                fontWeight: 700,
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              {ssd.ssdNumber}
+            </span>
+          ) : (
+            <HardDrive size={18} strokeWidth={1.5} />
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h4
+            style={{
+              fontSize: 13,
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-1))',
+              lineHeight: 1.3,
+              marginBottom: 6,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {ssd.name}
+          </h4>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            {shouldShowFreeSpace && (
+              <span className="pill muted" style={{ fontSize: 10, fontVariantNumeric: 'tabular-nums' }}>
+                {allocatedSpace.toFixed(1)} / {ssd.capacity} GB
+              </span>
+            )}
+            {kanbanStatus && (
+              <span
+                className="pill"
+                style={{
+                  ...statusToneStyle(kanbanStatus),
+                  fontSize: 10,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
+                <span className="dot" style={{ background: 'currentColor' }} />
+                {getKanbanStatusLabel(kanbanStatus)}
+              </span>
             )}
           </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-medium line-clamp-2 mb-1.5">
-              {ssd.name}
-            </h4>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {shouldShowFreeSpace && (
-                <Badge 
-                  variant="outline"
-                  className="shrink-0 text-[10px]"
-                >
-                  {allocatedSpace.toFixed(1)} / {ssd.capacity} GB
-                </Badge>
-              )}
-              {kanbanStatus && (
-                <Badge 
-                  variant={getKanbanStatusVariant(kanbanStatus)}
-                  className="shrink-0 text-[10px]"
-                >
-                  {getKanbanStatusLabel(kanbanStatus)}
-                </Badge>
-              )}
-            </div>
-          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

@@ -1,40 +1,82 @@
 import { Navigate } from 'react-router-dom';
+import {
+  Landmark, TrendingDown, ArrowDownRight, Camera, Monitor, Building2, CalendarPlus, BarChart3, Layers,
+  type LucideIcon,
+} from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCapexData } from '@/hooks/useCapexData';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
-import { cn } from '@/lib/utils';
-import {
-  Landmark, TrendingDown, ArrowDownRight, Camera, Monitor, Building2, CalendarPlus, BarChart3, Layers
-} from 'lucide-react';
 
-function CapexCard({ title, icon: Icon, value, iconClassName, valueClassName, subtitle, className }: {
+type Tone = 'fg' | 'accent' | 'destructive' | 'success' | 'muted';
+
+const toneColor: Record<Tone, string> = {
+  fg: 'hsl(var(--ds-fg-1))',
+  accent: 'hsl(var(--ds-accent))',
+  destructive: 'hsl(var(--ds-danger))',
+  success: 'hsl(var(--ds-success))',
+  muted: 'hsl(var(--ds-fg-3))',
+};
+
+function CapexTile({
+  title, Icon, value, subtitle, tone = 'fg', loading,
+}: {
   title: string;
-  icon: React.ComponentType<{ className?: string }>;
+  Icon: LucideIcon;
   value: string;
-  iconClassName?: string;
-  valueClassName?: string;
   subtitle?: string;
-  className?: string;
+  tone?: Tone;
+  loading?: boolean;
 }) {
+  const color = toneColor[tone];
   return (
-    <Card className={cn("shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]", className)}>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <Icon className={cn("h-4 w-4", iconClassName)} />
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        padding: '20px 22px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        background: 'hsl(var(--ds-surface))',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-fg-3))' }}>
+        <Icon size={14} strokeWidth={1.5} style={{ color }} />
+        <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500 }}>
           {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className={cn("text-base sm:text-lg lg:text-xl font-bold", valueClassName)}>
-          {value}
+        </span>
+      </div>
+      <div
+        style={{
+          fontFamily: '"HN Display", sans-serif',
+          fontSize: 24,
+          fontWeight: 600,
+          letterSpacing: '-0.01em',
+          fontVariantNumeric: 'tabular-nums',
+          color,
+        }}
+      >
+        {loading ? '—' : value}
+      </div>
+      {subtitle && (
+        <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', lineHeight: 1.4 }}>
+          {subtitle}
         </div>
-        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
-      </CardContent>
-    </Card>
+      )}
+    </div>
+  );
+}
+
+function SectionHead({ eyebrow, title, Icon }: { eyebrow: string; title: string; Icon: LucideIcon }) {
+  return (
+    <div className="section-head">
+      <div className="section-head-l">
+        <span className="section-eyebrow">{eyebrow}</span>
+        <span className="section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <Icon size={14} strokeWidth={1.5} />
+          {title}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -46,107 +88,88 @@ export default function Capex() {
     return <Navigate to="/" replace />;
   }
 
-  if (roleLoading || loading) {
-    return (
-      <ResponsiveContainer maxWidth="7xl">
-        <PageHeader title="Gestão de CAPEX (Ativos)" subtitle="Carregando dados..." />
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
-          </div>
-        </div>
-      </ResponsiveContainer>
-    );
-  }
+  const isLoading = roleLoading || loading;
 
   return (
-    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-      <PageHeader
-        title="Gestão de CAPEX (Ativos)"
-        subtitle="Visão patrimonial e investimentos em ativos fixos"
-      />
-
-      <div className="space-y-6 lg:space-y-8">
-        {/* Linha 1: Resumo Contábil */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">Resumo Contábil</h2>
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Gestão de CAPEX.</h1>
+            <p className="ph-sub">Visão patrimonial e investimentos em ativos fixos.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <CapexCard
-              title="Total Investido Patrimonial"
-              icon={Landmark}
+        </div>
+
+        {/* Resumo Contábil */}
+        <section className="section">
+          <SectionHead eyebrow="01" title="Resumo Contábil" Icon={BarChart3} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            <CapexTile
+              title="Total Investido"
+              Icon={Landmark}
               value={formatCurrency(data.total_invested)}
-              iconClassName="text-foreground"
-              valueClassName="text-foreground"
               subtitle="Valor bruto acumulado de compras"
+              tone="fg"
+              loading={isLoading}
             />
-            <CapexCard
-              title="Total Patrimonial Atual"
-              icon={TrendingDown}
+            <CapexTile
+              title="Patrimônio Atual"
+              Icon={TrendingDown}
               value={formatCurrency(data.total_current)}
-              iconClassName="text-primary"
-              valueClassName="text-primary"
               subtitle="Valor líquido (Investido − Depreciação)"
+              tone="accent"
+              loading={isLoading}
             />
-            <CapexCard
+            <CapexTile
               title="Depreciação Mensal"
-              icon={ArrowDownRight}
+              Icon={ArrowDownRight}
               value={formatCurrency(data.monthly_depreciation)}
-              iconClassName="text-destructive"
-              valueClassName="text-destructive"
               subtitle="Custo mensal de desvalorização"
+              tone="destructive"
+              loading={isLoading}
             />
           </div>
         </section>
 
-        {/* Linha 2: Segmentação Estratégica */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Layers className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">Segmentação Estratégica</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <CapexCard
+        {/* Segmentação Estratégica */}
+        <section className="section">
+          <SectionHead eyebrow="02" title="Segmentação Estratégica" Icon={Layers} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+            <CapexTile
               title="Equipamentos AV"
-              icon={Camera}
+              Icon={Camera}
               value={formatCurrency(data.av_equipment)}
-              iconClassName="text-primary"
-              valueClassName="text-primary"
-              subtitle="Câmeras, Lentes e Luz"
+              subtitle="Câmeras, lentes e luz"
+              tone="accent"
+              loading={isLoading}
             />
-            <CapexCard
+            <CapexTile
               title="Tecnologia & Post"
-              icon={Monitor}
+              Icon={Monitor}
               value={formatCurrency(data.tech_post)}
-              iconClassName="text-primary"
-              valueClassName="text-primary"
-              subtitle="Ilhas de Edição e Armazenamento"
+              subtitle="Ilhas de edição e armazenamento"
+              tone="accent"
+              loading={isLoading}
             />
-            <CapexCard
+            <CapexTile
               title="Imobilizado Geral"
-              icon={Building2}
+              Icon={Building2}
               value={formatCurrency(data.general_assets)}
-              iconClassName="text-muted-foreground"
-              valueClassName="text-muted-foreground"
               subtitle="Móveis, infraestrutura e outros"
+              tone="muted"
+              loading={isLoading}
             />
-            <CapexCard
+            <CapexTile
               title="CAPEX 2026"
-              icon={CalendarPlus}
+              Icon={CalendarPlus}
               value={formatCurrency(data.capex_current_year)}
-              iconClassName="text-success"
-              valueClassName="text-success"
               subtitle="Total investido no ano corrente"
-              className="border-success/30"
+              tone="success"
+              loading={isLoading}
             />
           </div>
         </section>
       </div>
-    </ResponsiveContainer>
+    </div>
   );
 }

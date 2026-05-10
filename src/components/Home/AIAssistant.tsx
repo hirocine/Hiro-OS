@@ -1,29 +1,26 @@
-import { useState, useRef, useEffect } from "react";
-import { Send, User, Sparkles, Trash2, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useAIAssistant } from "@/hooks/useAIAssistant";
-import { useIsMobile } from "@/hooks/use-mobile";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { useState, useRef, useEffect } from 'react';
+import { Send, User, Sparkles, Trash2, Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAIAssistant } from '@/hooks/useAIAssistant';
+import { useIsMobile } from '@/hooks/use-mobile';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const SUGGESTIONS = [
-  "Quantos equipamentos temos no inventário?",
-  "Quais tarefas estão atrasadas?",
-  "Quais projetos estão ativos?",
-  "Quais equipamentos estão emprestados?",
+  'Quantos equipamentos temos no inventário?',
+  'Quais tarefas estão atrasadas?',
+  'Quais projetos estão ativos?',
+  'Quais equipamentos estão emprestados?',
 ];
 
 export function AIAssistant() {
   const { messages, isLoading, sendMessage, clearMessages } = useAIAssistant();
   const isMobile = useIsMobile();
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -34,7 +31,7 @@ export function AIAssistant() {
     e.preventDefault();
     if (input.trim() && !isLoading) {
       sendMessage(input.trim());
-      setInput("");
+      setInput('');
     }
   };
 
@@ -47,132 +44,266 @@ export function AIAssistant() {
   const hasMessages = messages.length > 0;
 
   return (
-    <Card className={`ai-assistant-card flex flex-col transition-[height] duration-500 ease-out will-change-[height] ${
-      hasMessages ? "h-[500px]" : "min-h-[120px] sm:min-h-[180px] sm:h-[220px]"
-    }`}>
-      <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6 flex-shrink-0">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1 sm:gap-2">
-            <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-lg">
-              <div className="p-1 sm:p-2 rounded-lg bg-primary/10">
-                <Sparkles className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-primary" />
-              </div>
+    <div
+      className="ai-assistant-card"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: hasMessages ? 500 : undefined,
+        minHeight: hasMessages ? undefined : isMobile ? 120 : 180,
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        transition: 'height 0.5s ease-out, min-height 0.5s ease-out',
+        willChange: 'height',
+      }}
+    >
+      <div
+        style={{
+          padding: '12px 16px',
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div
+              style={{
+                width: 28,
+                height: 28,
+                display: 'grid',
+                placeItems: 'center',
+                background: 'hsl(var(--ds-accent) / 0.1)',
+                border: '1px solid hsl(var(--ds-accent) / 0.25)',
+                color: 'hsl(var(--ds-accent))',
+                flexShrink: 0,
+              }}
+            >
+              <Sparkles size={14} strokeWidth={1.5} />
+            </div>
+            <span
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 14,
+                fontWeight: 600,
+                color: 'hsl(var(--ds-fg-1))',
+              }}
+            >
               Assistente Hiro
-            </CardTitle>
-            <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">· Gemini</span>
+            </span>
+            <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', whiteSpace: 'nowrap' }}>
+              · Gemini
+            </span>
           </div>
           {messages.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
+              type="button"
+              className="btn"
               onClick={clearMessages}
-              className="text-muted-foreground hover:text-destructive flex-shrink-0 h-7 w-7 p-0 sm:h-8 sm:w-8"
+              style={{
+                width: 28,
+                height: 28,
+                padding: 0,
+                justifyContent: 'center',
+                flexShrink: 0,
+                color: 'hsl(var(--ds-fg-3))',
+              }}
+              aria-label="Limpar conversa"
             >
-              <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            </Button>
+              <Trash2 size={13} strokeWidth={1.5} />
+            </button>
           )}
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="flex-1 flex flex-col p-3 sm:p-4 pt-0 overflow-hidden">
-        {/* Messages area - only show when there are messages */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 14, overflow: 'hidden' }}>
         {hasMessages && (
-          <ScrollArea className="flex-1 pr-4 animate-fade-in" ref={scrollRef}>
-            <div className="space-y-4">
+          <ScrollArea className="flex-1 animate-fade-in" ref={scrollRef}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingRight: 8 }}>
               {messages.map((message, index) => (
                 <div
                   key={index}
-                  className={`flex gap-3 ${
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  }`}
+                  style={{
+                    display: 'flex',
+                    gap: 10,
+                    justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start',
+                  }}
                 >
-                  {message.role === "assistant" && (
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Sparkles className="h-4 w-4 text-primary" />
+                  {message.role === 'assistant' && (
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: 'hsl(var(--ds-accent) / 0.1)',
+                        border: '1px solid hsl(var(--ds-accent) / 0.25)',
+                        color: 'hsl(var(--ds-accent))',
+                        display: 'grid',
+                        placeItems: 'center',
+                      }}
+                    >
+                      <Sparkles size={14} strokeWidth={1.5} />
                     </div>
                   )}
                   <div
-                    className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
+                    style={{
+                      maxWidth: '80%',
+                      padding: '8px 14px',
+                      fontSize: 13,
+                      background:
+                        message.role === 'user' ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-line-2) / 0.5)',
+                      color: message.role === 'user' ? '#fff' : 'hsl(var(--ds-fg-1))',
+                      border:
+                        message.role === 'user'
+                          ? '1px solid hsl(var(--ds-accent))'
+                          : '1px solid hsl(var(--ds-line-1))',
+                    }}
                   >
-                    {message.role === "assistant" ? (
+                    {message.role === 'assistant' ? (
                       <div className="prose prose-sm dark:prose-invert max-w-none">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {message.content}
-                        </ReactMarkdown>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
                       </div>
                     ) : (
-                      <p className="text-sm">{message.content}</p>
+                      <p>{message.content}</p>
                     )}
                   </div>
-                  {message.role === "user" && (
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                      <User className="h-4 w-4 text-primary-foreground" />
+                  {message.role === 'user' && (
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: 'hsl(var(--ds-accent))',
+                        color: '#fff',
+                        display: 'grid',
+                        placeItems: 'center',
+                      }}
+                    >
+                      <User size={14} strokeWidth={1.5} />
                     </div>
                   )}
                 </div>
               ))}
-              
-              {/* Loading indicator */}
-              {isLoading && messages[messages.length - 1]?.role === "user" && (
-                <div className="flex gap-3 justify-start">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="h-4 w-4 text-primary" />
+
+              {isLoading && messages[messages.length - 1]?.role === 'user' && (
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-start' }}>
+                  <div
+                    style={{
+                      flexShrink: 0,
+                      width: 32,
+                      height: 32,
+                      borderRadius: '50%',
+                      background: 'hsl(var(--ds-accent) / 0.1)',
+                      border: '1px solid hsl(var(--ds-accent) / 0.25)',
+                      color: 'hsl(var(--ds-accent))',
+                      display: 'grid',
+                      placeItems: 'center',
+                    }}
+                  >
+                    <Sparkles size={14} strokeWidth={1.5} />
                   </div>
-                  <div className="bg-muted rounded-lg px-4 py-2 flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Pensando...</span>
+                  <div
+                    style={{
+                      padding: '8px 14px',
+                      background: 'hsl(var(--ds-line-2) / 0.5)',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      fontSize: 13,
+                      color: 'hsl(var(--ds-fg-3))',
+                    }}
+                  >
+                    <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />
+                    <span>Pensando...</span>
                   </div>
                 </div>
               )}
             </div>
           </ScrollArea>
         )}
-        {/* Wrapper para empurrar sugestões e input para baixo quando não há mensagens */}
-        <div className={!hasMessages ? 'mt-auto' : ''}>
+
+        <div style={{ marginTop: hasMessages ? 0 : 'auto' }}>
           {!isMobile && (
-            <div className={`flex flex-wrap gap-2 justify-start transition-all duration-300 overflow-hidden ${
-              hasMessages ? "opacity-0 max-h-0 mb-0" : "opacity-100 max-h-20 mb-3"
-            }`}>
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 6,
+                justifyContent: 'flex-start',
+                overflow: 'hidden',
+                opacity: hasMessages ? 0 : 1,
+                maxHeight: hasMessages ? 0 : 80,
+                marginBottom: hasMessages ? 0 : 10,
+                transition: 'opacity 0.3s, max-height 0.3s, margin 0.3s',
+              }}
+            >
               {SUGGESTIONS.map((suggestion, index) => (
-                <Button
+                <button
                   key={index}
-                  variant="outline"
-                  size="sm"
+                  type="button"
+                  className="btn"
                   onClick={() => handleSuggestion(suggestion)}
-                  className="text-xs italic text-muted-foreground justify-start h-auto py-2 whitespace-normal text-left"
+                  style={{
+                    fontSize: 11,
+                    fontStyle: 'italic',
+                    color: 'hsl(var(--ds-fg-3))',
+                    justifyContent: 'flex-start',
+                    height: 'auto',
+                    padding: '6px 10px',
+                    whiteSpace: 'normal',
+                    textAlign: 'left',
+                  }}
                 >
                   {suggestion}
-                </Button>
+                </button>
               ))}
             </div>
           )}
 
-          {/* Input form */}
-          <form onSubmit={handleSubmit} className="relative">
+          <form onSubmit={handleSubmit} style={{ position: 'relative' }}>
             <Input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Digite sua pergunta..."
               disabled={isLoading}
-              className="pr-10"
+              style={{ paddingRight: 36 }}
             />
-            <Button 
-              type="submit" 
-              variant="ghost"
-              size="icon"
+            <button
+              type="submit"
               disabled={!input.trim() || isLoading}
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-primary disabled:opacity-30"
+              style={{
+                position: 'absolute',
+                right: 4,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 28,
+                height: 28,
+                display: 'grid',
+                placeItems: 'center',
+                background: 'transparent',
+                border: 0,
+                cursor: 'pointer',
+                color: 'hsl(var(--ds-fg-3))',
+                opacity: !input.trim() || isLoading ? 0.3 : 1,
+                transition: 'color 0.15s, opacity 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                if (!(!input.trim() || isLoading)) {
+                  e.currentTarget.style.color = 'hsl(var(--ds-accent))';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'hsl(var(--ds-fg-3))';
+              }}
             >
-              <Send className="h-4 w-4" />
-            </Button>
+              <Send size={14} strokeWidth={1.5} />
+            </button>
           </form>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

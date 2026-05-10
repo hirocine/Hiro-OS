@@ -1,11 +1,8 @@
 import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useActivities } from '../../hooks/useActivities';
 import { ActivityItem } from './ActivityItem';
 import { ActivityForm } from './ActivityForm';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Activity } from 'lucide-react';
 
 interface ActivitiesListProps {
@@ -13,41 +10,85 @@ interface ActivitiesListProps {
   dealId?: string;
 }
 
+type Tab = 'pendentes' | 'historico';
+
 export function ActivitiesList({ contactId, dealId }: ActivitiesListProps) {
   const [formOpen, setFormOpen] = useState(false);
+  const [tab, setTab] = useState<Tab>('pendentes');
   const { data: pending, isLoading: loadingPending } = useActivities({ contactId, dealId, pending: true });
   const { data: completed, isLoading: loadingCompleted } = useActivities({ contactId, dealId, pending: false });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Atividades</h3>
-        <Button size="sm" variant="outline" onClick={() => setFormOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" /> Nova Atividade
-        </Button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <span
+          style={{
+            fontSize: 11,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+            color: 'hsl(var(--ds-fg-3))',
+          }}
+        >
+          Atividades
+        </span>
+        <button type="button" className="btn" onClick={() => setFormOpen(true)}>
+          <Plus size={14} strokeWidth={1.5} />
+          <span>Nova Atividade</span>
+        </button>
       </div>
 
-      <Tabs defaultValue="pendentes">
-        <TabsList>
-          <TabsTrigger value="pendentes">Pendentes ({pending?.length ?? 0})</TabsTrigger>
-          <TabsTrigger value="historico">Histórico ({completed?.length ?? 0})</TabsTrigger>
-        </TabsList>
-        <TabsContent value="pendentes" className="mt-4">
+      <div className="tabs-bar">
+        <button
+          type="button"
+          onClick={() => setTab('pendentes')}
+          className={'tab' + (tab === 'pendentes' ? ' on' : '')}
+        >
+          Pendentes ({pending?.length ?? 0})
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('historico')}
+          className={'tab' + (tab === 'historico' ? ' on' : '')}
+        >
+          Histórico ({completed?.length ?? 0})
+        </button>
+      </div>
+
+      <Tabs value={tab}>
+        <TabsContent value="pendentes">
           {loadingPending ? (
-            <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <span key={i} className="sk line lg" style={{ height: 40, width: '100%' }} />
+              ))}
+            </div>
           ) : !pending?.length ? (
-            <EmptyState compact icon={Activity} title="Nenhuma atividade pendente" description="Tudo em dia!" />
+            <div style={{ padding: 24, textAlign: 'center', color: 'hsl(var(--ds-fg-3))', fontSize: 12 }}>
+              <Activity size={28} strokeWidth={1.25} style={{ margin: '0 auto 8px', display: 'block' }} />
+              <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))', marginBottom: 4 }}>
+                Nenhuma atividade pendente
+              </div>
+              <div>Tudo em dia!</div>
+            </div>
           ) : (
-            pending.map(a => <ActivityItem key={a.id} activity={a} />)
+            <div>{pending.map((a) => <ActivityItem key={a.id} activity={a} />)}</div>
           )}
         </TabsContent>
-        <TabsContent value="historico" className="mt-4">
+        <TabsContent value="historico">
           {loadingCompleted ? (
-            <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <span key={i} className="sk line lg" style={{ height: 40, width: '100%' }} />
+              ))}
+            </div>
           ) : !completed?.length ? (
-            <EmptyState compact icon={Activity} title="Nenhuma atividade concluída" description="" />
+            <div style={{ padding: 24, textAlign: 'center', color: 'hsl(var(--ds-fg-3))', fontSize: 12 }}>
+              <Activity size={28} strokeWidth={1.25} style={{ margin: '0 auto 8px', display: 'block' }} />
+              <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>Nenhuma atividade concluída</div>
+            </div>
           ) : (
-            completed.map(a => <ActivityItem key={a.id} activity={a} />)
+            <div>{completed.map((a) => <ActivityItem key={a.id} activity={a} />)}</div>
           )}
         </TabsContent>
       </Tabs>

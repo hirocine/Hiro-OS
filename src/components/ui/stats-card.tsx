@@ -1,50 +1,107 @@
 import { LucideIcon } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface StatsCardProps {
   title: string;
   value: number | string;
   icon: LucideIcon;
-  color: string;
-  bgColor: string;
+  /** Tailwind color class — mapped to DS tone via heuristic (legacy support) */
+  color?: string;
+  /** Legacy bg class — ignored, DS uses hairline */
+  bgColor?: string;
   description?: string;
 }
 
-export function StatsCard({ title, value, icon: Icon, color, bgColor, description }: StatsCardProps) {
+const toneFor = (color?: string): string => {
+  if (!color) return 'hsl(var(--ds-fg-1))';
+  if (color.includes('success')) return 'hsl(var(--ds-success))';
+  if (color.includes('destructive') || color.includes('danger')) return 'hsl(var(--ds-danger))';
+  if (color.includes('warning')) return 'hsl(var(--ds-warning))';
+  if (color.includes('primary')) return 'hsl(var(--ds-accent))';
+  if (color.includes('info')) return 'hsl(var(--ds-info))';
+  if (color.includes('muted')) return 'hsl(var(--ds-fg-3))';
+  return 'hsl(var(--ds-fg-1))';
+};
+
+export function StatsCard({ title, value, icon: Icon, color, description }: StatsCardProps) {
+  const tone = toneFor(color);
   return (
-    <Card className="hover:shadow-sm transition-all duration-200 animate-fade-in">
-      <CardContent className="p-5">
-        <div className="flex items-center gap-4">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${bgColor}`}>
-            <Icon className={`h-[18px] w-[18px] ${color}`} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs text-muted-foreground">{title}</p>
-            <p className={`text-3xl font-semibold leading-tight mt-0.5 ${color}`}>
-              {typeof value === 'number' ? value.toLocaleString('pt-BR') : value}
-            </p>
-            {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        padding: '18px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+      }}
+    >
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          display: 'grid',
+          placeItems: 'center',
+          border: '1px solid hsl(var(--ds-line-1))',
+          color: tone,
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={16} strokeWidth={1.5} />
+      </div>
+      <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <span
+          style={{
+            fontSize: 11,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+            color: 'hsl(var(--ds-fg-3))',
+          }}
+        >
+          {title}
+        </span>
+        <span
+          style={{
+            fontFamily: '"HN Display", sans-serif',
+            fontSize: 26,
+            fontWeight: 600,
+            letterSpacing: '-0.01em',
+            lineHeight: 1.05,
+            fontVariantNumeric: 'tabular-nums',
+            color: tone,
+          }}
+        >
+          {typeof value === 'number' ? value.toLocaleString('pt-BR') : value}
+        </span>
+        {description && (
+          <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', marginTop: 2, lineHeight: 1.3 }}>
+            {description}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 
 export function StatsCardSkeleton() {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-10 w-10 rounded-lg" />
-          <div className="space-y-1.5">
-            <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-6 w-8" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        padding: '18px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+        minHeight: 86,
+      }}
+    >
+      <span className="sk dot" style={{ width: 36, height: 36, flexShrink: 0 }} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+        <span className="sk line" style={{ width: '40%' }} />
+        <span className="sk line lg" style={{ width: '30%' }} />
+      </div>
+    </div>
   );
 }
 
@@ -54,13 +111,15 @@ interface StatsCardGridProps {
 }
 
 export function StatsCardGrid({ children, columns = 3 }: StatsCardGridProps) {
-  const colClass = columns === 2
-    ? 'grid-cols-1 sm:grid-cols-2'
-    : columns === 5
-      ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5'
-      : columns === 4
-        ? 'grid-cols-2 lg:grid-cols-4'
-        : 'grid-cols-1 sm:grid-cols-3';
-
-  return <div className={`grid ${colClass} gap-4`}>{children}</div>;
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${columns}, 1fr)`,
+        gap: 12,
+      }}
+    >
+      {children}
+    </div>
+  );
 }

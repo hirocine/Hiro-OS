@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { Plus, Edit2, Trash2, Loader2, User, UserCircle, MoreVertical, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,127 +40,247 @@ export function PersonaContent() {
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex-row items-center justify-between gap-3 space-y-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <UserCircle className="h-5 w-5 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <CardTitle className="text-lg">Persona / ICP</CardTitle>
-              <CardDescription>Quem é o cliente ideal da Hiro Films</CardDescription>
-            </div>
+      <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+        <div
+          style={{
+            padding: '14px 18px',
+            borderBottom: '1px solid hsl(var(--ds-line-1))',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          <UserCircle size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <span
+              style={{
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                fontWeight: 500,
+                color: 'hsl(var(--ds-fg-2))',
+              }}
+            >
+              Persona / ICP
+            </span>
+            <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
+              Quem é o cliente ideal da Hiro Films
+            </span>
           </div>
-          <Button onClick={openNew} size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Persona
-          </Button>
-        </CardHeader>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={openNew}
+            style={{ marginLeft: 'auto' }}
+          >
+            <Plus size={13} strokeWidth={1.5} />
+            <span>Nova Persona</span>
+          </button>
+        </div>
 
-        <CardContent>
+        <div style={{ padding: 18 }}>
           {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
+              <Loader2
+                size={20}
+                strokeWidth={1.5}
+                className="animate-spin"
+                style={{ color: 'hsl(var(--ds-fg-3))' }}
+              />
             </div>
           ) : personas.length === 0 ? (
             <button
               type="button"
               onClick={openNew}
-              className="group w-full text-left rounded-lg border-2 border-dashed border-border hover:border-primary/40 hover:bg-background transition-all p-6"
+              className="group"
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                border: '2px dashed hsl(var(--ds-line-1))',
+                background: 'transparent',
+                padding: 24,
+                cursor: 'pointer',
+                transition: 'background 0.15s, border-color 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';
+                e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                e.currentTarget.style.background = 'transparent';
+              }}
             >
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Plus className="h-5 w-5 text-primary" />
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                <div
+                  style={{
+                    height: 48,
+                    width: 48,
+                    background: 'hsl(var(--ds-accent) / 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Plus size={18} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-accent))' }} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold">Criar primeira persona</h3>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-0.5" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                    <h3
+                      style={{
+                        fontFamily: '"HN Display", sans-serif',
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: 'hsl(var(--ds-fg-1))',
+                      }}
+                    >
+                      Criar primeira persona
+                    </h3>
+                    <ArrowRight
+                      size={14}
+                      strokeWidth={1.5}
+                      style={{ color: 'hsl(var(--ds-fg-3))', flexShrink: 0, marginTop: 2 }}
+                    />
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p
+                    style={{
+                      fontSize: 13,
+                      color: 'hsl(var(--ds-fg-3))',
+                      marginTop: 4,
+                      lineHeight: 1.5,
+                    }}
+                  >
                     Defina o cliente ideal da Hiro Films: segmento, dores, gatilhos e canais.
                   </p>
                 </div>
               </div>
             </button>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                gap: 16,
+              }}
+            >
               {personas.map((p) => (
-                <Card key={p.id} className="group bg-background hover:shadow-md transition-shadow">
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="h-14 w-14 flex-shrink-0">
-                        <AvatarImage src={p.avatar_url || undefined} alt={p.name} />
-                        <AvatarFallback>
-                          {p.name ? p.name.charAt(0).toUpperCase() : <User className="h-6 w-6" />}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <h3 className="font-semibold truncate">{p.name}</h3>
-                            <div className="flex flex-wrap gap-1.5 mt-1">
-                              {p.segment && (
-                                <Badge variant="outline" className="text-xs">
-                                  {p.segment}
-                                </Badge>
-                              )}
-                              {p.company_size && (
-                                <Badge variant="outline" className="text-xs">
-                                  {p.company_size}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openEdit(p)}>
-                                <Edit2 className="h-4 w-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={() => setDeleteId(p.id)}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Excluir
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-
-                        {p.description && (
-                          <p className="text-sm text-muted-foreground mt-3 line-clamp-3">
-                            {p.description}
-                          </p>
+                <div
+                  key={p.id}
+                  className="group"
+                  style={{
+                    border: '1px solid hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-surface))',
+                    padding: 18,
+                    transition: 'border-color 0.15s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                    <Avatar style={{ width: 56, height: 56, flexShrink: 0 }}>
+                      <AvatarImage src={p.avatar_url || undefined} alt={p.name} />
+                      <AvatarFallback>
+                        {p.name ? (
+                          p.name.charAt(0).toUpperCase()
+                        ) : (
+                          <User size={22} strokeWidth={1.5} />
                         )}
-
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="px-0 mt-2"
-                          onClick={() => setViewing(p)}
-                        >
-                          Ver detalhes
-                        </Button>
+                      </AvatarFallback>
+                    </Avatar>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                        <div style={{ minWidth: 0 }}>
+                          <h3
+                            style={{
+                              fontFamily: '"HN Display", sans-serif',
+                              fontSize: 15,
+                              fontWeight: 600,
+                              color: 'hsl(var(--ds-fg-1))',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {p.name}
+                          </h3>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                            {p.segment && <span className="pill muted">{p.segment}</span>}
+                            {p.company_size && <span className="pill muted">{p.company_size}</span>}
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="btn"
+                              style={{ width: 28, height: 28, padding: 0, justifyContent: 'center' }}
+                              aria-label="Mais"
+                            >
+                              <MoreVertical size={13} strokeWidth={1.5} />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openEdit(p)}>
+                              <Edit2 size={13} strokeWidth={1.5} style={{ marginRight: 8 }} />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              style={{ color: 'hsl(var(--ds-danger))' }}
+                              onClick={() => setDeleteId(p.id)}
+                            >
+                              <Trash2 size={13} strokeWidth={1.5} style={{ marginRight: 8 }} />
+                              Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
+
+                      {p.description && (
+                        <p
+                          style={{
+                            fontSize: 13,
+                            color: 'hsl(var(--ds-fg-3))',
+                            marginTop: 12,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {p.description}
+                        </p>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => setViewing(p)}
+                        style={{
+                          marginTop: 10,
+                          padding: 0,
+                          background: 'transparent',
+                          border: 0,
+                          fontSize: 12,
+                          fontWeight: 500,
+                          color: 'hsl(var(--ds-accent))',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Ver detalhes →
+                      </button>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <MarketingPersonaDialog open={dialogOpen} onOpenChange={setDialogOpen} persona={editing} />
       <MarketingPersonaDetailsDialog
@@ -175,7 +292,9 @@ export function PersonaContent() {
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir persona?</AlertDialogTitle>
+            <AlertDialogTitle>
+              <span style={{ fontFamily: '"HN Display", sans-serif' }}>Excluir persona?</span>
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Esta ação não pode ser desfeita.
             </AlertDialogDescription>

@@ -164,7 +164,15 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
         <div>
           <Label className="text-sm text-muted-foreground mb-2 block">Preview</Label>
           <div className="flex justify-center">
-            <div className="w-20 h-20 rounded-lg border-2 border-primary/20 bg-background overflow-hidden">
+            <div
+              style={{
+                width: 80,
+                height: 80,
+                overflow: 'hidden',
+                border: '1px solid hsl(var(--ds-accent) / 0.25)',
+                background: 'hsl(var(--ds-surface))',
+              }}
+            >
               <img
                 src={selectedIconUrl}
                 alt="Selected icon"

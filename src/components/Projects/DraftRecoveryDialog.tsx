@@ -1,5 +1,4 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { FileText, Clock, Trash2, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -15,6 +14,16 @@ interface DraftRecoveryDialogProps {
   onDiscard: () => void;
 }
 
+const eyebrowStyle: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 4,
+};
+
 export function DraftRecoveryDialog({
   open,
   onOpenChange,
@@ -22,71 +31,107 @@ export function DraftRecoveryDialog({
   draftUpdatedAt,
   currentStep,
   onContinue,
-  onDiscard
+  onDiscard,
 }: DraftRecoveryDialogProps) {
-  const projectName = draftData.projectNumber && draftData.company && draftData.projectName
-    ? `${draftData.projectNumber} - ${draftData.company}: ${draftData.projectName}`
-    : draftData.projectNumber || 'Rascunho sem título';
+  const projectName =
+    draftData.projectNumber && draftData.company && draftData.projectName
+      ? `${draftData.projectNumber} - ${draftData.company}: ${draftData.projectName}`
+      : draftData.projectNumber || 'Rascunho sem título';
 
   const formattedDate = format(new Date(draftUpdatedAt), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent 
+      <DialogContent
         className="sm:max-w-md"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            Rascunho Encontrado
+          <DialogTitle>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                fontFamily: '"HN Display", sans-serif',
+              }}
+            >
+              <FileText size={18} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-accent))' }} />
+              Rascunho Encontrado
+            </span>
           </DialogTitle>
           <DialogDescription>
             Você tem um rascunho de retirada salvo. Deseja continuar de onde parou?
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
-          <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Projeto</p>
-              <p className="font-medium">{projectName}</p>
+        <div style={{ padding: '12px 0', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div
+            style={{
+              padding: 14,
+              background: 'hsl(var(--ds-line-2) / 0.3)',
+              border: '1px solid hsl(var(--ds-line-1))',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+            }}
+          >
+            <div>
+              <label style={eyebrowStyle}>Projeto</label>
+              <p style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))', fontSize: 13 }}>{projectName}</p>
             </div>
-            
+
             {draftData.recordingType && (
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Tipo de Gravação</p>
-                <p className="font-medium">{draftData.recordingType}</p>
+              <div>
+                <label style={eyebrowStyle}>Tipo de Gravação</label>
+                <p style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))', fontSize: 13 }}>
+                  {draftData.recordingType}
+                </p>
               </div>
             )}
 
-            <div className="flex flex-col gap-1 text-sm text-muted-foreground pt-2 border-t border-border/50">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 shrink-0" />
-                <span>Salvo em {formattedDate}</span>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 4,
+                fontSize: 12,
+                color: 'hsl(var(--ds-fg-3))',
+                paddingTop: 8,
+                borderTop: '1px solid hsl(var(--ds-line-1))',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Clock size={13} strokeWidth={1.5} style={{ flexShrink: 0 }} />
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>Salvo em {formattedDate}</span>
               </div>
-              <span className="ml-6">Passo {currentStep} • {draftData.selectedEquipment.length} equipamento(s)</span>
+              <span style={{ marginLeft: 20, fontVariantNumeric: 'tabular-nums' }}>
+                Passo {currentStep} · {draftData.selectedEquipment.length} equipamento(s)
+              </span>
             </div>
           </div>
         </div>
 
         <DialogFooter className="gap-2 sm:grid sm:grid-cols-2 sm:gap-3 sm:space-x-0">
-          <Button
-            variant="outline"
+          <button
+            type="button"
+            className="btn"
             onClick={onDiscard}
-            className="w-full flex items-center justify-center gap-2"
+            style={{ width: '100%', justifyContent: 'center' }}
           >
-            <Trash2 className="h-4 w-4" />
-            Descartar
-          </Button>
-          <Button
+            <Trash2 size={13} strokeWidth={1.5} />
+            <span>Descartar</span>
+          </button>
+          <button
+            type="button"
+            className="btn primary"
             onClick={onContinue}
-            className="w-full flex items-center justify-center gap-2"
+            style={{ width: '100%', justifyContent: 'center' }}
           >
-            <ArrowRight className="h-4 w-4" />
-            Continuar Rascunho
-          </Button>
+            <ArrowRight size={13} strokeWidth={1.5} />
+            <span>Continuar Rascunho</span>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useDealMutations } from '../../hooks/useDeals';
@@ -26,6 +24,26 @@ const emptyForm = {
   service_type: '', description: '', expected_close_date: '',
   proposal_id: '', assigned_to: '',
 };
+
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const Field = ({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) => (
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <label style={fieldLabel}>
+      {label}
+      {required && <span style={{ marginLeft: 4, color: 'hsl(var(--ds-danger))' }}>*</span>}
+    </label>
+    {children}
+  </div>
+);
 
 export function DealForm({ open, onOpenChange, deal, defaultContactId }: DealFormProps) {
   const [form, setForm] = useState(emptyForm);
@@ -90,94 +108,93 @@ export function DealForm({ open, onOpenChange, deal, defaultContactId }: DealFor
     onOpenChange(false);
   };
 
-  const set = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
+  const set = (key: string, value: string) => setForm((prev) => ({ ...prev, [key]: value }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Editar Deal' : 'Novo Deal'}</DialogTitle>
+          <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
+            {isEditing ? 'Editar Deal' : 'Novo Deal'}
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Título *</Label>
-            <Input value={form.title} onChange={e => set('title', e.target.value)} required />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Contato *</Label>
-              <Select value={form.contact_id} onValueChange={v => set('contact_id', v)}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <Field label="Título" required>
+            <Input value={form.title} onChange={(e) => set('title', e.target.value)} required />
+          </Field>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            <Field label="Contato" required>
+              <Select value={form.contact_id} onValueChange={(v) => set('contact_id', v)}>
                 <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
                 <SelectContent>
-                  {contacts?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  {contacts?.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Etapa *</Label>
-              <Select value={form.stage_id} onValueChange={v => set('stage_id', v)}>
+            </Field>
+            <Field label="Etapa" required>
+              <Select value={form.stage_id} onValueChange={(v) => set('stage_id', v)}>
                 <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
                 <SelectContent>
-                  {stages?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                  {stages?.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Valor Estimado (R$)</Label>
-              <Input type="number" step="0.01" value={form.estimated_value} onChange={e => set('estimated_value', e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Tipo de Serviço</Label>
-              <Select value={form.service_type || 'none'} onValueChange={v => set('service_type', v === 'none' ? '' : v)}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            <Field label="Valor Estimado (R$)">
+              <Input type="number" step="0.01" value={form.estimated_value} onChange={(e) => set('estimated_value', e.target.value)} />
+            </Field>
+            <Field label="Tipo de Serviço">
+              <Select value={form.service_type || 'none'} onValueChange={(v) => set('service_type', v === 'none' ? '' : v)}>
                 <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
-                  {SERVICE_TYPES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                  {SERVICE_TYPES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Data Prevista de Fechamento</Label>
-              <Input type="date" value={form.expected_close_date} onChange={e => set('expected_close_date', e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Responsável</Label>
-              <Select value={form.assigned_to || 'none'} onValueChange={v => set('assigned_to', v === 'none' ? '' : v)}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            <Field label="Previsão de Fechamento">
+              <Input type="date" value={form.expected_close_date} onChange={(e) => set('expected_close_date', e.target.value)} />
+            </Field>
+            <Field label="Responsável">
+              <Select value={form.assigned_to || 'none'} onValueChange={(v) => set('assigned_to', v === 'none' ? '' : v)}>
                 <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
-                  {profiles?.map(p => <SelectItem key={p.user_id} value={p.user_id}>{p.display_name}</SelectItem>)}
+                  {profiles?.map((p) => <SelectItem key={p.user_id} value={p.user_id}>{p.display_name}</SelectItem>)}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
           </div>
-          <div className="space-y-1.5">
-            <Label>Proposta vinculada</Label>
-            <Select value={form.proposal_id || 'none'} onValueChange={v => set('proposal_id', v === 'none' ? '' : v)}>
+          <Field label="Proposta vinculada">
+            <Select value={form.proposal_id || 'none'} onValueChange={(v) => set('proposal_id', v === 'none' ? '' : v)}>
               <SelectTrigger><SelectValue placeholder="Nenhuma" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Nenhuma</SelectItem>
-                {proposals?.map(p => (
+                {proposals?.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.project_name}{p.client_name ? ` — ${p.client_name}` : ''}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Descrição</Label>
-            <Textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3} />
-          </div>
+          </Field>
+          <Field label="Descrição">
+            <Textarea value={form.description} onChange={(e) => set('description', e.target.value)} rows={3} />
+          </Field>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={createDeal.isPending || updateDeal.isPending}>
+            <button type="button" className="btn" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="btn primary"
+              disabled={createDeal.isPending || updateDeal.isPending}
+            >
               {isEditing ? 'Salvar' : 'Criar'}
-            </Button>
+            </button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -1,10 +1,6 @@
-import React, { memo } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { memo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Camera, Edit, Trash2, MoreVertical, Package, Link, Upload } from 'lucide-react';
-import { Equipment } from '@/types/equipment';
+import { Camera, Edit, Trash2, MoreVertical, Package, Link as LinkIcon, Upload } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
+import type { Equipment } from '@/types/equipment';
 
 interface EquipmentMobileCardProps {
   equipment: Equipment;
@@ -24,6 +21,14 @@ interface EquipmentMobileCardProps {
   onToggleSelection?: (id: string) => void;
 }
 
+const statusToneStyle: Record<string, React.CSSProperties> = {
+  available:   { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
+  in_use:      { color: 'hsl(var(--ds-info))',    borderColor: 'hsl(var(--ds-info) / 0.3)' },
+  maintenance: { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
+  loaned:      { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
+  damaged:     { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+};
+
 export const EquipmentMobileCard = memo(function EquipmentMobileCard({
   equipment,
   onEdit,
@@ -35,7 +40,6 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
   onToggleSelection,
 }: EquipmentMobileCardProps) {
   const {
-    getStatusVariant,
     getStatusLabel,
     formatCurrency,
     handleImageUpload,
@@ -43,7 +47,7 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
     getHierarchyIndicator,
   } = useEquipmentCard();
 
-  const hierarchyInfo = getHierarchyIndicator(equipment || {} as Equipment, accessoryCount);
+  const hierarchyInfo = getHierarchyIndicator(equipment || ({} as Equipment), accessoryCount);
   const uploading = isUploading(equipment?.id || '');
 
   const handleImageClick = () => {
@@ -52,136 +56,197 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
     fileInput.accept = 'image/*';
     fileInput.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        await handleImageUpload(equipment, file, onImageUpload);
-      }
+      if (file) await handleImageUpload(equipment, file, onImageUpload);
     };
     fileInput.click();
   };
 
   return (
-    <Card className={`overflow-hidden hover:shadow-elegant transition-all duration-300 animate-fade-in mobile-safe min-w-0 ${
-      selected ? 'ring-2 ring-primary border-primary' : ''
-    }`}>
-      <CardContent className="p-4 min-w-0">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-3 min-w-0 gap-2">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            {onToggleSelection && (
-              <Checkbox
-                checked={selected}
-                onCheckedChange={() => onToggleSelection(equipment.id)}
-                className="mt-1 flex-shrink-0"
-              />
-            )}
-            <button
-              onClick={handleImageClick}
-              disabled={uploading}
-              className="w-12 h-12 flex-shrink-0 rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors flex items-center justify-center bg-muted/30 hover:bg-muted/50 group relative"
-            >
-              {uploading ? (
-                <Upload className="h-5 w-5 text-primary animate-pulse" />
-              ) : equipment.image ? (
-                <img
-                  src={equipment.image}
-                  alt={equipment.name}
-                  className="w-full h-full object-cover rounded-md"
-                />
-              ) : (
-                <Camera className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              )}
-            </button>
-            <div className="flex-1 min-w-0 overflow-hidden">
-              <h3 className="font-medium text-card-foreground truncate">
-                {equipment?.name || 'Nome não disponível'}
-              </h3>
-              <p className="text-sm text-muted-foreground truncate">
-                {equipment?.brand || 'Marca não disponível'}
-              </p>
-            </div>
-          </div>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(equipment)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Editar
-              </DropdownMenuItem>
-              {equipment.itemType === 'main' && onConvertToAccessory && (
-                <DropdownMenuItem onClick={() => onConvertToAccessory(equipment)}>
-                  Converter para Acessório
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem 
-                onClick={() => onDelete(equipment)}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Excluir
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Status and Category */}
-        <div className="flex items-center gap-2 mb-3 flex-wrap">
-          <Badge variant={getStatusVariant(equipment?.status || 'available')}>
-            {getStatusLabel(equipment?.status || 'available')}
-          </Badge>
-          <Badge variant="outline" className="text-xs">
-            {equipment?.category || 'Categoria não definida'}
-          </Badge>
-          <Badge variant={hierarchyInfo.variant} className="text-xs flex items-center gap-1">
-            {hierarchyInfo.icon === 'package' && <Package className="h-3 w-3" />}
-            {hierarchyInfo.icon === 'link' && <Link className="h-3 w-3" />}
-            {hierarchyInfo.label}
-          </Badge>
-        </div>
-
-        {/* Details */}
-        <div className="space-y-2 text-sm">
-          {equipment.patrimonyNumber && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Patrimônio:</span>
-              <span className="font-medium">{equipment.patrimonyNumber}</span>
-            </div>
-          )}
-          {equipment.subcategory && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Subcategoria:</span>
-              <span className="truncate ml-2">{equipment.subcategory}</span>
-            </div>
-          )}
-          {equipment.serialNumber && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Série:</span>
-              <span className="truncate ml-2">{equipment.serialNumber}</span>
-            </div>
-          )}
-          {equipment.value && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Valor:</span>
-              <span className="font-medium text-success">
-                {formatCurrency(equipment.value)}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Current Loan Info */}
-        {equipment.currentBorrower && (
-          <div className="mt-3 p-2 bg-warning/10 rounded-md border border-warning/20">
-            <p className="text-xs text-warning-foreground">
-              <strong>Emprestado para:</strong> {equipment.currentBorrower}
-            </p>
+    <div
+      style={{
+        border: selected ? '1px solid hsl(var(--ds-accent))' : '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        boxShadow: selected ? 'inset 0 0 0 1px hsl(var(--ds-accent))' : undefined,
+        padding: 14,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        minWidth: 0,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, minWidth: 0 }}>
+        {onToggleSelection && (
+          <div style={{ paddingTop: 2 }}>
+            <Checkbox
+              checked={selected}
+              onCheckedChange={() => onToggleSelection(equipment.id)}
+            />
           </div>
         )}
-      </CardContent>
-    </Card>
+        <button
+          type="button"
+          onClick={handleImageClick}
+          disabled={uploading}
+          style={{
+            width: 44,
+            height: 44,
+            display: 'grid',
+            placeItems: 'center',
+            border: '1px dashed hsl(var(--ds-line-1))',
+            background: 'hsl(var(--ds-line-2) / 0.3)',
+            color: 'hsl(var(--ds-fg-3))',
+            cursor: 'pointer',
+            flexShrink: 0,
+            overflow: 'hidden',
+          }}
+          aria-label="Fazer upload de imagem"
+        >
+          {uploading ? (
+            <Upload size={16} strokeWidth={1.5} className="animate-pulse" style={{ color: 'hsl(var(--ds-accent))' }} />
+          ) : equipment.image ? (
+            <img
+              src={equipment.image}
+              alt={equipment.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <Camera size={16} strokeWidth={1.5} />
+          )}
+        </button>
+        <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+          <h3
+            style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontSize: 14,
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-1))',
+              lineHeight: 1.3,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {equipment?.name || 'Nome não disponível'}
+          </h3>
+          <p
+            style={{
+              fontSize: 12,
+              color: 'hsl(var(--ds-fg-3))',
+              marginTop: 2,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {equipment?.brand || 'Marca não disponível'}
+          </p>
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              style={{
+                width: 28,
+                height: 28,
+                display: 'grid',
+                placeItems: 'center',
+                color: 'hsl(var(--ds-fg-3))',
+                background: 'transparent',
+                border: 0,
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+              aria-label="Ações"
+            >
+              <MoreVertical size={16} strokeWidth={1.5} />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(equipment)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Editar
+            </DropdownMenuItem>
+            {equipment.itemType === 'main' && onConvertToAccessory && (
+              <DropdownMenuItem onClick={() => onConvertToAccessory(equipment)}>
+                Converter para Acessório
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem
+              onClick={() => onDelete(equipment)}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Excluir
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        <span
+          className="pill"
+          style={statusToneStyle[equipment?.status || 'available'] || statusToneStyle.available}
+        >
+          <span className="dot" style={{ background: 'currentColor' }} />
+          {getStatusLabel(equipment?.status || 'available')}
+        </span>
+        <span className="pill muted">{equipment?.category || 'Sem categoria'}</span>
+        <span className="pill muted" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          {hierarchyInfo.icon === 'package' && <Package size={11} strokeWidth={1.5} />}
+          {hierarchyInfo.icon === 'link' && <LinkIcon size={11} strokeWidth={1.5} />}
+          {hierarchyInfo.label}
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12 }}>
+        {equipment.patrimonyNumber && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Patrimônio</span>
+            <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))', fontVariantNumeric: 'tabular-nums' }}>
+              {equipment.patrimonyNumber}
+            </span>
+          </div>
+        )}
+        {equipment.subcategory && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+            <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Subcategoria</span>
+            <span style={{ color: 'hsl(var(--ds-fg-2))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {equipment.subcategory}
+            </span>
+          </div>
+        )}
+        {equipment.serialNumber && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+            <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Série</span>
+            <span style={{ color: 'hsl(var(--ds-fg-2))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+              {equipment.serialNumber}
+            </span>
+          </div>
+        )}
+        {equipment.value && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Valor</span>
+            <span style={{ fontWeight: 500, color: 'hsl(var(--ds-success))', fontVariantNumeric: 'tabular-nums' }}>
+              {formatCurrency(equipment.value)}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {equipment.currentBorrower && (
+        <div
+          style={{
+            padding: 8,
+            background: 'hsl(var(--ds-warning) / 0.1)',
+            border: '1px solid hsl(var(--ds-warning) / 0.2)',
+            fontSize: 11,
+            color: 'hsl(var(--ds-warning))',
+          }}
+        >
+          <strong style={{ fontWeight: 600 }}>Emprestado para:</strong> {equipment.currentBorrower}
+        </div>
+      )}
+    </div>
   );
 });

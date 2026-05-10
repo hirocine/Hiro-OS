@@ -1,8 +1,6 @@
-import React from 'react';
 import { Equipment } from '@/types/equipment';
 import { EquipmentMobileCard } from './EquipmentMobileCard';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Plus } from 'lucide-react';
+import { Plus, Package } from 'lucide-react';
 
 interface EquipmentMobileViewProps {
   equipment: Equipment[];
@@ -21,19 +19,27 @@ export function EquipmentMobileView({
   onImageUpload,
   onConvertToAccessory,
   onAddEquipment,
-  isLoading = false
+  isLoading = false,
 }: EquipmentMobileViewProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-4 animate-pulse">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-card rounded-lg border p-4 space-y-3">
-            <div className="h-4 bg-muted rounded w-3/4"></div>
-            <div className="h-8 bg-muted rounded w-1/2"></div>
-            <div className="space-y-2">
-              <div className="h-3 bg-muted rounded"></div>
-              <div className="h-3 bg-muted rounded w-2/3"></div>
-            </div>
+          <div
+            key={i}
+            style={{
+              border: '1px solid hsl(var(--ds-line-1))',
+              background: 'hsl(var(--ds-surface))',
+              padding: 14,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+            }}
+          >
+            <span className="sk line lg" style={{ width: '70%' }} />
+            <span className="sk line lg" style={{ width: '40%', height: 24 }} />
+            <span className="sk line" style={{ width: '100%' }} />
+            <span className="sk line" style={{ width: '60%' }} />
           </div>
         ))}
       </div>
@@ -42,20 +48,26 @@ export function EquipmentMobileView({
 
   if (equipment.length === 0) {
     return (
-      <EmptyState
-        icon={Plus}
-        title="Nenhum equipamento encontrado"
-        description="Adicione equipamentos para começar a gerenciar seu inventário."
-        action={{
-          label: "Adicionar Equipamento",
-          onClick: onAddEquipment
-        }}
-      />
+      <div className="empties">
+        <div className="empty" style={{ borderRight: 0 }}>
+          <div className="glyph">
+            <Package strokeWidth={1.25} />
+          </div>
+          <h5>Nenhum equipamento encontrado</h5>
+          <p>Adicione equipamentos para começar a gerenciar seu inventário.</p>
+          <div className="actions">
+            <button className="btn primary" onClick={onAddEquipment} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Adicionar Equipamento</span>
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {equipment.map((item) => (
         <EquipmentMobileCard
           key={item.id}

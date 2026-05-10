@@ -137,7 +137,7 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
               {category}
             </h3>
-            <div className="flex-1 border-b border-border" />
+            <div style={{ flex: 1, borderBottom: '1px solid hsl(var(--ds-line-1))' }} />
             <Badge variant="secondary" className="text-xs">
               {equipmentByCategory[category].length}
             </Badge>

@@ -1,6 +1,3 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Users, BarChart3, FileText, RefreshCw } from 'lucide-react';
 import { AccountKpiCard } from './AccountKpiCard';
 
@@ -33,18 +30,24 @@ export function AccountKpisSection({
 }: Props) {
   if (accountLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         {[1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-4 w-4 rounded" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-              <Skeleton className="h-8 w-20" />
-              <Skeleton className="h-3 w-32" />
-            </CardContent>
-          </Card>
+          <div
+            key={i}
+            style={{
+              border: '1px solid hsl(var(--ds-line-1))',
+              background: 'hsl(var(--ds-surface))',
+              padding: '18px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+              minHeight: 110,
+            }}
+          >
+            <span className="sk line" style={{ width: '40%' }} />
+            <span className="sk line lg" style={{ width: '50%' }} />
+            <span className="sk line" style={{ width: '60%' }} />
+          </div>
         ))}
       </div>
     );
@@ -52,16 +55,21 @@ export function AccountKpisSection({
 
   if (accountSnapshotsLength === 0 && !accountLoading) {
     return (
-      <Card>
-        <CardContent className="py-10">
-          <EmptyState
-            icon={RefreshCw}
-            title="Aguardando primeira sincronização"
-            description="Clique em 'Sincronizar agora' para puxar os dados atuais da conta Instagram."
-            action={{ label: 'Sincronizar agora', onClick: onSync }}
-          />
-        </CardContent>
-      </Card>
+      <div className="empties">
+        <div className="empty" style={{ borderRight: 0 }}>
+          <div className="glyph">
+            <RefreshCw strokeWidth={1.25} />
+          </div>
+          <h5>Aguardando primeira sincronização</h5>
+          <p>Clique em 'Sincronizar agora' para puxar os dados atuais da conta Instagram.</p>
+          <div className="actions">
+            <button className="btn primary" onClick={onSync} type="button">
+              <RefreshCw size={14} strokeWidth={1.5} />
+              <span>Sincronizar agora</span>
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -70,7 +78,7 @@ export function AccountKpisSection({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
       <AccountKpiCard
         icon={Users}
         label="Seguidores"

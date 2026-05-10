@@ -1,10 +1,7 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import type { PlatformAccessFilters, PlatformCategory } from '../types';
 import { CATEGORY_LABELS } from '../types';
-import { cn } from '@/lib/utils';
 
 interface PlatformFiltersProps {
   filters: PlatformAccessFilters;
@@ -26,79 +23,88 @@ export function PlatformFilters({ filters, onFiltersChange, stats }: PlatformFil
   ];
 
   const handleCategoryChange = (category: PlatformCategory | 'all') => {
-    onFiltersChange({
-      ...filters,
-      category,
-    });
+    onFiltersChange({ ...filters, category });
   };
 
   const handleFavoritesToggle = () => {
-    onFiltersChange({
-      ...filters,
-      favorites: !filters.favorites,
-    });
+    onFiltersChange({ ...filters, favorites: !filters.favorites });
   };
 
   const handleSearchChange = (search: string) => {
-    onFiltersChange({
-      ...filters,
-      search,
-    });
+    onFiltersChange({ ...filters, search });
   };
 
   return (
-    <div className="space-y-4">
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ position: 'relative' }}>
+        <Search
+          size={14}
+          strokeWidth={1.5}
+          style={{
+            position: 'absolute',
+            left: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'hsl(var(--ds-fg-4))',
+            pointerEvents: 'none',
+          }}
+        />
         <Input
-          placeholder="Buscar plataformas, usuários ou categorias..."
+          placeholder="Buscar plataformas, usuários ou categorias…"
           value={filters.search || ''}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-9"
+          style={{ paddingLeft: 34 }}
         />
       </div>
 
-      {/* Quick Filters */}
-      <div className="flex flex-wrap gap-2">
-        {/* Favorites Filter */}
-        <Button
-          variant={filters.favorites ? 'default' : 'outline'}
-          size="sm"
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+        <button
+          type="button"
           onClick={handleFavoritesToggle}
+          className={'pill' + (filters.favorites ? ' acc' : '')}
+          style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
         >
           Favoritas
           {stats && stats.favorites > 0 && (
-            <Badge variant="secondary" className="ml-2">
+            <span
+              style={{
+                fontVariantNumeric: 'tabular-nums',
+                color: 'hsl(var(--ds-fg-4))',
+                fontSize: 11,
+              }}
+            >
               {stats.favorites}
-            </Badge>
+            </span>
           )}
-        </Button>
+        </button>
 
-        {/* Category Filters */}
         {categories.map((category) => {
           const isActive = filters.category === category.value;
-          const count = category.value === 'all'
-            ? stats?.total
-            : stats?.byCategory[category.value];
+          const count =
+            category.value === 'all' ? stats?.total : stats?.byCategory[category.value];
 
           return (
-            <Button
+            <button
               key={category.value}
-              variant={isActive ? 'default' : 'outline'}
-              size="sm"
+              type="button"
               onClick={() => handleCategoryChange(category.value)}
+              className={'pill' + (isActive ? ' acc' : '')}
+              style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
               {category.label}
               {count !== undefined && count > 0 && (
-                <Badge
-                  variant="secondary"
-                  className={cn("ml-2", isActive && "bg-primary-foreground/20")}
+                <span
+                  style={{
+                    fontVariantNumeric: 'tabular-nums',
+                    color: isActive ? 'currentColor' : 'hsl(var(--ds-fg-4))',
+                    opacity: isActive ? 0.7 : 1,
+                    fontSize: 11,
+                  }}
                 >
                   {count}
-                </Badge>
+                </span>
               )}
-            </Button>
+            </button>
           );
         })}
       </div>

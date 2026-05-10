@@ -2,13 +2,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ActivitiesList } from '@/features/crm/components/activities/ActivitiesList';
 import { DealForm } from '@/features/crm/components/pipeline/DealForm';
 import { useDeals } from '@/features/crm/hooks/useDeals';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Plus, Handshake, Mail, Phone, Building2, Instagram, Globe, MessageCircle, FileText } from 'lucide-react';
@@ -20,14 +16,10 @@ function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
-function getAvatarColor(name: string) {
-  const colors = [
-    'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-purple-500',
-    'bg-rose-500', 'bg-cyan-500', 'bg-indigo-500', 'bg-teal-500',
-  ];
+function getAvatarHue(name: string) {
   let hash = 0;
   for (const ch of name) hash = ch.charCodeAt(0) + ((hash << 5) - hash);
-  return colors[Math.abs(hash) % colors.length];
+  return Math.abs(hash) % 360;
 }
 
 export default function CRMContactDetail() {
@@ -48,132 +40,210 @@ export default function CRMContactDetail() {
   const { data: deals, isLoading: dealsLoading } = useDeals(id);
 
   if (isLoading) return (
-    <ResponsiveContainer maxWidth="7xl">
-      <div className="space-y-4"><Skeleton className="h-8 w-48" /><Skeleton className="h-40 w-full" /></div>
-    </ResponsiveContainer>
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </div>
+    </div>
   );
-  if (!contact) return <p>Contato não encontrado.</p>;
+  if (!contact) return (
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner" style={{ textAlign: 'center', padding: '64px 0', color: 'hsl(var(--ds-fg-3))' }}>
+        Contato não encontrado.
+      </div>
+    </div>
+  );
 
   const typeLabel = CONTACT_TYPES.find(t => t.value === contact.contact_type)?.label ?? contact.contact_type;
   const phone = contact.phone?.replace(/\D/g, '');
+  const hue = getAvatarHue(contact.name);
+
+  const linkStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    color: 'hsl(var(--ds-fg-3))',
+    transition: 'color 150ms',
+    textDecoration: 'none',
+  };
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
-      <BreadcrumbNav items={[{ label: 'CRM', href: '/crm' }, { label: contact.name }]} />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <BreadcrumbNav items={[{ label: 'CRM', href: '/crm' }, { label: contact.name }]} />
 
-      <div className="space-y-6">
-        {/* Summary Card */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-start gap-5">
-              <div className={`${getAvatarColor(contact.name)} h-16 w-16 rounded-full flex items-center justify-center text-white text-xl font-semibold flex-shrink-0`}>
-                {getInitials(contact.name)}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* Summary */}
+        <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))', padding: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20 }}>
+            <div
+              style={{
+                background: `hsl(${hue}, 60%, 50%)`,
+                width: 64,
+                height: 64,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: 20,
+                fontWeight: 600,
+                flexShrink: 0,
+                fontFamily: '"HN Display", sans-serif',
+              }}
+            >
+              {getInitials(contact.name)}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                <div>
+                  <h2 style={{ fontSize: 20, fontWeight: 600, color: 'hsl(var(--ds-fg-1))', fontFamily: '"HN Display", sans-serif' }}>
+                    {contact.name}
+                  </h2>
+                  <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
+                    {[contact.position, contact.company_name].filter(Boolean).join(' · ') || '—'}
+                  </p>
+                </div>
+                <span
+                  className="pill muted"
+                  style={{
+                    color: 'hsl(var(--ds-fg-2))',
+                  }}
+                >
+                  {typeLabel}
+                </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="text-xl font-semibold text-foreground">{contact.name}</h2>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {[contact.position, contact.company_name].filter(Boolean).join(' · ') || '—'}
-                    </p>
-                  </div>
-                  <Badge variant="secondary">{typeLabel}</Badge>
-                </div>
 
-                <div className="flex flex-wrap gap-3 mt-4 text-sm">
-                  {contact.email && (
-                    <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-                      <Mail className="h-3.5 w-3.5" /> {contact.email}
-                    </a>
-                  )}
-                  {contact.phone && (
-                    <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-                      <Phone className="h-3.5 w-3.5" /> {contact.phone}
-                    </a>
-                  )}
-                  {phone && (
-                    <a href={`https://wa.me/55${phone}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-                      <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
-                    </a>
-                  )}
-                  {contact.instagram && (
-                    <a href={`https://instagram.com/${contact.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-                      <Instagram className="h-3.5 w-3.5" /> {contact.instagram}
-                    </a>
-                  )}
-                  {contact.company_website && (
-                    <a href={contact.company_website.startsWith('http') ? contact.company_website : `https://${contact.company_website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-                      <Globe className="h-3.5 w-3.5" /> Website
-                    </a>
-                  )}
-                  {contact.company_name && (
-                    <span className="flex items-center gap-1.5 text-muted-foreground">
-                      <Building2 className="h-3.5 w-3.5" /> {contact.company_name}
-                    </span>
-                  )}
-                </div>
-
-                {contact.notes && (
-                  <p className="text-sm text-muted-foreground mt-3 border-t pt-3">{contact.notes}</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 16, fontSize: 13 }}>
+                {contact.email && (
+                  <a href={`mailto:${contact.email}`} style={linkStyle}>
+                    <Mail size={14} strokeWidth={1.5} /> {contact.email}
+                  </a>
+                )}
+                {contact.phone && (
+                  <a href={`tel:${contact.phone}`} style={linkStyle}>
+                    <Phone size={14} strokeWidth={1.5} /> <span style={{ fontVariantNumeric: 'tabular-nums' }}>{contact.phone}</span>
+                  </a>
+                )}
+                {phone && (
+                  <a href={`https://wa.me/55${phone}`} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+                    <MessageCircle size={14} strokeWidth={1.5} /> WhatsApp
+                  </a>
+                )}
+                {contact.instagram && (
+                  <a href={`https://instagram.com/${contact.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+                    <Instagram size={14} strokeWidth={1.5} /> {contact.instagram}
+                  </a>
+                )}
+                {contact.company_website && (
+                  <a href={contact.company_website.startsWith('http') ? contact.company_website : `https://${contact.company_website}`} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+                    <Globe size={14} strokeWidth={1.5} /> Website
+                  </a>
+                )}
+                {contact.company_name && (
+                  <span style={{ ...linkStyle, cursor: 'default' }}>
+                    <Building2 size={14} strokeWidth={1.5} /> {contact.company_name}
+                  </span>
                 )}
               </div>
+
+              {contact.notes && (
+                <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 12, borderTop: '1px solid hsl(var(--ds-line-1))', paddingTop: 12 }}>
+                  {contact.notes}
+                </p>
+              )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Deals section */}
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between border-b pb-3 mb-4">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Handshake className="h-4 w-4" />
+        <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid hsl(var(--ds-line-1))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Handshake size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+              <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>
                 Deals Vinculados
-              </div>
-              <Button size="sm" variant="outline" onClick={() => setDealFormOpen(true)}>
-                <Plus className="h-4 w-4 mr-1" /> Novo Deal
-              </Button>
+              </span>
             </div>
-
+            <button type="button" className="btn" onClick={() => setDealFormOpen(true)}>
+              <Plus size={13} strokeWidth={1.5} />
+              <span>Novo Deal</span>
+            </button>
+          </div>
+          <div style={{ padding: 18 }}>
             {dealsLoading ? (
-              <div className="space-y-2">{Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+              </div>
             ) : !deals?.length ? (
               <EmptyState compact icon={Handshake} title="Nenhum deal" description="Crie o primeiro deal para este contato." />
             ) : (
-              <div className="space-y-2">
-                {deals.map(d => (
-                  <div key={d.id} className="flex items-center justify-between py-2 border-b last:border-0 cursor-pointer hover:bg-muted/50 rounded px-2 -mx-2" onClick={() => navigate(`/crm/deals/${d.id}`)}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {deals.map((d, idx) => (
+                  <div
+                    key={d.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '8px 8px',
+                      borderBottom: idx === deals.length - 1 ? 'none' : '1px solid hsl(var(--ds-line-1))',
+                      cursor: 'pointer',
+                      margin: '0 -8px',
+                      transition: 'background 150ms',
+                    }}
+                    onClick={() => navigate(`/crm/deals/${d.id}`)}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
                     <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">{d.title}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{d.title}</p>
                         {d.proposal_id && (
-                          <Badge variant="outline" className="text-xs">
-                            <FileText className="h-3 w-3 mr-0.5" />
+                          <span
+                            className="pill"
+                            style={{
+                              fontSize: 10,
+                              color: 'hsl(var(--ds-info))',
+                              borderColor: 'hsl(var(--ds-info) / 0.3)',
+                              background: 'hsl(var(--ds-info) / 0.08)',
+                            }}
+                          >
+                            <FileText size={10} strokeWidth={1.5} style={{ marginRight: 2 }} />
                             Com proposta
-                          </Badge>
+                          </span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground">{d.stage_name}</p>
+                      <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>{d.stage_name}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{formatBRL(d.estimated_value)}</p>
-                      <Badge variant="secondary" className="text-xs" style={{ borderColor: d.stage_color }}>{d.stage_name}</Badge>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontSize: 13, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))' }}>
+                        {formatBRL(d.estimated_value)}
+                      </p>
+                      <span
+                        className="pill muted"
+                        style={{ fontSize: 10, borderColor: d.stage_color }}
+                      >
+                        {d.stage_name}
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Activities */}
-        <Card>
-          <CardContent className="p-5">
-            <ActivitiesList contactId={id} />
-          </CardContent>
-        </Card>
+        <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))', padding: 18 }}>
+          <ActivitiesList contactId={id} />
+        </div>
       </div>
 
-      <DealForm open={dealFormOpen} onOpenChange={setDealFormOpen} defaultContactId={id} />
-    </ResponsiveContainer>
+        <DealForm open={dealFormOpen} onOpenChange={setDealFormOpen} defaultContactId={id} />
+      </div>
+    </div>
   );
 }

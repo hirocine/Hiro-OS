@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { X, Loader2 } from 'lucide-react';
 import {
@@ -29,6 +26,26 @@ interface Props {
   idea?: MarketingIdea | null;
   defaultStatus?: IdeaStatus;
 }
+
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const Field = ({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) => (
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <label style={fieldLabel}>
+      {label}
+      {required && <span style={{ marginLeft: 4, color: 'hsl(var(--ds-danger))' }}>*</span>}
+    </label>
+    {children}
+  </div>
+);
 
 export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }: Props) {
   const { createIdea, updateIdea } = useMarketingIdeas();
@@ -112,30 +129,31 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{idea ? 'Editar ideia' : 'Nova ideia'}</DialogTitle>
+          <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
+            {idea ? 'Editar ideia' : 'Nova ideia'}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label>Título *</Label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 8, paddingBottom: 8 }}>
+          <Field label="Título" required>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Nome da ideia" />
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <Label>Descrição</Label>
+          <Field label="Descrição">
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              placeholder="Descreva a ideia..."
+              placeholder="Descreva a ideia…"
             />
-          </div>
+          </Field>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <div className="space-y-2">
-              <Label>Status</Label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            <Field label="Status">
               <Select value={status} onValueChange={(v) => setStatus(v as IdeaStatus)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {IDEA_STATUSES.map((s) => (
                     <SelectItem key={s.value} value={s.value}>
@@ -144,41 +162,50 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Origem</Label>
+            </Field>
+            <Field label="Origem">
               <Select value={source} onValueChange={setSource}>
-                <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar" />
+                </SelectTrigger>
                 <SelectContent>
                   {IDEA_SOURCES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Formato</Label>
+            </Field>
+            <Field label="Formato">
               <Select value={format} onValueChange={setFormat}>
-                <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar" />
+                </SelectTrigger>
                 <SelectContent>
                   {POST_FORMATS.map((f) => (
-                    <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                    <SelectItem key={f.value} value={f.value}>
+                      {f.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
           </div>
 
-          <div className="space-y-2">
-            <Label>Pilar</Label>
+          <Field label="Pilar">
             <Select value={pillarId} onValueChange={setPillarId}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecionar pilar (opcional)">
                   {pillarId && (
-                    <span className="flex items-center gap-2">
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                       <span
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: getPillarColor(pillars.find((p) => p.id === pillarId)?.color).hex }}
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          background: getPillarColor(pillars.find((p) => p.id === pillarId)?.color).hex,
+                        }}
                       />
                       {pillars.find((p) => p.id === pillarId)?.name}
                     </span>
@@ -190,8 +217,8 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
                   const c = getPillarColor(p.color);
                   return (
                     <SelectItem key={p.id} value={p.id}>
-                      <span className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.hex }} />
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: c.hex }} />
                         {p.name}
                       </span>
                     </SelectItem>
@@ -199,42 +226,49 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
                 })}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <Label>Persona</Label>
+          <Field label="Persona">
             <Select value={personaId} onValueChange={setPersonaId}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecionar persona (opcional)">
-                  {personaId && (() => {
-                    const persona = personas.find((p) => p.id === personaId);
-                    if (!persona) return null;
-                    return (
-                      <span className="flex items-center gap-2">
-                        <Avatar className="h-5 w-5">
-                          <AvatarImage src={persona.avatar_url ?? undefined} alt={persona.name} />
-                          <AvatarFallback className="text-[10px]">
-                            {persona.name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        {persona.name}
-                      </span>
-                    );
-                  })()}
+                  {personaId &&
+                    (() => {
+                      const persona = personas.find((p) => p.id === personaId);
+                      if (!persona) return null;
+                      return (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                          <Avatar style={{ width: 18, height: 18 }}>
+                            <AvatarImage src={persona.avatar_url ?? undefined} alt={persona.name} />
+                            <AvatarFallback style={{ fontSize: 9 }}>
+                              {persona.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          {persona.name}
+                        </span>
+                      );
+                    })()}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {personas.length === 0 ? (
-                  <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                  <div
+                    style={{
+                      padding: '12px 8px',
+                      textAlign: 'center',
+                      fontSize: 12,
+                      color: 'hsl(var(--ds-fg-3))',
+                    }}
+                  >
                     Nenhuma persona cadastrada
                   </div>
                 ) : (
                   personas.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
-                      <span className="flex items-center gap-2">
-                        <Avatar className="h-5 w-5">
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                        <Avatar style={{ width: 18, height: 18 }}>
                           <AvatarImage src={p.avatar_url ?? undefined} alt={p.name} />
-                          <AvatarFallback className="text-[10px]">
+                          <AvatarFallback style={{ fontSize: 9 }}>
                             {p.name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
@@ -245,18 +279,35 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
                 )}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <Label>Tags</Label>
-            <div className="flex flex-wrap gap-1.5 mb-2">
+          <Field label="Tags">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
               {tags.map((t) => (
-                <Badge key={t} variant="secondary" className="gap-1">
+                <span
+                  key={t}
+                  className="pill muted"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                >
                   {t}
-                  <button onClick={() => setTags(tags.filter((x) => x !== t))} className="hover:text-destructive">
-                    <X className="h-3 w-3" />
+                  <button
+                    type="button"
+                    onClick={() => setTags(tags.filter((x) => x !== t))}
+                    style={{
+                      display: 'inline-grid',
+                      placeItems: 'center',
+                      width: 14,
+                      height: 14,
+                      color: 'hsl(var(--ds-fg-3))',
+                      background: 'transparent',
+                      border: 0,
+                      cursor: 'pointer',
+                    }}
+                    aria-label={`Remover ${t}`}
+                  >
+                    <X size={10} strokeWidth={1.5} />
                   </button>
-                </Badge>
+                </span>
               ))}
             </div>
             <Input
@@ -271,25 +322,31 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
               onBlur={handleAddTag}
               placeholder="Digite uma tag e pressione Enter"
             />
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <Label>Referências vinculadas</Label>
+          <Field label="Referências vinculadas">
             <MultiSelect
               options={referenceOptions}
               value={referenceIds}
               onValueChange={setReferenceIds}
-              placeholder="Buscar referências..."
+              placeholder="Buscar referências…"
             />
-          </div>
+          </Field>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSubmit} disabled={saving || !title.trim()}>
-            {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Salvar
-          </Button>
+          <button type="button" className="btn" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={handleSubmit}
+            disabled={saving || !title.trim()}
+          >
+            {saving && <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />}
+            <span>Salvar</span>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

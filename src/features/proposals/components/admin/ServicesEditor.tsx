@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Check, Loader2, AlertCircle, Cog } from 'lucide-react';
-import { Card, CardTitle } from '@/components/ui/card';
-import type { ProposalServices, PhaseId, ServiceItem } from '@/lib/services-schema';
+import type { ProposalServices } from '@/lib/services-schema';
 import { useServicesAutosave, type SaveStatus } from '../../hooks/useServicesAutosave';
 import {
   setPhaseEnabled,
@@ -23,22 +22,46 @@ interface Props {
 function StatusBadge({ status }: { status: SaveStatus }) {
   if (status === 'saving') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-        <Loader2 className="h-3 w-3 animate-spin" /> Salvando…
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 11,
+          color: 'hsl(var(--ds-fg-3))',
+        }}
+      >
+        <Loader2 size={12} strokeWidth={1.5} className="animate-spin" /> Salvando…
       </span>
     );
   }
   if (status === 'saved') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] text-success">
-        <Check className="h-3 w-3" /> Salvo
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 11,
+          color: 'hsl(var(--ds-success))',
+        }}
+      >
+        <Check size={12} strokeWidth={1.5} /> Salvo
       </span>
     );
   }
   if (status === 'error') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] text-destructive">
-        <AlertCircle className="h-3 w-3" /> Erro ao salvar
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 11,
+          color: 'hsl(var(--ds-danger))',
+        }}
+      >
+        <AlertCircle size={12} strokeWidth={1.5} /> Erro ao salvar
       </span>
     );
   }
@@ -61,20 +84,40 @@ export function ServicesEditor({ proposalId, proposalSlug, initialServices }: Pr
   };
 
   return (
-    <Card className="lg:col-span-2">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-md bg-muted">
-            <Cog className="h-4 w-4 text-foreground/70" />
-          </div>
-          <CardTitle className="text-sm font-semibold tracking-tight">
+    <div
+      className="lg:col-span-2"
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 18px',
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Cog size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-2))',
+            }}
+          >
             Serviços (Pré, Gravação, Pós)
-          </CardTitle>
+          </span>
         </div>
         <StatusBadge status={status} />
       </div>
 
-      <div className="p-6 space-y-3">
+      <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
         {services.phases.map((phase) => (
           <PhaseCard
             key={phase.id}
@@ -94,6 +137,6 @@ export function ServicesEditor({ proposalId, proposalSlug, initialServices }: Pr
           />
         ))}
       </div>
-    </Card>
+    </div>
   );
 }

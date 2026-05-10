@@ -1,24 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Upload, X, Loader2, Check, ChevronsUpDown, ChevronDown, BarChart3, RefreshCw } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import {
   POST_FORMATS,
   POST_PLATFORMS,
   POST_STATUSES,
   type PostStatus,
 } from '@/lib/marketing-posts-config';
-import { PILLAR_COLORS, getPillarColor } from '@/lib/marketing-colors';
+import { getPillarColor } from '@/lib/marketing-colors';
 import { type MarketingPost, type MarketingPostInput, useMarketingPosts } from '@/hooks/useMarketingPosts';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
 import { useMarketingPersonas } from '@/hooks/useMarketingPersonas';
@@ -37,13 +33,32 @@ interface Props {
   onSaved?: (post: MarketingPost, isNew: boolean) => void;
 }
 
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const Field = ({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) => (
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <label style={fieldLabel}>
+      {label}
+      {required && <span style={{ marginLeft: 4, color: 'hsl(var(--ds-danger))' }}>*</span>}
+    </label>
+    {children}
+  </div>
+);
+
 function toLocalInput(iso: string | null): string {
   if (!iso) return '';
   const d = new Date(iso);
   const pad = (n: number) => n.toString().padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
-
 
 export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, prefill, onSaved }: Props) {
   const { createPost, updatePost, uploadCover } = useMarketingPosts();
@@ -73,8 +88,6 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
   const [ideaId, setIdeaId] = useState<string>('');
   const [ideaPickerOpen, setIdeaPickerOpen] = useState(false);
 
-
-  // Metrics
   const [metricsOpen, setMetricsOpen] = useState(false);
   const [views, setViews] = useState(0);
   const [likes, setLikes] = useState(0);
@@ -150,7 +163,6 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
     if (reach <= 0) return 0;
     return ((likes + commentsCount + shares + saves) / reach) * 100;
   }, [likes, commentsCount, shares, saves, reach]);
-
 
   const addHashtag = () => {
     const parts = hashtagInput.split(/[\s,]+/).map((s) => s.replace(/^#/, '').trim().toLowerCase()).filter(Boolean);
@@ -245,52 +257,66 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{post ? 'Editar post' : 'Novo post'}</DialogTitle>
+          <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
+            {post ? 'Editar post' : 'Novo post'}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 py-2">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 18, paddingTop: 8, paddingBottom: 8 }}>
           {/* Left column */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Título *</Label>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Bastidores da gravação" />
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <Field label="Título" required>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ex: Bastidores da gravação"
+              />
+            </Field>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Plataforma</Label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+              <Field label="Plataforma">
                 <Select value={platform} onValueChange={setPlatform}>
-                  <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecionar" />
+                  </SelectTrigger>
                   <SelectContent>
                     {POST_PLATFORMS.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                      <SelectItem key={p.value} value={p.value}>
+                        {p.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Formato</Label>
+              </Field>
+              <Field label="Formato">
                 <Select value={format} onValueChange={setFormat}>
-                  <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecionar" />
+                  </SelectTrigger>
                   <SelectContent>
                     {POST_FORMATS.map((f) => (
-                      <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                      <SelectItem key={f.value} value={f.value}>
+                        {f.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </Field>
             </div>
 
-            <div className="space-y-2">
-              <Label>Pilar</Label>
+            <Field label="Pilar">
               <Select value={pillarId} onValueChange={setPillarId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecionar pilar">
                     {pillarId && (
-                      <span className="flex items-center gap-2">
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                         <span
-                          className="h-2.5 w-2.5 rounded-full"
-                          style={{ backgroundColor: getPillarColor(pillars.find((p) => p.id === pillarId)?.color).hex }}
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            background: getPillarColor(pillars.find((p) => p.id === pillarId)?.color).hex,
+                          }}
                         />
                         {pillars.find((p) => p.id === pillarId)?.name}
                       </span>
@@ -302,8 +328,8 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
                     const c = getPillarColor(p.color);
                     return (
                       <SelectItem key={p.id} value={p.id}>
-                        <span className="flex items-center gap-2">
-                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.hex }} />
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: c.hex }} />
                           {p.name}
                         </span>
                       </SelectItem>
@@ -311,42 +337,49 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
                   })}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label>Persona</Label>
+            <Field label="Persona">
               <Select value={personaId} onValueChange={setPersonaId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecionar persona (opcional)">
-                    {personaId && (() => {
-                      const persona = personas.find((p) => p.id === personaId);
-                      if (!persona) return null;
-                      return (
-                        <span className="flex items-center gap-2">
-                          <Avatar className="h-5 w-5">
-                            <AvatarImage src={persona.avatar_url ?? undefined} alt={persona.name} />
-                            <AvatarFallback className="text-[10px]">
-                              {persona.name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          {persona.name}
-                        </span>
-                      );
-                    })()}
+                    {personaId &&
+                      (() => {
+                        const persona = personas.find((p) => p.id === personaId);
+                        if (!persona) return null;
+                        return (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                            <Avatar style={{ width: 18, height: 18 }}>
+                              <AvatarImage src={persona.avatar_url ?? undefined} alt={persona.name} />
+                              <AvatarFallback style={{ fontSize: 9 }}>
+                                {persona.name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            {persona.name}
+                          </span>
+                        );
+                      })()}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {personas.length === 0 ? (
-                    <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                    <div
+                      style={{
+                        padding: '12px 8px',
+                        textAlign: 'center',
+                        fontSize: 12,
+                        color: 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
                       Nenhuma persona cadastrada
                     </div>
                   ) : (
                     personas.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
-                        <span className="flex items-center gap-2">
-                          <Avatar className="h-5 w-5">
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                          <Avatar style={{ width: 18, height: 18 }}>
                             <AvatarImage src={p.avatar_url ?? undefined} alt={p.name} />
-                            <AvatarFallback className="text-[10px]">
+                            <AvatarFallback style={{ fontSize: 9 }}>
                               {p.name.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
@@ -357,58 +390,113 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
                   )}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label>Status</Label>
+            <Field label="Status">
               <Select value={status} onValueChange={(v) => setStatus(v as PostStatus)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {POST_STATUSES.map((s) => (
                     <SelectItem key={s.value} value={s.value}>
-                      <span>{s.emoji} {s.label}</span>
+                      <span>
+                        {s.emoji} {s.label}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label>Data e hora agendada</Label>
+            <Field label="Data e hora agendada">
               <Input
                 type="datetime-local"
                 value={scheduledLocal}
                 onChange={(e) => setScheduledLocal(e.target.value)}
               />
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label>Capa / Thumbnail</Label>
+            <Field label="Capa / Thumbnail">
               {coverUrl ? (
-                <div className="relative rounded-xl overflow-hidden border border-border">
-                  <img src={coverUrl} alt="capa" className="w-full max-h-48 object-contain bg-muted/30" />
-                  <Button
+                <div
+                  style={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    border: '1px solid hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-line-2) / 0.3)',
+                  }}
+                >
+                  <img
+                    src={coverUrl}
+                    alt="capa"
+                    style={{ width: '100%', maxHeight: 192, objectFit: 'contain', display: 'block' }}
+                  />
+                  <button
                     type="button"
-                    size="icon"
-                    variant="secondary"
-                    className="absolute top-2 right-2 h-7 w-7"
                     onClick={() => setCoverUrl('')}
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      width: 28,
+                      height: 28,
+                      display: 'grid',
+                      placeItems: 'center',
+                      background: 'hsl(var(--ds-surface))',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      color: 'hsl(var(--ds-fg-2))',
+                      cursor: 'pointer',
+                    }}
+                    aria-label="Remover capa"
                   >
-                    <X className="h-3.5 w-3.5" />
-                  </Button>
+                    <X size={13} strokeWidth={1.5} />
+                  </button>
                 </div>
               ) : (
                 <div
                   onClick={() => fileRef.current?.click()}
-                  className="rounded-xl border-2 border-dashed border-border p-5 text-center cursor-pointer hover:bg-accent/30 transition"
+                  style={{
+                    border: '2px dashed hsl(var(--ds-line-1))',
+                    padding: 20,
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'background 0.15s, border-color 0.15s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+                    e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                  }}
                 >
                   {uploading ? (
-                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" /> Enviando...
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        fontSize: 13,
+                        color: 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
+                      <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />
+                      Enviando…
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground">
-                      <Upload className="h-5 w-5" />
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 6,
+                        fontSize: 13,
+                        color: 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
+                      <Upload size={18} strokeWidth={1.5} />
                       <span>Clique para enviar capa</span>
                     </div>
                   )}
@@ -416,36 +504,52 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
                     ref={fileRef}
                     type="file"
                     accept="image/*"
-                    className="hidden"
+                    style={{ display: 'none' }}
                     onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
                   />
                 </div>
               )}
-            </div>
+            </Field>
           </div>
 
           {/* Right column */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Legenda</Label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <Field label="Legenda">
               <Textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 rows={8}
-                placeholder="Escreva a legenda do post..."
+                placeholder="Escreva a legenda do post…"
               />
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label>Hashtags</Label>
-              <div className="flex flex-wrap gap-1.5 mb-2">
+            <Field label="Hashtags">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
                 {hashtags.map((h) => (
-                  <Badge key={h} variant="secondary" className="gap-1">
+                  <span
+                    key={h}
+                    className="pill muted"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  >
                     #{h}
-                    <button onClick={() => setHashtags(hashtags.filter((x) => x !== h))} className="hover:text-destructive">
-                      <X className="h-3 w-3" />
+                    <button
+                      type="button"
+                      onClick={() => setHashtags(hashtags.filter((x) => x !== h))}
+                      style={{
+                        display: 'inline-grid',
+                        placeItems: 'center',
+                        width: 14,
+                        height: 14,
+                        color: 'hsl(var(--ds-fg-3))',
+                        background: 'transparent',
+                        border: 0,
+                        cursor: 'pointer',
+                      }}
+                      aria-label={`Remover #${h}`}
+                    >
+                      <X size={10} strokeWidth={1.5} />
                     </button>
-                  </Badge>
+                  </span>
                 ))}
               </div>
               <Input
@@ -460,48 +564,78 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
                 onBlur={addHashtag}
                 placeholder="Digite hashtags separadas por espaço ou vírgula"
               />
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label>Link do arquivo final</Label>
-              <Input value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} placeholder="https://..." />
-            </div>
+            <Field label="Link do arquivo final">
+              <Input
+                value={fileUrl}
+                onChange={(e) => setFileUrl(e.target.value)}
+                placeholder="https://…"
+              />
+            </Field>
 
             {status === 'publicado' && (
-              <div className="space-y-2">
-                <Label>Link do post publicado</Label>
-                <Input value={publishedUrl} onChange={(e) => setPublishedUrl(e.target.value)} placeholder="https://..." />
-              </div>
+              <Field label="Link do post publicado">
+                <Input
+                  value={publishedUrl}
+                  onChange={(e) => setPublishedUrl(e.target.value)}
+                  placeholder="https://…"
+                />
+              </Field>
             )}
 
-            <div className="space-y-2">
-              <Label>Ideia vinculada</Label>
+            <Field label="Ideia vinculada">
               <Popover open={ideaPickerOpen} onOpenChange={setIdeaPickerOpen} modal={false}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
-                    <span className={cn('truncate', !ideaLabel && 'text-muted-foreground')}>
-                      {ideaLabel || 'Buscar ideia...'}
+                  <button
+                    type="button"
+                    className="btn"
+                    role="combobox"
+                    style={{
+                      width: '100%',
+                      justifyContent: 'space-between',
+                      color: ideaLabel ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-4))',
+                    }}
+                  >
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {ideaLabel || 'Buscar ideia…'}
                     </span>
-                    <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
-                  </Button>
+                    <ChevronsUpDown size={13} strokeWidth={1.5} style={{ opacity: 0.5, flexShrink: 0 }} />
+                  </button>
                 </PopoverTrigger>
                 <PopoverContent className="p-0 w-[--radix-popover-trigger-width] z-[200]">
                   <Command>
-                    <CommandInput placeholder="Buscar ideia..." />
+                    <CommandInput placeholder="Buscar ideia…" />
                     <CommandEmpty>Nenhuma ideia encontrada.</CommandEmpty>
                     <CommandGroup className="max-h-60 overflow-auto">
                       {ideaId && (
-                        <CommandItem onSelect={() => { setIdeaId(''); setIdeaPickerOpen(false); }}>
-                          <X className="mr-2 h-4 w-4" /> Remover vínculo
+                        <CommandItem
+                          onSelect={() => {
+                            setIdeaId('');
+                            setIdeaPickerOpen(false);
+                          }}
+                        >
+                          <X size={13} strokeWidth={1.5} style={{ marginRight: 8 }} /> Remover vínculo
                         </CommandItem>
                       )}
                       {ideas.map((i) => (
                         <CommandItem
                           key={i.id}
                           value={i.title}
-                          onSelect={() => { setIdeaId(i.id); setIdeaPickerOpen(false); }}
+                          onSelect={() => {
+                            setIdeaId(i.id);
+                            setIdeaPickerOpen(false);
+                          }}
                         >
-                          <Check className={cn('mr-2 h-4 w-4', ideaId === i.id ? 'opacity-100' : 'opacity-0')} />
+                          <Check
+                            size={13}
+                            strokeWidth={1.5}
+                            style={{
+                              marginRight: 8,
+                              opacity: ideaId === i.id ? 1 : 0,
+                              color: 'hsl(var(--ds-accent))',
+                            }}
+                          />
                           {i.title}
                         </CommandItem>
                       ))}
@@ -509,26 +643,64 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
                   </Command>
                 </PopoverContent>
               </Popover>
-            </div>
+            </Field>
           </div>
         </div>
+
         {status === 'publicado' && (
-          <Collapsible open={metricsOpen} onOpenChange={setMetricsOpen} className="border border-border rounded-xl">
+          <Collapsible
+            open={metricsOpen}
+            onOpenChange={setMetricsOpen}
+            style={{ border: '1px solid hsl(var(--ds-line-1))' }}
+          >
             <CollapsibleTrigger asChild>
               <button
                 type="button"
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-accent/30 transition rounded-xl"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 16px',
+                  background: 'transparent',
+                  border: 0,
+                  cursor: 'pointer',
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
               >
-                <span className="flex items-center gap-2 text-sm font-medium">
-                  <BarChart3 className="h-4 w-4" />
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: 'hsl(var(--ds-fg-1))',
+                  }}
+                >
+                  <BarChart3 size={14} strokeWidth={1.5} />
                   Métricas de performance
                 </span>
-                <ChevronDown className={cn('h-4 w-4 transition-transform', metricsOpen && 'rotate-180')} />
+                <ChevronDown
+                  size={14}
+                  strokeWidth={1.5}
+                  style={{
+                    color: 'hsl(var(--ds-fg-3))',
+                    transition: 'transform 0.2s',
+                    transform: metricsOpen ? 'rotate(180deg)' : 'none',
+                  }}
+                />
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="px-4 pb-4 space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div style={{ padding: 16, borderTop: '1px solid hsl(var(--ds-line-1))', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                   {[
                     { label: 'Views', value: views, set: setViews },
                     { label: 'Curtidas', value: likes, set: setLikes },
@@ -539,37 +711,41 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
                     { label: 'Cliques na bio', value: profileClicks, set: setProfileClicks },
                     { label: 'Novos seguidores', value: newFollowers, set: setNewFollowers },
                   ].map((m) => (
-                    <div key={m.label} className="space-y-1.5">
-                      <Label className="text-xs">{m.label}</Label>
+                    <Field key={m.label} label={m.label}>
                       <Input
                         type="number"
                         min={0}
                         value={m.value}
                         onChange={(e) => m.set(Number(e.target.value) || 0)}
                       />
-                    </div>
+                    </Field>
                   ))}
                 </div>
 
-                <p className="text-xs text-muted-foreground">
+                <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
                   Taxa de engajamento será calculada automaticamente:{' '}
-                  <span className="font-medium text-foreground">{computedEngagement.toFixed(2)}%</span>
+                  <span style={{ fontWeight: 600, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>
+                    {computedEngagement.toFixed(2)}%
+                  </span>
                 </p>
 
                 {metricsUpdatedAt && (
-                  <p className="text-xs text-muted-foreground">
-                    Atualizado em {new Date(metricsUpdatedAt).toLocaleDateString('pt-BR')} às{' '}
-                    {new Date(metricsUpdatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}{' '}
+                  <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                    Atualizado em{' '}
+                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                      {new Date(metricsUpdatedAt).toLocaleDateString('pt-BR')} às{' '}
+                      {new Date(metricsUpdatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </span>{' '}
                     via{' '}
                     {metricsSource === 'api_instagram'
                       ? 'Instagram'
                       : metricsSource === 'api_linkedin'
-                      ? 'LinkedIn'
-                      : 'manual'}
+                        ? 'LinkedIn'
+                        : 'manual'}
                   </p>
                 )}
 
-                <div className="flex flex-wrap gap-2 pt-1">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, paddingTop: 4 }}>
                   <TooltipProvider>
                     {(() => {
                       const igEligible = platform === 'instagram' && status === 'publicado' && !!publishedUrl.trim();
@@ -577,33 +753,33 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
                       const igTooltip = !instagramConnected
                         ? 'Configure a integração do Instagram em Admin → Integrações'
                         : !igEligible
-                        ? 'Disponível apenas para posts publicados do Instagram com URL preenchida'
-                        : 'Sincronizar métricas do Instagram';
+                          ? 'Disponível apenas para posts publicados do Instagram com URL preenchida'
+                          : 'Sincronizar métricas do Instagram';
                       const liEligible = platform === 'linkedin' && status === 'publicado' && !!publishedUrl.trim();
                       const liDisabled = !liEligible || !linkedinConnected || syncingPlatform !== null;
                       const liTooltip = !linkedinConnected
                         ? 'Configure a integração do LinkedIn em Admin → Integrações'
                         : !liEligible
-                        ? 'Disponível apenas para posts publicados do LinkedIn com URL preenchida'
-                        : 'Sincronizar métricas do LinkedIn';
+                          ? 'Disponível apenas para posts publicados do LinkedIn com URL preenchida'
+                          : 'Sincronizar métricas do LinkedIn';
                       return (
                         <>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span tabIndex={0}>
-                                <Button
+                                <button
                                   type="button"
-                                  variant="outline"
-                                  size="sm"
+                                  className="btn"
                                   disabled={igDisabled}
                                   onClick={() => handleSync('instagram')}
-                                  className="gap-2"
                                 >
-                                  {syncingPlatform === 'instagram'
-                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    : <RefreshCw className="h-3.5 w-3.5" />}
-                                  Sincronizar do Instagram
-                                </Button>
+                                  {syncingPlatform === 'instagram' ? (
+                                    <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />
+                                  ) : (
+                                    <RefreshCw size={13} strokeWidth={1.5} />
+                                  )}
+                                  <span>Sincronizar do Instagram</span>
+                                </button>
                               </span>
                             </TooltipTrigger>
                             <TooltipContent>{igTooltip}</TooltipContent>
@@ -611,19 +787,19 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span tabIndex={0}>
-                                <Button
+                                <button
                                   type="button"
-                                  variant="outline"
-                                  size="sm"
+                                  className="btn"
                                   disabled={liDisabled}
                                   onClick={() => handleSync('linkedin')}
-                                  className="gap-2"
                                 >
-                                  {syncingPlatform === 'linkedin'
-                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    : <RefreshCw className="h-3.5 w-3.5" />}
-                                  Sincronizar do LinkedIn
-                                </Button>
+                                  {syncingPlatform === 'linkedin' ? (
+                                    <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />
+                                  ) : (
+                                    <RefreshCw size={13} strokeWidth={1.5} />
+                                  )}
+                                  <span>Sincronizar do LinkedIn</span>
+                                </button>
                               </span>
                             </TooltipTrigger>
                             <TooltipContent>{liTooltip}</TooltipContent>
@@ -639,11 +815,18 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSubmit} disabled={saving || !title.trim() || uploading}>
-            {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Salvar
-          </Button>
+          <button type="button" className="btn" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={handleSubmit}
+            disabled={saving || !title.trim() || uploading}
+          >
+            {saving && <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />}
+            <span>Salvar</span>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,84 +1,172 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckSquare, ArrowRight, ListChecks, AlertTriangle, Flame } from 'lucide-react';
+import { CheckSquare, ArrowRight, ListChecks, AlertTriangle, Flame, type LucideIcon } from 'lucide-react';
 import { useTaskSectionStats } from '../hooks/useTaskSectionStats';
 
 interface StatItemProps {
+  Icon: LucideIcon;
   value: number;
   label: string;
-  colorClass?: string;
+  tone: string;
+  active: boolean;
 }
 
-function StatItem({ value, label, colorClass = 'text-muted-foreground' }: StatItemProps) {
+const StatItem = ({ Icon, value, label, tone, active }: StatItemProps) => {
+  const color = active ? tone : 'hsl(var(--ds-fg-3))';
   return (
-    <div className="text-center">
-      <div className={`text-2xl font-bold ${colorClass}`}>{value}</div>
-      <div className="text-xs text-muted-foreground">{label}</div>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 4,
+        padding: '8px 4px',
+      }}
+    >
+      <Icon size={14} strokeWidth={1.5} style={{ color }} />
+      <span
+        style={{
+          fontFamily: '"HN Display", sans-serif',
+          fontSize: 22,
+          fontWeight: 600,
+          letterSpacing: '-0.01em',
+          fontVariantNumeric: 'tabular-nums',
+          lineHeight: 1.05,
+          color,
+        }}
+      >
+        {value}
+      </span>
+      <span
+        style={{
+          fontSize: 11,
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          fontWeight: 500,
+          color: 'hsl(var(--ds-fg-3))',
+        }}
+      >
+        {label}
+      </span>
     </div>
   );
-}
+};
 
 export function TaskSectionCards() {
   const { stats, isLoading } = useTaskSectionStats();
 
   if (isLoading) {
     return (
-      <Card className="p-6">
-        <Skeleton className="h-10 w-10 rounded-xl mb-4" />
-        <Skeleton className="h-6 w-32 mb-4" />
-        <div className="grid grid-cols-3 gap-4 mb-4">
+      <div
+        style={{
+          border: '1px solid hsl(var(--ds-line-1))',
+          background: 'hsl(var(--ds-surface))',
+          padding: 24,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+        }}
+      >
+        <Skeleton className="h-10 w-10" />
+        <Skeleton className="h-6 w-32" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
         </div>
-        <Skeleton className="h-9 w-full" />
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-primary/10">
-              <CheckSquare className="h-6 w-6 text-primary" />
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{ padding: '20px 24px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 18,
+          }}
+        >
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                display: 'grid',
+                placeItems: 'center',
+                background: 'hsl(var(--ds-accent) / 0.1)',
+                color: 'hsl(var(--ds-accent))',
+              }}
+            >
+              <CheckSquare size={18} strokeWidth={1.5} />
             </div>
-            <h3 className="font-semibold text-lg">Minhas Tarefas</h3>
+            <h3
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 16,
+                fontWeight: 600,
+                color: 'hsl(var(--ds-fg-1))',
+              }}
+            >
+              Minhas Tarefas
+            </h3>
           </div>
-          <Link to="/tarefas">
-            <Button variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-muted">
-              Ver Tarefas
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Button>
+          <Link
+            to="/tarefas"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              fontSize: 12,
+              color: 'hsl(var(--ds-accent))',
+              fontWeight: 500,
+              textDecoration: 'none',
+            }}
+          >
+            <span>Ver Tarefas</span>
+            <ArrowRight size={13} strokeWidth={1.5} />
           </Link>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 py-4 px-2 bg-muted/30 rounded-lg">
-          <div className="flex flex-col items-center gap-1">
-            <ListChecks className="h-4 w-4 text-muted-foreground" />
-            <StatItem value={stats.active} label="Ativas" />
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-            <StatItem 
-              value={stats.overdue} 
-              label="Atrasadas" 
-              colorClass={stats.overdue > 0 ? 'text-destructive' : 'text-muted-foreground'}
-            />
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <Flame className="h-4 w-4 text-orange-500" />
-            <StatItem 
-              value={stats.urgent} 
-              label="Urgentes" 
-              colorClass={stats.urgent > 0 ? 'text-orange-500' : 'text-muted-foreground'}
-            />
-          </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            background: 'hsl(var(--ds-line-2) / 0.3)',
+            border: '1px solid hsl(var(--ds-line-2))',
+          }}
+        >
+          <StatItem
+            Icon={ListChecks}
+            value={stats.active}
+            label="Ativas"
+            tone="hsl(var(--ds-accent))"
+            active
+          />
+          <StatItem
+            Icon={AlertTriangle}
+            value={stats.overdue}
+            label="Atrasadas"
+            tone="hsl(var(--ds-danger))"
+            active={stats.overdue > 0}
+          />
+          <StatItem
+            Icon={Flame}
+            value={stats.urgent}
+            label="Urgentes"
+            tone="hsl(var(--ds-warning))"
+            active={stats.urgent > 0}
+          />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 interface InlineDepartmentCellProps {
   value: string | null;
@@ -13,71 +11,95 @@ interface InlineDepartmentCellProps {
   isActive?: boolean;
 }
 
-export function InlineDepartmentCell({ 
-  value, 
+export function InlineDepartmentCell({
+  value,
   departments,
-  onSave, 
+  onSave,
   className = '',
-  isActive = true
+  isActive = true,
 }: InlineDepartmentCellProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleValueChange = (newValue: string) => {
-    if (newValue === 'none') {
-      onSave(null);
-    } else if (newValue !== value) {
-      onSave(newValue);
-    }
+    if (newValue === 'none') onSave(null);
+    else if (newValue !== value) onSave(newValue);
     setIsOpen(false);
   };
 
   return (
-    <div 
-      onClick={(e) => e.stopPropagation()}
-      className={className}
-    >
+    <div onClick={(e) => e.stopPropagation()} className={className}>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            className="h-auto min-h-0 w-full justify-start text-left p-0 font-normal bg-transparent hover:bg-transparent"
+          <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               setIsOpen(true);
             }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'transparent',
+              border: 0,
+              padding: 0,
+              cursor: 'pointer',
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '0.8';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '1';
+            }}
           >
-            <div className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer">
-              {!isActive ? (
-                <span className="text-sm text-muted-foreground/60 italic">Selecionar</span>
-              ) : (
-                <span className="text-sm">{value || 'Sem departamento'}</span>
-              )}
-              <ChevronDown className="w-3 h-3 text-muted-foreground" />
-            </div>
-          </Button>
+            {!isActive ? (
+              <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-4))', fontStyle: 'italic' }}>
+                Selecionar
+              </span>
+            ) : (
+              <span style={{ fontSize: 13, color: value ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))' }}>
+                {value || 'Sem departamento'}
+              </span>
+            )}
+            <ChevronDown size={11} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-4))' }} />
+          </button>
         </PopoverTrigger>
-        <PopoverContent 
-          className="w-[200px] p-0" 
+        <PopoverContent
+          className="w-[200px] p-0"
           align="start"
           onClick={(e) => e.stopPropagation()}
         >
           <Command>
             <CommandList>
               <CommandGroup>
-                <CommandItem 
-                  onSelect={() => handleValueChange('none')}
-                  className="cursor-pointer"
-                >
-                  <Check className={cn("mr-2 h-4 w-4", !value ? "opacity-100" : "opacity-0")} />
+                <CommandItem onSelect={() => handleValueChange('none')} style={{ cursor: 'pointer' }}>
+                  <Check
+                    size={14}
+                    strokeWidth={1.5}
+                    style={{
+                      marginRight: 8,
+                      opacity: !value ? 1 : 0,
+                      color: 'hsl(var(--ds-accent))',
+                    }}
+                  />
                   Sem departamento
                 </CommandItem>
                 {departments.map((dept) => (
-                  <CommandItem 
-                    key={dept.id} 
+                  <CommandItem
+                    key={dept.id}
                     onSelect={() => handleValueChange(dept.name)}
-                    className="cursor-pointer"
+                    style={{ cursor: 'pointer' }}
                   >
-                    <Check className={cn("mr-2 h-4 w-4", value === dept.name ? "opacity-100" : "opacity-0")} />
+                    <Check
+                      size={14}
+                      strokeWidth={1.5}
+                      style={{
+                        marginRight: 8,
+                        opacity: value === dept.name ? 1 : 0,
+                        color: 'hsl(var(--ds-accent))',
+                      }}
+                    />
                     {dept.name}
                   </CommandItem>
                 ))}

@@ -1,8 +1,6 @@
 import { useMemo } from 'react';
 import { Users, Handshake, DollarSign, TrendingUp, AlertTriangle, Clock, CalendarClock, CircleDollarSign, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import { StatsCard, StatsCardGrid, StatsCardSkeleton } from '@/components/ui/stats-card';
-import { Card, CardContent } from '@/components/ui/card';
-import { EmptyState } from '@/components/ui/empty-state';
 import { useCRMStats } from '../hooks/useCRMStats';
 import { useDeals } from '../hooks/useDeals';
 import { useActivities } from '../hooks/useActivities';
@@ -16,7 +14,40 @@ import {
   PieChart, Pie, Cell, Legend,
 } from 'recharts';
 
-const DONUT_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#6366f1'];
+const DONUT_COLORS = [
+  'hsl(var(--ds-accent))',
+  'hsl(var(--ds-success))',
+  'hsl(var(--ds-warning))',
+  'hsl(var(--ds-danger))',
+  'hsl(var(--ds-info))',
+  'hsl(var(--ds-fg-3))',
+  'hsl(var(--ds-fg-2))',
+  'hsl(var(--ds-fg-4))',
+];
+
+const cardWrap: React.CSSProperties = {
+  border: '1px solid hsl(var(--ds-line-1))',
+  background: 'hsl(var(--ds-surface))',
+};
+
+const cardHeader: React.CSSProperties = {
+  padding: '14px 18px',
+  borderBottom: '1px solid hsl(var(--ds-line-1))',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+};
+
+const cardTitle: React.CSSProperties = {
+  fontFamily: '"HN Display", sans-serif',
+  fontSize: 14,
+  fontWeight: 600,
+  color: 'hsl(var(--ds-fg-1))',
+};
+
+const cardBody: React.CSSProperties = {
+  padding: 18,
+};
 
 export function CRMDashboard() {
   const { data: stats, isLoading } = useCRMStats();
@@ -25,49 +56,46 @@ export function CRMDashboard() {
   const { data: allContacts } = useContacts();
   const { data: stages } = usePipelineStages();
 
-  const staleDeals = (allDeals ?? []).filter(d => {
+  const staleDeals = (allDeals ?? []).filter((d) => {
     if (d.stage_is_won || d.stage_is_lost) return false;
     const days = differenceInDays(new Date(), new Date(d.updated_at ?? d.created_at ?? new Date()));
     return days > 7;
   });
 
-  const overdueFollowUps = (pendingActivities ?? []).filter(a => {
+  const overdueFollowUps = (pendingActivities ?? []).filter((a) => {
     if (!a.scheduled_at) return false;
     return new Date(a.scheduled_at) < new Date();
   });
 
   const hasAlerts = staleDeals.length > 0 || overdueFollowUps.length > 0;
 
-  // Chart data: funnel
   const funnelData = useMemo(() => {
     if (!stages || !allDeals) return [];
-    const activeStages = stages.filter(s => !s.is_won && !s.is_lost);
-    return activeStages.map(stage => {
-      const count = allDeals.filter(d => d.stage_id === stage.id).length;
-      return { name: stage.name, count, fill: stage.color ?? '#6366f1' };
+    const activeStages = stages.filter((s) => !s.is_won && !s.is_lost);
+    return activeStages.map((stage) => {
+      const count = allDeals.filter((d) => d.stage_id === stage.id).length;
+      return { name: stage.name, count, fill: stage.color ?? 'hsl(var(--ds-accent))' };
     });
   }, [stages, allDeals]);
 
-  // Chart data: lead sources donut
   const leadSourceData = useMemo(() => {
     if (!allContacts) return [];
     const counts = new Map<string, number>();
-    allContacts.forEach(c => {
+    allContacts.forEach((c) => {
       const src = c.lead_source || 'sem_origem';
       counts.set(src, (counts.get(src) ?? 0) + 1);
     });
     const total = allContacts.length || 1;
     return Array.from(counts.entries()).map(([key, value]) => ({
-      name: LEAD_SOURCES.find(s => s.value === key)?.label ?? (key === 'sem_origem' ? 'Sem origem' : key),
+      name: LEAD_SOURCES.find((s) => s.value === key)?.label ?? (key === 'sem_origem' ? 'Sem origem' : key),
       value,
       pct: Math.round((value / total) * 100),
     }));
   }, [allContacts]);
 
-  // Chart data: monthly won revenue (last 6 months)
   const monthlyRevenue = useMemo(() => {
     if (!allDeals) return [];
-    const wonDeals = allDeals.filter(d => d.stage_is_won && d.closed_at);
+    const wonDeals = allDeals.filter((d) => d.stage_is_won && d.closed_at);
     const now = new Date();
     const months: { label: string; start: Date; end: Date }[] = [];
     for (let i = 5; i >= 0; i--) {
@@ -75,9 +103,9 @@ export function CRMDashboard() {
       const e = startOfMonth(subMonths(now, i - 1));
       months.push({ label: format(s, 'MMM', { locale: ptBR }), start: s, end: e });
     }
-    return months.map(m => {
+    return months.map((m) => {
       const total = wonDeals
-        .filter(d => {
+        .filter((d) => {
           const closed = new Date(d.closed_at!);
           return closed >= m.start && closed < m.end;
         })
@@ -94,87 +122,114 @@ export function CRMDashboard() {
     );
   }
 
+  const EmptyChart = ({ Icon, title, description }: { Icon: typeof BarChart3; title: string; description: string }) => (
+    <div
+      style={{
+        height: 200,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        gap: 6,
+        color: 'hsl(var(--ds-fg-3))',
+      }}
+    >
+      <Icon size={28} strokeWidth={1.25} style={{ color: 'hsl(var(--ds-fg-4))' }} />
+      <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))', fontSize: 13 }}>{title}</div>
+      <div style={{ fontSize: 11 }}>{description}</div>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <StatsCardGrid columns={5}>
         <StatsCard
           title="Total de Contatos"
           value={stats?.totalContacts ?? 0}
           icon={Users}
-          color="text-blue-600"
-          bgColor="bg-blue-100 dark:bg-blue-900/30"
+          color="text-info"
         />
         <StatsCard
           title="Deals Ativos"
           value={stats?.activeDeals ?? 0}
           icon={Handshake}
-          color="text-amber-600"
-          bgColor="bg-amber-100 dark:bg-amber-900/30"
+          color="text-warning"
         />
         <StatsCard
           title="Valor do Pipeline"
           value={formatBRL(stats?.pipelineValue ?? 0)}
           icon={DollarSign}
-          color="text-emerald-600"
-          bgColor="bg-emerald-100 dark:bg-emerald-900/30"
+          color="text-success"
         />
         <StatsCard
           title="Receita Fechada"
           value={formatBRL(stats?.wonRevenue ?? 0)}
           icon={CircleDollarSign}
-          color="text-green-600"
-          bgColor="bg-green-100 dark:bg-green-900/30"
+          color="text-success"
         />
         <StatsCard
           title="Taxa de Conversão"
           value={`${stats?.conversionRate ?? 0}%`}
           icon={TrendingUp}
-          color="text-purple-600"
-          bgColor="bg-purple-100 dark:bg-purple-900/30"
+          color="text-primary"
         />
       </StatsCardGrid>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Funil de Vendas - full width */}
-        <Card className="lg:col-span-2">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between border-b pb-3 mb-4">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <BarChart3 className="h-4 w-4" />
-                Funil de Vendas
-              </div>
-            </div>
-            {funnelData.length > 0 ? (
-              <RechContainer width="100%" height={250}>
-                <BarChart data={funnelData} layout="vertical" margin={{ left: 20, right: 20, top: 5, bottom: 5 }}>
-                  <XAxis type="number" allowDecimals={false} />
-                  <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 12 }} />
-                  <Tooltip formatter={(value: number) => [`${value} deals`, 'Quantidade']} />
-                  <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                    {funnelData.map((entry, i) => (
-                      <Cell key={i} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </RechContainer>
-            ) : (
-              <EmptyState compact icon={BarChart3} title="Sem dados" description="Adicione deals para ver o funil." />
-            )}
-          </CardContent>
-        </Card>
+      <div style={cardWrap}>
+        <div style={cardHeader}>
+          <BarChart3 size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+          <span style={cardTitle}>Funil de Vendas</span>
+        </div>
+        <div style={cardBody}>
+          {funnelData.length > 0 ? (
+            <RechContainer width="100%" height={250}>
+              <BarChart data={funnelData} layout="vertical" margin={{ left: 20, right: 20, top: 5, bottom: 5 }}>
+                <XAxis
+                  type="number"
+                  allowDecimals={false}
+                  tick={{ fontSize: 11, fill: 'hsl(var(--ds-fg-4))' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={120}
+                  tick={{ fontSize: 12, fill: 'hsl(var(--ds-fg-3))' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: 'hsl(var(--ds-surface))',
+                    border: '1px solid hsl(var(--ds-line-1))',
+                    fontSize: 12,
+                  }}
+                  formatter={(value: number) => [`${value} deals`, 'Quantidade']}
+                />
+                <Bar dataKey="count">
+                  {funnelData.map((entry, i) => (
+                    <Cell key={i} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </RechContainer>
+          ) : (
+            <EmptyChart Icon={BarChart3} title="Sem dados" description="Adicione deals para ver o funil." />
+          )}
+        </div>
+      </div>
 
-        {/* Origem dos Leads - donut */}
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between border-b pb-3 mb-4">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <PieChartIcon className="h-4 w-4" />
-                Origem dos Leads
-              </div>
-            </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+        <div style={cardWrap}>
+          <div style={cardHeader}>
+            <PieChartIcon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+            <span style={cardTitle}>Origem dos Leads</span>
+          </div>
+          <div style={cardBody}>
             {leadSourceData.length > 0 ? (
-              <RechContainer width="100%" height={280}>
+              <RechContainer width="100%" height={260}>
                 <PieChart>
                   <Pie
                     data={leadSourceData}
@@ -184,88 +239,147 @@ export function CRMDashboard() {
                     outerRadius={90}
                     dataKey="value"
                     label={({ pct }) => `${pct}%`}
+                    labelLine={false}
                   >
                     {leadSourceData.map((_, i) => (
                       <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Legend verticalAlign="bottom" height={36} />
-                  <Tooltip formatter={(value: number, name: string) => [`${value} contatos`, name]} />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    iconSize={8}
+                    wrapperStyle={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'hsl(var(--ds-surface))',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      fontSize: 12,
+                    }}
+                    formatter={(value: number, name: string) => [`${value} contatos`, name]}
+                  />
                 </PieChart>
               </RechContainer>
             ) : (
-              <EmptyState compact icon={PieChartIcon} title="Sem dados" description="Adicione contatos para ver a distribuição." />
+              <EmptyChart Icon={PieChartIcon} title="Sem dados" description="Adicione contatos para ver a distribuição." />
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Receita Fechada por Mês */}
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between border-b pb-3 mb-4">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <TrendingUp className="h-4 w-4" />
-                Receita Fechada por Mês
-              </div>
-            </div>
-            {monthlyRevenue.some(m => m.value > 0) ? (
-              <RechContainer width="100%" height={280}>
+        <div style={cardWrap}>
+          <div style={cardHeader}>
+            <TrendingUp size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+            <span style={cardTitle}>Receita Fechada por Mês</span>
+          </div>
+          <div style={cardBody}>
+            {monthlyRevenue.some((m) => m.value > 0) ? (
+              <RechContainer width="100%" height={260}>
                 <BarChart data={monthlyRevenue} margin={{ left: 10, right: 10, top: 5, bottom: 5 }}>
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => formatBRL(v).replace('R$\u00a0', 'R$ ')} />
-                  <Tooltip formatter={(value: number) => [formatBRL(value), 'Receita']} />
-                  <Bar dataKey="value" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: 'hsl(var(--ds-fg-4))' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: 'hsl(var(--ds-fg-4))' }}
+                    tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'hsl(var(--ds-surface))',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      fontSize: 12,
+                    }}
+                    formatter={(value: number) => [formatBRL(value), 'Receita']}
+                  />
+                  <Bar dataKey="value" fill="hsl(var(--ds-success))" />
                 </BarChart>
               </RechContainer>
             ) : (
-              <EmptyState compact icon={TrendingUp} title="Sem receita" description="Feche deals para ver a receita mensal." />
+              <EmptyChart Icon={TrendingUp} title="Sem receita" description="Feche deals para ver a receita mensal." />
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      {/* Atenção Necessária */}
-      <Card>
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between border-b pb-3 mb-4">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <AlertTriangle className="h-4 w-4" />
-              Atenção Necessária
-            </div>
-          </div>
-
+      <div style={cardWrap}>
+        <div style={cardHeader}>
+          <AlertTriangle size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+          <span style={cardTitle}>Atenção Necessária</span>
+        </div>
+        <div style={cardBody}>
           {!hasAlerts ? (
-            <EmptyState compact icon={AlertTriangle} title="Tudo em dia!" description="Nenhuma pendência no momento." />
+            <div
+              style={{
+                padding: 16,
+                textAlign: 'center',
+                color: 'hsl(var(--ds-fg-3))',
+                fontSize: 12,
+              }}
+            >
+              <AlertTriangle size={28} strokeWidth={1.25} style={{ margin: '0 auto 8px', display: 'block', color: 'hsl(var(--ds-fg-4))' }} />
+              <div style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>Tudo em dia!</div>
+              <div style={{ marginTop: 4 }}>Nenhuma pendência no momento.</div>
+            </div>
           ) : (
-            <div className="space-y-2">
-              {staleDeals.map(deal => {
-                const days = differenceInDays(new Date(), new Date(deal.updated_at ?? deal.created_at ?? new Date()));
+            <div>
+              {staleDeals.map((deal, idx) => {
+                const days = differenceInDays(
+                  new Date(),
+                  new Date(deal.updated_at ?? deal.created_at ?? new Date())
+                );
                 return (
-                  <div key={deal.id} className="flex items-center justify-between py-2 border-b last:border-0 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-3.5 w-3.5 text-amber-500" />
-                      <span className="font-medium">{deal.title}</span>
-                      <span className="text-muted-foreground">· {deal.contact_name}</span>
+                  <div
+                    key={deal.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '10px 0',
+                      fontSize: 13,
+                      borderBottom: idx === staleDeals.length - 1 && overdueFollowUps.length === 0 ? 0 : '1px solid hsl(var(--ds-line-2))',
+                    }}
+                  >
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                      <Clock size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-warning))', flexShrink: 0 }} />
+                      <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{deal.title}</span>
+                      <span style={{ color: 'hsl(var(--ds-fg-3))' }}>· {deal.contact_name}</span>
                     </div>
-                    <span className="text-muted-foreground text-xs">{days} dias parado</span>
+                    <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                      {days} dias parado
+                    </span>
                   </div>
                 );
               })}
-              {overdueFollowUps.map(act => (
-                <div key={act.id} className="flex items-center justify-between py-2 border-b last:border-0 text-sm">
-                  <div className="flex items-center gap-2">
-                    <CalendarClock className="h-3.5 w-3.5 text-rose-500" />
-                    <span className="font-medium">{act.title}</span>
+              {overdueFollowUps.map((act, idx) => (
+                <div
+                  key={act.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 0',
+                    fontSize: 13,
+                    borderBottom: idx === overdueFollowUps.length - 1 ? 0 : '1px solid hsl(var(--ds-line-2))',
+                  }}
+                >
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <CalendarClock size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-danger))', flexShrink: 0 }} />
+                    <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{act.title}</span>
                   </div>
-                  <span className="text-muted-foreground text-xs">
+                  <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', flexShrink: 0 }}>
                     {formatDistanceToNow(new Date(act.scheduled_at!), { addSuffix: true, locale: ptBR })}
                   </span>
                 </div>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

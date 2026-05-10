@@ -1,7 +1,4 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { type LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface StatsCardProps {
   title: string;
@@ -16,29 +13,71 @@ interface StatsCardProps {
 
 export function StatsCard({ title, value, icon: Icon, trend, className }: StatsCardProps) {
   return (
-    <Card className={`shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02] ${className}`}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+    <div
+      className={className}
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        padding: '16px 18px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+            color: 'hsl(var(--ds-fg-3))',
+          }}
+        >
           {title}
-        </CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {trend && (
-          <p className={cn(
-            "text-xs font-medium mt-2 flex items-center gap-1",
-            trend.isPositive ? "text-success" : "text-destructive"
-          )}>
-            {trend.isPositive ? (
-              <TrendingUp className="h-3 w-3" aria-hidden="true" />
-            ) : (
-              <TrendingDown className="h-3 w-3" aria-hidden="true" />
-            )}
-            {trend.isPositive ? '+' : ''}{trend.value} vs. mês anterior
-          </p>
-        )}
-      </CardContent>
-    </Card>
+        </span>
+        <Icon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+      </div>
+      <div
+        style={{
+          fontFamily: '"HN Display", sans-serif',
+          fontSize: 24,
+          fontWeight: 600,
+          letterSpacing: '-0.01em',
+          fontVariantNumeric: 'tabular-nums',
+          color: 'hsl(var(--ds-fg-1))',
+        }}
+      >
+        {value}
+      </div>
+      {trend && (
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 500,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            color: trend.isPositive ? 'hsl(var(--ds-success))' : 'hsl(var(--ds-danger))',
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          {trend.isPositive ? (
+            <TrendingUp size={11} strokeWidth={1.5} aria-hidden="true" />
+          ) : (
+            <TrendingDown size={11} strokeWidth={1.5} aria-hidden="true" />
+          )}
+          {trend.isPositive ? '+' : ''}
+          {trend.value} vs. mês anterior
+        </p>
+      )}
+    </div>
   );
 }

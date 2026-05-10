@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { usePolicies } from '@/features/policies';
@@ -23,18 +21,18 @@ export default function PolicyView() {
 
   const policy = id ? getPolicyById(id) : undefined;
 
-  if (loading) {
-    return <LoadingScreen />;
-  }
+  if (loading) return <LoadingScreen />;
 
   if (!policy) {
     return (
-      <div className="container mx-auto p-6 text-center">
-        <h1 className="text-2xl font-bold mb-4">Política não encontrada</h1>
-        <Button onClick={() => navigate('/politicas')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar para Políticas
-        </Button>
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner" style={{ textAlign: 'center', padding: '64px 0' }}>
+          <h1 className="ph-title" style={{ marginBottom: 16 }}>Política não encontrada.</h1>
+          <button className="btn" onClick={() => navigate('/politicas')} type="button">
+            <ArrowLeft size={14} strokeWidth={1.5} />
+            <span>Voltar para Políticas</span>
+          </button>
+        </div>
       </div>
     );
   }
@@ -54,83 +52,92 @@ export default function PolicyView() {
   };
 
   return (
-    <>
-      <div className="container mx-auto p-6 md:p-8 space-y-6">
-        {/* Header com breadcrumb e ações */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <BreadcrumbNav 
-            items={[
-              { label: 'Políticas', href: '/politicas' },
-              { label: policy.title }
-            ]} 
-            className="mb-0"
-          />
-          
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <BreadcrumbNav
+          items={[
+            { label: 'Políticas', href: '/politicas' },
+            { label: policy.title },
+          ]}
+        />
+
+        <div className="ph">
+          <div>
+            <h1 className="ph-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 32 }}>{policy.icon_url || '📋'}</span>
+              {policy.title}
+            </h1>
+          </div>
           {isAdmin && (
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setEditorOpen(true)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Editar
-              </Button>
-              <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir
-              </Button>
+            <div className="ph-actions" style={{ display: 'flex', gap: 8 }}>
+              <button className="btn" onClick={() => setEditorOpen(true)} type="button">
+                <Pencil size={14} strokeWidth={1.5} />
+                <span>Editar</span>
+              </button>
+              <button
+                className="btn"
+                onClick={() => setDeleteDialogOpen(true)}
+                type="button"
+                style={{ color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' }}
+              >
+                <Trash2 size={14} strokeWidth={1.5} />
+                <span>Excluir</span>
+              </button>
             </div>
           )}
         </div>
 
-        {/* Título */}
-        <div className="flex items-center gap-3">
-          <span className="text-4xl">{policy.icon_url || '📋'}</span>
-          <h1 className="text-2xl md:text-3xl font-bold">{policy.title}</h1>
-        </div>
-
-        {/* Conteúdo da política */}
-        <Card className="p-6 md:p-8">
-          <div 
+        <div
+          style={{
+            marginTop: 24,
+            border: '1px solid hsl(var(--ds-line-1))',
+            background: 'hsl(var(--ds-surface))',
+            padding: 32,
+          }}
+        >
+          <div
             className="prose prose-lg dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ 
+            dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(policy.content, {
                 ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre'],
-                ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target', 'rel']
-              })
-            }} 
+                ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target', 'rel'],
+              }),
+            }}
           />
-        </Card>
+        </div>
+
+        {isAdmin && (
+          <>
+            <PolicyEditor
+              open={editorOpen}
+              onOpenChange={setEditorOpen}
+              onSave={handleUpdate}
+              policy={policy}
+            />
+
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir política?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta ação não pode ser desfeita. A política "{policy.title}" será permanentemente excluída.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {deleting ? 'Excluindo…' : 'Excluir'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        )}
       </div>
-
-      {isAdmin && (
-        <>
-          <PolicyEditor
-            open={editorOpen}
-            onOpenChange={setEditorOpen}
-            onSave={handleUpdate}
-            policy={policy}
-          />
-
-          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Excluir política?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Esta ação não pode ser desfeita. A política "{policy.title}" será permanentemente excluída.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  {deleting ? 'Excluindo...' : 'Excluir'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </>
-      )}
-    </>
+    </div>
   );
 }

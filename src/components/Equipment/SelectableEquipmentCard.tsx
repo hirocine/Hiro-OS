@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Edit, Trash2, Upload, MoreVertical, Paperclip, Camera, Package, Link } from 'lucide-react';
+import { Edit, Trash2, Upload, MoreVertical, Paperclip, Camera, Package, Link as LinkIcon } from 'lucide-react';
 import { Equipment } from '@/types/equipment';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
 
 interface SelectableEquipmentCardProps {
@@ -21,6 +21,14 @@ interface SelectableEquipmentCardProps {
   accessoryCount?: number;
 }
 
+const statusToneStyle: Record<string, React.CSSProperties> = {
+  available:   { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
+  in_use:      { color: 'hsl(var(--ds-info))',    borderColor: 'hsl(var(--ds-info) / 0.3)' },
+  maintenance: { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
+  loaned:      { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
+  damaged:     { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+};
+
 export function SelectableEquipmentCard({
   equipment,
   isSelected,
@@ -30,164 +38,233 @@ export function SelectableEquipmentCard({
   onImageUpload,
   onConvertToAccessory,
   isLoading = false,
-  accessoryCount = 0
+  accessoryCount = 0,
 }: SelectableEquipmentCardProps) {
-  const {
-    getStatusVariant,
-    getStatusLabel,
-    formatCurrency,
-    handleImageUpload,
-    isUploading,
-    getHierarchyIndicator,
-  } = useEquipmentCard();
+  const { getStatusLabel, formatCurrency, handleImageUpload, isUploading, getHierarchyIndicator } =
+    useEquipmentCard();
 
   const hierarchyInfo = getHierarchyIndicator(equipment, accessoryCount);
   const uploading = isUploading(equipment.id);
+  const statusTone = statusToneStyle[equipment.status] || statusToneStyle.available;
 
   const handleImageUploadWrapper = async (file: File) => {
     await handleImageUpload(equipment, file, onImageUpload);
   };
 
   return (
-    <Card className={cn(
-      "relative transition-all duration-200 hover:shadow-md",
-      isSelected && "ring-2 ring-green-500 shadow-lg bg-green-50/50 dark:bg-green-950/20",
-      isLoading && "opacity-50 pointer-events-none"
-    )}>
-      <div className="absolute top-4 left-4 z-10">
+    <div
+      style={{
+        position: 'relative',
+        border: isSelected ? '1px solid hsl(var(--ds-success))' : '1px solid hsl(var(--ds-line-1))',
+        background: isSelected ? 'hsl(var(--ds-success) / 0.05)' : 'hsl(var(--ds-surface))',
+        boxShadow: isSelected ? 'inset 0 0 0 1px hsl(var(--ds-success))' : undefined,
+        opacity: isLoading ? 0.5 : 1,
+        pointerEvents: isLoading ? 'none' : undefined,
+        transition: 'border-color 0.15s, box-shadow 0.15s',
+      }}
+    >
+      <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 10 }}>
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onToggleSelect(equipment.id)}
-          className="bg-background shadow-sm"
+          style={{ background: 'hsl(var(--ds-surface))', boxShadow: '0 1px 2px hsl(0 0% 0% / 0.06)' }}
         />
       </div>
 
-      <CardContent className="p-4">
-        <div className="flex flex-col gap-4">
-          {/* Image Section */}
-          <div className="relative">
-            <div 
-              className="h-48 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/30 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors group"
-              onClick={() => document.getElementById(`file-input-${equipment.id}`)?.click()}
-            >
-              {equipment.image ? (
-                <img 
-                  src={equipment.image} 
-                  alt={equipment.name}
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              ) : (
-                <div className="text-center text-muted-foreground group-hover:text-primary transition-colors">
-                  <Camera className="h-12 w-12 mx-auto mb-2" />
-                  <p className="text-sm font-medium">Adicionar foto</p>
-                </div>
-              )}
-              
-              {uploading && (
-                <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
-                  <div className="text-white text-center">
-                    <Upload className="h-8 w-8 mx-auto mb-2 animate-pulse" />
-                    <p className="text-sm">Enviando...</p>
-                  </div>
-                </div>
-              )}
-              
-              <input
-                id={`file-input-${equipment.id}`}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImageUploadWrapper(file);
-                }}
+      <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ position: 'relative' }}>
+          <button
+            type="button"
+            onClick={() => document.getElementById(`file-input-${equipment.id}`)?.click()}
+            style={{
+              height: 180,
+              width: '100%',
+              border: '2px dashed hsl(var(--ds-line-1))',
+              background: 'hsl(var(--ds-line-2) / 0.3)',
+              display: 'grid',
+              placeItems: 'center',
+              cursor: 'pointer',
+              overflow: 'hidden',
+              transition: 'border-color 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+            }}
+          >
+            {equipment.image ? (
+              <img
+                src={equipment.image}
+                alt={equipment.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
+            ) : (
+              <div style={{ textAlign: 'center', color: 'hsl(var(--ds-fg-4))' }}>
+                <Camera size={36} strokeWidth={1.25} style={{ margin: '0 auto 8px', display: 'block' }} />
+                <p style={{ fontSize: 12, fontWeight: 500 }}>Adicionar foto</p>
+              </div>
+            )}
+
+            {uploading && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(0, 0, 0, 0.5)',
+                  display: 'grid',
+                  placeItems: 'center',
+                  color: '#fff',
+                }}
+              >
+                <div style={{ textAlign: 'center' }}>
+                  <Upload
+                    size={28}
+                    strokeWidth={1.5}
+                    className="animate-pulse"
+                    style={{ margin: '0 auto 8px', display: 'block' }}
+                  />
+                  <p style={{ fontSize: 12 }}>Enviando…</p>
+                </div>
+              </div>
+            )}
+
+            <input
+              id={`file-input-${equipment.id}`}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleImageUploadWrapper(file);
+              }}
+            />
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <h3
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  lineHeight: 1.3,
+                  color: 'hsl(var(--ds-fg-1))',
+                  fontFamily: '"HN Display", sans-serif',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+                title={equipment.name}
+              >
+                {equipment.name}
+              </h3>
+              <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
+                {equipment.brand} • {equipment.category}
+              </p>
             </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  style={{
+                    width: 28,
+                    height: 28,
+                    display: 'grid',
+                    placeItems: 'center',
+                    background: 'transparent',
+                    border: 0,
+                    color: 'hsl(var(--ds-fg-3))',
+                    cursor: 'pointer',
+                  }}
+                  aria-label="Menu de ações"
+                >
+                  <MoreVertical size={14} strokeWidth={1.5} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-popover">
+                <DropdownMenuItem onClick={() => onEdit(equipment)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar
+                </DropdownMenuItem>
+                {equipment.itemType === 'main' && onConvertToAccessory && (
+                  <DropdownMenuItem onClick={() => onConvertToAccessory(equipment)}>
+                    <Paperclip className="h-4 w-4 mr-2" />
+                    Converter para Acessório
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  onClick={() => onDelete(equipment)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
-          {/* Equipment Info */}
-          <div className="space-y-3">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-sm leading-tight truncate" title={equipment.name}>
-                  {equipment.name}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {equipment.brand} • {equipment.category}
-                </p>
-              </div>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <MoreVertical className="h-4 w-4" />
-                    <span className="sr-only">Menu de ações</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 bg-popover">
-                  <DropdownMenuItem onClick={() => onEdit(equipment)}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar
-                  </DropdownMenuItem>
-                  {equipment.itemType === 'main' && onConvertToAccessory && (
-                    <DropdownMenuItem onClick={() => onConvertToAccessory(equipment)}>
-                      <Paperclip className="h-4 w-4 mr-2" />
-                      Converter para Acessório
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem 
-                    onClick={() => onDelete(equipment)}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Excluir
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Patrimônio</span>
+              <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-2))', fontVariantNumeric: 'tabular-nums' }}>
+                {equipment.patrimonyNumber || 'N/A'}
+              </span>
             </div>
 
-            {/* Details */}
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Patrimônio:</span>
-                <span className="font-medium">{equipment.patrimonyNumber || 'N/A'}</span>
+            {equipment.value && (
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Valor</span>
+                <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>
+                  {formatCurrency(equipment.value)}
+                </span>
               </div>
-              
-              {equipment.value && (
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Valor:</span>
-                  <span className="font-medium">{formatCurrency(equipment.value)}</span>
-                </div>
-              )}
-              
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Status:</span>
-                <Badge variant={getStatusVariant(equipment.status)} className="text-xs">
-                  {getStatusLabel(equipment.status)}
-                </Badge>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Tipo:</span>
-                <Badge variant={hierarchyInfo.variant} className="text-xs flex items-center gap-1">
-                  {hierarchyInfo.icon === 'package' && <Package className="h-3 w-3" />}
-                  {hierarchyInfo.icon === 'link' && <Link className="h-3 w-3" />}
-                  {hierarchyInfo.label}
-                </Badge>
-              </div>
-              
-              {equipment.subcategory && (
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Subcategoria:</span>
-                  <span className="font-medium truncate max-w-24" title={equipment.subcategory}>
-                    {equipment.subcategory}
-                  </span>
-                </div>
-              )}
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Status</span>
+              <span
+                className="pill"
+                style={{ ...statusTone, fontSize: 10, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+              >
+                <span className="dot" style={{ background: 'currentColor' }} />
+                {getStatusLabel(equipment.status)}
+              </span>
             </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Tipo</span>
+              <span className="pill muted" style={{ fontSize: 10, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                {hierarchyInfo.icon === 'package' && <Package size={10} strokeWidth={1.5} />}
+                {hierarchyInfo.icon === 'link' && <LinkIcon size={10} strokeWidth={1.5} />}
+                {hierarchyInfo.label}
+              </span>
+            </div>
+
+            {equipment.subcategory && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Subcategoria</span>
+                <span
+                  style={{
+                    fontWeight: 500,
+                    color: 'hsl(var(--ds-fg-2))',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    maxWidth: 96,
+                  }}
+                  title={equipment.subcategory}
+                >
+                  {equipment.subcategory}
+                </span>
+              </div>
+            )}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

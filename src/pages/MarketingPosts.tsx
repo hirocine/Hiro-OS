@@ -3,8 +3,6 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { PostsCalendar } from '@/components/Marketing/PostsCalendar';
 import { useMarketingPosts, type MarketingPost } from '@/hooks/useMarketingPosts';
 import { toast } from 'sonner';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -219,65 +217,51 @@ export default function MarketingPosts() {
   }, [searchParams, posts, setSearchParams]);
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
-      <PageHeader
-        title={pageTitle}
-        subtitle="Todos os posts publicados no Instagram, importados automaticamente."
-        actions={
-          <div className="flex items-center gap-2">
-            {/* Toggle de modo */}
-            <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-muted/30 p-1">
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">{pageTitle}.</h1>
+            <p className="ph-sub">Todos os posts publicados no Instagram, importados automaticamente.</p>
+          </div>
+          <div className="ph-actions" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="tabs-seg">
               <button
                 type="button"
                 onClick={() => handleViewModeChange('gallery')}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5',
-                  viewMode === 'gallery'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
+                className={'seg' + (viewMode === 'gallery' ? ' on' : '')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
               >
-                <LayoutGrid className="h-3.5 w-3.5" />
-                Galeria
+                <LayoutGrid size={13} strokeWidth={1.5} />
+                <span>Galeria</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleViewModeChange('ranking')}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5',
-                  viewMode === 'ranking'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
+                className={'seg' + (viewMode === 'ranking' ? ' on' : '')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
               >
-                <Trophy className="h-3.5 w-3.5" />
-                Ranking
+                <Trophy size={13} strokeWidth={1.5} />
+                <span>Ranking</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleViewModeChange('calendar')}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5',
-                  viewMode === 'calendar'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
+                className={'seg' + (viewMode === 'calendar' ? ' on' : '')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
               >
-                <CalendarIcon className="h-3.5 w-3.5" />
-                Calendário
+                <CalendarIcon size={13} strokeWidth={1.5} />
+                <span>Calendário</span>
               </button>
             </div>
-
-            <Button onClick={handleDiscover} disabled={discovering} size="sm">
-              <RefreshCw className={cn('mr-2 h-4 w-4', discovering && 'animate-spin')} />
-              {discovering ? 'Buscando...' : 'Atualizar agora'}
-            </Button>
+            <button className="btn primary" onClick={handleDiscover} disabled={discovering} type="button">
+              <RefreshCw size={14} strokeWidth={1.5} className={discovering ? 'animate-spin' : ''} />
+              <span>{discovering ? 'Buscando…' : 'Atualizar agora'}</span>
+            </button>
           </div>
-        }
-      />
+        </div>
 
-      {/* Filtros */}
-      <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center">
+        <div style={{ display: 'flex', gap: 12, marginTop: 24, alignItems: 'center', flexWrap: 'wrap' }}>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -526,6 +510,7 @@ export default function MarketingPosts() {
           )}
         </DialogContent>
       </Dialog>
-    </ResponsiveContainer>
+      </div>
+    </div>
   );
 }

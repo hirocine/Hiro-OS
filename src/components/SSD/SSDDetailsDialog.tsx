@@ -8,9 +8,7 @@ import {
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -24,13 +22,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, HardDrive } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn, formatCapacity } from '@/lib/utils';
+import { formatCapacity } from '@/lib/utils';
 import { capitalizeNames } from '@/lib/stringUtils';
 import { useUsers } from '@/hooks/useUsers';
 import { useSSDDetails, SSDExternalLoan } from '@/features/ssds/hooks/useSSDDetails';
 import { SSDStatus } from '@/features/ssds';
 import { ProjectAllocationList, ProjectAllocation } from './ProjectAllocationList';
-import { Badge } from '@/components/ui/badge';
 
 interface SSDDetailsDialogProps {
   ssd: Equipment | null;
@@ -39,12 +36,27 @@ interface SSDDetailsDialogProps {
   onUpdate: () => void;
 }
 
-export const SSDDetailsDialog = ({
-  ssd,
-  open,
-  onOpenChange,
-  onUpdate
-}: SSDDetailsDialogProps) => {
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const Field = ({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) => (
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <label style={fieldLabel}>
+      {label}
+      {required && <span style={{ marginLeft: 4, color: 'hsl(var(--ds-danger))' }}>*</span>}
+    </label>
+    {children}
+  </div>
+);
+
+export const SSDDetailsDialog = ({ ssd, open, onOpenChange, onUpdate }: SSDDetailsDialogProps) => {
   const { users } = useUsers();
   const { allocations, externalLoan, loading, updateSSD } = useSSDDetails(ssd);
 
@@ -56,14 +68,12 @@ export const SSDDetailsDialog = ({
   const [returnDate, setReturnDate] = useState<Date>();
   const [projectAllocations, setProjectAllocations] = useState<ProjectAllocation[]>([]);
 
-  // Inicializar estados quando o dialog abrir ou o SSD mudar
   useEffect(() => {
     if (ssd && open) {
-      // Determinar status baseado no display_order
       let currentStatus: SSDStatus = 'available';
       if (ssd.displayOrder && ssd.displayOrder >= 2000) currentStatus = 'loaned';
       else if (ssd.displayOrder && ssd.displayOrder >= 1000) currentStatus = 'in_use';
-      
+
       setStatus(currentStatus);
       setInternalUserId(ssd.internal_user_id || '');
       setSsdNumber(ssd.ssdNumber || '');
@@ -84,7 +94,6 @@ export const SSDDetailsDialog = ({
   const handleSave = async () => {
     if (!ssd) return;
 
-    // Validações
     if (status === 'in_use' && !internalUserId) {
       toast.error('Selecione um responsável interno');
       return;
@@ -105,21 +114,19 @@ export const SSDDetailsDialog = ({
       }
     }
 
-    // Validar alocações
     const totalAllocated = projectAllocations.reduce((sum, a) => sum + (a.allocated_gb || 0), 0);
     if (ssd.capacity && totalAllocated > ssd.capacity) {
       toast.error(`A capacidade total foi ultrapassada em ${(totalAllocated - ssd.capacity).toFixed(0)} GB`);
       return;
     }
 
-    // Preparar dados do empréstimo externo
     let externalLoanData: SSDExternalLoan | null = null;
     if (status === 'loaned' && loanDate && returnDate) {
       externalLoanData = {
         ssd_id: ssd.id,
         borrower_name: capitalizeNames(externalBorrowerName),
         loan_date: format(loanDate, 'yyyy-MM-dd'),
-        expected_return_date: format(returnDate, 'yyyy-MM-dd')
+        expected_return_date: format(returnDate, 'yyyy-MM-dd'),
       };
     }
 
@@ -141,45 +148,55 @@ export const SSDDetailsDialog = ({
 
   const totalAllocated = projectAllocations.reduce((sum, a) => sum + (a.allocated_gb || 0), 0);
   const freeSpace = (ssd.capacity || 0) - totalAllocated;
+  const isLowSpace = ssd.capacity && freeSpace < ssd.capacity * 0.2;
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent className="max-w-2xl">
         <ResponsiveDialogHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <HardDrive className="h-5 w-5 text-primary" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                display: 'grid',
+                placeItems: 'center',
+                background: 'hsl(var(--ds-accent) / 0.1)',
+                color: 'hsl(var(--ds-accent))',
+                flexShrink: 0,
+              }}
+            >
+              <HardDrive size={18} strokeWidth={1.5} />
             </div>
-            <div>
-              <ResponsiveDialogTitle>{ssd.name}</ResponsiveDialogTitle>
+            <div style={{ minWidth: 0 }}>
+              <ResponsiveDialogTitle>
+                <span style={{ fontFamily: '"HN Display", sans-serif' }}>{ssd.name}</span>
+              </ResponsiveDialogTitle>
               <ResponsiveDialogDescription>
-                {formatCapacity(ssd.capacity)}{ssd.ssdNumber ? ` • #${ssd.ssdNumber}` : ''}
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  {formatCapacity(ssd.capacity)}
+                  {ssd.ssdNumber ? ` • #${ssd.ssdNumber}` : ''}
+                </span>
               </ResponsiveDialogDescription>
             </div>
           </div>
         </ResponsiveDialogHeader>
 
-        <div className="space-y-6 py-4">
-          {/* Número do SSD */}
-          <div className="space-y-2">
-            <Label htmlFor="ssd-number">Número do SSD</Label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 12, paddingBottom: 12 }}>
+          <Field label="Número do SSD">
             <Input
-              id="ssd-number"
               value={ssdNumber}
               onChange={(e) => setSsdNumber(e.target.value)}
               placeholder="Ex: 01, 02, 03"
-              className="h-10"
             />
-            <p className="text-xs text-muted-foreground">
+            <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 6 }}>
               Identificador visual único (etiqueta física do SSD)
             </p>
-          </div>
+          </Field>
 
-          {/* Status */}
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
+          <Field label="Status">
             <Select value={status} onValueChange={(value) => setStatus(value as SSDStatus)}>
-              <SelectTrigger id="status">
+              <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -188,14 +205,12 @@ export const SSDDetailsDialog = ({
                 <SelectItem value="loaned">Em uso (Externo)</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </Field>
 
-          {/* Responsável Interno */}
           {status === 'in_use' && (
-            <div className="space-y-2">
-              <Label htmlFor="internal-user">Responsável Interno *</Label>
+            <Field label="Responsável Interno" required>
               <Select value={internalUserId} onValueChange={setInternalUserId}>
-                <SelectTrigger id="internal-user">
+                <SelectTrigger>
                   <SelectValue placeholder="Selecione um usuário" />
                 </SelectTrigger>
                 <SelectContent>
@@ -206,41 +221,57 @@ export const SSDDetailsDialog = ({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
           )}
 
-          {/* Empréstimo Externo */}
           {status === 'loaned' && (
-            <div className="space-y-4 p-4 border rounded-lg">
-              <h3 className="font-medium text-sm">Empréstimo Externo</h3>
+            <div
+              style={{
+                border: '1px solid hsl(var(--ds-line-1))',
+                padding: 14,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: 11,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  fontWeight: 500,
+                  color: 'hsl(var(--ds-fg-3))',
+                }}
+              >
+                Empréstimo Externo
+              </h3>
 
-              <div className="space-y-2">
-                <Label htmlFor="external-borrower">Nome do Tomador *</Label>
+              <Field label="Nome do Tomador" required>
                 <Input
-                  id="external-borrower"
                   value={externalBorrowerName}
                   onChange={(e) => setExternalBorrowerName(e.target.value)}
                   onBlur={(e) => setExternalBorrowerName(capitalizeNames(e.target.value))}
                   placeholder="Ex: João Silva"
-                  className="h-10"
                 />
-              </div>
+              </Field>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Data de Empréstimo *</Label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                <Field label="Data de Empréstimo" required>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal h-10",
-                          !loanDate && "text-muted-foreground"
-                        )}
+                      <button
+                        type="button"
+                        className="btn"
+                        style={{
+                          width: '100%',
+                          justifyContent: 'flex-start',
+                          gap: 8,
+                          color: loanDate ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-4))',
+                        }}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <CalendarIcon size={14} strokeWidth={1.5} />
                         {loanDate ? format(loanDate, 'dd/MM/yyyy') : 'Selecione'}
-                      </Button>
+                      </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
@@ -253,22 +284,24 @@ export const SSDDetailsDialog = ({
                       />
                     </PopoverContent>
                   </Popover>
-                </div>
+                </Field>
 
-                <div className="space-y-2">
-                  <Label>Data de Devolução *</Label>
+                <Field label="Data de Devolução" required>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal h-10",
-                          !returnDate && "text-muted-foreground"
-                        )}
+                      <button
+                        type="button"
+                        className="btn"
+                        style={{
+                          width: '100%',
+                          justifyContent: 'flex-start',
+                          gap: 8,
+                          color: returnDate ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-4))',
+                        }}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <CalendarIcon size={14} strokeWidth={1.5} />
                         {returnDate ? format(returnDate, 'dd/MM/yyyy') : 'Selecione'}
-                      </Button>
+                      </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
@@ -276,20 +309,19 @@ export const SSDDetailsDialog = ({
                         selected={returnDate}
                         onSelect={setReturnDate}
                         locale={ptBR}
-                        disabled={(date) => loanDate ? date < loanDate : false}
+                        disabled={(date) => (loanDate ? date < loanDate : false)}
                         initialFocus
                         className="pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
-                </div>
+                </Field>
               </div>
             </div>
           )}
 
-          {/* Alocações de Projetos */}
           {(status === 'in_use' || status === 'loaned') && ssd.capacity && (
-            <div className="p-4 border rounded-lg">
+            <div style={{ border: '1px solid hsl(var(--ds-line-1))', padding: 14 }}>
               <ProjectAllocationList
                 allocations={projectAllocations}
                 totalCapacity={ssd.capacity}
@@ -298,24 +330,52 @@ export const SSDDetailsDialog = ({
             </div>
           )}
 
-          {/* Resumo de Capacidade */}
           {(status === 'in_use' || status === 'loaned') && ssd.capacity && (
-            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-              <span className="text-sm font-medium">Espaço Livre</span>
-              <Badge variant={freeSpace < ssd.capacity * 0.2 ? 'destructive' : 'success'}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                background: 'hsl(var(--ds-line-2) / 0.4)',
+                border: '1px solid hsl(var(--ds-line-2))',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 11,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  fontWeight: 500,
+                  color: 'hsl(var(--ds-fg-3))',
+                }}
+              >
+                Espaço Livre
+              </span>
+              <span
+                className="pill"
+                style={{
+                  color: isLowSpace ? 'hsl(var(--ds-danger))' : 'hsl(var(--ds-success))',
+                  borderColor: isLowSpace
+                    ? 'hsl(var(--ds-danger) / 0.3)'
+                    : 'hsl(var(--ds-success) / 0.3)',
+                  fontVariantNumeric: 'tabular-nums',
+                  fontWeight: 600,
+                }}
+              >
                 {freeSpace.toFixed(0)} GB de {ssd.capacity} GB
-              </Badge>
+              </span>
             </div>
           )}
         </div>
 
         <ResponsiveDialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <button type="button" className="btn" onClick={() => onOpenChange(false)}>
             Cancelar
-          </Button>
-          <Button onClick={handleSave} disabled={loading}>
-            {loading ? 'Salvando...' : 'Salvar'}
-          </Button>
+          </button>
+          <button type="button" className="btn primary" onClick={handleSave} disabled={loading}>
+            {loading ? 'Salvando…' : 'Salvar'}
+          </button>
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>
     </ResponsiveDialog>

@@ -1,16 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { Edit, Trash2, Plus, ExternalLink, FileText } from 'lucide-react';
+import { Edit, Trash2, Plus, ExternalLink, FileText, type LucideIcon } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { WhatsAppIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,6 +18,43 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Company } from '@/features/supplier-companies/types';
+
+const HN_DISPLAY: React.CSSProperties = { fontFamily: '"HN Display", sans-serif' };
+
+function SectionShell({
+  icon: Icon,
+  title,
+  actions,
+  children,
+}: {
+  icon?: LucideIcon;
+  title: string;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+      <div style={{ padding: '14px 18px', borderBottom: '1px solid hsl(var(--ds-line-1))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {Icon && <Icon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />}
+          <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>{title}</span>
+        </div>
+        {actions}
+      </div>
+      <div style={{ padding: 18 }}>{children}</div>
+    </div>
+  );
+}
+
+const fieldLabelStyle: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
 
 export default function CompanyDetails() {
   const { id } = useParams<{ id: string }>();
@@ -90,7 +122,7 @@ export default function CompanyDetails() {
   if (roleLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <div className="animate-spin" style={{ width: 32, height: 32, border: '2px solid hsl(var(--ds-accent))', borderTopColor: 'transparent', borderRadius: '50%' }} />
       </div>
     );
   }
@@ -101,151 +133,158 @@ export default function CompanyDetails() {
 
   if (loading) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-64 w-full" />
-      </ResponsiveContainer>
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
     );
   }
 
   if (!company) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Empresa não encontrada</p>
-          <Button onClick={() => navigate('/fornecedores/empresas')} className="mt-4">
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner" style={{ textAlign: 'center', padding: '64px 0', color: 'hsl(var(--ds-fg-3))' }}>
+          <p>Empresa não encontrada.</p>
+          <button className="btn" onClick={() => navigate('/fornecedores/empresas')} style={{ marginTop: 16 }} type="button">
             Voltar para Empresas
-          </Button>
+          </button>
         </div>
-      </ResponsiveContainer>
+      </div>
     );
   }
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
-      <BreadcrumbNav
-        items={[
-          { label: 'Fornecedores', href: '/fornecedores/empresas' },
-          { label: 'Empresas', href: '/fornecedores/empresas' },
-          { label: company.company_name }
-        ]}
-      />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <BreadcrumbNav
+          items={[
+            { label: 'Fornecedores', href: '/fornecedores/empresas' },
+            { label: 'Empresas', href: '/fornecedores/empresas' },
+            { label: company.company_name }
+          ]}
+        />
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{company.company_name}</h1>
-          {!company.is_active && (
-            <Badge variant="outline" className="mt-2">
-              Inativa
-            </Badge>
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <h1 style={{ ...HN_DISPLAY, fontSize: 28, fontWeight: 600, color: 'hsl(var(--ds-fg-1))' }}>{company.company_name}</h1>
+            {!company.is_active && (
+              <span className="pill" style={{
+                marginTop: 8,
+                display: 'inline-flex',
+                color: 'hsl(var(--ds-fg-3))',
+                borderColor: 'hsl(var(--ds-line-1))',
+                background: 'hsl(var(--ds-line-2) / 0.3)',
+              }}>
+                Inativa
+              </span>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn" onClick={() => setDialogOpen(true)} type="button">
+              <Edit size={14} strokeWidth={1.5} />
+              <span>Editar</span>
+            </button>
+            <button
+              className="btn"
+              onClick={() => setDeleteDialogOpen(true)}
+              type="button"
+              style={{ color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' }}
+            >
+              <Trash2 size={14} strokeWidth={1.5} />
+              <span>Excluir</span>
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setDialogOpen(true)}>
-            <Edit className="h-4 w-4 mr-2" />
-            Editar
-          </Button>
-          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            Excluir
-          </Button>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
+          <SectionShell title="Informações Gerais">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <p style={fieldLabelStyle}>Área de Atuação</p>
+                <p style={{ fontSize: 14, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{company.area}</p>
+              </div>
+              <div>
+                <p style={fieldLabelStyle}>Rating</p>
+                <StarRating rating={company.rating} readonly />
+              </div>
+            </div>
+          </SectionShell>
+
+          <SectionShell title="Contato e Links">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {company.whatsapp && (
+                <div>
+                  <p style={fieldLabelStyle}>WhatsApp</p>
+                  <a
+                    href={formatWhatsApp(company.whatsapp)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-success))', fontWeight: 500, fontSize: 14 }}
+                  >
+                    <WhatsAppIcon className="h-4 w-4" />
+                    {company.whatsapp}
+                  </a>
+                </div>
+              )}
+              {company.instagram && (
+                <div>
+                  <p style={fieldLabelStyle}>Instagram</p>
+                  <a
+                    href={formatInstagram(company.instagram)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-accent))', fontWeight: 500, fontSize: 14 }}
+                  >
+                    <InstagramIcon className="h-4 w-4" />
+                    {company.instagram}
+                  </a>
+                </div>
+              )}
+              {company.portfolio_url && (
+                <div>
+                  <p style={fieldLabelStyle}>Website</p>
+                  <a
+                    href={company.portfolio_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-accent))', fontWeight: 500, fontSize: 14, textDecoration: 'underline' }}
+                  >
+                    <ExternalLink size={14} strokeWidth={1.5} />
+                    Ver Website
+                  </a>
+                </div>
+              )}
+            </div>
+          </SectionShell>
         </div>
-      </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Informações Gerais</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Área de Atuação</p>
-              <p className="font-medium">{company.area}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Rating</p>
-              <StarRating rating={company.rating} readonly />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Contato e Links</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {company.whatsapp && (
-              <div>
-                <p className="text-sm text-muted-foreground">WhatsApp</p>
-                <a
-                  href={formatWhatsApp(company.whatsapp)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-green-600 hover:text-green-700 dark:text-green-400 font-medium"
-                >
-                  <WhatsAppIcon className="h-4 w-4" />
-                  {company.whatsapp}
-                </a>
-              </div>
-            )}
-            {company.instagram && (
-              <div>
-                <p className="text-sm text-muted-foreground">Instagram</p>
-                <a
-                  href={formatInstagram(company.instagram)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-pink-600 hover:text-pink-700 dark:text-pink-400 font-medium"
-                >
-                  <InstagramIcon className="h-4 w-4" />
-                  {company.instagram}
-                </a>
-              </div>
-            )}
-            {company.portfolio_url && (
-              <div>
-                <p className="text-sm text-muted-foreground">Website</p>
-                <a
-                  href={company.portfolio_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-primary hover:underline font-medium"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Ver Website
-                </a>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Notas Internas</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
+        <SectionShell title="Notas Internas">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <Textarea
               placeholder="Adicionar nova nota sobre a empresa..."
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
               rows={3}
             />
-            <Button
-              onClick={handleAddNote}
-              disabled={!newNote.trim() || addingNote}
-              size="sm"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Nota
-            </Button>
+            <div>
+              <button
+                className="btn primary"
+                onClick={handleAddNote}
+                disabled={!newNote.trim() || addingNote}
+                type="button"
+              >
+                <Plus size={14} strokeWidth={1.5} />
+                <span>Adicionar Nota</span>
+              </button>
+            </div>
           </div>
 
-          <Separator />
+          <div style={{ height: 1, background: 'hsl(var(--ds-line-1))', margin: '18px 0' }} />
 
           {notesLoading ? (
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {Array.from({ length: 3 }).map((_, i) => (
                 <Skeleton key={i} className="h-20 w-full" />
               ))}
@@ -253,63 +292,80 @@ export default function CompanyDetails() {
           ) : notes.length === 0 ? (
             <EmptyState icon={FileText} title="Nenhuma nota" description="Nenhuma nota registrada." compact />
           ) : (
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {notes.map((note) => (
-                <div key={note.id} className="p-4 rounded-lg bg-muted/50 space-y-2">
-                  <div className="flex items-start justify-between">
+                <div
+                  key={note.id}
+                  style={{
+                    padding: 14,
+                    border: '1px solid hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-line-2) / 0.3)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                     <div>
-                      <p className="text-sm font-medium">
+                      <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
                         {note.created_by_name || 'Usuário'}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
                         {format(new Date(note.created_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", {
                           locale: ptBR,
                         })}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <button
+                      className="btn"
                       onClick={() => {
                         deleteNote(note.id);
                         toast.success('Nota excluída');
                       }}
+                      type="button"
+                      style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}
+                      aria-label="Excluir nota"
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      <Trash2 size={14} strokeWidth={1.5} />
+                    </button>
                   </div>
-                  <p className="text-sm whitespace-pre-wrap">{note.content}</p>
+                  <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-2))', whiteSpace: 'pre-wrap' }}>{note.content}</p>
                 </div>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </SectionShell>
 
-      <CompanyDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        company={company}
-        onSave={handleSave}
-      />
+        <CompanyDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          company={company}
+          onSave={handleSave}
+        />
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir a empresa {company.company_name}? Esta ação não
-              pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </ResponsiveContainer>
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                <span style={HN_DISPLAY}>Confirmar Exclusão</span>
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir a empresa {company.company_name}? Esta ação não
+                pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                style={{ background: 'hsl(var(--ds-danger))', color: 'white' }}
+              >
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </div>
   );
 }

@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { MoreVertical, Trash2, Copy } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +19,8 @@ interface Props {
   onDuplicate: () => void;
 }
 
+const cellBorder = '1px solid hsl(var(--ds-line-1))';
+
 export function ServiceItemRow({ item, autoFocusLabel, onChange, onRemove, onDuplicate }: Props) {
   const labelRef = useRef<HTMLInputElement>(null);
 
@@ -31,12 +32,15 @@ export function ServiceItemRow({ item, autoFocusLabel, onChange, onRemove, onDup
 
   return (
     <div
-      className={`${ROW_GRID} border-b border-border/50 last:border-b-0 min-h-[40px] group ${
-        item.isCustom ? 'bg-primary/[0.02]' : ''
-      }`}
+      className={ROW_GRID + ' group'}
+      style={{
+        minHeight: 40,
+        borderBottom: '1px solid hsl(var(--ds-line-1))',
+        background: item.isCustom ? 'hsl(var(--ds-accent) / 0.04)' : undefined,
+      }}
     >
       {/* Checkbox */}
-      <div className="flex items-center justify-center">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Checkbox
           checked={item.included}
           onCheckedChange={(v) => onChange({ included: !!v })}
@@ -45,38 +49,81 @@ export function ServiceItemRow({ item, autoFocusLabel, onChange, onRemove, onDup
       </div>
 
       {/* Label */}
-      <div className="flex items-center gap-1.5 px-3 border-l border-border/50 text-[13px] min-w-0">
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '0 12px',
+          borderLeft: cellBorder,
+          fontSize: 13,
+          minWidth: 0,
+          color: 'hsl(var(--ds-fg-1))',
+        }}
+      >
         {item.isCustom ? (
           <input
             ref={labelRef}
             value={item.label}
             onChange={(e) => onChange({ label: e.target.value })}
             placeholder="—"
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none py-1 text-[13px] focus:bg-accent/30 rounded-sm px-1 -mx-1"
+            style={{
+              flex: 1,
+              minWidth: 0,
+              background: 'transparent',
+              border: 0,
+              outline: 'none',
+              padding: '4px 4px',
+              margin: '0 -4px',
+              fontSize: 13,
+              color: 'inherit',
+            }}
           />
         ) : (
-          <span className="text-foreground/90 truncate">{item.label}</span>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {item.label}
+          </span>
         )}
         {item.isCustom && (
-          <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">
+          <span
+            className="pill muted"
+            style={{ fontSize: 9, padding: '0 6px', height: 16, lineHeight: '16px', flexShrink: 0 }}
+          >
             custom
-          </Badge>
+          </span>
         )}
       </div>
 
       {/* Specification */}
-      <div className="border-l border-border/50 flex items-stretch min-w-0">
+      <div style={{ borderLeft: cellBorder, display: 'flex', alignItems: 'stretch', minWidth: 0 }}>
         <input
           value={item.specification}
           onChange={(e) => onChange({ specification: e.target.value })}
           placeholder=""
           disabled={!item.included}
-          className="w-full bg-transparent border-0 outline-none px-3 text-[13px] focus:bg-accent/30 disabled:opacity-50"
+          style={{
+            width: '100%',
+            background: 'transparent',
+            border: 0,
+            outline: 'none',
+            padding: '0 12px',
+            fontSize: 13,
+            color: 'hsl(var(--ds-fg-1))',
+            opacity: item.included ? 1 : 0.5,
+          }}
         />
       </div>
 
       {/* Quantity */}
-      <div className="flex items-center justify-end pr-3 border-l border-border/50">
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          paddingRight: 12,
+          borderLeft: cellBorder,
+        }}
+      >
         <input
           type="text"
           inputMode="numeric"
@@ -87,26 +134,67 @@ export function ServiceItemRow({ item, autoFocusLabel, onChange, onRemove, onDup
             const v = e.target.value.replace(/\D/g, '');
             onChange({ quantity: v === '' ? 1 : Math.max(1, parseInt(v, 10)) });
           }}
-          className="w-11 h-7 bg-muted/30 border border-border rounded-md px-2 text-[13px] text-center tabular-nums outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+          style={{
+            width: 44,
+            height: 28,
+            background: 'hsl(var(--ds-line-2) / 0.4)',
+            border: '1px solid hsl(var(--ds-line-1))',
+            padding: '0 8px',
+            fontSize: 13,
+            textAlign: 'center',
+            fontVariantNumeric: 'tabular-nums',
+            outline: 'none',
+            color: 'hsl(var(--ds-fg-1))',
+            opacity: item.included ? 1 : 0.5,
+          }}
           aria-label={`Quantidade de ${item.label}`}
         />
       </div>
 
       {/* Menu */}
-      <div className="flex items-center justify-center border-l border-border/50">
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderLeft: cellBorder,
+        }}
+      >
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="h-7 w-7 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors opacity-60 group-hover:opacity-100"
+            style={{
+              width: 28,
+              height: 28,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'transparent',
+              border: 0,
+              cursor: 'pointer',
+              color: 'hsl(var(--ds-fg-3))',
+              transition: 'color 0.15s, background 0.15s',
+            }}
             aria-label="Mais opções"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
+              e.currentTarget.style.color = 'hsl(var(--ds-fg-1))';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'hsl(var(--ds-fg-3))';
+            }}
           >
-            <MoreVertical className="h-4 w-4" />
+            <MoreVertical size={14} strokeWidth={1.5} />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={onDuplicate}>
-              <Copy className="h-3.5 w-3.5 mr-2" /> Duplicar
+              <Copy size={13} strokeWidth={1.5} style={{ marginRight: 8 }} /> Duplicar
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onRemove} className="text-destructive focus:text-destructive">
-              <Trash2 className="h-3.5 w-3.5 mr-2" /> Remover
+            <DropdownMenuItem
+              onClick={onRemove}
+              style={{ color: 'hsl(var(--ds-danger))' }}
+            >
+              <Trash2 size={13} strokeWidth={1.5} style={{ marginRight: 8 }} /> Remover
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

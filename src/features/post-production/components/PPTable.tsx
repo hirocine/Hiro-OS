@@ -2,10 +2,6 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { AlertTriangle, ChevronDown, Film } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
 import { PPSortableHeader } from './PPSortableHeader';
 import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
 import { InlineAssigneeCell } from '@/features/tasks/components/InlineAssigneeCell';
@@ -27,6 +23,8 @@ import {
 
 const PIPELINE_STEPS: PPStatus[] = ['fila', 'edicao', 'finalizacao', 'revisao', 'entregue'];
 
+const PP_COLS = '1.6fr 130px minmax(160px, 1fr) 120px 140px';
+
 function PipelineProgress({ status }: { status: PPStatus }) {
   const currentIndex = PIPELINE_STEPS.indexOf(status);
   const config = PP_STATUS_CONFIG[status];
@@ -34,19 +32,43 @@ function PipelineProgress({ status }: { status: PPStatus }) {
   const segW = 14;
   const gap = 3;
   const totalW = total * segW + (total - 1) * gap;
-
   const isDelivered = status === 'entregue';
 
+  const labelColor =
+    status === 'entregue' ? 'hsl(var(--ds-success))'
+    : status === 'edicao' ? 'hsl(var(--ds-info))'
+    : status === 'color_grading' ? 'hsl(280 70% 60%)'
+    : status === 'finalizacao' ? 'hsl(var(--ds-warning))'
+    : status === 'revisao' ? 'hsl(var(--ds-warning))'
+    : status === 'validacao_cliente' ? 'hsl(var(--ds-info))'
+    : 'hsl(var(--ds-fg-3))';
+
   return (
-    <div className="flex flex-col gap-1.5">
-      <span className={`text-xs font-medium leading-none ${config.color}`}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          lineHeight: 1,
+          color: labelColor,
+        }}
+      >
         {config.label}
       </span>
-      <svg width={totalW} height={4} style={{ display: 'block', overflow: 'visible' }}>
+      <svg width={totalW} height={4} style={{ display: 'block' }}>
         {PIPELINE_STEPS.map((_, i) => {
           const x = i * (segW + gap);
           const isCompleted = i < currentIndex;
           const isActive = i === currentIndex;
+          const fill = isDelivered
+            ? 'hsl(var(--ds-success))'
+            : isCompleted
+              ? 'hsl(var(--ds-accent))'
+              : isActive
+                ? 'hsl(var(--ds-accent))'
+                : 'hsl(var(--ds-line-2))';
           return (
             <rect
               key={i}
@@ -54,17 +76,8 @@ function PipelineProgress({ status }: { status: PPStatus }) {
               y={0}
               width={segW}
               height={4}
-              rx={2}
-              fill="currentColor"
-              className={
-                isDelivered
-                  ? 'text-green-600 dark:text-green-400'
-                  : isCompleted
-                  ? 'text-primary'
-                  : isActive
-                  ? 'text-primary opacity-50'
-                  : 'text-muted-foreground opacity-20'
-              }
+              fill={fill}
+              opacity={isActive && !isDelivered ? 0.5 : 1}
             />
           );
         })}
@@ -80,13 +93,14 @@ interface PPTableProps {
   onEditClick?: (item: PostProductionItem) => void;
 }
 
-export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableProps) {
+export function PPTable({ items, isLoading }: PPTableProps) {
   const { updateItem } = usePostProductionMutations();
   const { users } = useUsers();
   const navigate = useNavigate();
 
   const [sortBy, setSortBy] = useState<PPSortableField>('due_date');
   const [sortOrder, setSortOrder] = useState<PPSortOrder>('asc');
+  const [deliveredOpen, setDeliveredOpen] = useState(false);
 
   const parseLocalDate = (dateStr: string): Date => {
     const [year, month, day] = dateStr.split('-').map(Number);
@@ -119,28 +133,27 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
           else if (!b.due_date) cmp = -1;
           else cmp = parseLocalDate(a.due_date).getTime() - parseLocalDate(b.due_date).getTime();
           break;
-        case 'project_name':
+        case 'project_name': {
           const pA = a.project_name || a.client_name || '';
           const pB = b.project_name || b.client_name || '';
           cmp = pA.localeCompare(pB, 'pt-BR');
           break;
+        }
       }
       return sortOrder === 'asc' ? cmp : -cmp;
     });
   }, [items, sortBy, sortOrder]);
 
-  const activeItems = sortedItems.filter(i => i.status !== 'entregue');
-  const deliveredItems = useMemo(() =>
-    [...sortedItems.filter(i => i.status === 'entregue')]
-      .sort((a, b) => {
+  const activeItems = sortedItems.filter((i) => i.status !== 'entregue');
+  const deliveredItems = useMemo(
+    () =>
+      [...sortedItems.filter((i) => i.status === 'entregue')].sort((a, b) => {
         const dateA = a.delivered_date || a.updated_at;
         const dateB = b.delivered_date || b.updated_at;
         return new Date(dateB).getTime() - new Date(dateA).getTime();
       }),
     [sortedItems]
   );
-
-  const [deliveredOpen, setDeliveredOpen] = useState(false);
 
   const handleSort = (field: PPSortableField, order: PPSortOrder) => {
     setSortBy(field);
@@ -149,186 +162,269 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
 
   if (isLoading) {
     return (
-      <div className="space-y-2">
-        {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-12" />)}
+      <div className="tbl" style={{ gridTemplateColumns: PP_COLS, border: '1px solid hsl(var(--ds-line-1))' }}>
+        <div className="tbl-head">
+          <div>Título</div>
+          <div>Editor</div>
+          <div>Pipeline</div>
+          <div>Prioridade</div>
+          <div>Prazo</div>
+        </div>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className={'tbl-row' + (i === 5 ? ' last' : '')}>
+            <div><span className="sk line lg" style={{ width: '70%' }} /></div>
+            <div><span className="sk line" style={{ width: 100 }} /></div>
+            <div><span className="sk line" style={{ width: 120 }} /></div>
+            <div><span className="sk line" style={{ width: 80 }} /></div>
+            <div><span className="sk line" style={{ width: 100 }} /></div>
+          </div>
+        ))}
       </div>
     );
   }
 
   return (
     <>
-    <div className="rounded-xl overflow-hidden border-y border-border/50">
-      <Table className="table-fixed">
-        <TableHeader>
-          <TableRow className="bg-muted border-b border-border">
-            <TableHead className="w-[35%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              <PPSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
-            </TableHead>
-            <TableHead className="w-[15%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              <PPSortableHeader field="editor_name" label="Editor" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
-            </TableHead>
-            <TableHead className="w-[22%] min-w-[160px] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              <PPSortableHeader field="status" label="Pipeline" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
-            </TableHead>
-            <TableHead className="w-[13%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              <PPSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
-            </TableHead>
-            <TableHead className="w-[15%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              <PPSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {activeItems.map(item => {
+      <div className="tbl" style={{ gridTemplateColumns: PP_COLS, border: '1px solid hsl(var(--ds-line-1))' }}>
+        <div className="tbl-head">
+          <div>
+            <PPSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+          </div>
+          <div>
+            <PPSortableHeader field="editor_name" label="Editor" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+          </div>
+          <div>
+            <PPSortableHeader field="status" label="Pipeline" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+          </div>
+          <div>
+            <PPSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+          </div>
+          <div>
+            <PPSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+          </div>
+        </div>
+
+        {activeItems.length === 0 ? (
+          <div style={{ gridColumn: '1 / -1', padding: 0 }}>
+            <div className="empties" style={{ borderTop: 0, borderLeft: 0, borderRight: 0 }}>
+              <div className="empty" style={{ borderRight: 0 }}>
+                <div className="glyph"><Film strokeWidth={1.25} /></div>
+                <h5>Nenhum vídeo em produção</h5>
+                <p>Adicione um novo vídeo à esteira para começar.</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          activeItems.map((item, idx) => {
+            const isLast = idx === activeItems.length - 1;
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const isOverdue = item.due_date && item.status !== 'entregue' && new Date(item.due_date + 'T00:00:00') < today;
+            const isOverdue =
+              item.due_date && item.status !== 'entregue' && new Date(item.due_date + 'T00:00:00') < today;
             const daysOverdue = isOverdue
               ? Math.floor((today.getTime() - new Date(item.due_date! + 'T00:00:00').getTime()) / 86400000)
               : 0;
 
             return (
-              <TableRow
+              <div
                 key={item.id}
-                className="border-b border-border hover:bg-muted/40 cursor-pointer transition-colors"
+                className={'tbl-row' + (isLast ? ' last' : '')}
                 onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
               >
-                <TableCell>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-medium text-foreground leading-snug">
-                      {item.title}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
+                <div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span className="t-title">{item.title}</span>
+                    <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
                       {[item.client_name, item.project_name].filter(Boolean).join(' · ') || '—'}
                     </span>
                   </div>
-                </TableCell>
-                <TableCell onClick={e => e.stopPropagation()}>
+                </div>
+                <div onClick={(e) => e.stopPropagation()}>
                   <InlineAssigneeCell
                     value={item.editor_id ? [item.editor_id] : []}
                     users={users}
-                    onSave={values => {
+                    onSave={(values) => {
                       const newId = values[0] || null;
-                      const editorUser = users.find(u => u.id === newId);
-                      updateItem.mutate({ id: item.id, updates: { editor_id: newId, editor_name: editorUser?.display_name || null } });
+                      const editorUser = users.find((u) => u.id === newId);
+                      updateItem.mutate({
+                        id: item.id,
+                        updates: { editor_id: newId, editor_name: editorUser?.display_name || null },
+                      });
                     }}
                   />
-                </TableCell>
-                <TableCell className="overflow-hidden">
+                </div>
+                <div style={{ overflow: 'hidden' }}>
                   <PipelineProgress status={item.status} />
-                </TableCell>
-                <TableCell onClick={e => e.stopPropagation()}>
+                </div>
+                <div onClick={(e) => e.stopPropagation()}>
                   <InlineSelectCell
                     value={item.priority}
                     options={Object.entries(PP_PRIORITY_CONFIG).map(([v, c]) => ({ value: v, label: c.label }))}
-                    onSave={v => updateItem.mutate({ id: item.id, updates: { priority: v as PPPriority } })}
-                    renderValue={v => <PPPriorityBadge priority={v as PPPriority} />}
-                    renderOption={v => <PPPriorityBadge priority={v as PPPriority} />}
+                    onSave={(v) => updateItem.mutate({ id: item.id, updates: { priority: v as PPPriority } })}
+                    renderValue={(v) => <PPPriorityBadge priority={v as PPPriority} />}
+                    renderOption={(v) => <PPPriorityBadge priority={v as PPPriority} />}
                   />
-                </TableCell>
-                <TableCell onClick={e => e.stopPropagation()}>
+                </div>
+                <div onClick={(e) => e.stopPropagation()}>
                   {isOverdue ? (
                     <div>
-                      <div className="flex items-center gap-1 text-destructive text-sm font-medium">
-                        <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                      <div
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          color: 'hsl(var(--ds-danger))',
+                          fontSize: 13,
+                          fontWeight: 500,
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        <AlertTriangle size={13} strokeWidth={1.5} style={{ flexShrink: 0 }} />
                         {format(new Date(item.due_date! + 'T00:00:00'), 'dd/MM/yyyy')}
                       </div>
-                      <p className="text-xs text-destructive mt-0.5">
+                      <p style={{ fontSize: 11, color: 'hsl(var(--ds-danger))', marginTop: 2 }}>
                         Atrasada há {daysOverdue} dia{daysOverdue !== 1 ? 's' : ''}
                       </p>
                     </div>
                   ) : (
                     <InlineDateCell
                       value={item.due_date}
-                      onSave={v => updateItem.mutate({ id: item.id, updates: { due_date: v } })}
+                      onSave={(v) => updateItem.mutate({ id: item.id, updates: { due_date: v } })}
                     />
                   )}
-                </TableCell>
-              </TableRow>
+                </div>
+              </div>
             );
-          })}
+          })
+        )}
+      </div>
 
-          {activeItems.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={5}>
-                <EmptyState icon={Film} title="" description="Nenhum vídeo em produção." compact />
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
-
-    {/* Delivered accordion */}
-    {deliveredItems.length > 0 && (
-      <div className="mt-3 rounded-xl overflow-hidden border border-border/50">
-        <button
-          className="w-full flex items-center justify-between px-4 py-3 bg-muted/40 hover:bg-muted/60 transition-colors"
-          onClick={() => setDeliveredOpen(o => !o)}
+      {deliveredItems.length > 0 && (
+        <div
+          style={{
+            marginTop: 12,
+            border: '1px solid hsl(var(--ds-line-1))',
+            background: 'hsl(var(--ds-surface))',
+            overflow: 'hidden',
+          }}
         >
-          <div className="flex items-center gap-2">
-            <ChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform duration-200', deliveredOpen && 'rotate-180')} />
-            <span className="text-sm font-medium text-muted-foreground">Entregues</span>
-            <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-              {deliveredItems.length}
-            </span>
-          </div>
-          <span className="text-xs text-muted-foreground/60">Ordenado por mais recente</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setDeliveredOpen((o) => !o)}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 16px',
+              background: 'hsl(var(--ds-line-2) / 0.4)',
+              border: 0,
+              cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
+            }}
+          >
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <ChevronDown
+                size={14}
+                strokeWidth={1.5}
+                style={{
+                  color: 'hsl(var(--ds-fg-3))',
+                  transition: 'transform 0.2s',
+                  transform: deliveredOpen ? 'rotate(180deg)' : 'none',
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 11,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  fontWeight: 500,
+                  color: 'hsl(var(--ds-fg-3))',
+                }}
+              >
+                Entregues
+              </span>
+              <span
+                className="pill"
+                style={{
+                  color: 'hsl(var(--ds-success))',
+                  borderColor: 'hsl(var(--ds-success) / 0.3)',
+                  fontSize: 10,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {deliveredItems.length}
+              </span>
+            </div>
+            <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))' }}>Ordenado por mais recente</span>
+          </button>
 
-        {deliveredOpen && (
-          <Table className="table-fixed">
-            <TableHeader>
-              <TableRow className="bg-muted/30 border-b border-border">
-                <TableHead className="w-[35%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Título</TableHead>
-                <TableHead className="w-[15%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Editor</TableHead>
-                <TableHead className="w-[22%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Pipeline</TableHead>
-                <TableHead className="w-[28%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Entregue em</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {deliveredItems.map(item => (
-                <TableRow
-                  key={item.id}
-                  className="border-b border-border/50 last:border-0 hover:bg-muted/30 cursor-pointer transition-colors opacity-70 hover:opacity-100"
-                  onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
-                >
-                  <TableCell>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-medium text-foreground leading-snug">{item.title}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {[item.client_name, item.project_name].filter(Boolean).join(' · ') || '—'}
-                      </span>
+          {deliveredOpen && (
+            <div className="tbl" style={{ gridTemplateColumns: '1.6fr 130px minmax(160px, 1fr) 1fr', borderTop: '1px solid hsl(var(--ds-line-1))' }}>
+              <div className="tbl-head">
+                <div>Título</div>
+                <div>Editor</div>
+                <div>Pipeline</div>
+                <div>Entregue em</div>
+              </div>
+              {deliveredItems.map((item, idx) => {
+                const isLast = idx === deliveredItems.length - 1;
+                return (
+                  <div
+                    key={item.id}
+                    className={'tbl-row' + (isLast ? ' last' : '')}
+                    onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
+                    style={{ opacity: 0.75 }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '1';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '0.75';
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <span className="t-title">{item.title}</span>
+                        <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                          {[item.client_name, item.project_name].filter(Boolean).join(' · ') || '—'}
+                        </span>
+                      </div>
                     </div>
-                  </TableCell>
-                  <TableCell onClick={e => e.stopPropagation()}>
-                    <InlineAssigneeCell
-                      value={item.editor_id ? [item.editor_id] : []}
-                      users={users}
-                      onSave={values => {
-                        const newId = values[0] || null;
-                        const editorUser = users.find(u => u.id === newId);
-                        updateItem.mutate({ id: item.id, updates: { editor_id: newId, editor_name: editorUser?.display_name || null } });
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell className="overflow-hidden">
-                    <PipelineProgress status={item.status} />
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted-foreground">
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <InlineAssigneeCell
+                        value={item.editor_id ? [item.editor_id] : []}
+                        users={users}
+                        onSave={(values) => {
+                          const newId = values[0] || null;
+                          const editorUser = users.find((u) => u.id === newId);
+                          updateItem.mutate({
+                            id: item.id,
+                            updates: { editor_id: newId, editor_name: editorUser?.display_name || null },
+                          });
+                        }}
+                      />
+                    </div>
+                    <div style={{ overflow: 'hidden' }}>
+                      <PipelineProgress status={item.status} />
+                    </div>
+                    <div style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
                       {item.delivered_date
                         ? format(new Date(item.delivered_date + 'T00:00:00'), 'dd/MM/yyyy')
                         : '—'}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </div>
-    )}
-  </>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </>
   );
 }

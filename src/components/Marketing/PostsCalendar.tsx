@@ -1,9 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, CalendarDays, X, Trash2, Pencil } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   AlertDialog,
@@ -22,7 +19,6 @@ import {
   isSameDay, isSameWeek,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
 import { type MarketingPost } from '@/hooks/useMarketingPosts';
 import { type MarketingPillar } from '@/hooks/useMarketingPillars';
 import { getPillarColor } from '@/lib/marketing-colors';
@@ -50,12 +46,6 @@ function getPostsForDay(day: Date, posts: MarketingPost[]): MarketingPost[] {
   });
 }
 
-function pillColorClasses(p: MarketingPost, pillars: MarketingPillar[]) {
-  const pillar = pillars.find((pp) => pp.id === p.pillar_id);
-  const color = getPillarColor(pillar?.color);
-  return `${color.bg} ${color.text}`;
-}
-
 function DayDetailPopover({
   day, posts, pillars, onClose, onEdit, onDelete, onCreate,
 }: {
@@ -70,30 +60,108 @@ function DayDetailPopover({
   const [confirmDelete, setConfirmDelete] = useState<MarketingPost | null>(null);
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+      }}
+      onClick={onClose}
+    >
       <div
-        className="relative bg-background border border-border rounded-2xl shadow-2xl w-[440px] max-w-full max-h-[80vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(0,0,0,0.3)',
+          backdropFilter: 'blur(4px)',
+        }}
+      />
+      <div
+        style={{
+          position: 'relative',
+          background: 'hsl(var(--ds-surface))',
+          border: '1px solid hsl(var(--ds-line-1))',
+          width: 440,
+          maxWidth: '100%',
+          maxHeight: '80vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-5 border-b border-border flex items-start justify-between gap-3">
+        <div
+          style={{
+            padding: '18px 20px',
+            borderBottom: '1px solid hsl(var(--ds-line-1))',
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}
+        >
           <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            <p
+              style={{
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                fontWeight: 500,
+                color: 'hsl(var(--ds-fg-3))',
+              }}
+            >
               {format(day, 'EEEE', { locale: ptBR })}
             </p>
-            <h3 className="text-lg font-semibold capitalize">
+            <h3
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 18,
+                fontWeight: 600,
+                textTransform: 'capitalize',
+                color: 'hsl(var(--ds-fg-1))',
+                marginTop: 2,
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
               {format(day, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
             </h3>
-            <p className="text-xs text-muted-foreground mt-1">{posts.length} post{posts.length === 1 ? '' : 's'}</p>
+            <p
+              style={{
+                fontSize: 11,
+                color: 'hsl(var(--ds-fg-3))',
+                marginTop: 4,
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              {posts.length} post{posts.length === 1 ? '' : 's'}
+            </p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1">
-            <X className="h-4 w-4" />
+          <button
+            type="button"
+            onClick={onClose}
+            className="btn"
+            style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}
+            aria-label="Fechar"
+          >
+            <X size={14} strokeWidth={1.5} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        <div style={{ flex: 1, overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {posts.length === 0 ? (
-            <div className="py-10 text-center text-sm text-muted-foreground">
+            <div
+              style={{
+                padding: '40px 0',
+                textAlign: 'center',
+                fontSize: 13,
+                color: 'hsl(var(--ds-fg-3))',
+              }}
+            >
               Nenhum post agendado para este dia.
             </div>
           ) : posts.map((p) => {
@@ -105,61 +173,109 @@ function DayDetailPopover({
             return (
               <div
                 key={p.id}
-                className={cn(
-                  'group rounded-xl border border-border bg-card p-3 hover:border-foreground/20 transition cursor-pointer',
-                  cancelled && 'opacity-60'
-                )}
+                className="group"
+                style={{
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  background: 'hsl(var(--ds-surface))',
+                  padding: 12,
+                  cursor: 'pointer',
+                  opacity: cancelled ? 0.6 : 1,
+                  transition: 'border-color 0.15s',
+                }}
                 onClick={() => onEdit(p)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                }}
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 text-center shrink-0">
-                    <div className="text-lg font-semibold leading-none">
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <div style={{ width: 44, textAlign: 'center', flexShrink: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 600,
+                        lineHeight: 1,
+                        color: 'hsl(var(--ds-fg-1))',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
                       {d ? format(d, 'HH:mm') : '--:--'}
                     </div>
                   </div>
-                  <div className="w-px self-stretch bg-border" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                  <div style={{ width: 1, alignSelf: 'stretch', background: 'hsl(var(--ds-line-1))' }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                       {pillar && (
-                        <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: color.hex }} />
+                        <span
+                          style={{
+                            height: 8,
+                            width: 8,
+                            borderRadius: '50%',
+                            flexShrink: 0,
+                            background: color.hex,
+                          }}
+                        />
                       )}
-                      <p className={cn('text-sm font-medium truncate', cancelled && 'line-through')}>
+                      <p
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 500,
+                          color: 'hsl(var(--ds-fg-1))',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          textDecoration: cancelled ? 'line-through' : 'none',
+                        }}
+                      >
                         {p.title}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                       {p.platform && (
-                        <Badge variant="outline" className="text-[10px] h-5">
+                        <span className="pill muted" style={{ fontSize: 10 }}>
                           {getPostPlatformLabel(p.platform)}
-                        </Badge>
+                        </span>
                       )}
                       {p.format && (
-                        <Badge variant="outline" className="text-[10px] h-5">
+                        <span className="pill muted" style={{ fontSize: 10 }}>
                           {getPostFormatLabel(p.format)}
-                        </Badge>
+                        </span>
                       )}
-                      <span className={cn('text-[10px] px-1.5 py-0.5 rounded-full', status.className)}>
+                      <span className="pill" style={{ fontSize: 10 }}>
                         {status.emoji} {status.label}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7"
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                    className="post-actions"
+                  >
+                    <button
+                      type="button"
+                      className="btn"
+                      style={{ width: 28, height: 28, padding: 0, justifyContent: 'center' }}
                       onClick={(e) => { e.stopPropagation(); onEdit(p); }}
+                      aria-label="Editar"
                     >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 text-destructive hover:text-destructive"
+                      <Pencil size={12} strokeWidth={1.5} />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn"
+                      style={{
+                        width: 28,
+                        height: 28,
+                        padding: 0,
+                        justifyContent: 'center',
+                        color: 'hsl(var(--ds-danger))',
+                      }}
                       onClick={(e) => { e.stopPropagation(); setConfirmDelete(p); }}
+                      aria-label="Remover"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                      <Trash2 size={12} strokeWidth={1.5} />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -167,17 +283,24 @@ function DayDetailPopover({
           })}
         </div>
 
-        <div className="p-3 border-t border-border">
-          <Button variant="outline" className="w-full" onClick={() => onCreate(day)}>
+        <div style={{ padding: 12, borderTop: '1px solid hsl(var(--ds-line-1))' }}>
+          <button
+            type="button"
+            className="btn"
+            style={{ width: '100%', justifyContent: 'center' }}
+            onClick={() => onCreate(day)}
+          >
             + Novo post neste dia
-          </Button>
+          </button>
         </div>
       </div>
 
       <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remover post?</AlertDialogTitle>
+            <AlertDialogTitle>
+              <span style={{ fontFamily: '"HN Display", sans-serif' }}>Remover post?</span>
+            </AlertDialogTitle>
             <AlertDialogDescription>
               "{confirmDelete?.title}" será removido permanentemente.
             </AlertDialogDescription>
@@ -268,52 +391,131 @@ export function PostsCalendar({ posts, pillars, loading, onCreate, onEdit, onDel
 
   return (
     <TooltipProvider delayDuration={150}>
-      <Card>
-        <CardContent className="p-5">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <CalendarDays className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Calendário</h3>
-                <p className="text-xs text-muted-foreground">
-                  {loading ? 'Carregando...' : `${posts.length} posts · ${periodLabel}`}
-                </p>
-              </div>
+      <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+        <div
+          style={{
+            padding: '14px 18px',
+            borderBottom: '1px solid hsl(var(--ds-line-1))',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          <CalendarDays size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-2))',
+            }}
+          >
+            Calendário
+          </span>
+          <span
+            style={{
+              marginLeft: 'auto',
+              fontSize: 11,
+              color: 'hsl(var(--ds-fg-3))',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {loading ? 'Carregando...' : `${posts.length} posts · ${periodLabel}`}
+          </span>
+        </div>
+
+        <div style={{ padding: 18 }}>
+          {/* Toolbar */}
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              marginBottom: 16,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {view !== 'list' && (
+                <>
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}
+                    onClick={() => navigate(-1)}
+                    aria-label="Anterior"
+                  >
+                    <ChevronLeft size={14} strokeWidth={1.5} />
+                  </button>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      minWidth: 140,
+                      textAlign: 'center',
+                      textTransform: 'capitalize',
+                      color: 'hsl(var(--ds-fg-1))',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
+                    {periodLabel}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}
+                    onClick={() => navigate(1)}
+                    aria-label="Próximo"
+                  >
+                    <ChevronRight size={14} strokeWidth={1.5} />
+                  </button>
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{ marginLeft: 4 }}
+                    onClick={() => setCurrentDate(new Date())}
+                  >
+                    Hoje
+                  </button>
+                </>
+              )}
             </div>
 
-            <div className="flex items-center gap-2">
-              {view !== 'list' && (
-                <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(-1)}>
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm font-medium min-w-[140px] text-center capitalize">{periodLabel}</span>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(1)}>
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 ml-1" onClick={() => setCurrentDate(new Date())}>
-                    Hoje
-                  </Button>
-                </div>
-              )}
-
-              <div className="flex items-center bg-muted rounded-lg p-0.5">
-                {(['month', 'week', 'list'] as const).map((v) => (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                border: '1px solid hsl(var(--ds-line-1))',
+                background: 'hsl(var(--ds-line-2) / 0.3)',
+                padding: 2,
+              }}
+            >
+              {(['month', 'week', 'list'] as const).map((v) => {
+                const active = view === v;
+                return (
                   <button
                     key={v}
+                    type="button"
                     onClick={() => { setView(v); setAnimKey((k) => k + 1); }}
-                    className={cn(
-                      'text-xs px-2.5 py-1 rounded-md transition-all',
-                      view === v ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                    )}
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      fontWeight: 500,
+                      padding: '4px 10px',
+                      background: active ? 'hsl(var(--ds-surface))' : 'transparent',
+                      color: active ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+                      border: 0,
+                      cursor: 'pointer',
+                      transition: 'color 0.15s, background 0.15s',
+                    }}
                   >
                     {v === 'month' ? 'Mês' : v === 'week' ? 'Semana' : 'Lista'}
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
 
@@ -321,14 +523,25 @@ export function PostsCalendar({ posts, pillars, loading, onCreate, onEdit, onDel
             {/* Month View */}
             {view === 'month' && (
               <div>
-                <div className="grid grid-cols-7 mb-1">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 4 }}>
                   {WEEKDAY_LABELS.map((d) => (
-                    <div key={d} className="text-[10px] text-muted-foreground uppercase tracking-wider text-center py-1.5 font-medium">
+                    <div
+                      key={d}
+                      style={{
+                        fontSize: 10,
+                        color: 'hsl(var(--ds-fg-3))',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.14em',
+                        textAlign: 'center',
+                        padding: '6px 0',
+                        fontWeight: 500,
+                      }}
+                    >
                       {d}
                     </div>
                   ))}
                 </div>
-                <div className="grid grid-cols-7">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
                   {calendarDays.map((day) => {
                     const sameMonth = isSameMonth(day, currentDate);
                     const dayPosts = sameMonth ? getPostsForDay(day, posts) : [];
@@ -337,50 +550,108 @@ export function PostsCalendar({ posts, pillars, loading, onCreate, onEdit, onDel
                       <div
                         key={day.toISOString()}
                         onClick={() => sameMonth && setSelectedDay(day)}
-                        className={cn(
-                          'min-h-[88px] p-1.5 border border-border/20 transition-colors hover:bg-muted/30 cursor-pointer',
-                          !sameMonth && 'opacity-30 bg-muted/20'
-                        )}
+                        style={{
+                          minHeight: 88,
+                          padding: 6,
+                          border: '1px solid hsl(var(--ds-line-1))',
+                          marginLeft: -1,
+                          marginTop: -1,
+                          cursor: 'pointer',
+                          opacity: sameMonth ? 1 : 0.3,
+                          background: sameMonth ? 'transparent' : 'hsl(var(--ds-line-2) / 0.2)',
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (sameMonth) e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = sameMonth ? 'transparent' : 'hsl(var(--ds-line-2) / 0.2)';
+                        }}
                       >
                         {today ? (
-                          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-medium mb-0.5">
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: 22,
+                              height: 22,
+                              background: 'hsl(var(--ds-accent))',
+                              color: 'hsl(var(--ds-surface))',
+                              fontSize: 11,
+                              fontWeight: 500,
+                              marginBottom: 2,
+                              fontVariantNumeric: 'tabular-nums',
+                            }}
+                          >
                             {format(day, 'd')}
                           </span>
                         ) : (
-                          <span className="text-xs block mb-0.5 text-muted-foreground">{format(day, 'd')}</span>
+                          <span
+                            style={{
+                              fontSize: 11,
+                              display: 'block',
+                              marginBottom: 2,
+                              color: 'hsl(var(--ds-fg-3))',
+                              fontVariantNumeric: 'tabular-nums',
+                            }}
+                          >
+                            {format(day, 'd')}
+                          </span>
                         )}
-                        <div className="space-y-0.5">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                           {dayPosts.slice(0, 3).map((p) => {
                             const cancelled = p.status === 'cancelado';
                             const d = postDate(p);
                             const status = getPostStatus(p.status);
+                            const pillar = pillars.find((pp) => pp.id === p.pillar_id);
+                            const c = getPillarColor(pillar?.color);
                             return (
                               <Tooltip key={p.id}>
                                 <TooltipTrigger asChild>
                                   <div
                                     onClick={(ev) => { ev.stopPropagation(); onEdit(p); }}
-                                    className={cn(
-                                      'text-[10px] px-1.5 py-0.5 rounded truncate w-full cursor-pointer',
-                                      pillColorClasses(p, pillars),
-                                      cancelled && 'line-through opacity-50'
-                                    )}
+                                    style={{
+                                      fontSize: 10,
+                                      padding: '2px 6px',
+                                      width: '100%',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                      cursor: 'pointer',
+                                      borderLeft: `2px solid ${c.hex}`,
+                                      background: 'hsl(var(--ds-line-2) / 0.4)',
+                                      color: 'hsl(var(--ds-fg-1))',
+                                      textDecoration: cancelled ? 'line-through' : 'none',
+                                      opacity: cancelled ? 0.5 : 1,
+                                      fontVariantNumeric: 'tabular-nums',
+                                    }}
                                   >
                                     {d ? format(d, 'HH:mm') + ' ' : ''}{p.title}
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent side="top" className="text-xs">
-                                  <div className="font-medium">{p.title}</div>
-                                  <div className="text-muted-foreground">
+                                  <div style={{ fontWeight: 500 }}>{p.title}</div>
+                                  <div style={{ color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
                                     {d ? format(d, 'HH:mm') : '--:--'}
                                     {p.platform ? ` · ${getPostPlatformLabel(p.platform)}` : ''}
                                   </div>
-                                  <div className="mt-0.5">{status.emoji} {status.label}</div>
+                                  <div style={{ marginTop: 2 }}>{status.emoji} {status.label}</div>
                                 </TooltipContent>
                               </Tooltip>
                             );
                           })}
                           {dayPosts.length > 3 && (
-                            <span className="text-[10px] text-muted-foreground px-1.5">+{dayPosts.length - 3} mais</span>
+                            <span
+                              style={{
+                                fontSize: 10,
+                                color: 'hsl(var(--ds-fg-3))',
+                                padding: '0 6px',
+                                fontVariantNumeric: 'tabular-nums',
+                              }}
+                            >
+                              +{dayPosts.length - 3} mais
+                            </span>
                           )}
                         </div>
                       </div>
@@ -392,20 +663,67 @@ export function PostsCalendar({ posts, pillars, loading, onCreate, onEdit, onDel
 
             {/* Week View */}
             {view === 'week' && (
-              <div className="grid grid-cols-7 gap-px">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0 }}>
                 {calendarDays.map((day) => {
                   const dayPosts = getPostsForDay(day, posts);
                   const today = isToday(day);
                   return (
-                    <div key={day.toISOString()} className={cn('rounded-lg', today && 'bg-primary/5')}>
+                    <div
+                      key={day.toISOString()}
+                      style={{
+                        border: '1px solid hsl(var(--ds-line-1))',
+                        marginLeft: -1,
+                        marginTop: -1,
+                        background: today ? 'hsl(var(--ds-accent) / 0.05)' : 'transparent',
+                      }}
+                    >
                       <div
                         onClick={() => setSelectedDay(day)}
-                        className={cn('text-center py-2 border-b border-border cursor-pointer hover:bg-muted/40', today && 'text-primary')}
+                        style={{
+                          textAlign: 'center',
+                          padding: '8px 0',
+                          borderBottom: '1px solid hsl(var(--ds-line-1))',
+                          cursor: 'pointer',
+                          color: today ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-1))',
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent';
+                        }}
                       >
-                        <div className="text-[10px] uppercase text-muted-foreground">{WEEKDAY_LABELS[day.getDay()]}</div>
-                        <div className={cn('text-lg font-semibold', today && 'text-primary')}>{format(day, 'd')}</div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            textTransform: 'uppercase',
+                            color: 'hsl(var(--ds-fg-3))',
+                            letterSpacing: '0.14em',
+                          }}
+                        >
+                          {WEEKDAY_LABELS[day.getDay()]}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 18,
+                            fontWeight: 600,
+                            color: today ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-1))',
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
+                          {format(day, 'd')}
+                        </div>
                       </div>
-                      <div className="p-1 space-y-1 min-h-[140px]">
+                      <div
+                        style={{
+                          padding: 4,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 4,
+                          minHeight: 140,
+                        }}
+                      >
                         {dayPosts.map((p) => {
                           const d = postDate(p);
                           const pillar = pillars.find((pp) => pp.id === p.pillar_id);
@@ -415,14 +733,41 @@ export function PostsCalendar({ posts, pillars, loading, onCreate, onEdit, onDel
                             <div
                               key={p.id}
                               onClick={() => onEdit(p)}
-                              className={cn(
-                                'rounded-lg p-2 bg-muted/40 border-l-2 cursor-pointer hover:bg-muted/60 transition-colors',
-                                cancelled && 'opacity-50'
-                              )}
-                              style={{ borderLeftColor: color.hex }}
+                              style={{
+                                padding: 8,
+                                background: 'hsl(var(--ds-line-2) / 0.4)',
+                                borderLeft: `2px solid ${color.hex}`,
+                                cursor: 'pointer',
+                                opacity: cancelled ? 0.5 : 1,
+                                transition: 'background 0.15s',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.6)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
+                              }}
                             >
-                              <p className={cn('text-xs font-medium truncate', cancelled && 'line-through')}>{p.title}</p>
-                              <p className="text-[10px] text-muted-foreground">
+                              <p
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 500,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  color: 'hsl(var(--ds-fg-1))',
+                                  textDecoration: cancelled ? 'line-through' : 'none',
+                                }}
+                              >
+                                {p.title}
+                              </p>
+                              <p
+                                style={{
+                                  fontSize: 10,
+                                  color: 'hsl(var(--ds-fg-3))',
+                                  fontVariantNumeric: 'tabular-nums',
+                                }}
+                              >
                                 {d ? format(d, 'HH:mm') : '--:--'}
                                 {p.platform && ` · ${getPostPlatformLabel(p.platform)}`}
                               </p>
@@ -440,13 +785,40 @@ export function PostsCalendar({ posts, pillars, loading, onCreate, onEdit, onDel
             {view === 'list' && (
               <div>
                 {loading ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground">Carregando posts...</div>
+                  <div
+                    style={{
+                      padding: '48px 0',
+                      textAlign: 'center',
+                      fontSize: 13,
+                      color: 'hsl(var(--ds-fg-3))',
+                    }}
+                  >
+                    Carregando posts...
+                  </div>
                 ) : listPosts.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground">Nenhum post nos próximos 60 dias</div>
+                  <div
+                    style={{
+                      padding: '48px 0',
+                      textAlign: 'center',
+                      fontSize: 13,
+                      color: 'hsl(var(--ds-fg-3))',
+                    }}
+                  >
+                    Nenhum post nos próximos 60 dias
+                  </div>
                 ) : (
                   groupPostsForList(listPosts, new Date()).map((group) => (
                     <div key={group.label}>
-                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 pt-4 pb-2 font-medium">
+                      <div
+                        style={{
+                          fontSize: 10,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.14em',
+                          color: 'hsl(var(--ds-fg-3))',
+                          padding: '16px 8px 8px',
+                          fontWeight: 500,
+                        }}
+                      >
                         {group.label}
                       </div>
                       {group.items.map((p) => {
@@ -458,29 +830,87 @@ export function PostsCalendar({ posts, pillars, loading, onCreate, onEdit, onDel
                         return (
                           <div
                             key={p.id}
-                            className={cn(
-                              'flex items-center gap-3 px-2 py-3 hover:bg-muted/40 cursor-pointer transition-colors border-b border-border last:border-0',
-                              cancelled && 'opacity-50'
-                            )}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 12,
+                              padding: '12px 8px',
+                              cursor: 'pointer',
+                              borderBottom: '1px solid hsl(var(--ds-line-1))',
+                              opacity: cancelled ? 0.5 : 1,
+                              transition: 'background 0.15s',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent';
+                            }}
                             onClick={() => onEdit(p)}
                           >
-                            <div className="w-10 text-center shrink-0">
-                              <div className="text-2xl font-semibold leading-none">{format(d, 'd')}</div>
-                              <div className="text-[10px] text-muted-foreground uppercase">{format(d, 'MMM', { locale: ptBR })}</div>
+                            <div style={{ width: 40, textAlign: 'center', flexShrink: 0 }}>
+                              <div
+                                style={{
+                                  fontFamily: '"HN Display", sans-serif',
+                                  fontSize: 22,
+                                  fontWeight: 600,
+                                  lineHeight: 1,
+                                  color: 'hsl(var(--ds-fg-1))',
+                                  fontVariantNumeric: 'tabular-nums',
+                                }}
+                              >
+                                {format(d, 'd')}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 10,
+                                  color: 'hsl(var(--ds-fg-3))',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.14em',
+                                }}
+                              >
+                                {format(d, 'MMM', { locale: ptBR })}
+                              </div>
                             </div>
-                            <div className="w-px h-8 bg-border shrink-0" />
-                            <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: color.hex }} />
-                            <div className="flex-1 min-w-0">
-                              <p className={cn('text-sm font-medium truncate', cancelled && 'line-through')}>{p.title}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {format(d, "HH:mm")}
+                            <div style={{ width: 1, height: 32, background: 'hsl(var(--ds-line-1))', flexShrink: 0 }} />
+                            <span
+                              style={{
+                                height: 8,
+                                width: 8,
+                                borderRadius: '50%',
+                                flexShrink: 0,
+                                background: color.hex,
+                              }}
+                            />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: 500,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  color: 'hsl(var(--ds-fg-1))',
+                                  textDecoration: cancelled ? 'line-through' : 'none',
+                                }}
+                              >
+                                {p.title}
+                              </p>
+                              <p
+                                style={{
+                                  fontSize: 11,
+                                  color: 'hsl(var(--ds-fg-3))',
+                                  fontVariantNumeric: 'tabular-nums',
+                                }}
+                              >
+                                {format(d, 'HH:mm')}
                                 {p.platform && ` · ${getPostPlatformLabel(p.platform)}`}
                                 {p.format && ` · ${getPostFormatLabel(p.format)}`}
                               </p>
                             </div>
-                            <Badge variant="outline" className={cn('shrink-0 text-[10px]', status.className)}>
+                            <span className="pill" style={{ flexShrink: 0, fontSize: 10 }}>
                               {status.emoji} {status.label}
-                            </Badge>
+                            </span>
                           </div>
                         );
                       })}
@@ -490,8 +920,8 @@ export function PostsCalendar({ posts, pillars, loading, onCreate, onEdit, onDel
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {selectedDay && (
         <DayDetailPopover

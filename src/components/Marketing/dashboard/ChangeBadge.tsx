@@ -1,5 +1,4 @@
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface Props {
   value: number | null;
@@ -9,8 +8,16 @@ interface Props {
 export function ChangeBadge({ value, withContext = true }: Props) {
   if (value === null) {
     return (
-      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-        <Minus className="h-3 w-3" />
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          fontSize: 11,
+          color: 'hsl(var(--ds-fg-3))',
+        }}
+      >
+        <Minus size={11} strokeWidth={1.5} />
         Sem comparação ainda
       </span>
     );
@@ -19,15 +26,21 @@ export function ChangeBadge({ value, withContext = true }: Props) {
   const Icon = positive ? ArrowUp : ArrowDown;
   return (
     <span
-      className={cn(
-        'inline-flex items-center gap-1 text-xs font-medium',
-        positive ? 'text-emerald-500' : 'text-red-500'
-      )}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+        fontSize: 11,
+        fontWeight: 500,
+        color: positive ? 'hsl(var(--ds-success))' : 'hsl(var(--ds-danger))',
+      }}
     >
-      <Icon className="h-3 w-3" />
-      <span className="font-numeric">{Math.abs(value).toFixed(1)}%</span>
+      <Icon size={11} strokeWidth={1.5} />
+      <span style={{ fontVariantNumeric: 'tabular-nums' }}>{Math.abs(value).toFixed(1)}%</span>
       {withContext && (
-        <span className="text-muted-foreground font-normal ml-0.5">vs período anterior</span>
+        <span style={{ color: 'hsl(var(--ds-fg-4))', fontWeight: 400, marginLeft: 2 }}>
+          vs período anterior
+        </span>
       )}
     </span>
   );

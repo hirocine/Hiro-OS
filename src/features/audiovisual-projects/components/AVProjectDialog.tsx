@@ -149,11 +149,11 @@ export function AVProjectDialog({ open, onOpenChange, project }: AVProjectDialog
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Logo Upload */}
           <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16 rounded-lg">
+            <Avatar className="h-16 w-16 rounded-none">
               {logoUrl ? (
                 <AvatarImage src={logoUrl} className="object-cover" />
               ) : null}
-              <AvatarFallback className="rounded-lg bg-muted text-muted-foreground">
+              <AvatarFallback className="rounded-none bg-[hsl(var(--ds-line-2)/0.4)] text-[hsl(var(--ds-fg-3))]">
                 <Upload className="h-6 w-6" />
               </AvatarFallback>
             </Avatar>
@@ -169,14 +169,15 @@ export function AVProjectDialog({ open, onOpenChange, project }: AVProjectDialog
               />
             </div>
             {logoUrl && (
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="icon"
+                className="btn"
                 onClick={() => setLogoUrl(null)}
+                style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}
+                aria-label="Remover logo"
               >
-                <X className="h-4 w-4" />
-              </Button>
+                <X size={13} strokeWidth={1.5} />
+              </button>
             )}
           </div>
 
@@ -209,16 +210,16 @@ export function AVProjectDialog({ open, onOpenChange, project }: AVProjectDialog
             <Label>Prazo de Entrega</Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    'w-full justify-start text-left font-normal',
-                    !deadline && 'text-muted-foreground'
-                  )}
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ width: '100%', justifyContent: 'flex-start' }}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {deadline ? format(deadline, 'dd/MM/yyyy') : 'Selecionar data'}
-                </Button>
+                  <CalendarIcon size={13} strokeWidth={1.5} />
+                  <span style={{ fontVariantNumeric: 'tabular-nums', color: !deadline ? 'hsl(var(--ds-fg-3))' : undefined }}>
+                    {deadline ? format(deadline, 'dd/MM/yyyy') : 'Selecionar data'}
+                  </span>
+                </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
@@ -253,12 +254,12 @@ export function AVProjectDialog({ open, onOpenChange, project }: AVProjectDialog
 
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <button type="button" className="btn" onClick={() => onOpenChange(false)}>
               Cancelar
-            </Button>
-            <Button type="submit" disabled={createProject.isPending || updateProject.isPending}>
+            </button>
+            <button type="submit" className="btn primary" disabled={createProject.isPending || updateProject.isPending}>
               {project ? 'Salvar' : 'Criar Projeto'}
-            </Button>
+            </button>
           </div>
         </form>
       </DialogContent>

@@ -10,12 +10,14 @@ export default function PPVideoDetail() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-64 w-full" />
-        <div className="grid grid-cols-3 gap-4">
-          <Skeleton className="h-48 col-span-2" />
-          <Skeleton className="h-48" />
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-64 w-full" />
+          <div className="grid grid-cols-3 gap-4">
+            <Skeleton className="h-48 col-span-2" />
+            <Skeleton className="h-48" />
+          </div>
         </div>
       </div>
     );

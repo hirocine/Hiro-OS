@@ -4,13 +4,8 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar, User, Building2, Edit, Archive, Trash2, LayoutList } from 'lucide-react';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
@@ -52,7 +47,7 @@ export default function AVProjectDetails() {
   // Group steps by section
   const stepsBySection = useMemo(() => {
     if (!steps || !sections) return new Map();
-    
+
     const map = new Map<string, typeof steps>();
     sections.forEach((section) => {
       const sectionSteps = steps.filter((s) => s.section_id === section.id);
@@ -70,12 +65,12 @@ export default function AVProjectDetails() {
 
   if (!canAccessSuppliers) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Você não tem permissão para acessar esta página.</p>
-          <button className="mt-4 text-primary underline" onClick={() => navigate('/')}>Voltar ao início</button>
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner" style={{ textAlign: 'center', padding: '64px 0', color: 'hsl(var(--ds-fg-3))' }}>
+          <p>Você não tem permissão para acessar esta página.</p>
+          <button className="btn" onClick={() => navigate('/')} style={{ marginTop: 16 }} type="button">Voltar ao início</button>
         </div>
-      </ResponsiveContainer>
+      </div>
     );
   }
 
@@ -101,34 +96,27 @@ export default function AVProjectDetails() {
 
   if (isLoading) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-10 w-10" />
-            <Skeleton className="h-16 w-16 rounded-lg" />
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-64" />
-              <Skeleton className="h-4 w-40" />
-            </div>
-          </div>
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Skeleton className="h-10 w-64" />
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-32 w-full" />
           ))}
         </div>
-      </ResponsiveContainer>
+      </div>
     );
   }
 
   if (!project) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Projeto não encontrado</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate('/projetos-av')}>
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner" style={{ textAlign: 'center', padding: '64px 0', color: 'hsl(var(--ds-fg-3))' }}>
+          <p>Projeto não encontrado.</p>
+          <button className="btn" onClick={() => navigate('/projetos-av')} style={{ marginTop: 16 }} type="button">
             Voltar para Projetos
-          </Button>
+          </button>
         </div>
-      </ResponsiveContainer>
+      </div>
     );
   }
 
@@ -136,36 +124,46 @@ export default function AVProjectDetails() {
   const isOverdue = project.deadline && new Date(project.deadline) < new Date() && project.status === 'active';
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
       {/* Header com breadcrumb e ações */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <BreadcrumbNav 
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }} className="sm:flex-row sm:items-center sm:justify-between">
+        <BreadcrumbNav
           items={[
             { label: 'Projetos', href: '/projetos-av' },
             { label: project.name }
           ]}
           className="mb-0"
         />
-        
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setEditDialogOpen(true)}>
-            <Edit className="h-4 w-4 mr-2" />
-            Editar
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleArchive}>
-            <Archive className="h-4 w-4 mr-2" />
-            {project.status === 'archived' ? 'Desarquivar' : 'Arquivar'}
-          </Button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button type="button" className="btn" onClick={() => setEditDialogOpen(true)}>
+            <Edit size={13} strokeWidth={1.5} />
+            <span>Editar</span>
+          </button>
+          <button type="button" className="btn" onClick={handleArchive}>
+            <Archive size={13} strokeWidth={1.5} />
+            <span>{project.status === 'archived' ? 'Desarquivar' : 'Arquivar'}</span>
+          </button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Excluir
-              </Button>
+              <button
+                type="button"
+                className="btn"
+                style={{
+                  color: 'hsl(var(--ds-danger))',
+                  borderColor: 'hsl(var(--ds-danger) / 0.3)',
+                }}
+              >
+                <Trash2 size={13} strokeWidth={1.5} />
+                <span>Excluir</span>
+              </button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Excluir projeto?</AlertDialogTitle>
+                <AlertDialogTitle>
+                  <span style={{ fontFamily: '"HN Display", sans-serif' }}>Excluir projeto?</span>
+                </AlertDialogTitle>
                 <AlertDialogDescription>
                   Esta ação não pode ser desfeita. Todos os steps e dados do projeto serão removidos permanentemente.
                 </AlertDialogDescription>
@@ -179,87 +177,120 @@ export default function AVProjectDetails() {
         </div>
       </div>
 
-      {/* Project Header Card */}
-      <Card className="mb-8">
-        <CardContent className="p-6">
-          {/* Avatar + Title + Badges */}
-          <div className="flex items-start gap-4">
-            <Avatar className="h-16 w-16 rounded-lg shrink-0">
-              {project.logo_url ? (
-                <AvatarImage src={project.logo_url} className="object-cover" />
-              ) : null}
-              <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xl font-semibold">
-                {getInitials(project.name)}
-              </AvatarFallback>
-            </Avatar>
+      {/* Project Header */}
+      <div
+        style={{
+          border: '1px solid hsl(var(--ds-line-1))',
+          background: 'hsl(var(--ds-surface))',
+          padding: 24,
+          marginBottom: 32,
+        }}
+      >
+        {/* Avatar + Title + Badges */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+          <Avatar className="h-16 w-16 shrink-0" style={{ borderRadius: 0 }}>
+            {project.logo_url ? (
+              <AvatarImage src={project.logo_url} className="object-cover" />
+            ) : null}
+            <AvatarFallback style={{ borderRadius: 0, background: 'hsl(var(--ds-accent) / 0.1)', color: 'hsl(var(--ds-accent))', fontSize: 20, fontWeight: 600 }}>
+              {getInitials(project.name)}
+            </AvatarFallback>
+          </Avatar>
 
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-bold">{project.name}</h1>
-                <Badge className={`${statusConfig.bgColor} ${statusConfig.color} border-0`}>
-                  {statusConfig.label}
-                </Badge>
-                {isOverdue && (
-                  <Badge variant="destructive">Atrasado</Badge>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground flex-wrap">
-                {project.company && (
-                  <div className="flex items-center gap-1">
-                    <Building2 className="h-4 w-4" />
-                    <span>{project.company}</span>
-                  </div>
-                )}
-                {project.deadline && (
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    <span>Prazo: {format(new Date(project.deadline), "dd 'de' MMM, yyyy", { locale: ptBR })}</span>
-                  </div>
-                )}
-                {project.responsible_user_name && (
-                  <div className="flex items-center gap-1">
-                    <User className="h-4 w-4" />
-                    <span>{project.responsible_user_name}</span>
-                  </div>
-                )}
-              </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <h1 style={{ fontSize: 24, fontWeight: 700, color: 'hsl(var(--ds-fg-1))', fontFamily: '"HN Display", sans-serif' }}>
+                {project.name}
+              </h1>
+              <span
+                className="pill"
+                style={{
+                  color: 'hsl(var(--ds-accent))',
+                  borderColor: 'hsl(var(--ds-accent) / 0.3)',
+                  background: 'hsl(var(--ds-accent) / 0.08)',
+                }}
+              >
+                {statusConfig.label}
+              </span>
+              {isOverdue && (
+                <span
+                  className="pill"
+                  style={{
+                    color: 'hsl(var(--ds-danger))',
+                    borderColor: 'hsl(var(--ds-danger) / 0.3)',
+                    background: 'hsl(var(--ds-danger) / 0.08)',
+                  }}
+                >
+                  Atrasado
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8, fontSize: 13, color: 'hsl(var(--ds-fg-3))', flexWrap: 'wrap' }}>
+              {project.company && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Building2 size={14} strokeWidth={1.5} />
+                  <span>{project.company}</span>
+                </div>
+              )}
+              {project.deadline && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Calendar size={14} strokeWidth={1.5} />
+                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    Prazo: {format(new Date(project.deadline), "dd 'de' MMM, yyyy", { locale: ptBR })}
+                  </span>
+                </div>
+              )}
+              {project.responsible_user_name && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <User size={14} strokeWidth={1.5} />
+                  <span>{project.responsible_user_name}</span>
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Separator */}
-          <Separator className="my-5" />
-
-          {/* Progress */}
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium">Progresso Geral</p>
-              <p className="text-2xl font-bold text-primary">{overallProgress}%</p>
-            </div>
-            <div className="flex-1 max-w-md ml-8">
-              <div className="h-3 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-success transition-all duration-500"
-                  style={{ width: `${overallProgress}%` }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1 text-right">
-                {steps?.filter((s) => s.status === 'concluido').length || 0} de {steps?.length || 0} steps concluídos
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Workflow Section */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-2 rounded-lg bg-muted">
-          <LayoutList className="h-5 w-5 text-muted-foreground" />
         </div>
-        <h2 className="text-lg font-semibold">Workflow</h2>
+
+        {/* Separator */}
+        <div style={{ height: 1, background: 'hsl(var(--ds-line-1))', margin: '20px 0' }} />
+
+        {/* Progress */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>Progresso Geral</p>
+            <p style={{ fontSize: 24, fontWeight: 700, color: 'hsl(var(--ds-accent))', fontVariantNumeric: 'tabular-nums', fontFamily: '"HN Display", sans-serif' }}>
+              {overallProgress}%
+            </p>
+          </div>
+          <div style={{ flex: 1, maxWidth: 384, marginLeft: 32 }}>
+            <div style={{ height: 12, background: 'hsl(var(--ds-line-2) / 0.3)', overflow: 'hidden' }}>
+              <div
+                style={{
+                  height: '100%',
+                  background: 'hsl(var(--ds-success))',
+                  transition: 'all 500ms',
+                  width: `${overallProgress}%`,
+                }}
+              />
+            </div>
+            <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+              {steps?.filter((s) => s.status === 'concluido').length || 0} de {steps?.length || 0} steps concluídos
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-4">
+      {/* Workflow Section */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <div style={{ padding: 8, background: 'hsl(var(--ds-line-2) / 0.3)' }}>
+          <LayoutList size={20} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+        </div>
+        <h2 style={{ fontSize: 18, fontWeight: 600, color: 'hsl(var(--ds-fg-1))', fontFamily: '"HN Display", sans-serif' }}>
+          Workflow
+        </h2>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {sections?.map((section) => {
           const sectionSteps = stepsBySection.get(section.id) || [];
           return (
@@ -278,6 +309,7 @@ export default function AVProjectDetails() {
         onOpenChange={setEditDialogOpen}
         project={project}
       />
-    </ResponsiveContainer>
+      </div>
+    </div>
   );
 }

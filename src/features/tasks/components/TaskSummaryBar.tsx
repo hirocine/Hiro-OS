@@ -1,7 +1,5 @@
-import { ListChecks, AlertTriangle, Flame, CheckCircle } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { ListChecks, AlertTriangle, Flame, CheckCircle, type LucideIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 
 interface TaskSummaryBarProps {
   stats: {
@@ -13,62 +11,117 @@ interface TaskSummaryBarProps {
   isLoading?: boolean;
 }
 
+interface CellProps {
+  Icon: LucideIcon;
+  value: number;
+  label: string;
+  tone: string;
+  active: boolean;
+}
+
+const SummaryCell = ({ Icon, value, label, tone, active }: CellProps) => {
+  const color = active ? tone : 'hsl(var(--ds-fg-3))';
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        padding: '4px 8px',
+      }}
+    >
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          display: 'grid',
+          placeItems: 'center',
+          background: active ? `${tone.replace(')', ' / 0.1)')}` : 'hsl(var(--ds-line-2))',
+          color,
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={14} strokeWidth={1.5} />
+      </div>
+      <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6 }}>
+        <span
+          style={{
+            fontFamily: '"HN Display", sans-serif',
+            fontSize: 18,
+            fontWeight: 600,
+            letterSpacing: '-0.01em',
+            fontVariantNumeric: 'tabular-nums',
+            color,
+          }}
+        >
+          {value}
+        </span>
+        <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>{label}</span>
+      </div>
+    </div>
+  );
+};
+
 export function TaskSummaryBar({ stats, isLoading }: TaskSummaryBarProps) {
   if (isLoading) {
     return (
-      <Card className="p-4">
-        <div className="flex items-center justify-center gap-8">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-8 w-24" />
-          ))}
-        </div>
-      </Card>
+      <div
+        style={{
+          border: '1px solid hsl(var(--ds-line-1))',
+          background: 'hsl(var(--ds-surface))',
+          padding: 16,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 32,
+        }}
+      >
+        {[1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-8 w-24" />
+        ))}
+      </div>
     );
   }
 
   return (
-    <Card>
-      <div className="grid grid-cols-4 py-3 px-4">
-        <div className="flex items-center justify-center gap-2">
-          <div className="p-1.5 rounded-lg bg-primary/10">
-            <ListChecks className="h-4 w-4 text-primary" />
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-xl font-bold text-primary">{stats.active}</span>
-            <span className="text-sm text-muted-foreground">Ativas</span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-center gap-2">
-          <div className={cn("p-1.5 rounded-lg", stats.overdue > 0 ? "bg-destructive/10" : "bg-muted")}>
-            <AlertTriangle className={cn("h-4 w-4", stats.overdue > 0 ? "text-destructive" : "text-muted-foreground")} />
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className={cn("text-xl font-bold", stats.overdue > 0 ? "text-destructive" : "text-muted-foreground")}>{stats.overdue}</span>
-            <span className="text-sm text-muted-foreground">Atrasadas</span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-center gap-2">
-          <div className={cn("p-1.5 rounded-lg", stats.urgent > 0 ? "bg-orange-500/10" : "bg-muted")}>
-            <Flame className={cn("h-4 w-4", stats.urgent > 0 ? "text-orange-500" : "text-muted-foreground")} />
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className={cn("text-xl font-bold", stats.urgent > 0 ? "text-orange-500" : "text-muted-foreground")}>{stats.urgent}</span>
-            <span className="text-sm text-muted-foreground">Urgentes</span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-center gap-2">
-          <div className={cn("p-1.5 rounded-lg", stats.completed > 0 ? "bg-green-500/10" : "bg-muted")}>
-            <CheckCircle className={cn("h-4 w-4", stats.completed > 0 ? "text-green-600" : "text-muted-foreground")} />
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className={cn("text-xl font-bold", stats.completed > 0 ? "text-green-600" : "text-muted-foreground")}>{stats.completed}</span>
-            <span className="text-sm text-muted-foreground">Concluídas</span>
-          </div>
-        </div>
-      </div>
-    </Card>
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        padding: '12px 8px',
+      }}
+    >
+      <SummaryCell
+        Icon={ListChecks}
+        value={stats.active}
+        label="Ativas"
+        tone="hsl(var(--ds-accent))"
+        active
+      />
+      <SummaryCell
+        Icon={AlertTriangle}
+        value={stats.overdue}
+        label="Atrasadas"
+        tone="hsl(var(--ds-danger))"
+        active={stats.overdue > 0}
+      />
+      <SummaryCell
+        Icon={Flame}
+        value={stats.urgent}
+        label="Urgentes"
+        tone="hsl(var(--ds-warning))"
+        active={stats.urgent > 0}
+      />
+      <SummaryCell
+        Icon={CheckCircle}
+        value={stats.completed}
+        label="Concluídas"
+        tone="hsl(var(--ds-success))"
+        active={stats.completed > 0}
+      />
+    </div>
   );
 }

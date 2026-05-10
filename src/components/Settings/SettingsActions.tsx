@@ -1,13 +1,10 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useEquipment } from '@/features/equipment';
 import { useProjects } from '@/features/projects';
 import { toast } from 'sonner';
-import { Download, Upload, Save, RotateCcw } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 
 export function SettingsActions() {
   const [isExporting, setIsExporting] = useState(false);
@@ -18,9 +15,8 @@ export function SettingsActions() {
   const handleExportData = async () => {
     setIsExporting(true);
     try {
-      // Create CSV data
       const csvData = {
-        equipment: equipment.map(eq => ({
+        equipment: equipment.map((eq) => ({
           name: eq.name,
           brand: eq.brand,
           category: eq.category,
@@ -28,33 +24,32 @@ export function SettingsActions() {
           serial_number: eq.serialNumber,
           patrimony_number: eq.patrimonyNumber,
         })),
-        projects: projects.map(proj => ({
+        projects: projects.map((proj) => ({
           name: proj.name,
           responsible_name: proj.responsibleName,
           start_date: proj.startDate,
           expected_end_date: proj.expectedEndDate,
           status: proj.status,
           step: proj.step,
-        }))
+        })),
       };
 
-      // Create and download file
       const dataStr = JSON.stringify(csvData, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-      
+      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
       const exportFileDefaultName = `backup_${new Date().toISOString().split('T')[0]}.json`;
-      
+
       const linkElement = document.createElement('a');
       linkElement.setAttribute('href', dataUri);
       linkElement.setAttribute('download', exportFileDefaultName);
       linkElement.click();
 
       toast.success('Backup criado com sucesso', {
-        description: `Arquivo ${exportFileDefaultName} foi baixado.`
+        description: `Arquivo ${exportFileDefaultName} foi baixado.`,
       });
     } catch (error) {
       toast.error('Erro ao criar backup', {
-        description: 'Não foi possível exportar os dados.'
+        description: 'Não foi possível exportar os dados.',
       });
     } finally {
       setIsExporting(false);
@@ -69,27 +64,23 @@ export function SettingsActions() {
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      
-      // Validate data structure
+
       if (!data.equipment || !data.projects) {
         throw new Error('Formato de arquivo inválido');
       }
 
       toast.info('Importação iniciada', {
-        description: 'Os dados estão sendo processados...'
+        description: 'Os dados estão sendo processados...',
       });
 
-      // Here you would implement the actual import logic
-      // For now, just show success message
       setTimeout(() => {
         toast.success('Dados importados com sucesso', {
-          description: `${data.equipment.length} equipamentos e ${data.projects.length} projetos foram importados.`
+          description: `${data.equipment.length} equipamentos e ${data.projects.length} projetos foram importados.`,
         });
       }, 2000);
-
     } catch (error) {
       toast.error('Erro ao importar dados', {
-        description: 'Verifique se o arquivo está no formato correto.'
+        description: 'Verifique se o arquivo está no formato correto.',
       });
     } finally {
       setIsImporting(false);
@@ -97,43 +88,44 @@ export function SettingsActions() {
   };
 
   return (
-    <div className="space-y-2">
-      <Label>Backup dos Dados</Label>
-      <div className="flex gap-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleExportData}
-          disabled={isExporting}
-          className="flex items-center gap-2"
-        >
-          <Download className="h-4 w-4" />
-          {isExporting ? 'Exportando...' : 'Fazer Backup'}
-        </Button>
-        
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <label
+        style={{
+          fontSize: 11,
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          fontWeight: 500,
+          color: 'hsl(var(--ds-fg-3))',
+        }}
+      >
+        Backup dos Dados
+      </label>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button type="button" className="btn" onClick={handleExportData} disabled={isExporting}>
+          <Download size={13} strokeWidth={1.5} />
+          <span>{isExporting ? 'Exportando...' : 'Fazer Backup'}</span>
+        </button>
+
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <Upload className="h-4 w-4" />
-              Restaurar
-            </Button>
+            <button type="button" className="btn">
+              <Upload size={13} strokeWidth={1.5} />
+              <span>Restaurar</span>
+            </button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Restaurar Backup</DialogTitle>
+              <DialogTitle>
+                <span style={{ fontFamily: '"HN Display", sans-serif' }}>Restaurar Backup</span>
+              </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 8 }}>
+              <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
                 Selecione um arquivo de backup para restaurar os dados do sistema.
               </p>
-              <Input 
-                type="file" 
-                accept=".json"
-                onChange={handleImportData}
-                disabled={isImporting}
-              />
+              <Input type="file" accept=".json" onChange={handleImportData} disabled={isImporting} />
               {isImporting && (
-                <p className="text-sm text-primary">Importando dados...</p>
+                <p style={{ fontSize: 13, color: 'hsl(var(--ds-accent))' }}>Importando dados...</p>
               )}
             </div>
           </DialogContent>

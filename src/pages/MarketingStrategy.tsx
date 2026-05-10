@@ -1,8 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-
 import { PersonaContent } from '@/components/Marketing/PersonaContent';
 import { PillarsContent } from '@/components/Marketing/PillarsContent';
 
@@ -21,21 +18,24 @@ export default function MarketingStrategy() {
   }, [searchParams]);
 
   return (
-    <ResponsiveContainer>
-      <PageHeader
-        title="Estratégia"
-        subtitle="Persona e pilares de conteúdo da Hiro Films"
-      />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Estratégia.</h1>
+            <p className="ph-sub">Persona e pilares de conteúdo da Hiro Films.</p>
+          </div>
+        </div>
 
-      <div className="space-y-10">
-        <section ref={personaRef} className="scroll-mt-20">
-          <PersonaContent />
-        </section>
-
-        <section ref={pillarsRef} className="scroll-mt-20">
-          <PillarsContent />
-        </section>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 40, marginTop: 24 }}>
+          <section ref={personaRef} className="scroll-mt-20">
+            <PersonaContent />
+          </section>
+          <section ref={pillarsRef} className="scroll-mt-20">
+            <PillarsContent />
+          </section>
+        </div>
       </div>
-    </ResponsiveContainer>
+    </div>
   );
 }

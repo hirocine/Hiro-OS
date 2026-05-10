@@ -29,9 +29,8 @@ export function InlineEditCell({ value, onSave, className = '' }: InlineEditCell
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSave();
-    } else if (e.key === 'Escape') {
+    if (e.key === 'Enter') handleSave();
+    else if (e.key === 'Escape') {
       setEditValue(value);
       setIsEditing(false);
     }
@@ -46,7 +45,8 @@ export function InlineEditCell({ value, onSave, className = '' }: InlineEditCell
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         onClick={(e) => e.stopPropagation()}
-        className={`h-8 ${className}`}
+        style={{ height: 32, fontSize: 13 }}
+        className={className}
       />
     );
   }
@@ -57,7 +57,21 @@ export function InlineEditCell({ value, onSave, className = '' }: InlineEditCell
         e.stopPropagation();
         setIsEditing(true);
       }}
-      className={`cursor-pointer hover:bg-muted/50 rounded px-2 py-1 transition-colors ${className}`}
+      style={{
+        cursor: 'pointer',
+        padding: '4px 8px',
+        margin: '-4px -8px',
+        fontSize: 13,
+        color: 'hsl(var(--ds-fg-1))',
+        transition: 'background 0.15s',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'hsl(var(--ds-line-2))';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'transparent';
+      }}
+      className={className}
     >
       {value}
     </div>

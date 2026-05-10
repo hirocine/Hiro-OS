@@ -1,8 +1,5 @@
 import { Equipment } from '@/types/equipment';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Calendar, UserCheck, Package, Link } from 'lucide-react';
+import { Edit, Trash2, Calendar, UserCheck, Package, Link as LinkIcon } from 'lucide-react';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
 import { useCategories } from '@/hooks/useCategories';
 
@@ -15,139 +12,210 @@ interface EquipmentCardProps {
   accessoryCount?: number;
 }
 
-export function EquipmentCard({ 
-  equipment, 
-  onEdit, 
-  onDelete, 
-  onLoan, 
-  onReturn,
-  accessoryCount = 0 
+const statusToneStyle: Record<string, React.CSSProperties> = {
+  available:   { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
+  in_use:      { color: 'hsl(var(--ds-info))',    borderColor: 'hsl(var(--ds-info) / 0.3)' },
+  maintenance: { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
+  loaned:      { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
+  damaged:     { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+};
+
+export function EquipmentCard({
+  equipment,
+  onEdit,
+  onDelete,
+  onLoan,
+  accessoryCount = 0,
 }: EquipmentCardProps) {
   const { getCategoryTitle } = useCategories();
-  const {
-    getStatusVariant,
-    getStatusLabel,
-    formatCurrency,
-    getHierarchyIndicator,
-  } = useEquipmentCard();
-
+  const { getStatusLabel, formatCurrency, getHierarchyIndicator } = useEquipmentCard();
   const hierarchyInfo = getHierarchyIndicator(equipment, accessoryCount);
+  const statusTone = statusToneStyle[equipment.status] || statusToneStyle.available;
 
   return (
-    <Card className="shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02] animate-fade-in">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <h3 className="font-semibold text-lg leading-none tracking-tight">
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'border-color 0.15s, box-shadow 0.15s',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';
+        e.currentTarget.style.boxShadow = '0 4px 12px hsl(0 0% 0% / 0.05)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
+    >
+      <div style={{ padding: '14px 18px 12px', borderBottom: '1px solid hsl(var(--ds-line-2))' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ minWidth: 0 }}>
+            <h3
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 16,
+                fontWeight: 600,
+                color: 'hsl(var(--ds-fg-1))',
+                lineHeight: 1.2,
+              }}
+            >
               {equipment.name}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
               {equipment.brand}
             </p>
           </div>
-          <Badge variant={getStatusVariant(equipment.status)}>
+          <span
+            className="pill"
+            style={{ ...statusTone, display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}
+          >
+            <span className="dot" style={{ background: 'currentColor' }} />
             {getStatusLabel(equipment.status)}
-          </Badge>
+          </span>
         </div>
-        {/* Hierarchy indicator */}
-        <div className="mt-2">
-          <Badge variant={hierarchyInfo.variant} className="text-xs flex items-center gap-1">
-            {hierarchyInfo.icon === 'package' && <Package className="h-3 w-3" />}
-            {hierarchyInfo.icon === 'link' && <Link className="h-3 w-3" />}
+        <div style={{ marginTop: 8 }}>
+          <span className="pill muted" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            {hierarchyInfo.icon === 'package' && <Package size={11} strokeWidth={1.5} />}
+            {hierarchyInfo.icon === 'link' && <LinkIcon size={11} strokeWidth={1.5} />}
             {hierarchyInfo.label}
-          </Badge>
+          </span>
         </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-3">
-        <div className="text-sm text-muted-foreground space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Categoria:</span>
-            {getCategoryTitle(equipment.category)}
+      </div>
+
+      <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+            <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Categoria</span>
+            <span style={{ color: 'hsl(var(--ds-fg-2))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {getCategoryTitle(equipment.category)}
+            </span>
           </div>
-          
+
           {equipment.patrimonyNumber && (
-            <div className="flex items-center gap-2">
-              <span className="font-medium">Patrimônio:</span>
-              {equipment.patrimonyNumber}
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+              <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Patrimônio</span>
+              <span style={{ color: 'hsl(var(--ds-fg-2))', fontVariantNumeric: 'tabular-nums' }}>
+                {equipment.patrimonyNumber}
+              </span>
             </div>
           )}
-          
+
           {equipment.purchaseDate && (
-            <div className="flex items-center gap-2">
-              <Calendar className="h-3 w-3" />
-              Comprado em {new Date(equipment.purchaseDate).toLocaleDateString('pt-BR')}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'hsl(var(--ds-fg-3))' }}>
+              <Calendar size={12} strokeWidth={1.5} />
+              <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                Comprado em {new Date(equipment.purchaseDate).toLocaleDateString('pt-BR')}
+              </span>
             </div>
           )}
-          
+
           {equipment.value && (
-            <div className="font-medium text-foreground">
+            <div style={{ fontWeight: 600, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>
               {formatCurrency(equipment.value)}
             </div>
           )}
         </div>
-        
+
         {equipment.currentBorrower && (
-          <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
-            <div className="flex items-center gap-2 text-sm">
-              <UserCheck className="h-4 w-4 text-primary" />
-              <span className="font-medium">Em projetos</span>
+          <div
+            style={{
+              padding: '10px 12px',
+              background: 'hsl(var(--ds-accent) / 0.05)',
+              border: '1px solid hsl(var(--ds-accent) / 0.2)',
+            }}
+          >
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 12,
+                fontWeight: 500,
+                color: 'hsl(var(--ds-accent))',
+              }}
+            >
+              <UserCheck size={13} strokeWidth={1.5} />
+              <span>Em projetos</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
               Último empréstimo: {equipment.currentBorrower}
             </p>
             {equipment.lastLoanDate && (
-              <p className="text-xs text-muted-foreground">
+              <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
                 Retirado em {new Date(equipment.lastLoanDate).toLocaleDateString('pt-BR')}
               </p>
             )}
           </div>
         )}
-        
+
         {equipment.description && (
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', lineHeight: 1.5 }}>
             {equipment.description}
           </p>
         )}
-        
+
         {equipment.serialNumber && (
-          <div className="text-xs text-muted-foreground font-mono">
+          <div style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
             S/N: {equipment.serialNumber}
           </div>
         )}
-      </CardContent>
-      
-      <CardFooter className="flex gap-2 pt-3">
-        <Button 
-          variant="outline" 
-          size="sm" 
+      </div>
+
+      <div
+        style={{
+          padding: '12px 18px',
+          borderTop: '1px solid hsl(var(--ds-line-2))',
+          display: 'flex',
+          gap: 6,
+        }}
+      >
+        <button
+          type="button"
+          className="btn"
+          style={{ flex: 1, justifyContent: 'center', height: 30, fontSize: 12 }}
           onClick={() => onEdit(equipment)}
-          className="flex-1"
         >
-          <Edit className="h-3 w-3" />
-          Editar
-        </Button>
-        
+          <Edit size={12} strokeWidth={1.5} />
+          <span>Editar</span>
+        </button>
+
         {onLoan && (
-          <Button 
-            variant="success" 
-            size="sm" 
+          <button
+            type="button"
+            className="btn"
+            style={{
+              height: 30,
+              fontSize: 12,
+              color: 'hsl(var(--ds-success))',
+              borderColor: 'hsl(var(--ds-success) / 0.3)',
+            }}
             onClick={() => onLoan(equipment)}
           >
-            <UserCheck className="h-3 w-3" />
-            Retirar
-          </Button>
+            <UserCheck size={12} strokeWidth={1.5} />
+            <span>Retirar</span>
+          </button>
         )}
-        
-        
-        <Button 
-          variant="destructive" 
-          size="sm" 
+
+        <button
+          type="button"
+          className="btn"
+          style={{
+            width: 30,
+            height: 30,
+            padding: 0,
+            justifyContent: 'center',
+            color: 'hsl(var(--ds-danger))',
+            borderColor: 'hsl(var(--ds-danger) / 0.3)',
+          }}
           onClick={() => onDelete(equipment.id)}
+          aria-label="Excluir"
         >
-          <Trash2 className="h-3 w-3" />
-        </Button>
-      </CardFooter>
-    </Card>
+          <Trash2 size={12} strokeWidth={1.5} />
+        </button>
+      </div>
+    </div>
   );
 }

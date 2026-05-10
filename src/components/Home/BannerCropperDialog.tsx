@@ -273,7 +273,7 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
           {!imageSrc ? (
             <div className="p-4">
               {isLoadingImage ? (
-                <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg">
+                <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-[hsl(var(--ds-line-1))]">
                   <Loader2 className="h-12 w-12 text-muted-foreground mb-4 animate-spin" />
                   <p className="text-muted-foreground">Carregando imagem...</p>
                   {fileName && (
@@ -285,7 +285,7 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
                   {/* Opção 1: Nova imagem */}
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg hover:border-primary hover:bg-muted/50 transition-colors"
+                    className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-[hsl(var(--ds-line-1))] hover:border-[hsl(var(--ds-accent))] hover:bg-[hsl(var(--ds-line-2)/0.3)] transition-colors"
                   >
                     <Upload className="h-12 w-12 text-muted-foreground mb-3" />
                     <span className="font-medium">Enviar Nova Imagem</span>
@@ -298,7 +298,7 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
                   {bannerSettings?.url && (
                     <button
                       onClick={loadExistingBanner}
-                      className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg hover:border-primary hover:bg-muted/50 transition-colors"
+                      className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-[hsl(var(--ds-line-1))] hover:border-[hsl(var(--ds-accent))] hover:bg-[hsl(var(--ds-line-2)/0.3)] transition-colors"
                     >
                       <ImageIcon className="h-12 w-12 text-muted-foreground mb-3" />
                       <span className="font-medium">Editar Banner Atual</span>
@@ -326,7 +326,7 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
             <>
               {/* Image info */}
               {imageDimensions && fileName && (
-                <div className="flex items-center justify-between text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-md">
+                <div className="flex items-center justify-between text-sm text-muted-foreground bg-[hsl(var(--ds-line-2)/0.4)] border border-[hsl(var(--ds-line-1))] px-3 py-2">
                   <span>{fileName}</span>
                   <span>{imageDimensions.width} × {imageDimensions.height}px</span>
                 </div>
@@ -336,7 +336,7 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
                 Arraste para posicionar, use os controles para zoom e rotação
               </p>
               
-              <div className="relative h-80 bg-muted rounded-lg overflow-hidden">
+              <div className="relative h-80 bg-[hsl(var(--ds-line-2)/0.4)] border border-[hsl(var(--ds-line-1))] overflow-hidden">
                 <Cropper
                   image={imageSrc}
                   crop={crop}

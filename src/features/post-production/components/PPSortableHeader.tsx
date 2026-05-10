@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 
 interface PPSortableHeaderProps {
@@ -10,34 +9,55 @@ interface PPSortableHeaderProps {
   className?: string;
 }
 
-export function PPSortableHeader({ 
-  field, label, currentSortBy, currentSortOrder, onSort, className 
+export function PPSortableHeader({
+  field,
+  label,
+  currentSortBy,
+  currentSortOrder,
+  onSort,
 }: PPSortableHeaderProps) {
   const isActive = currentSortBy === field;
-  
+
   const handleClick = () => {
     if (!isActive) onSort(field, 'asc');
     else if (currentSortOrder === 'asc') onSort(field, 'desc');
     else onSort(field, 'asc');
   };
 
+  const Icon = !isActive ? ChevronsUpDown : currentSortOrder === 'asc' ? ChevronUp : ChevronDown;
+
   return (
-    <Button
-      variant="ghost"
-      size="sm"
+    <button
+      type="button"
       onClick={handleClick}
-      className={`h-7 px-0 py-1 w-full font-medium justify-start gap-1 hover:bg-white/10 transition-colors min-w-0 ${
-        isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-      } ${className}`}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+        padding: 0,
+        background: 'transparent',
+        border: 0,
+        cursor: 'pointer',
+        color: isActive ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+        fontSize: 11,
+        letterSpacing: '0.14em',
+        textTransform: 'uppercase',
+        fontWeight: 500,
+        minWidth: 0,
+      }}
     >
-      <span className="truncate mr-1 text-xs lg:text-sm font-semibold uppercase tracking-wider">{label}</span>
-      {!isActive ? (
-        <ChevronsUpDown className="h-3 w-3 opacity-50" />
-      ) : currentSortOrder === 'asc' ? (
-        <ChevronUp className="h-3 w-3 text-primary" />
-      ) : (
-        <ChevronDown className="h-3 w-3 text-primary" />
-      )}
-    </Button>
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {label}
+      </span>
+      <Icon
+        size={11}
+        strokeWidth={1.5}
+        style={{
+          color: isActive ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-4))',
+          opacity: isActive ? 1 : 0.6,
+          flexShrink: 0,
+        }}
+      />
+    </button>
   );
 }

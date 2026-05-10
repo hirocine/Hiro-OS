@@ -1,9 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 import type { CompanyPolicy } from '../types';
-import { CATEGORY_COLORS } from '../types';
 
 interface PolicyCardProps {
   policy: CompanyPolicy;
@@ -20,59 +16,89 @@ export function PolicyCard({ policy }: PolicyCardProps) {
     return new Date(dateString).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
-  const categoryColorClass = CATEGORY_COLORS[policy.category || 'Geral'] || '';
-
   return (
-    <Card
+    <div
       onClick={handleClick}
-      className={cn(
-        "group relative overflow-hidden cursor-pointer",
-        "p-6 flex flex-col min-h-[200px]",
-        "hover:shadow-lg transition-all duration-300",
-        "animate-fade-in"
-      )}
+      className="animate-fade-in"
+      style={{
+        position: 'relative',
+        cursor: 'pointer',
+        padding: 22,
+        minHeight: 200,
+        display: 'flex',
+        flexDirection: 'column',
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        transition: 'border-color 0.2s, background 0.2s',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'hsl(var(--ds-accent) / 0.4)';
+        e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.2)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+        e.currentTarget.style.background = 'hsl(var(--ds-surface))';
+      }}
     >
-      {/* Header: Categoria Badge */}
       {policy.category && (
-        <div className="flex justify-between items-start mb-4">
-          <Badge variant="secondary" className="text-xs">
-            {policy.category}
-          </Badge>
+        <div style={{ marginBottom: 14 }}>
+          <span className="pill muted">{policy.category}</span>
         </div>
       )}
 
-      {/* Ícone + Título (layout horizontal) */}
-      <div className="flex items-start gap-4 mb-4">
-        <div 
-          className={cn(
-            "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
-            "bg-primary/10 transition-transform duration-300 group-hover:scale-110"
-          )}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 14 }}>
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            display: 'grid',
+            placeItems: 'center',
+            flexShrink: 0,
+            background: 'hsl(var(--ds-accent) / 0.1)',
+            border: '1px solid hsl(var(--ds-accent) / 0.2)',
+            fontSize: 22,
+            lineHeight: 1,
+          }}
         >
-          <span className="text-2xl">
-            {policy.icon_url || '📋'}
-          </span>
+          <span>{policy.icon_url || '📋'}</span>
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-lg line-clamp-2 leading-tight">
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3
+            style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontSize: 16,
+              fontWeight: 600,
+              color: 'hsl(var(--ds-fg-1))',
+              lineHeight: 1.3,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
             {policy.title}
           </h3>
         </div>
       </div>
 
-      {/* Spacer para empurrar footer para baixo */}
-      <div className="flex-grow" />
+      <div style={{ flex: 1 }} />
 
-      {/* Footer: Data de atualização */}
       {policy.updated_at && (
-        <p className="text-xs text-muted-foreground mt-4">
+        <p
+          style={{
+            fontSize: 11,
+            color: 'hsl(var(--ds-fg-3))',
+            marginTop: 14,
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
           Atualizado em {formatDate(policy.updated_at)}
         </p>
       )}
-    </Card>
+    </div>
   );
 }

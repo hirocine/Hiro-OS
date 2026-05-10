@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarIcon, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 interface InlineDateCellProps {
   value: string | null;
@@ -13,10 +11,9 @@ interface InlineDateCellProps {
   className?: string;
 }
 
-// Converte string "YYYY-MM-DD" para Date no timezone local
 const parseLocalDate = (dateString: string): Date => {
   const [year, month, day] = dateString.split('-').map(Number);
-  return new Date(year, month - 1, day); // month é 0-indexed no JavaScript
+  return new Date(year, month - 1, day);
 };
 
 export function InlineDateCell({ value, onSave, className = '' }: InlineDateCellProps) {
@@ -31,17 +28,25 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
 
     if (daysUntilDue < 0) {
       return (
-        <span className="text-xs text-destructive font-medium">
+        <span style={{ fontSize: 11, color: 'hsl(var(--ds-danger))', fontWeight: 500 }}>
           (Atrasada há {Math.abs(daysUntilDue)} {Math.abs(daysUntilDue) === 1 ? 'dia' : 'dias'})
         </span>
       );
     } else if (daysUntilDue === 0) {
-      return <span className="text-xs text-yellow-600 font-medium">(Vence hoje)</span>;
+      return (
+        <span style={{ fontSize: 11, color: 'hsl(var(--ds-warning))', fontWeight: 500 }}>
+          (Vence hoje)
+        </span>
+      );
     } else if (daysUntilDue === 1) {
-      return <span className="text-xs text-yellow-600 font-medium">(Entrega amanhã)</span>;
+      return (
+        <span style={{ fontSize: 11, color: 'hsl(var(--ds-warning))', fontWeight: 500 }}>
+          (Entrega amanhã)
+        </span>
+      );
     } else {
       return (
-        <span className="text-xs text-muted-foreground">
+        <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
           (Entrega em {daysUntilDue} {daysUntilDue === 1 ? 'dia' : 'dias'})
         </span>
       );
@@ -50,7 +55,6 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
-      // Formatar como YYYY-MM-DD para evitar problemas de timezone
       onSave(format(date, 'yyyy-MM-dd'));
       setIsOpen(false);
     }
@@ -65,30 +69,32 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
     <div onClick={(e) => e.stopPropagation()} className={className}>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            className={cn(
-              "h-auto min-h-0 w-full justify-start p-0 font-normal bg-transparent hover:bg-transparent rounded transition-colors",
-              !value && "text-muted-foreground"
-            )}
+          <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               setIsOpen(true);
             }}
+            style={{
+              background: 'transparent',
+              border: 0,
+              padding: 0,
+              cursor: 'pointer',
+              textAlign: 'left',
+              width: '100%',
+            }}
           >
             {value ? (
-              <div className="flex flex-col gap-0.5 w-full text-left">
-                <span className="text-sm">
-                  {format(parseLocalDate(value), "dd/MM/yyyy", { locale: ptBR })}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>
+                  {format(parseLocalDate(value), 'dd/MM/yyyy', { locale: ptBR })}
                 </span>
                 {getDueDateLabel(value)}
               </div>
             ) : (
-              <div className="flex items-center w-full text-left">
-                <span className="text-sm">Sem prazo</span>
-              </div>
+              <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-4))' }}>Sem prazo</span>
             )}
-          </Button>
+          </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start" onClick={(e) => e.stopPropagation()}>
           <Calendar
@@ -100,16 +106,27 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
             className="p-3 pointer-events-auto"
           />
           {value && (
-            <div className="p-2 border-t">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start hover:bg-background"
+            <div style={{ padding: 8, borderTop: '1px solid hsl(var(--ds-line-2))' }}>
+              <button
+                type="button"
                 onClick={handleRemoveDate}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  width: '100%',
+                  padding: '6px 8px',
+                  fontSize: 12,
+                  color: 'hsl(var(--ds-fg-2))',
+                  background: 'transparent',
+                  border: 0,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
               >
-                <X className="w-4 h-4 mr-2" />
+                <X size={13} strokeWidth={1.5} />
                 Remover prazo
-              </Button>
+              </button>
             </div>
           )}
         </PopoverContent>

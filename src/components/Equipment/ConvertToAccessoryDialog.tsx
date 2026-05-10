@@ -1,18 +1,15 @@
 import { useState } from 'react';
 import { Equipment } from '@/types/equipment';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { 
+import {
   ResponsiveDialog,
   ResponsiveDialogContent,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
-  ResponsiveDialogFooter
+  ResponsiveDialogFooter,
 } from '@/components/ui/responsive-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from '@/components/ui/command';
-import { Loader2, Package2, Package, Search, Check, ChevronsUpDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Loader2, Package2, Package, Check, ChevronsUpDown } from 'lucide-react';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { logger } from '@/lib/logger';
 import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
@@ -26,12 +23,22 @@ interface ConvertToAccessoryDialogProps {
   onConvert: (equipmentId: string, parentId: string) => Promise<{ success: boolean } | undefined>;
 }
 
-export function ConvertToAccessoryDialog({ 
-  open, 
-  onOpenChange, 
-  equipment, 
-  mainItems, 
-  onConvert 
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+export function ConvertToAccessoryDialog({
+  open,
+  onOpenChange,
+  equipment,
+  mainItems,
+  onConvert,
 }: ConvertToAccessoryDialogProps) {
   const [selectedParentId, setSelectedParentId] = useState<string>('');
   const [isConverting, setIsConverting] = useState(false);
@@ -42,20 +49,20 @@ export function ConvertToAccessoryDialog({
     if (!selectedParentId) {
       enhancedToast.error({
         title: 'Item principal necessário',
-        description: 'Selecione um item principal para associar este acessório.'
+        description: 'Selecione um item principal para associar este acessório.',
       });
       return;
     }
 
     setIsConverting(true);
-    
+
     try {
       const result = await onConvert(equipment.id, selectedParentId);
-      
+
       if (result?.success) {
         enhancedToast.success({
           title: 'Item convertido',
-          description: `"${equipment.name}" agora é um acessório do item principal selecionado.`
+          description: `"${equipment.name}" agora é um acessório do item principal selecionado.`,
         });
         onOpenChange(false);
         setSelectedParentId('');
@@ -65,74 +72,128 @@ export function ConvertToAccessoryDialog({
         module: 'equipment',
         action: 'convert_to_accessory',
         error,
-        data: { equipmentId: equipment.id, equipmentName: equipment.name, parentId: selectedParentId }
+        data: { equipmentId: equipment.id, equipmentName: equipment.name, parentId: selectedParentId },
       });
       enhancedToast.error({
         title: 'Erro na conversão',
-        description: 'Ocorreu um erro ao converter o item. Tente novamente.'
+        description: 'Ocorreu um erro ao converter o item. Tente novamente.',
       });
     } finally {
       setIsConverting(false);
     }
   };
 
-  const availableMainItems = mainItems.filter(item => item.id !== equipment.id);
-  const selectedItem = availableMainItems.find(item => item.id === selectedParentId);
+  const availableMainItems = mainItems.filter((item) => item.id !== equipment.id);
+  const selectedItem = availableMainItems.find((item) => item.id === selectedParentId);
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className={isMobile ? "" : "max-w-md"}>
+      <ResponsiveDialogContent className={isMobile ? '' : 'max-w-md'}>
         <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Converter para Acessório
+          <ResponsiveDialogTitle>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                fontFamily: '"HN Display", sans-serif',
+              }}
+            >
+              <Package size={18} strokeWidth={1.5} />
+              Converter para Acessório
+            </span>
           </ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
-        
-        <MobileFriendlyForm className="space-y-4"
+
+        <MobileFriendlyForm
           onSubmit={(e) => {
             e.preventDefault();
             handleConvert();
           }}
         >
-          <div className="p-3 bg-muted rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Package2 className="h-4 w-4 text-primary" />
-              <span className="font-medium">Item a ser convertido:</span>
+          <div
+            style={{
+              padding: 12,
+              background: 'hsl(var(--ds-line-2) / 0.4)',
+              border: '1px solid hsl(var(--ds-line-1))',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}
+          >
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                fontWeight: 500,
+                color: 'hsl(var(--ds-fg-3))',
+              }}
+            >
+              <Package2 size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-accent))' }} />
+              Item a ser convertido
             </div>
-            <div className="text-sm">
-              <p className="font-medium">{equipment.patrimonyNumber || 'S/N'} - {equipment.name}</p>
-              <p className="text-muted-foreground">{equipment.brand}</p>
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                {equipment.patrimonyNumber || 'S/N'} - {equipment.name}
+              </p>
+              <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
+                {equipment.brand}
+              </p>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="parentId">Selecionar Item Principal *</Label>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <label style={fieldLabel}>
+              Selecionar Item Principal
+              <span style={{ marginLeft: 4, color: 'hsl(var(--ds-danger))' }}>*</span>
+            </label>
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
+                <button
+                  type="button"
+                  className="btn"
                   role="combobox"
                   aria-expanded={popoverOpen}
-                  className={cn("w-full justify-between", isMobile ? "h-12" : "")}
                   disabled={availableMainItems.length === 0}
+                  style={{
+                    width: '100%',
+                    justifyContent: 'space-between',
+                    height: isMobile ? 44 : undefined,
+                    color: selectedItem ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-4))',
+                  }}
                 >
                   {selectedItem ? (
-                    <div className="flex items-center gap-2 truncate">
-                      <div className="w-3 h-3 bg-primary rounded-full flex-shrink-0"></div>
-                      <span className="font-medium">{selectedItem.patrimonyNumber || 'S/N'}</span>
-                      <span className="text-muted-foreground">-</span>
-                      <span className="truncate">{selectedItem.name}</span>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                      <span
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          background: 'hsl(var(--ds-accent))',
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span style={{ fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>
+                        {selectedItem.patrimonyNumber || 'S/N'}
+                      </span>
+                      <span style={{ color: 'hsl(var(--ds-fg-3))' }}>—</span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {selectedItem.name}
+                      </span>
                     </div>
                   ) : (
-                    "Selecione um item principal..."
+                    'Selecione um item principal…'
                   )}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
+                  <ChevronsUpDown size={13} strokeWidth={1.5} style={{ opacity: 0.5, flexShrink: 0 }} />
+                </button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="start">
                 <Command>
-                  <CommandInput placeholder="Pesquisar itens principais..." />
+                  <CommandInput placeholder="Pesquisar itens principais…" />
                   <CommandList>
                     <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
                     {availableMainItems.map((item) => (
@@ -145,17 +206,48 @@ export function ConvertToAccessoryDialog({
                         }}
                       >
                         <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            selectedParentId === item.id ? "opacity-100" : "opacity-0"
-                          )}
+                          size={13}
+                          strokeWidth={1.5}
+                          style={{
+                            marginRight: 8,
+                            opacity: selectedParentId === item.id ? 1 : 0,
+                            color: 'hsl(var(--ds-accent))',
+                          }}
                         />
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <div className="w-3 h-3 bg-primary rounded-full flex-shrink-0"></div>
-                          <span className="font-medium">{item.patrimonyNumber || 'S/N'}</span>
-                          <span className="text-muted-foreground">-</span>
-                          <span className="truncate">{item.name}</span>
-                          <span className="text-muted-foreground text-sm">({item.brand})</span>
+                        <div
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            flex: 1,
+                            minWidth: 0,
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              background: 'hsl(var(--ds-accent))',
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span style={{ fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>
+                            {item.patrimonyNumber || 'S/N'}
+                          </span>
+                          <span style={{ color: 'hsl(var(--ds-fg-3))' }}>—</span>
+                          <span
+                            style={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {item.name}
+                          </span>
+                          <span style={{ color: 'hsl(var(--ds-fg-3))', fontSize: 12 }}>
+                            ({item.brand})
+                          </span>
                         </div>
                       </CommandItem>
                     ))}
@@ -164,38 +256,46 @@ export function ConvertToAccessoryDialog({
               </PopoverContent>
             </Popover>
             {availableMainItems.length === 0 && (
-              <p className="text-sm text-muted-foreground">
+              <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 6 }}>
                 Não há itens principais disponíveis para associação.
               </p>
             )}
           </div>
 
           {selectedParentId && (
-            <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-              <p className="text-sm text-green-700 dark:text-green-300">
+            <div
+              style={{
+                padding: 12,
+                background: 'hsl(var(--ds-success) / 0.08)',
+                border: '1px solid hsl(var(--ds-success) / 0.3)',
+              }}
+            >
+              <p style={{ fontSize: 12, color: 'hsl(var(--ds-success))', lineHeight: 1.5 }}>
                 ✓ Este item será convertido em acessório e aparecerá agrupado com o item principal selecionado.
               </p>
             </div>
           )}
         </MobileFriendlyForm>
-        
+
         <ResponsiveDialogFooter>
           <MobileFriendlyFormActions>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <button
+              type="button"
+              className="btn"
               onClick={() => onOpenChange(false)}
               disabled={isConverting}
             >
               Cancelar
-            </Button>
-            <Button 
-              onClick={handleConvert} 
+            </button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleConvert}
               disabled={isConverting || !selectedParentId || availableMainItems.length === 0}
             >
-              {isConverting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Converter em Acessório
-            </Button>
+              {isConverting && <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />}
+              <span>Converter em Acessório</span>
+            </button>
           </MobileFriendlyFormActions>
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>

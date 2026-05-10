@@ -101,42 +101,80 @@ const KanbanColumn = ({ title, status, ssds, count, ssdAllocations, onCardClick 
   // Mantemos SortableContext apenas com IDs reais
   // (removido items)
   
+  const tone =
+    status === 'available' ? 'hsl(var(--ds-success))'
+    : status === 'in_use' ? 'hsl(var(--ds-accent))'
+    : 'hsl(var(--ds-danger))';
+
   return (
-    <div className="flex-1 min-w-[280px] overflow-visible">
-      <div 
+    <div style={{ flex: 1, minWidth: 280, overflow: 'visible' }}>
+      <div
         ref={setNodeRef}
-        className={cn(
-          "relative z-0 bg-muted/50 rounded-lg p-4 overflow-visible",
-          "transition-all duration-300 ease-in-out motion-reduce:transition-none",
-          "will-change-transform",
-          isOver && 'bg-primary/10 scale-[1.01] shadow-md'
-        )}
+        style={{
+          position: 'relative',
+          background: 'hsl(var(--ds-surface))',
+          border: '1px solid hsl(var(--ds-line-1))',
+          padding: 14,
+          overflow: 'visible',
+          boxShadow: isOver ? 'inset 0 0 0 1px hsl(var(--ds-accent)), 0 4px 12px hsl(0 0% 0% / 0.06)' : undefined,
+          transition: 'box-shadow 0.15s',
+        }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={cn(
-            "font-semibold text-sm",
-            status === 'available' && "text-green-600 dark:text-green-400",
-            status === 'in_use' && "text-orange-600 dark:text-orange-400",
-            status === 'loaned' && "text-red-600 dark:text-red-400"
-          )}>{title}</h3>
-          <span className="text-xs text-muted-foreground bg-background px-2 py-1 rounded">
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 14,
+            gap: 8,
+          }}
+        >
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: tone }} />
+            <h3
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 14,
+                fontWeight: 600,
+                color: 'hsl(var(--ds-fg-1))',
+              }}
+            >
+              {title}
+            </h3>
+          </div>
+          <span
+            style={{
+              fontSize: 11,
+              fontVariantNumeric: 'tabular-nums',
+              color: tone,
+              background: `${tone.replace(')', ' / 0.1)')}`,
+              padding: '2px 8px',
+            }}
+          >
             {count}
           </span>
         </div>
-        <SortableContext items={ssds.map(s => s.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2 min-h-[200px]">
+        <SortableContext items={ssds.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 200 }}>
             {ssds.length === 0 ? (
-              <div 
+              <div
                 id={`placeholder-${status}`}
-                className="h-full min-h-[200px] flex items-center justify-center text-muted-foreground/50 text-sm"
+                style={{
+                  height: '100%',
+                  minHeight: 200,
+                  display: 'grid',
+                  placeItems: 'center',
+                  color: 'hsl(var(--ds-fg-4))',
+                  fontSize: 12,
+                }}
               >
                 Arraste itens aqui
               </div>
             ) : (
               ssds.map((ssd) => (
-                <SortableCard 
-                  key={ssd.id} 
-                  ssd={ssd} 
+                <SortableCard
+                  key={ssd.id}
+                  ssd={ssd}
                   kanbanStatus={status}
                   allocatedSpace={ssdAllocations[ssd.id] || 0}
                   onCardClick={onCardClick}
@@ -296,12 +334,15 @@ export const SSDKanbanBoard = ({ ssdsByStatus, ssdAllocations, onStatusChange, o
         </div>
         <DragOverlay zIndex={2000}>
           {activeSSD && activeStatus ? (
-            <div className="
-              shadow-elegant pointer-events-none z-[9999] transform-gpu
-              animate-scale-in rotate-2 scale-105
-              transition-all duration-200 ease-out
-              motion-reduce:transition-none motion-reduce:rotate-0 motion-reduce:scale-100
-            ">
+            <div
+              className="
+                pointer-events-none z-[9999] transform-gpu
+                animate-scale-in rotate-2 scale-105
+                transition-all duration-200 ease-out
+                motion-reduce:transition-none motion-reduce:rotate-0 motion-reduce:scale-100
+              "
+              style={{ boxShadow: '0 16px 40px hsl(0 0% 0% / 0.25)' }}
+            >
               <SSDCard 
                 ssd={activeSSD} 
                 isDragging={false} 

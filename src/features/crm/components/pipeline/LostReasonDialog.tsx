@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 
 interface LostReasonDialogProps {
   open: boolean;
@@ -20,19 +18,46 @@ export function LostReasonDialog({ open, onConfirm, onCancel }: LostReasonDialog
   };
 
   return (
-    <Dialog open={open} onOpenChange={open => { if (!open) onCancel(); }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Motivo da Perda</DialogTitle>
+          <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>Motivo da Perda</DialogTitle>
         </DialogHeader>
-        <div className="space-y-1.5">
-          <Label>Por que este deal foi perdido?</Label>
-          <Textarea value={reason} onChange={e => setReason(e.target.value)} rows={3} placeholder="Descreva o motivo..." autoFocus />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <label
+              style={{
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                fontWeight: 500,
+                color: 'hsl(var(--ds-fg-3))',
+                display: 'block',
+                marginBottom: 6,
+              }}
+            >
+              Por que este deal foi perdido?
+            </label>
+            <Textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              placeholder="Descreva o motivo…"
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <button type="button" className="btn" onClick={onCancel}>Cancelar</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleConfirm}
+              disabled={!reason.trim()}
+            >
+              Confirmar
+            </button>
+          </DialogFooter>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>Cancelar</Button>
-          <Button onClick={handleConfirm} disabled={!reason.trim()}>Confirmar</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

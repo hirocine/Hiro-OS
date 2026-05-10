@@ -1,41 +1,628 @@
-import { ResponsiveContainer } from "@/components/ui/responsive-container";
-import { HeroBanner } from "@/components/Home/HeroBanner";
-import TodayWidgets from "@/components/Home/TodayWidgets";
-import { RecordingsCalendar } from "@/components/Home/RecordingsCalendar";
-import { TeamDirectory } from "@/components/Home/TeamDirectory";
+import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
+import { I } from "@/ds/icons";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useCurrentUserProfile } from "@/hooks/useCurrentUserProfile";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { useTeamMembers } from "@/hooks/useTeamMembers";
+import { useTeamMembers, type TeamMember } from "@/hooks/useTeamMembers";
+import { usePostProduction } from "@/features/post-production/hooks/usePostProduction";
+import { PP_PRIORITY_ORDER, PP_PRIORITY_CONFIG } from "@/features/post-production/types";
+import { useTasks } from "@/features/tasks/hooks/useTasks";
+import {
+  useRecordingsCalendar,
+  useRecordingsToday,
+  getEventTitle,
+  getEventType,
+  type RecordingEvent,
+} from "@/hooks/useRecordingsCalendar";
+
+function greetingFor(date: Date) {
+  const h = date.getHours();
+  if (h < 12) return "Bom dia";
+  if (h < 18) return "Boa tarde";
+  return "Boa noite";
+}
+
+const WEEKDAYS = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+const MONTHS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const MONTHS_SHORT = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+
+function isoWeekNumber(d: Date) {
+  const target = new Date(d.valueOf());
+  const dayNr = (d.getDay() + 6) % 7;
+  target.setDate(target.getDate() - dayNr + 3);
+  const firstThursday = target.valueOf();
+  target.setMonth(0, 1);
+  if (target.getDay() !== 4) target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+  return 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
+}
+
+function localDateKey(d: Date) {
+  return d.toLocaleDateString("en-CA"); // YYYY-MM-DD in local time
+}
+
+function initialsFromName(name: string | null | undefined) {
+  if (!name) return "—";
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] ?? "") + (parts[parts.length - 1]?.[0] ?? "")).toUpperCase() || "—";
+}
+
+function formatShortDate(iso: string) {
+  const [, m, d] = iso.split("-");
+  return d && m ? `${d}/${m}` : iso;
+}
+
+function formatTime(iso: string) {
+  const dt = new Date(iso);
+  if (Number.isNaN(dt.valueOf())) return "";
+  return dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function recTypeToCalendarType(t: ReturnType<typeof getEventType>): "rec" | "vt" | "edit" | "pre" {
+  if (t === "REC") return "rec";
+  if (t === "VT") return "vt";
+  if (t === "EDIT") return "edit";
+  return "pre";
+}
+
+// All-day events come as YYYY-MM-DD (date-only). `new Date(...)` would parse it as UTC,
+// shifting the day backwards in negative-offset timezones. These helpers anchor the
+// event to its calendar day in local time regardless of the user's timezone.
+function eventDateKey(r: RecordingEvent): string {
+  if (r.allDay && /^\d{4}-\d{2}-\d{2}/.test(r.start)) {
+    return r.start.slice(0, 10);
+  }
+  return localDateKey(new Date(r.start));
+}
+function eventLocalDate(r: RecordingEvent): Date {
+  if (r.allDay && /^\d{4}-\d{2}-\d{2}/.test(r.start)) {
+    const [y, m, d] = r.start.slice(0, 10).split("-").map(Number);
+    return new Date(y, m - 1, d, 0, 0, 0, 0);
+  }
+  return new Date(r.start);
+}
+
+function buildMonthGrid(year: number, month: number) {
+  const first = new Date(year, month, 1);
+  const startWeekday = first.getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevDays = new Date(year, month, 0).getDate();
+  const cells: { n: number; other: boolean; date: Date }[] = [];
+  for (let i = startWeekday - 1; i >= 0; i--) {
+    cells.push({ n: prevDays - i, other: true, date: new Date(year, month - 1, prevDays - i) });
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push({ n: d, other: false, date: new Date(year, month, d) });
+  }
+  let trail = 1;
+  while (cells.length % 7 !== 0) {
+    cells.push({ n: trail, other: true, date: new Date(year, month + 1, trail) });
+    trail++;
+  }
+  return cells;
+}
 
 export default function Home() {
-  const { isLoading: bannerLoading } = useSiteSettings();
-  const { isLoading: teamLoading } = useTeamMembers();
+  const navigate = useNavigate();
+  const now = new Date();
+  const [view, setView] = useState<"month" | "week" | "list">("month");
+  const [selectedEvent, setSelectedEvent] = useState<RecordingEvent | null>(null);
+  const { user } = useAuthContext();
+  const { data: profile } = useCurrentUserProfile();
+  const { bannerSettings } = useSiteSettings();
+  const { data: team = [] as TeamMember[] } = useTeamMembers();
 
-  if (bannerLoading && teamLoading) {
-    return (
-      <ResponsiveContainer maxWidth="7xl">
-        <div className="space-y-6">
-          <div className="w-full h-48 md:h-64 lg:h-80 rounded-xl bg-muted animate-pulse" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="h-48 bg-muted rounded-lg animate-pulse" />
-            <div className="h-48 bg-muted rounded-lg animate-pulse" />
-            <div className="h-48 bg-muted rounded-lg animate-pulse" />
-          </div>
-          <div className="h-[500px] bg-muted rounded-lg animate-pulse" />
-          <div className="h-64 bg-muted rounded-lg animate-pulse" />
-          <div className="h-64 bg-muted rounded-lg animate-pulse" />
-        </div>
-      </ResponsiveContainer>
-    );
-  }
+  // Data sources
+  const { items: ppItems = [] } = usePostProduction();
+  const { tasks = [] } = useTasks();
+  const { data: todayRecsAll = [] } = useRecordingsToday();
+
+  // Month range for the calendar
+  const monthStart = useMemo(() => new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), [now.getFullYear(), now.getMonth()]);
+  const monthEnd = useMemo(() => new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString(), [now.getFullYear(), now.getMonth()]);
+  const { data: monthRecs = [] as RecordingEvent[] } = useRecordingsCalendar(monthStart, monthEnd);
+
+  // Upcoming recording (for hero chip) — next 30 days
+  const upcomingStart = useMemo(() => new Date().toISOString(), []);
+  const upcomingEnd = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    return d.toISOString();
+  }, []);
+  const { data: upcomingRecs = [] as RecordingEvent[] } = useRecordingsCalendar(upcomingStart, upcomingEnd);
+
+  // ----- derived data -----
+  const todayKey = localDateKey(now);
+
+  const todayDeliveries = useMemo(
+    () =>
+      ppItems
+        .filter((i) => i.due_date === todayKey && i.status !== "entregue")
+        .sort((a, b) => PP_PRIORITY_ORDER[b.priority] - PP_PRIORITY_ORDER[a.priority]),
+    [ppItems, todayKey],
+  );
+
+  const myTasks = useMemo(
+    () =>
+      tasks
+        .filter(
+          (t) =>
+            t.status !== "concluida" &&
+            t.status !== "arquivada" &&
+            t.assignees?.some((a) => a.user_id === user?.id),
+        )
+        .sort((a, b) => {
+          const aToday = a.due_date === todayKey ? 0 : 1;
+          const bToday = b.due_date === todayKey ? 0 : 1;
+          return aToday - bToday;
+        }),
+    [tasks, user?.id, todayKey],
+  );
+
+  const todayRecs = useMemo(
+    () => todayRecsAll.filter((r) => getEventType(r.summary) !== "PRE"),
+    [todayRecsAll],
+  );
+
+  // Calendar event map (YYYY-MM-DD → events)
+  const calendarEvents = useMemo(() => {
+    const map: Record<string, { event: RecordingEvent; type: "rec" | "vt" | "edit" | "pre"; title: string }[]> = {};
+    for (const r of monthRecs) {
+      const key = eventDateKey(r);
+      const type = recTypeToCalendarType(getEventType(r.summary));
+      const title = getEventTitle(r.summary);
+      (map[key] ||= []).push({ event: r, type, title });
+    }
+    return map;
+  }, [monthRecs]);
+
+  // Next upcoming REC (any non-PRE) for hero chip
+  const nextRec = useMemo(() => {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const startMs = todayStart.valueOf();
+    const future = upcomingRecs
+      .filter((r) => getEventType(r.summary) !== "PRE")
+      .map((r) => ({ r, t: eventLocalDate(r).valueOf() }))
+      .filter(({ t }) => t >= startMs)
+      .sort((a, b) => a.t - b.t);
+    return future[0]?.r ?? null;
+  }, [upcomingRecs]);
+
+  // ----- presentational helpers -----
+  const displayName = (profile?.display_name?.split(" ")[0]) || user?.email?.split("@")[0] || "";
+  const greeting = greetingFor(now);
+  const monthLabel = `${MONTHS[now.getMonth()].charAt(0).toUpperCase() + MONTHS[now.getMonth()].slice(1)} · ${now.getFullYear()}`;
+  const cells = useMemo(() => buildMonthGrid(now.getFullYear(), now.getMonth()), [now.getFullYear(), now.getMonth()]);
+  const today = now.getDate();
+
+  const heroPhoto = bannerSettings?.url || null;
+  const visibleTeam = team.filter((m) => m.is_visible);
+
+  // Current week (Sun → Sat, anchored on today)
+  const weekCells = useMemo(() => {
+    const dow = now.getDay();
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
+    const out: { n: number; other: boolean; date: Date }[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i);
+      out.push({ n: d.getDate(), other: d.getMonth() !== now.getMonth(), date: d });
+    }
+    return out;
+  }, [now.getFullYear(), now.getMonth(), now.getDate()]);
+
+  // Chronological events (filtered to month for list view)
+  const sortedMonthEvents = useMemo(
+    () => [...monthRecs].sort((a, b) => eventLocalDate(a).valueOf() - eventLocalDate(b).valueOf()),
+    [monthRecs],
+  );
+
+  const recCount = monthRecs.length;
+  const nextRecLabel = nextRec
+    ? `${getEventTitle(nextRec.summary)}${(() => {
+        const evDate = eventLocalDate(nextRec);
+        const todayMid = new Date();
+        todayMid.setHours(0, 0, 0, 0);
+        const days = Math.round((evDate.valueOf() - todayMid.valueOf()) / 86400000);
+        if (days <= 0) return nextRec.allDay ? " · hoje" : ` · hoje ${formatTime(nextRec.start)}`;
+        if (days === 1) return " · amanhã";
+        return ` · em ${days} dias`;
+      })()}`
+    : "Sem gravação agendada";
 
   return (
-    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-      <div className="space-y-6">
-        <HeroBanner />
-        <TodayWidgets />
-        <RecordingsCalendar />
-        <TeamDirectory />
+    <div className="ds-shell ds-home">
+      {/* HERO */}
+      <section className="hero">
+        <div
+          className={"hero-img" + (heroPhoto ? "" : " placeholder")}
+          style={heroPhoto ? { backgroundImage: `url(${heroPhoto})` } : undefined}
+        />
+        <div className="hero-shade" />
+        <div className="hero-shade-bottom" />
+
+        <div className="hero-inner">
+          <div className="hero-top">
+            <div className="hero-eyebrow">
+              <span className="acc-mark" />
+              Hiro OS<sup style={{ fontSize: 8 }}>®</sup> · {WEEKDAYS[now.getDay()]} · {String(now.getDate()).padStart(2, "0")} de {MONTHS[now.getMonth()]} · semana {isoWeekNumber(now)}
+            </div>
+            <button className="hero-edit" type="button">
+              {I.edit}
+              <span>Editar banner</span>
+            </button>
+          </div>
+
+          <div className="hero-mid">
+            <h1 className="hero-greet">
+              {greeting},<br />
+              {displayName}<em>.</em>
+            </h1>
+          </div>
+
+          <div className="hero-bottom">
+            <div className="hero-chip">
+              <span className="hero-rec-dot" />
+              <span className="hero-chip-label">Próx. gravação</span>
+              <span className="hero-chip-value" style={{ maxWidth: 360, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {nextRecLabel}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="ds-home-inner">
+        {/* 01 — Hoje na Hiro */}
+        <section className="section">
+          <div className="section-head">
+            <div className="section-head-l">
+              <span className="section-eyebrow">01</span>
+              <span className="section-title">Hoje na Hiro</span>
+            </div>
+            <span className="section-meta">Atualizado há instantes</span>
+          </div>
+          <div className="today">
+            {/* Entregas hoje */}
+            <div className="today-card" onClick={() => navigate("/esteira-de-pos")}>
+              <div className="today-head">
+                <span className="today-label">
+                  <span className="dot" style={{ background: "var(--info)" }} />
+                  Entregas hoje
+                </span>
+                <span className="today-arrow">{I.arrR}</span>
+              </div>
+              <div className="today-num">
+                <span className="today-num-val">{String(todayDeliveries.length).padStart(2, "0")}</span>
+                <span className="today-num-unit">{todayDeliveries.length === 1 ? "vídeo para entregar" : "vídeos para entregar"}</span>
+              </div>
+              {todayDeliveries.length > 0 ? (
+                <div className="today-list">
+                  {todayDeliveries.slice(0, 3).map((it) => (
+                    <div key={it.id} className="today-list-row del">
+                      <span className="row-dot" />
+                      <span className="today-list-title">{it.title}</span>
+                      <span className="today-list-meta">{PP_PRIORITY_CONFIG[it.priority].label}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="today-empty">Nenhuma entrega para hoje</div>
+              )}
+            </div>
+
+            {/* Minhas tarefas */}
+            <div className="today-card" onClick={() => navigate("/tarefas")}>
+              <div className="today-head">
+                <span className="today-label">
+                  <span className="dot" style={{ background: "var(--warn)" }} />
+                  Minhas tarefas
+                </span>
+                <span className="today-arrow">{I.arrR}</span>
+              </div>
+              <div className="today-num">
+                <span className="today-num-val">{String(myTasks.length).padStart(2, "0")}</span>
+                <span className="today-num-unit">{myTasks.length === 1 ? "tarefa pendente" : "tarefas pendentes"}</span>
+              </div>
+              {myTasks.length > 0 ? (
+                <div className="today-list">
+                  {myTasks.slice(0, 3).map((t) => (
+                    <div key={t.id} className="today-list-row task">
+                      <span className="row-dot" />
+                      <span className="today-list-title">{t.title}</span>
+                      <span className="today-list-meta">
+                        {t.due_date === todayKey ? "hoje" : t.due_date ? formatShortDate(t.due_date) : "—"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="today-empty">Nenhuma tarefa pendente</div>
+              )}
+            </div>
+
+            {/* Gravações do dia */}
+            <div className="today-card" onClick={() => navigate("/projetos-av")}>
+              <div className="today-head">
+                <span className="today-label">
+                  <span className="dot" style={{ background: "var(--danger)" }} />
+                  Gravações do dia
+                </span>
+                <span className="today-arrow">{I.arrR}</span>
+              </div>
+              <div className="today-num">
+                <span className="today-num-val">{String(todayRecs.length).padStart(2, "0")}</span>
+                <span className="today-num-unit">{todayRecs.length === 1 ? "gravação agendada" : "gravações agendadas"}</span>
+              </div>
+              {todayRecs.length > 0 ? (
+                <div className="today-list">
+                  {todayRecs.slice(0, 3).map((r) => (
+                    <div key={r.id} className="today-list-row rec">
+                      <span className="row-dot" />
+                      <span className="today-list-title">{getEventTitle(r.summary)}</span>
+                      <span className="today-list-meta">{r.allDay ? "dia todo" : formatTime(r.start)}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="today-empty">Nenhuma gravação hoje</div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* 02 — Agenda de gravações */}
+        <section className="section">
+          <div className="section-head">
+            <div className="section-head-l">
+              <span className="section-eyebrow">02</span>
+              <span className="section-title">Agenda de gravações</span>
+            </div>
+          </div>
+          <div className="rc">
+            <div className="rc-head">
+              <div className="rc-head-l">
+                <span className="rec-mark" />
+                <div>
+                  <div className="rc-period">{monthLabel}</div>
+                  <div className="rc-period-meta">
+                    {recCount} {recCount === 1 ? "evento" : "eventos"} · sincronizado · google calendar
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <div className="rc-controls">
+                  <button className="rc-nav" type="button">{I.chevL}</button>
+                  <button className="rc-nav" type="button">
+                    <span style={{ fontFamily: '"HN Display", sans-serif', fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", padding: "0 10px" }}>Hoje</span>
+                  </button>
+                  <button className="rc-nav" type="button">{I.chevR}</button>
+                </div>
+                <div className="rc-views">
+                  <button className={view === "month" ? "on" : ""} type="button" onClick={() => setView("month")}>Mês</button>
+                  <button className={view === "week" ? "on" : ""} type="button" onClick={() => setView("week")}>Semana</button>
+                  <button className={view === "list" ? "on" : ""} type="button" onClick={() => setView("list")}>Lista</button>
+                </div>
+              </div>
+            </div>
+
+            {view !== "list" && (
+              <div className={"rc-grid" + (view === "week" ? " is-week" : "")}>
+                {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((w) => (
+                  <div key={w} className="rc-week-head"><span>{w}</span></div>
+                ))}
+                {(view === "week" ? weekCells : cells).map((cell, idx) => {
+                  const key = localDateKey(cell.date);
+                  const events = calendarEvents[key] || [];
+                  const isToday = !cell.other && cell.n === today && cell.date.getMonth() === now.getMonth();
+                  const dow = idx % 7;
+                  const isWeekend = dow === 0 || dow === 6;
+                  const eventCap = view === "week" ? 8 : 3;
+                  return (
+                    <div
+                      key={idx}
+                      className={
+                        "rc-day" +
+                        (cell.other ? " other" : "") +
+                        (isToday ? " today" : "") +
+                        (isWeekend ? " weekend" : "")
+                      }
+                    >
+                      <span className="rc-day-num">{cell.n}</span>
+                      <div className="rc-events">
+                        {events.slice(0, eventCap).map((e, i) => (
+                          <div
+                            key={i}
+                            className={"rc-event " + e.type}
+                            onClick={(ev) => {
+                              ev.stopPropagation();
+                              setSelectedEvent(e.event);
+                            }}
+                            role="button"
+                            tabIndex={0}
+                          >
+                            <span className="ev-bar" />
+                            <span className="rc-event-title">{e.title}</span>
+                          </div>
+                        ))}
+                        {events.length > eventCap && (
+                          <span className="rc-event-more">+{events.length - eventCap} mais</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {view === "list" && (
+              <div className="rc-list">
+                {sortedMonthEvents.length === 0 && (
+                  <div className="rc-list-empty">Sem eventos neste mês.</div>
+                )}
+                {sortedMonthEvents.map((r) => {
+                  const d = eventLocalDate(r);
+                  const type = recTypeToCalendarType(getEventType(r.summary));
+                  const typeLabel =
+                    type === "rec" ? "REC" : type === "vt" ? "VT" : type === "edit" ? "Edição" : "Pré-agenda";
+                  const isToday = localDateKey(d) === localDateKey(now);
+                  return (
+                    <div
+                      key={r.id}
+                      className={"rc-list-row" + (isToday ? " today" : "")}
+                      onClick={() => setSelectedEvent(r)}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="rc-list-day">
+                        <div className="rc-list-day-num">{String(d.getDate()).padStart(2, "0")}</div>
+                        <div className="rc-list-day-meta">
+                          {WEEKDAYS[d.getDay()].slice(0, 3)}
+                          {isToday && <span className="rc-list-today"> · HOJE</span>}
+                        </div>
+                      </div>
+                      <div className="rc-list-title">
+                        <span className={"ev-bar " + type} />
+                        <span className="rc-list-title-text">{getEventTitle(r.summary)}</span>
+                      </div>
+                      <span className={"rc-list-tag " + type}>{typeLabel}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="rc-foot">
+              <div className="rc-legend">
+                <span className="rc-legend-item"><span className="swatch" style={{ background: "var(--danger)" }} /> REC</span>
+                <span className="rc-legend-item"><span className="swatch" style={{ background: "var(--warn)" }} /> VT</span>
+                <span className="rc-legend-item"><span className="swatch" style={{ background: "var(--info)" }} /> Edição</span>
+                <span className="rc-legend-item"><span className="swatch" style={{ background: "var(--fg-4)" }} /> Pré-agenda</span>
+              </div>
+              <a className="section-link">Abrir no Google Calendar {I.ext}</a>
+            </div>
+          </div>
+        </section>
+
+        {/* 03 — Nossa equipe */}
+        <section className="section">
+          <div className="section-head">
+            <div className="section-head-l">
+              <span className="section-eyebrow">03</span>
+              <span className="section-title">Nossa equipe</span>
+            </div>
+            <a className="section-link">{I.plus} Adicionar</a>
+          </div>
+          <div className="team-grid">
+            {visibleTeam.map((m, idx) => (
+              <div key={m.id} className="team-card">
+                <div className="team-photo">
+                  {m.photo_url ? (
+                    <img src={m.photo_url} alt={m.name} />
+                  ) : (
+                    <div className="team-photo-fallback">{initialsFromName(m.name)}</div>
+                  )}
+                  <div className="team-photo-num">№ {String(idx + 1).padStart(2, "0")}</div>
+                </div>
+                <div className="team-info">
+                  <div className="team-name">{m.name}</div>
+                  <div className="team-position">{m.position || ""}</div>
+                  {m.tags && m.tags.length > 0 && (
+                    <div className="team-tags">
+                      {m.tags.map((t, i) => (
+                        <span key={i} className={"team-tag" + (i === 0 ? " acc" : "")}>
+                          {i === 0 && <span style={{ width: 4, height: 4, background: "var(--accent)" }} />}
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
-    </ResponsiveContainer>
+
+      {selectedEvent && (
+        <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      )}
+    </div>
+  );
+}
+
+function EventDetailModal({ event, onClose }: { event: RecordingEvent; onClose: () => void }) {
+  const type = recTypeToCalendarType(getEventType(event.summary));
+  const typeLabel =
+    type === "rec" ? "REC" : type === "vt" ? "VT" : type === "edit" ? "Edição" : "Pré-agenda";
+  const title = getEventTitle(event.summary);
+
+  const startDate = eventLocalDate(event);
+  const endDate = event.end ? (event.allDay && /^\d{4}-\d{2}-\d{2}/.test(event.end)
+    ? (() => {
+        const [y, m, d] = event.end.slice(0, 10).split("-").map(Number);
+        return new Date(y, m - 1, d - 1, 0, 0, 0, 0); // Google end-exclusive for all-day
+      })()
+    : new Date(event.end)) : null;
+
+  const dayLabel = `${WEEKDAYS[startDate.getDay()]}, ${String(startDate.getDate()).padStart(2, "0")} de ${MONTHS[startDate.getMonth()]} de ${startDate.getFullYear()}`;
+  const timeLabel = !event.allDay
+    ? `${formatTime(event.start)}${endDate ? ` – ${formatTime(event.end)}` : ""}`
+    : (endDate && localDateKey(endDate) !== localDateKey(startDate)
+      ? `Dia todo · até ${String(endDate.getDate()).padStart(2, "0")} de ${MONTHS[endDate.getMonth()]}`
+      : "Dia todo");
+
+  return createPortal(
+    <div className="ds-shell ev-modal-overlay" onClick={onClose}>
+      <div className="ev-modal" onClick={(e) => e.stopPropagation()} role="dialog">
+        <div className={"ev-modal-bar " + type} />
+        <div className="ev-modal-body">
+          <div className="ev-modal-head">
+            <span className={"ev-modal-tag " + type}>{typeLabel}</span>
+            <button className="ev-modal-close" onClick={onClose} aria-label="Fechar" type="button">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M3 3l10 10M13 3L3 13" />
+              </svg>
+            </button>
+          </div>
+          <h3 className="ev-modal-title">{title}</h3>
+
+          <div className="ev-modal-meta">
+            <div className="ev-modal-row">
+              <span className="ev-modal-label">Data</span>
+              <span className="ev-modal-value">{dayLabel}</span>
+            </div>
+            <div className="ev-modal-row">
+              <span className="ev-modal-label">Quando</span>
+              <span className="ev-modal-value">{timeLabel}</span>
+            </div>
+            {event.location && (
+              <div className="ev-modal-row">
+                <span className="ev-modal-label">Local</span>
+                <span className="ev-modal-value">{event.location}</span>
+              </div>
+            )}
+            {event.description && (
+              <div className="ev-modal-row">
+                <span className="ev-modal-label">Descrição</span>
+                <span className="ev-modal-value ev-modal-desc">{event.description}</span>
+              </div>
+            )}
+          </div>
+
+          <a
+            className="ev-modal-link"
+            href={event.htmlLink || "https://calendar.google.com"}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>Abrir no Google Calendar</span>
+            {I.ext}
+          </a>
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }

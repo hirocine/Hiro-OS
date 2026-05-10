@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Upload, X, Loader2, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import {
   type MarketingReference,
   type MarketingReferenceInput,
@@ -32,6 +28,26 @@ export const CATEGORY_OPTIONS = [
   { value: 'audio', label: 'Áudio' },
   { value: 'outro', label: 'Outro' },
 ];
+
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const Field = ({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) => (
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <label style={fieldLabel}>
+      {label}
+      {required && <span style={{ marginLeft: 4, color: 'hsl(var(--ds-danger))' }}>*</span>}
+    </label>
+    {children}
+  </div>
+);
 
 function detectPlatform(url: string): string | null {
   if (!url) return null;
@@ -152,65 +168,101 @@ export function MarketingReferenceDialog({ open, onOpenChange, reference }: Prop
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{reference ? 'Editar referência' : 'Nova referência'}</DialogTitle>
+          <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
+            {reference ? 'Editar referência' : 'Nova referência'}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label>Título *</Label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 8, paddingBottom: 8 }}>
+          <Field label="Título" required>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Nome da referência" />
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <Label>Tipo</Label>
+          <Field label="Tipo">
             <Tabs value={type} onValueChange={(v) => setType(v as RefType)}>
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="link"><LinkIcon className="h-3.5 w-3.5 mr-1.5" />Link</TabsTrigger>
-                <TabsTrigger value="image"><ImageIcon className="h-3.5 w-3.5 mr-1.5" />Imagem</TabsTrigger>
+                <TabsTrigger value="link">
+                  <LinkIcon size={13} strokeWidth={1.5} style={{ marginRight: 6 }} />
+                  Link
+                </TabsTrigger>
+                <TabsTrigger value="image">
+                  <ImageIcon size={13} strokeWidth={1.5} style={{ marginRight: 6 }} />
+                  Imagem
+                </TabsTrigger>
                 <TabsTrigger value="both">Ambos</TabsTrigger>
               </TabsList>
             </Tabs>
-          </div>
+          </Field>
 
           {(type === 'link' || type === 'both') && (
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-3">
-              <div className="space-y-2">
-                <Label>URL</Label>
-                <Input value={sourceUrl} onChange={(e) => handleUrlChange(e.target.value)} placeholder="https://..." />
-              </div>
-              <div className="space-y-2">
-                <Label>Plataforma</Label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px', gap: 12 }}>
+              <Field label="URL">
+                <Input
+                  value={sourceUrl}
+                  onChange={(e) => handleUrlChange(e.target.value)}
+                  placeholder="https://…"
+                />
+              </Field>
+              <Field label="Plataforma">
                 <Select value={platform} onValueChange={setPlatform}>
-                  <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecionar" />
+                  </SelectTrigger>
                   <SelectContent>
                     {PLATFORM_OPTIONS.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </Field>
             </div>
           )}
 
           {(type === 'image' || type === 'both') && (
-            <div className="space-y-2">
-              <Label>Imagem</Label>
+            <Field label="Imagem">
               {imageUrl ? (
-                <div className="relative rounded-xl overflow-hidden border border-border">
-                  <img src={imageUrl} alt="preview" className="w-full max-h-64 object-contain bg-muted/30" />
-                  <Button
+                <div
+                  style={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    border: '1px solid hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-line-2) / 0.3)',
+                  }}
+                >
+                  <img
+                    src={imageUrl}
+                    alt="preview"
+                    style={{ width: '100%', maxHeight: 256, objectFit: 'contain', display: 'block' }}
+                  />
+                  <button
                     type="button"
-                    size="icon"
-                    variant="secondary"
-                    className="absolute top-2 right-2 h-7 w-7"
                     onClick={() => setImageUrl('')}
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      width: 28,
+                      height: 28,
+                      display: 'grid',
+                      placeItems: 'center',
+                      background: 'hsl(var(--ds-surface))',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      color: 'hsl(var(--ds-fg-2))',
+                      cursor: 'pointer',
+                    }}
+                    aria-label="Remover imagem"
                   >
-                    <X className="h-3.5 w-3.5" />
-                  </Button>
+                    <X size={13} strokeWidth={1.5} />
+                  </button>
                 </div>
               ) : (
                 <div
-                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOver(true);
+                  }}
                   onDragLeave={() => setDragOver(false)}
                   onDrop={(e) => {
                     e.preventDefault();
@@ -218,18 +270,40 @@ export function MarketingReferenceDialog({ open, onOpenChange, reference }: Prop
                     handleFiles(e.dataTransfer.files);
                   }}
                   onClick={() => fileInputRef.current?.click()}
-                  className={cn(
-                    'rounded-xl border-2 border-dashed p-6 text-center cursor-pointer transition',
-                    dragOver ? 'border-primary bg-primary/5' : 'border-border hover:bg-accent/30',
-                  )}
+                  style={{
+                    border: dragOver ? '2px dashed hsl(var(--ds-accent))' : '2px dashed hsl(var(--ds-line-1))',
+                    background: dragOver ? 'hsl(var(--ds-accent) / 0.05)' : 'transparent',
+                    padding: 24,
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'border-color 0.15s, background 0.15s',
+                  }}
                 >
                   {uploading ? (
-                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" /> Enviando...
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        fontSize: 13,
+                        color: 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
+                      <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />
+                      Enviando…
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground">
-                      <Upload className="h-5 w-5" />
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 8,
+                        fontSize: 13,
+                        color: 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
+                      <Upload size={18} strokeWidth={1.5} />
                       <span>Arraste uma imagem ou clique para selecionar</span>
                     </div>
                   )}
@@ -237,36 +311,56 @@ export function MarketingReferenceDialog({ open, onOpenChange, reference }: Prop
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
-                    className="hidden"
+                    style={{ display: 'none' }}
                     onChange={(e) => e.target.files && handleFiles(e.target.files)}
                   />
                 </div>
               )}
-            </div>
+            </Field>
           )}
 
-          <div className="space-y-2">
-            <Label>Categoria</Label>
+          <Field label="Categoria">
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger><SelectValue placeholder="Selecionar categoria" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecionar categoria" />
+              </SelectTrigger>
               <SelectContent>
                 {CATEGORY_OPTIONS.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <Label>Tags</Label>
-            <div className="flex flex-wrap gap-1.5 mb-2">
+          <Field label="Tags">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
               {tags.map((t) => (
-                <Badge key={t} variant="secondary" className="gap-1">
+                <span
+                  key={t}
+                  className="pill muted"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                >
                   {t}
-                  <button onClick={() => setTags(tags.filter((x) => x !== t))} className="hover:text-destructive">
-                    <X className="h-3 w-3" />
+                  <button
+                    type="button"
+                    onClick={() => setTags(tags.filter((x) => x !== t))}
+                    style={{
+                      display: 'inline-grid',
+                      placeItems: 'center',
+                      width: 14,
+                      height: 14,
+                      color: 'hsl(var(--ds-fg-3))',
+                      background: 'transparent',
+                      border: 0,
+                      cursor: 'pointer',
+                    }}
+                    aria-label={`Remover ${t}`}
+                  >
+                    <X size={10} strokeWidth={1.5} />
                   </button>
-                </Badge>
+                </span>
               ))}
             </div>
             <Input
@@ -281,20 +375,31 @@ export function MarketingReferenceDialog({ open, onOpenChange, reference }: Prop
               onBlur={handleAddTag}
               placeholder="Digite uma tag e pressione Enter"
             />
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <Label>Anotações</Label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Anotações livres..." />
-          </div>
+          <Field label="Anotações">
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              placeholder="Anotações livres…"
+            />
+          </Field>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSubmit} disabled={saving || !title.trim() || uploading}>
-            {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Salvar
-          </Button>
+          <button type="button" className="btn" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={handleSubmit}
+            disabled={saving || !title.trim() || uploading}
+          >
+            {saving && <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />}
+            <span>Salvar</span>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

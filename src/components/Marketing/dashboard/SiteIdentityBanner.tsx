@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Globe, BarChart3 } from 'lucide-react';
-import { cn, formatRelativeTime } from '@/lib/utils';
+import { formatRelativeTime } from '@/lib/utils';
 import { formatTimeAgo } from '@/lib/marketing-dashboard-utils';
 
 interface Integration {
@@ -17,62 +15,92 @@ interface Props {
   rightAction?: ReactNode;
 }
 
+const toneColor = {
+  ok: 'hsl(var(--ds-success))',
+  warn: 'hsl(var(--ds-warning))',
+  idle: 'hsl(var(--ds-fg-3))',
+} as const;
+
 export function SiteIdentityBanner({ integration, domain = 'hiro.film', rightAction }: Props) {
   const syncStatus = formatTimeAgo(integration?.last_sync_at);
+  const tone = toneColor[syncStatus.tone];
 
   return (
-    <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-4">
-          {/* Avatar com badge do Google Analytics */}
-          <div className="relative shrink-0">
-            <Avatar className="h-14 w-14 ring-2 ring-border">
-              <AvatarFallback className="bg-gradient-to-br from-amber-500/20 via-orange-500/20 to-yellow-500/20">
-                <Globe className="h-6 w-6 text-foreground/70" />
-              </AvatarFallback>
-            </Avatar>
-            <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-gradient-to-tr from-amber-400 via-orange-500 to-orange-600 flex items-center justify-center ring-2 ring-card">
-              <BarChart3 className="h-3 w-3 text-white" />
-            </span>
-          </div>
-
-          {/* Informações */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-foreground truncate">
-                {domain}
-              </span>
-              <span
-                className={cn(
-                  'inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium',
-                  syncStatus.tone === 'ok' && 'bg-success/10 text-success',
-                  syncStatus.tone === 'warn' && 'bg-warning/10 text-warning',
-                  syncStatus.tone === 'idle' && 'bg-muted text-muted-foreground'
-                )}
-              >
-                <span
-                  className={cn(
-                    'h-1.5 w-1.5 rounded-full',
-                    syncStatus.tone === 'ok' && 'bg-success',
-                    syncStatus.tone === 'warn' && 'bg-warning',
-                    syncStatus.tone === 'idle' && 'bg-muted-foreground'
-                  )}
-                />
-                Conectado
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              via Google Analytics ·{' '}
-              {integration?.last_sync_at
-                ? `Última sincronização ${formatRelativeTime(new Date(integration.last_sync_at))}`
-                : syncStatus.text}
-            </p>
-          </div>
-          {rightAction && (
-            <div className="ml-auto shrink-0">{rightAction}</div>
-          )}
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        padding: 16,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+      }}
+    >
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div
+          style={{
+            width: 52,
+            height: 52,
+            display: 'grid',
+            placeItems: 'center',
+            background: 'linear-gradient(135deg, hsl(45 90% 60% / 0.15), hsl(30 90% 55% / 0.15), hsl(45 95% 65% / 0.15))',
+            color: 'hsl(var(--ds-fg-2))',
+            border: '1px solid hsl(var(--ds-line-1))',
+          }}
+        >
+          <Globe size={20} strokeWidth={1.5} />
         </div>
-      </CardContent>
-    </Card>
+        <span
+          style={{
+            position: 'absolute',
+            right: -2,
+            bottom: -2,
+            width: 18,
+            height: 18,
+            display: 'grid',
+            placeItems: 'center',
+            background: 'linear-gradient(45deg, #fcb045, #f97316, #ea580c)',
+            border: '2px solid hsl(var(--ds-surface))',
+            borderRadius: '50%',
+            color: '#fff',
+          }}
+        >
+          <BarChart3 size={10} strokeWidth={2} />
+        </span>
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span
+            style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontSize: 14,
+              fontWeight: 600,
+              color: 'hsl(var(--ds-fg-1))',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {domain}
+          </span>
+          <span
+            className="pill"
+            style={{ color: tone, borderColor: `${tone.replace(')', ' / 0.3)')}`, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+          >
+            <span className="dot" style={{ background: 'currentColor' }} />
+            Conectado
+          </span>
+        </div>
+        <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
+          via Google Analytics ·{' '}
+          {integration?.last_sync_at
+            ? `Última sincronização ${formatRelativeTime(new Date(integration.last_sync_at))}`
+            : syncStatus.text}
+        </p>
+      </div>
+
+      {rightAction && <div style={{ marginLeft: 'auto', flexShrink: 0 }}>{rightAction}</div>}
+    </div>
   );
 }

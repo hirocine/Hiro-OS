@@ -1,0 +1,2250 @@
+/* ============================================================
+   HIRO DS — Preview page styles (scoped under :is(.ds-preview, .ds-shell))
+   Ported from the design artifact; variable names mapped to
+   project's --ds-* tokens defined globally in src/index.css.
+   ============================================================ */
+
+:is(.ds-preview, .ds-shell) {
+  /* alias artifact var names → project DS tokens */
+  --bg:            hsl(var(--ds-background));
+  --surface:       hsl(var(--ds-surface));
+  --surface-2:     hsl(var(--ds-surface-2));
+  --surface-3:     hsl(var(--ds-surface-3));
+  --fg-1:          hsl(var(--ds-fg-1));
+  --fg-2:          hsl(var(--ds-fg-2));
+  --fg-3:          hsl(var(--ds-fg-3));
+  --fg-4:          hsl(var(--ds-fg-4));
+  --line-1:        hsl(var(--ds-line-1));
+  --line-2:        hsl(var(--ds-line-2));
+  --line-3:        hsl(var(--ds-line-3));
+  --accent:        hsl(var(--ds-accent));
+  --accent-bright: hsl(var(--ds-accent-bright));
+  --accent-soft:   hsl(var(--ds-accent-soft));
+  --accent-ink:    hsl(var(--ds-accent-ink));
+  --warn:          hsl(var(--ds-warn));
+  --danger:        hsl(var(--ds-destructive));
+  --info:          hsl(var(--ds-info));
+
+  --rail-w:    var(--ds-rail-w);
+  --side-w:    var(--ds-side-w);
+  --topbar-h:  var(--ds-topbar-h);
+  --gutter-x:  var(--ds-gutter-x);
+  --gutter-y:  var(--ds-gutter-y);
+
+  --eyebrow:    var(--ds-eyebrow);
+  --label:      var(--ds-label);
+  --body:       var(--ds-body);
+  --body-lg:    var(--ds-body-lg);
+  --num-md:     var(--ds-num-md);
+  --num-lg:     var(--ds-num-lg);
+  --num-xl:     var(--ds-num-xl);
+  --display:    var(--ds-display);
+  --display-lg: var(--ds-display-lg);
+
+  font-family: "HN Text", "Helvetica Now Text", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Sandbox-only base — full page styling */
+.ds-preview {
+  background: var(--bg);
+  color: var(--fg-1);
+  font-size: 14px;
+  line-height: 1.45;
+  min-height: 100vh;
+}
+
+/* Generic page wrapper — for any non-Home page that opts into DS */
+.ds-page { width: 100%; padding-top: 32px; padding-bottom: 96px; }
+.ds-page-inner {
+  padding: 0 var(--gutter-x);
+  max-width: 1480px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* 4-up summary strip (used by Tarefas-like pages) */
+:is(.ds-preview, .ds-shell) .summary {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .summary .stat {
+  padding: 18px 24px;
+  border-right: 1px solid var(--line-1);
+  display: flex; flex-direction: column; gap: 6px;
+  cursor: default;
+}
+:is(.ds-preview, .ds-shell) .summary .stat:last-child { border-right: 0; }
+:is(.ds-preview, .ds-shell) .summary .stat-lbl {
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--fg-3);
+}
+:is(.ds-preview, .ds-shell) .summary .stat-num {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500; font-size: 32px; letter-spacing: -0.03em;
+  color: var(--fg-1); font-variant-numeric: tabular-nums; line-height: 1;
+}
+:is(.ds-preview, .ds-shell) .summary .stat.danger .stat-num { color: var(--danger); }
+:is(.ds-preview, .ds-shell) .summary .stat.warn   .stat-num { color: var(--warn); }
+:is(.ds-preview, .ds-shell) .summary .stat.success .stat-num { color: var(--accent); }
+:is(.ds-preview, .ds-shell) .summary .stat.muted  .stat-num { color: var(--fg-4); }
+
+/* Lightweight resets for chrome elements */
+:is(.ds-preview, .ds-shell) button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:is(.ds-preview, .ds-shell) a { color: inherit; text-decoration: none; }
+:is(.ds-preview, .ds-shell) h1, :is(.ds-preview, .ds-shell) h2, :is(.ds-preview, .ds-shell) h3, :is(.ds-preview, .ds-shell) p { margin: 0; }
+.ds-preview *, .ds-preview *::before, .ds-preview *::after { box-sizing: border-box; }
+
+:is(.ds-preview, .ds-shell) .scroll-quiet { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+:is(.ds-preview, .ds-shell) .scroll-quiet::-webkit-scrollbar { width: 8px; height: 8px; }
+:is(.ds-preview, .ds-shell) .scroll-quiet::-webkit-scrollbar-thumb { background: var(--line-2); }
+:is(.ds-preview, .ds-shell) .scroll-quiet::-webkit-scrollbar-track { background: transparent; }
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+:is(.ds-preview, .ds-shell) .app {
+  display: grid;
+  grid-template-columns: var(--side-w) 1fr;
+  min-height: 100vh;
+  transition: grid-template-columns 220ms cubic-bezier(.2,.8,.2,1);
+}
+:is(.ds-preview, .ds-shell) .app.sidebar-collapsed { grid-template-columns: var(--rail-w) 1fr; }
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+:is(.ds-preview, .ds-shell) .sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  border-right: 1px solid var(--line-1);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+:is(.ds-preview, .ds-shell) .sidebar-head {
+  height: var(--topbar-h);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line-1);
+  flex-shrink: 0;
+}
+:is(.ds-preview, .ds-shell) .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+:is(.ds-preview, .ds-shell) .brand-mark {
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+:is(.ds-preview, .ds-shell) .brand-mark img,
+:is(.ds-preview, .ds-shell) .brand-mark svg {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  display: block;
+}
+:is(.ds-preview, .ds-shell) .brand-name {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  color: var(--fg-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+:is(.ds-preview, .ds-shell) .brand-name sup { font-size: 8px; color: var(--fg-4); margin-left: 2px; vertical-align: super; }
+:is(.ds-preview, .ds-shell) .collapse-btn {
+  width: 24px; height: 24px;
+  display: grid; place-items: center;
+  color: var(--fg-3);
+  border: 1px solid transparent;
+  flex-shrink: 0;
+  transition: color 120ms, border-color 120ms;
+}
+:is(.ds-preview, .ds-shell) .collapse-btn:hover { color: var(--fg-1); border-color: var(--line-2); }
+
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .brand-name,
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .collapse-btn,
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .nav-section-title,
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .nav-label,
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .nav-kbd,
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .search-wrap,
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .nav-children,
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .user-meta,
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .nav-chev,
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .nav-row .badge { display: none; }
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .sidebar-head { justify-content: center; padding: 0; }
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .user-row { padding: 12px 0; justify-content: center; }
+
+/* search */
+:is(.ds-preview, .ds-shell) .search-wrap { padding: 12px 16px; }
+:is(.ds-preview, .ds-shell) .search-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--line-1);
+  background: var(--surface);
+  color: var(--fg-3);
+  font-size: 13px;
+  width: 100%;
+}
+:is(.ds-preview, .ds-shell) .search-input input {
+  background: transparent;
+  border: 0;
+  outline: 0;
+  flex: 1;
+  font: inherit;
+  color: var(--fg-1);
+  min-width: 0;
+}
+:is(.ds-preview, .ds-shell) .search-input input::placeholder { color: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .kbd {
+  font-family: "HN Display", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--fg-4);
+  border: 1px solid var(--line-1);
+  padding: 1px 5px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* nav */
+:is(.ds-preview, .ds-shell) .nav { flex: 1; overflow-y: auto; padding: 8px 0 16px; }
+:is(.ds-preview, .ds-shell) .nav-section { padding: 0; margin-top: 12px; }
+:is(.ds-preview, .ds-shell) .nav-section:first-child { margin-top: 4px; }
+:is(.ds-preview, .ds-shell) .nav-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "HN Text", "Helvetica Now Text", Helvetica, Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  padding: 4px 16px;
+  margin-bottom: 2px;
+}
+:is(.ds-preview, .ds-shell) .nav-section-title .lock { width: 10px; height: 10px; color: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .nav-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 28px;
+  margin: 1px 12px;
+  padding: 0 8px;
+  border-radius: 6px;
+  color: var(--fg-2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 120ms, background-color 120ms;
+  user-select: none;
+}
+:is(.ds-preview, .ds-shell) .nav-row:hover {
+  color: var(--fg-1);
+  background-color: var(--surface-3);
+}
+:is(.ds-preview, .ds-shell) .nav-row .nav-icon {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  color: var(--fg-3);
+  opacity: 0.85;
+  stroke-width: 1.5;
+  transition: color 120ms, opacity 120ms;
+}
+:is(.ds-preview, .ds-shell) .nav-row:hover .nav-icon { color: var(--fg-1); opacity: 1; }
+:is(.ds-preview, .ds-shell) .nav-row .nav-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+:is(.ds-preview, .ds-shell) .nav-row .nav-chev {
+  width: 12px; height: 12px;
+  color: var(--fg-4);
+  transition: transform 180ms cubic-bezier(.2,.8,.2,1);
+  flex-shrink: 0;
+}
+:is(.ds-preview, .ds-shell) .nav-row.expanded .nav-chev { transform: rotate(90deg); }
+:is(.ds-preview, .ds-shell) .nav-row.active {
+  color: var(--fg-1);
+  font-weight: 500;
+  background-color: var(--surface-2);
+}
+:is(.ds-preview, .ds-shell) .nav-row.active .nav-icon { color: var(--accent); opacity: 1; }
+:is(.ds-preview, .ds-shell) .nav-active-mark {
+  position: absolute;
+  left: -12px;
+  top: 6px; bottom: 6px;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 0 1px 1px 0;
+}
+:is(.ds-preview, .ds-shell) .nav-active-mark.admin { background: var(--danger); }
+:is(.ds-preview, .ds-shell) .nav-row.active.admin { color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .nav-row.active.admin .nav-icon { color: var(--danger); }
+:is(.ds-preview, .ds-shell) .nav-children { padding: 2px 0 6px; }
+:is(.ds-preview, .ds-shell) .nav-child {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 30px;
+  padding: 0 16px 0 44px;
+  color: var(--fg-3);
+  font-size: 13px;
+  transition: color 120ms;
+  cursor: pointer;
+}
+:is(.ds-preview, .ds-shell) .nav-child::before {
+  content: "";
+  position: absolute;
+  left: 30px;
+  top: 50%;
+  width: 6px;
+  height: 1px;
+  background: var(--line-2);
+}
+:is(.ds-preview, .ds-shell) .nav-child:hover { color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .nav-child.active { color: var(--accent); }
+:is(.ds-preview, .ds-shell) .nav-child.active::before { background: var(--accent); width: 8px; }
+:is(.ds-preview, .ds-shell) .nav-child-section {
+  padding: 12px 16px 4px 44px;
+  font-family: "HN Display", sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+}
+
+/* sidebar footer (collapse toggle) */
+:is(.ds-preview, .ds-shell) .sidebar-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 16px;
+  border-top: 1px solid var(--line-1);
+  background: var(--bg);
+  color: var(--fg-3);
+  cursor: pointer;
+  transition: color 120ms, background 120ms;
+  flex-shrink: 0;
+  width: 100%;
+  text-align: left;
+}
+:is(.ds-preview, .ds-shell) .sidebar-foot:hover { color: var(--fg-1); background: var(--surface); }
+:is(.ds-preview, .ds-shell) .sidebar-foot-icon {
+  width: 16px; height: 16px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  color: var(--fg-3);
+  transition: color 120ms;
+}
+:is(.ds-preview, .ds-shell) .sidebar-foot:hover .sidebar-foot-icon { color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .sidebar-foot-label {
+  font-family: "HN Display", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  flex: 1;
+}
+:is(.ds-preview, .ds-shell) .sidebar.is-rail .sidebar-foot {
+  justify-content: center;
+  padding: 0;
+}
+
+/* user row (legacy — kept for reuse if needed) */
+:is(.ds-preview, .ds-shell) .user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line-1);
+  flex-shrink: 0;
+}
+:is(.ds-preview, .ds-shell) .avatar {
+  width: 28px; height: 28px;
+  background: var(--fg-1);
+  color: var(--bg);
+  display: grid; place-items: center;
+  font-family: "HN Display", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+:is(.ds-preview, .ds-shell) .user-meta { min-width: 0; flex: 1; }
+:is(.ds-preview, .ds-shell) .user-name {
+  font-family: "HN Display", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+:is(.ds-preview, .ds-shell) .user-role {
+  font-size: 11px;
+  color: var(--fg-4);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ============================================================
+   MAIN
+   ============================================================ */
+:is(.ds-preview, .ds-shell) .main { min-width: 0; min-height: 100vh; display: flex; flex-direction: column; }
+
+:is(.ds-preview, .ds-shell) .topbar {
+  height: var(--topbar-h);
+  border-bottom: 1px solid var(--line-1);
+  display: flex;
+  align-items: stretch;
+  position: sticky; top: 0;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(12px) saturate(110%);
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
+  z-index: 50;
+}
+:is(.ds-preview, .ds-shell) .topbar-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 16px;
+  min-width: 0;
+}
+:is(.ds-preview, .ds-shell) .topbar-right {
+  display: flex;
+  align-items: stretch;
+  border-left: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "HN Text", "Helvetica Now Text", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--fg-3);
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+}
+:is(.ds-preview, .ds-shell) .crumb-sep { color: var(--line-2); flex-shrink: 0; }
+:is(.ds-preview, .ds-shell) .crumb-link,
+:is(.ds-preview, .ds-shell) .crumb-current {
+  display: inline-block;
+  max-width: 28ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+:is(.ds-preview, .ds-shell) .crumb-current { color: var(--fg-1); font-weight: 500; }
+:is(.ds-preview, .ds-shell) .crumb-link {
+  color: var(--fg-3);
+  cursor: pointer;
+  transition: color 120ms;
+}
+:is(.ds-preview, .ds-shell) .crumb-link:hover { color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .tb-action {
+  width: var(--topbar-h);
+  display: grid; place-items: center;
+  color: var(--fg-3);
+  border-left: 1px solid var(--line-1);
+  transition: color 120ms, background 120ms;
+  position: relative;
+}
+:is(.ds-preview, .ds-shell) .tb-action:hover { color: var(--fg-1); background: var(--surface); }
+:is(.ds-preview, .ds-shell) .tb-action svg { width: 16px; height: 16px; stroke-width: 1.5; }
+:is(.ds-preview, .ds-shell) .tb-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line-1);
+  background: var(--surface-2);
+  color: var(--fg-3);
+  font-size: 13px;
+  width: 320px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+:is(.ds-preview, .ds-shell) .tb-search:focus-within {
+  border-color: var(--line-3);
+  color: var(--fg-1);
+}
+:is(.ds-preview, .ds-shell) .tb-search svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--fg-2); }
+:is(.ds-preview, .ds-shell) .tb-search input {
+  background: transparent;
+  border: 0;
+  outline: 0;
+  flex: 1;
+  font: inherit;
+  color: var(--fg-1);
+  min-width: 0;
+}
+:is(.ds-preview, .ds-shell) .tb-search input::placeholder { color: var(--fg-2); }
+:is(.ds-preview, .ds-shell) .tb-search .kbd {
+  background: var(--bg);
+  color: var(--fg-3);
+  border-color: var(--line-2);
+}
+/* When the search is rendered inside the sidebar's .search-wrap, take full width */
+:is(.ds-preview, .ds-shell) .search-wrap .tb-search {
+  width: 100%;
+  margin-left: 0;
+}
+
+.tb-search-dropdown {
+  background: hsl(var(--ds-popover));
+  color: hsl(var(--ds-popover-foreground));
+  border: 1px solid hsl(var(--ds-line-2));
+  box-shadow: 0 8px 24px -8px hsl(0 0% 0% / 0.18);
+  z-index: 60;
+  overflow: hidden;
+  font-family: "HN Text", "Helvetica Now Text", Helvetica, Arial, sans-serif;
+}
+
+/* ============================================================
+   HOME — page-level layout (full-width hero + gutter inner)
+   ============================================================ */
+:is(.ds-preview, .ds-shell) .ds-home { width: 100%; padding-bottom: 96px; }
+:is(.ds-preview, .ds-shell) .ds-home-inner {
+  padding: 0 var(--gutter-x);
+  max-width: 1480px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* HERO BANNER */
+:is(.ds-preview, .ds-shell) .hero {
+  position: relative;
+  height: clamp(360px, 52vh, 520px);
+  overflow: hidden;
+  background: #111;
+  border-bottom: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .hero-img {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  filter: grayscale(0.15) contrast(1.05);
+}
+:is(.ds-preview, .ds-shell) .hero-img.placeholder {
+  background:
+    radial-gradient(ellipse 80% 60% at 30% 40%, rgba(60,80,100,0.6), transparent 70%),
+    radial-gradient(circle at 75% 20%, rgba(255,180,120,0.25), transparent 50%),
+    linear-gradient(135deg, #0d1217 0%, #1a2128 40%, #0a0e12 100%);
+}
+:is(.ds-preview, .ds-shell) .hero-shade {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.55) 35%, rgba(0,0,0,0.15) 80%, rgba(0,0,0,0) 100%);
+}
+:is(.ds-preview, .ds-shell) .hero-shade-bottom {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 100%);
+}
+:is(.ds-preview, .ds-shell) .hero-katakana {
+  position: absolute; right: -40px; top: 50%; transform: translateY(-50%);
+  font-family: "HN Display", sans-serif; font-weight: 700;
+  font-size: 520px; line-height: 0.8; letter-spacing: -0.05em;
+  color: rgba(255,255,255,0.06);
+  pointer-events: none; user-select: none;
+}
+:is(.ds-preview, .ds-shell) .hero-inner {
+  position: absolute; inset: 0;
+  padding: 32px var(--gutter-x);
+  display: flex; flex-direction: column; justify-content: space-between;
+  max-width: 1480px; margin: 0 auto;
+}
+:is(.ds-preview, .ds-shell) .hero-top {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+}
+:is(.ds-preview, .ds-shell) .hero-eyebrow {
+  font-family: "HN Display", sans-serif; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  display: flex; align-items: center; gap: 10px;
+}
+:is(.ds-preview, .ds-shell) .hero-eyebrow .acc-mark {
+  width: 8px; height: 8px; background: var(--accent); display: inline-block;
+}
+:is(.ds-preview, .ds-shell) .hero-edit {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: "HN Display", sans-serif; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 6px 12px; height: 28px;
+  transition: color 120ms, border-color 120ms, background 120ms;
+}
+:is(.ds-preview, .ds-shell) .hero-edit:hover {
+  color: #fff; border-color: #fff; background: rgba(255,255,255,0.05);
+}
+:is(.ds-preview, .ds-shell) .hero-edit svg { width: 14px; height: 14px; }
+:is(.ds-preview, .ds-shell) .hero-mid {
+  display: flex; flex-direction: column; justify-content: flex-end; flex: 1; padding: 0 0 8px;
+}
+:is(.ds-preview, .ds-shell) .hero-greet {
+  font-family: "HN Display", sans-serif; font-weight: 500;
+  font-size: clamp(40px, 6.4vw, 88px);
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+  color: #FFFFFF;
+  text-wrap: balance;
+  margin: 0;
+}
+:is(.ds-preview, .ds-shell) .hero-greet em {
+  font-style: italic; font-weight: 400; color: rgba(255,255,255,0.55);
+}
+:is(.ds-preview, .ds-shell) .hero-bottom {
+  display: flex; flex-wrap: wrap; gap: 0; align-items: stretch;
+  border-top: 1px solid rgba(255,255,255,0.18); padding-top: 16px;
+}
+:is(.ds-preview, .ds-shell) .hero-chip {
+  display: flex; align-items: center; gap: 10px;
+  padding-right: 24px; margin-right: 24px;
+  border-right: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.85); font-size: 13px;
+}
+:is(.ds-preview, .ds-shell) .hero-chip:last-child { border-right: 0; }
+:is(.ds-preview, .ds-shell) .hero-chip-label {
+  font-family: "HN Display", sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+}
+:is(.ds-preview, .ds-shell) .hero-chip-value {
+  font-family: "HN Display", sans-serif; font-weight: 500; color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+:is(.ds-preview, .ds-shell) .hero-chip-meta {
+  color: rgba(255,255,255,0.55); font-size: 12px;
+}
+:is(.ds-preview, .ds-shell) .hero-temp {
+  font-family: "HN Display", sans-serif; font-weight: 500; font-size: 18px; color: #fff;
+  font-variant-numeric: tabular-nums; line-height: 1;
+}
+:is(.ds-preview, .ds-shell) .hero-w-icon {
+  width: 14px; height: 14px; color: rgba(255,255,255,0.7);
+}
+:is(.ds-preview, .ds-shell) .hero-rec-dot {
+  width: 8px; height: 8px; background: var(--danger); flex-shrink: 0;
+  animation: rec-pulse 1.6s ease-in-out infinite;
+}
+@keyframes rec-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* HOME META BAR (date + quick actions) */
+:is(.ds-preview, .ds-shell) .home-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 32px; padding-bottom: 16px;
+  border-bottom: 1px solid var(--line-1);
+  gap: 16px; flex-wrap: wrap;
+}
+:is(.ds-preview, .ds-shell) .home-date {
+  font-family: "HN Display", sans-serif; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-3);
+}
+:is(.ds-preview, .ds-shell) .home-date strong { color: var(--fg-1); font-weight: 500; }
+:is(.ds-preview, .ds-shell) .home-quick {
+  display: flex; gap: 0; align-items: stretch; border: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .home-quick a {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 0 14px; height: 32px;
+  font-family: "HN Display", sans-serif; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--fg-2); border-right: 1px solid var(--line-1);
+  transition: color 120ms, background 120ms;
+  cursor: pointer;
+}
+:is(.ds-preview, .ds-shell) .home-quick a:last-child { border-right: 0; }
+:is(.ds-preview, .ds-shell) .home-quick a:hover { color: var(--fg-1); background: var(--surface-2); }
+:is(.ds-preview, .ds-shell) .home-quick a svg { width: 14px; height: 14px; stroke-width: 1.5; }
+
+:is(.ds-preview, .ds-shell) .section-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: "HN Display", sans-serif; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--fg-3); transition: color 120ms; cursor: pointer;
+}
+:is(.ds-preview, .ds-shell) .section-link:hover { color: var(--accent); }
+:is(.ds-preview, .ds-shell) .section-link svg { width: 12px; height: 12px; }
+
+/* TODAY WIDGETS */
+:is(.ds-preview, .ds-shell) .today {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 0;
+  border-top: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .today-card {
+  border-right: 1px solid var(--line-1);
+  padding: 24px var(--gutter-x) 24px 0;
+  display: flex; flex-direction: column;
+  cursor: pointer;
+  transition: background 160ms;
+  position: relative;
+}
+:is(.ds-preview, .ds-shell) .today-card:last-child { border-right: 0; }
+:is(.ds-preview, .ds-shell) .today-card:nth-child(n+2) { padding-left: var(--gutter-x); }
+:is(.ds-preview, .ds-shell) .today-card:hover { background: var(--surface); }
+:is(.ds-preview, .ds-shell) .today-card:hover .today-arrow { opacity: 1; transform: translateX(2px); }
+:is(.ds-preview, .ds-shell) .today-head {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+}
+:is(.ds-preview, .ds-shell) .today-label {
+  font-family: "HN Display", sans-serif; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-3);
+  display: flex; align-items: center; gap: 10px;
+}
+:is(.ds-preview, .ds-shell) .today-label .dot { width: 6px; height: 6px; flex-shrink: 0; }
+:is(.ds-preview, .ds-shell) .today-arrow {
+  width: 14px; height: 14px; color: var(--fg-3); opacity: 0.5;
+  transition: opacity 120ms, transform 200ms cubic-bezier(.2,.8,.2,1);
+}
+:is(.ds-preview, .ds-shell) .today-num {
+  display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;
+}
+:is(.ds-preview, .ds-shell) .today-num-val {
+  font-family: "HN Display", sans-serif; font-weight: 500; font-size: 56px;
+  letter-spacing: -0.045em; line-height: 0.95; color: var(--fg-1);
+  font-variant-numeric: tabular-nums;
+}
+:is(.ds-preview, .ds-shell) .today-num-unit { font-size: 13px; color: var(--fg-3); }
+:is(.ds-preview, .ds-shell) .today-list {
+  margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line-1);
+  display: flex; flex-direction: column; gap: 8px;
+}
+:is(.ds-preview, .ds-shell) .today-list-row {
+  display: flex; align-items: center; gap: 10px; font-size: 13px;
+}
+:is(.ds-preview, .ds-shell) .today-list-row .row-dot {
+  width: 5px; height: 5px; flex-shrink: 0; background: var(--fg-4);
+}
+:is(.ds-preview, .ds-shell) .today-list-row.rec .row-dot { background: var(--danger); }
+:is(.ds-preview, .ds-shell) .today-list-row.del .row-dot { background: var(--info); }
+:is(.ds-preview, .ds-shell) .today-list-row.task .row-dot { background: var(--warn); }
+:is(.ds-preview, .ds-shell) .today-list-title {
+  flex: 1; min-width: 0; color: var(--fg-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+:is(.ds-preview, .ds-shell) .today-list-meta {
+  font-family: "HN Display", sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.1em; color: var(--fg-4); text-transform: uppercase;
+  flex-shrink: 0; font-variant-numeric: tabular-nums;
+}
+:is(.ds-preview, .ds-shell) .today-empty {
+  margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line-1);
+  font-size: 13px; color: var(--fg-4);
+}
+@media (max-width: 900px) {
+  :is(.ds-preview, .ds-shell) .today { grid-template-columns: 1fr; border-top: 0; }
+  :is(.ds-preview, .ds-shell) .today-card { border-right: 0; border-bottom: 1px solid var(--line-1); padding: 24px 0; }
+  :is(.ds-preview, .ds-shell) .today-card:nth-child(n+2) { padding-left: 0; }
+}
+
+/* RECORDINGS CALENDAR */
+:is(.ds-preview, .ds-shell) .rc { border-top: 1px solid var(--line-1); padding-top: 0; }
+:is(.ds-preview, .ds-shell) .rc-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 0 16px; border-bottom: 1px solid var(--line-1);
+  flex-wrap: wrap; gap: 16px;
+}
+:is(.ds-preview, .ds-shell) .rc-head-l { display: flex; align-items: center; gap: 14px; }
+:is(.ds-preview, .ds-shell) .rc-head-l .rec-mark {
+  width: 10px; height: 10px; background: var(--danger); flex-shrink: 0;
+  animation: rec-pulse 1.6s ease-in-out infinite;
+}
+:is(.ds-preview, .ds-shell) .rc-period {
+  font-family: "HN Display", sans-serif; font-weight: 500; font-size: 18px;
+  letter-spacing: -0.01em; color: var(--fg-1); text-transform: capitalize;
+}
+:is(.ds-preview, .ds-shell) .rc-period-meta {
+  font-family: "HN Display", sans-serif; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-4);
+}
+:is(.ds-preview, .ds-shell) .rc-controls {
+  display: flex; align-items: center; gap: 0; border: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .rc-nav {
+  min-width: 30px; height: 30px; padding: 0;
+  display: grid; place-items: center;
+  color: var(--fg-3); border-right: 1px solid var(--line-1);
+  transition: color 120ms, background 120ms; cursor: pointer;
+}
+:is(.ds-preview, .ds-shell) .rc-nav:last-child { border-right: 0; }
+:is(.ds-preview, .ds-shell) .rc-nav:hover { color: var(--fg-1); background: var(--surface-2); }
+:is(.ds-preview, .ds-shell) .rc-nav svg { width: 14px; height: 14px; stroke-width: 1.5; }
+:is(.ds-preview, .ds-shell) .rc-views {
+  display: flex; border: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .rc-views button {
+  font-family: "HN Display", sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 0 14px; height: 30px; color: var(--fg-3);
+  border-right: 1px solid var(--line-1);
+  transition: color 120ms, background 120ms; cursor: pointer;
+}
+:is(.ds-preview, .ds-shell) .rc-views button:last-child { border-right: 0; }
+:is(.ds-preview, .ds-shell) .rc-views button:hover { color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .rc-views button.on { color: var(--fg-1); background: var(--surface-2); }
+:is(.ds-preview, .ds-shell) .rc-views button.on::before {
+  content: ""; display: inline-block; width: 5px; height: 5px;
+  background: var(--accent); margin-right: 8px; vertical-align: 1px;
+}
+:is(.ds-preview, .ds-shell) .rc-grid {
+  display: grid; grid-template-columns: repeat(7,1fr);
+  border-left: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .rc-week-head {
+  font-family: "HN Display", sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-4);
+  padding: 14px 0 10px 12px; text-align: left;
+  border-right: 1px solid var(--line-1);
+  border-bottom: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .rc-day {
+  min-height: 108px; padding: 10px 12px;
+  border-right: 1px solid var(--line-1);
+  border-bottom: 1px solid var(--line-1);
+  position: relative; cursor: pointer; transition: background 120ms;
+  min-width: 0;
+  overflow: hidden;
+}
+:is(.ds-preview, .ds-shell) .rc-events { min-width: 0; }
+:is(.ds-preview, .ds-shell) .rc-event { min-width: 0; max-width: 100%; }
+:is(.ds-preview, .ds-shell) .rc-day:hover { background: hsl(0 0% 0% / 0.025); }
+:is(.ds-preview, .ds-shell) .rc-day.weekend { background: hsl(0 0% 0% / 0.04); }
+:is(.ds-preview, .ds-shell) .rc-day.weekend:hover { background: hsl(0 0% 0% / 0.07); }
+:is(.ds-preview, .ds-shell) .rc-day.weekend.other { background: hsl(0 0% 0% / 0.02); }
+:is(.ds-preview, .ds-shell) .rc-day-num {
+  font-family: "HN Display", sans-serif; font-weight: 500; font-size: 13px;
+  color: var(--fg-2); font-variant-numeric: tabular-nums;
+}
+:is(.ds-preview, .ds-shell) .rc-day.other .rc-day-num { color: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .rc-day.today {
+  background: hsl(var(--ds-accent) / 0.05);
+  box-shadow: inset 0 2px 0 0 var(--accent);
+}
+:is(.ds-preview, .ds-shell) .rc-day.today.weekend { background: hsl(var(--ds-accent) / 0.08); }
+:is(.ds-preview, .ds-shell) .rc-day.today:hover,
+:is(.ds-preview, .ds-shell) .rc-day.today.weekend:hover {
+  background: hsl(var(--ds-accent) / 0.11);
+}
+:is(.ds-preview, .ds-shell) .rc-day.today .rc-day-num { color: var(--accent); }
+:is(.ds-preview, .ds-shell) .rc-day.today .rc-day-num::after {
+  content: "HOJE";
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  margin-left: 8px;
+}
+:is(.ds-preview, .ds-shell) .rc-events {
+  margin-top: 8px; display: flex; flex-direction: column; gap: 3px;
+}
+:is(.ds-preview, .ds-shell) .rc-event {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; padding: 3px 0; color: var(--fg-2);
+  white-space: nowrap; overflow: hidden;
+}
+:is(.ds-preview, .ds-shell) .rc-event .ev-bar {
+  width: 3px; height: 11px; flex-shrink: 0; background: var(--fg-3);
+}
+:is(.ds-preview, .ds-shell) .rc-event.rec .ev-bar { background: var(--danger); }
+:is(.ds-preview, .ds-shell) .rc-event.vt .ev-bar { background: var(--warn); }
+:is(.ds-preview, .ds-shell) .rc-event.edit .ev-bar { background: var(--info); }
+:is(.ds-preview, .ds-shell) .rc-event.pre .ev-bar { background: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .rc-event-title {
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+}
+:is(.ds-preview, .ds-shell) .rc-event-more {
+  font-family: "HN Display", sans-serif; font-size: 10px; letter-spacing: 0.1em;
+  color: var(--fg-4); text-transform: uppercase; padding: 2px 0;
+}
+:is(.ds-preview, .ds-shell) .rc-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0 0; gap: 16px; flex-wrap: wrap;
+}
+:is(.ds-preview, .ds-shell) .rc-legend { display: flex; flex-wrap: wrap; gap: 18px; }
+:is(.ds-preview, .ds-shell) .rc-legend-item {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: "HN Display", sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-4);
+}
+:is(.ds-preview, .ds-shell) .rc-legend-item .swatch { width: 10px; height: 3px; }
+
+/* Week view — single tall row */
+:is(.ds-preview, .ds-shell) .rc-grid.is-week .rc-day { min-height: 320px; }
+
+/* List view */
+:is(.ds-preview, .ds-shell) .rc-list {
+  display: flex; flex-direction: column;
+  border-top: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .rc-list-empty {
+  padding: 32px 0; color: var(--fg-4); font-size: 13px;
+  border-bottom: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .rc-list-row {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  gap: 16px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--line-1);
+  align-items: center;
+  transition: background 120ms;
+}
+:is(.ds-preview, .ds-shell) .rc-list-row:hover { background: hsl(0 0% 0% / 0.025); }
+:is(.ds-preview, .ds-shell) .rc-list-row.today { background: hsl(var(--ds-accent) / 0.05); }
+:is(.ds-preview, .ds-shell) .rc-list-row.today:hover { background: hsl(var(--ds-accent) / 0.09); }
+:is(.ds-preview, .ds-shell) .rc-list-day {
+  display: flex; flex-direction: column; gap: 2px;
+}
+:is(.ds-preview, .ds-shell) .rc-list-day-num {
+  font-family: "HN Display", sans-serif; font-weight: 500; font-size: 18px;
+  color: var(--fg-1); font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+  line-height: 1;
+}
+:is(.ds-preview, .ds-shell) .rc-list-day-meta {
+  font-family: "HN Display", sans-serif; font-size: 10px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-4);
+}
+:is(.ds-preview, .ds-shell) .rc-list-row.today .rc-list-day-num { color: var(--accent); }
+:is(.ds-preview, .ds-shell) .rc-list-today { color: var(--accent); }
+:is(.ds-preview, .ds-shell) .rc-list-title {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13px; color: var(--fg-2);
+  min-width: 0;
+}
+:is(.ds-preview, .ds-shell) .rc-list-title .ev-bar {
+  width: 3px; height: 16px; flex-shrink: 0;
+}
+:is(.ds-preview, .ds-shell) .rc-list-title .ev-bar.rec  { background: var(--danger); }
+:is(.ds-preview, .ds-shell) .rc-list-title .ev-bar.vt   { background: var(--warn); }
+:is(.ds-preview, .ds-shell) .rc-list-title .ev-bar.edit { background: var(--info); }
+:is(.ds-preview, .ds-shell) .rc-list-title .ev-bar.pre  { background: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .rc-list-title-text {
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+:is(.ds-preview, .ds-shell) .rc-list-tag {
+  font-family: "HN Display", sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-4);
+}
+:is(.ds-preview, .ds-shell) .rc-list-tag.rec  { color: var(--danger); }
+:is(.ds-preview, .ds-shell) .rc-list-tag.vt   { color: var(--warn); }
+:is(.ds-preview, .ds-shell) .rc-list-tag.edit { color: var(--info); }
+
+/* Event detail modal */
+.ev-modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: hsl(0 0% 0% / 0.32);
+  backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.ev-modal-overlay .ev-modal {
+  width: 460px; max-width: 100%;
+  background: hsl(var(--ds-background));
+  border: 1px solid hsl(var(--ds-line-2));
+  box-shadow: 0 24px 48px -12px hsl(0 0% 0% / 0.32);
+  font-family: "HN Text", "Helvetica Now Text", Helvetica, Arial, sans-serif;
+  color: hsl(var(--ds-fg-1));
+  display: flex; flex-direction: column;
+}
+.ev-modal-bar { height: 3px; width: 100%; background: hsl(var(--ds-fg-3)); }
+.ev-modal-bar.rec  { background: hsl(var(--ds-destructive)); }
+.ev-modal-bar.vt   { background: hsl(var(--ds-warn)); }
+.ev-modal-bar.edit { background: hsl(var(--ds-info)); }
+.ev-modal-bar.pre  { background: hsl(var(--ds-fg-4)); }
+.ev-modal-body { padding: 22px 24px 22px; display: flex; flex-direction: column; gap: 18px; }
+.ev-modal-head { display: flex; align-items: center; justify-content: space-between; }
+.ev-modal-tag {
+  font-family: "HN Display", sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: hsl(var(--ds-fg-3));
+}
+.ev-modal-tag.rec  { color: hsl(var(--ds-destructive)); }
+.ev-modal-tag.vt   { color: hsl(var(--ds-warn)); }
+.ev-modal-tag.edit { color: hsl(var(--ds-info)); }
+.ev-modal-close {
+  width: 24px; height: 24px; display: grid; place-items: center;
+  color: hsl(var(--ds-fg-3));
+  border: 0; background: none; cursor: pointer;
+  transition: color 120ms;
+}
+.ev-modal-close:hover { color: hsl(var(--ds-fg-1)); }
+.ev-modal-title {
+  font-family: "HN Display", sans-serif; font-weight: 500;
+  font-size: 22px; line-height: 1.15; letter-spacing: -0.02em;
+  color: hsl(var(--ds-fg-1)); margin: 0;
+  word-wrap: break-word;
+}
+.ev-modal-meta {
+  display: grid; grid-template-columns: 90px 1fr; row-gap: 12px; column-gap: 16px;
+  padding-top: 4px; border-top: 1px solid hsl(var(--ds-line-1));
+}
+.ev-modal-row { display: contents; }
+.ev-modal-label {
+  font-family: "HN Display", sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: hsl(var(--ds-fg-4));
+  padding-top: 14px;
+}
+.ev-modal-value {
+  font-size: 13px; color: hsl(var(--ds-fg-2)); line-height: 1.5;
+  padding-top: 12px;
+}
+.ev-modal-desc { white-space: pre-wrap; }
+.ev-modal-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: "HN Display", sans-serif; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: hsl(var(--ds-fg-2));
+  padding: 12px 0 0;
+  border-top: 1px solid hsl(var(--ds-line-1));
+  transition: color 120ms;
+  align-self: flex-start;
+}
+.ev-modal-link:hover { color: hsl(var(--ds-accent)); }
+.ev-modal-link svg { width: 12px; height: 12px; stroke-width: 1.5; }
+.ev-modal .rc-event { cursor: default; }
+
+/* ============================================================
+   PATTERNS — Retrofit Handoff (porting from Hiro Padrões artifact)
+   All rules scoped under .ds-shell (or .ds-preview) so opt-in pages
+   wrap their content in <div className="ds-shell">.
+   ============================================================ */
+
+/* ── 01 · TABLES ──────────────────────────────────────────── */
+:is(.ds-preview, .ds-shell) .tbl { display: grid; align-items: stretch; }
+:is(.ds-preview, .ds-shell) .tbl-head { display: contents; }
+:is(.ds-preview, .ds-shell) .tbl-head > div {
+  padding: 14px 16px 12px;
+  font-family: "HN Display", sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+  border-bottom: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .tbl-row { display: contents; cursor: pointer; }
+:is(.ds-preview, .ds-shell) .tbl-row > div {
+  padding: 16px;
+  border-bottom: 1px solid var(--line-1);
+  display: flex;
+  align-items: center;
+  transition: background 120ms;
+  min-height: 56px;
+  gap: 0;
+  font-size: 13px;
+  color: var(--fg-2);
+  min-width: 0;
+}
+:is(.ds-preview, .ds-shell) .tbl-row:hover > div { background: var(--surface); }
+:is(.ds-preview, .ds-shell) .tbl-row.last > div { border-bottom: 0; }
+:is(.ds-preview, .ds-shell) .tbl-row.overdue > div:first-child { position: relative; }
+:is(.ds-preview, .ds-shell) .tbl-row.overdue > div:first-child::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--danger);
+}
+
+:is(.ds-preview, .ds-shell) .tbl.tarefas { grid-template-columns: 28px minmax(280px, 1.6fr) 140px 130px 120px 110px; }
+:is(.ds-preview, .ds-shell) .tbl.equip   { grid-template-columns: 1.5fr 110px 1fr 110px 130px 110px; }
+:is(.ds-preview, .ds-shell) .tbl.forn    { grid-template-columns: 1.5fr 1fr 140px 110px 130px 110px; }
+:is(.ds-preview, .ds-shell) .tbl.logs    { grid-template-columns: 130px 90px 1.4fr 1fr 130px; }
+
+/* checkbox primitive */
+:is(.ds-preview, .ds-shell) .cb {
+  width: 14px; height: 14px;
+  border: 1.5px solid var(--line-3);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+:is(.ds-preview, .ds-shell) .cb.on { background: var(--accent); border-color: var(--accent); }
+:is(.ds-preview, .ds-shell) .cb.on::after {
+  content: ""; width: 7px; height: 4px;
+  border-left: 1.5px solid #0A0A0A;
+  border-bottom: 1.5px solid #0A0A0A;
+  transform: translateY(-1px) rotate(-45deg);
+}
+
+/* table cells */
+:is(.ds-preview, .ds-shell) .t-title {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  color: var(--fg-1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+:is(.ds-preview, .ds-shell) .t-title.muted { color: var(--fg-4); text-decoration: line-through; }
+:is(.ds-preview, .ds-shell) .t-mono {
+  font-family: "HN Display", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+:is(.ds-preview, .ds-shell) .t-pj {
+  display: inline-flex; align-items: center; gap: 9px; min-width: 0;
+}
+:is(.ds-preview, .ds-shell) .t-pj .pj-dot { width: 8px; height: 8px; flex-shrink: 0; }
+:is(.ds-preview, .ds-shell) .t-pj .pj-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:is(.ds-preview, .ds-shell) .t-asg {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+}
+:is(.ds-preview, .ds-shell) .t-due {
+  display: flex; flex-direction: column; gap: 2px;
+  line-height: 1.2;
+  font-family: "HN Display", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+:is(.ds-preview, .ds-shell) .t-due .rel {
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-4);
+}
+:is(.ds-preview, .ds-shell) .t-due .rel.late { color: var(--danger); }
+:is(.ds-preview, .ds-shell) .t-due .rel.today { color: var(--accent); }
+:is(.ds-preview, .ds-shell) .t-overdue-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: "HN Display", sans-serif;
+  font-size: 9px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--danger); margin-left: 10px;
+}
+:is(.ds-preview, .ds-shell) .t-overdue-tag::before {
+  content: ""; width: 4px; height: 4px; background: var(--danger);
+}
+
+/* ── 02 · BADGES, PILLS, PRIO ─────────────────────────────── */
+:is(.ds-preview, .ds-shell) .b {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--fg-2); white-space: nowrap;
+}
+:is(.ds-preview, .ds-shell) .b .dot {
+  width: 6px; height: 6px; flex-shrink: 0; background: var(--fg-3);
+}
+:is(.ds-preview, .ds-shell) .b.todo .dot     { background: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .b.doing .dot    { background: var(--info); }
+:is(.ds-preview, .ds-shell) .b.review .dot   { background: var(--warn); }
+:is(.ds-preview, .ds-shell) .b.done .dot     { background: var(--accent); }
+:is(.ds-preview, .ds-shell) .b.done          { color: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .b.blocked .dot  { background: var(--danger); }
+
+:is(.ds-preview, .ds-shell) .pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 10px; height: 22px;
+  border: 1px solid var(--line-2);
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--fg-2); white-space: nowrap;
+}
+:is(.ds-preview, .ds-shell) .pill .dot {
+  width: 5px; height: 5px; flex-shrink: 0; background: var(--fg-3);
+}
+:is(.ds-preview, .ds-shell) .pill.acc    { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 30%, var(--line-1)); }
+:is(.ds-preview, .ds-shell) .pill.acc .dot    { background: var(--accent); }
+:is(.ds-preview, .ds-shell) .pill.warn   { color: var(--warn);   border-color: color-mix(in srgb, var(--warn) 30%, var(--line-1)); }
+:is(.ds-preview, .ds-shell) .pill.warn .dot   { background: var(--warn); }
+:is(.ds-preview, .ds-shell) .pill.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, var(--line-1)); }
+:is(.ds-preview, .ds-shell) .pill.danger .dot { background: var(--danger); }
+:is(.ds-preview, .ds-shell) .pill.info   { color: var(--info);   border-color: color-mix(in srgb, var(--info) 30%, var(--line-1)); }
+:is(.ds-preview, .ds-shell) .pill.info .dot   { background: var(--info); }
+:is(.ds-preview, .ds-shell) .pill.muted  { color: var(--fg-3); }
+
+:is(.ds-preview, .ds-shell) .solid {
+  display: inline-flex; align-items: center;
+  padding: 0 10px; height: 22px;
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+}
+:is(.ds-preview, .ds-shell) .solid.acc    { background: var(--accent);    color: #0A0A0A; }
+:is(.ds-preview, .ds-shell) .solid.danger { background: var(--danger);    color: #FFFFFF; }
+:is(.ds-preview, .ds-shell) .solid.warn   { background: var(--warn);      color: #0A0A0A; }
+:is(.ds-preview, .ds-shell) .solid.info   { background: var(--info);      color: #FFFFFF; }
+:is(.ds-preview, .ds-shell) .solid.fg     { background: var(--fg-1);      color: var(--bg); }
+
+:is(.ds-preview, .ds-shell) .prio {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: "HN Display", sans-serif;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+}
+:is(.ds-preview, .ds-shell) .prio .swatch { width: 10px; height: 10px; }
+:is(.ds-preview, .ds-shell) .prio.p0 .swatch { background: var(--danger); }
+:is(.ds-preview, .ds-shell) .prio.p0          { color: var(--danger); }
+:is(.ds-preview, .ds-shell) .prio.p1 .swatch { background: var(--warn); }
+:is(.ds-preview, .ds-shell) .prio.p1          { color: var(--warn); }
+:is(.ds-preview, .ds-shell) .prio.p2 .swatch { background: var(--fg-3); }
+
+:is(.ds-preview, .ds-shell) .proj-chip {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 13px; color: var(--fg-2);
+}
+:is(.ds-preview, .ds-shell) .proj-chip .pj-dot { width: 8px; height: 8px; }
+
+/* ── 03 · TABS ────────────────────────────────────────────── */
+/* full bar with icons */
+:is(.ds-preview, .ds-shell) .tabs-bar {
+  display: flex; align-items: stretch;
+  border-top: 1px solid var(--line-1);
+  border-bottom: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .tabs-bar .tab {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 46px; padding: 0 18px;
+  font-size: 12px; color: var(--fg-3);
+  transition: color 120ms; white-space: nowrap;
+  position: relative; border-right: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .tabs-bar .tab svg { width: 13px; height: 13px; stroke-width: 1.5; opacity: 0.6; }
+:is(.ds-preview, .ds-shell) .tabs-bar .tab:hover { color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .tabs-bar .tab.on { color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .tabs-bar .tab.on svg { opacity: 1; color: var(--accent); }
+:is(.ds-preview, .ds-shell) .tabs-bar .tab.on::after {
+  content: ""; position: absolute; left: 18px; right: 18px; bottom: -1px;
+  height: 2px; background: var(--accent);
+}
+:is(.ds-preview, .ds-shell) .tabs-bar .tab .ct {
+  margin-left: 6px; color: var(--fg-4);
+  font-family: "HN Display", sans-serif; font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+:is(.ds-preview, .ds-shell) .tabs-side { margin-left: auto; display: flex; }
+:is(.ds-preview, .ds-shell) .tabs-side .tab { border-right: 0; border-left: 1px solid var(--line-1); }
+
+/* underline-only */
+:is(.ds-preview, .ds-shell) .tabs-underline {
+  display: flex; gap: 32px;
+  border-bottom: 1px solid var(--line-1);
+  padding: 0;
+}
+:is(.ds-preview, .ds-shell) .tabs-underline .t {
+  padding: 18px 0;
+  font-family: "HN Display", sans-serif;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--fg-3);
+  border-bottom: 2px solid transparent;
+  transition: color 120ms, border-color 120ms;
+}
+:is(.ds-preview, .ds-shell) .tabs-underline .t:hover { color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .tabs-underline .t.on { color: var(--fg-1); border-bottom-color: var(--accent); }
+:is(.ds-preview, .ds-shell) .tabs-underline .t .ct {
+  margin-left: 8px; color: var(--fg-4); font-variant-numeric: tabular-nums;
+}
+
+/* segmented */
+:is(.ds-preview, .ds-shell) .tabs-seg {
+  display: inline-flex; border: 1px solid var(--line-2);
+}
+:is(.ds-preview, .ds-shell) .tabs-seg .s {
+  height: 34px; padding: 0 16px;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--fg-3);
+  border-right: 1px solid var(--line-2);
+  transition: color 120ms, background 120ms;
+}
+:is(.ds-preview, .ds-shell) .tabs-seg .s svg { width: 12px; height: 12px; stroke-width: 1.5; opacity: 0.6; }
+:is(.ds-preview, .ds-shell) .tabs-seg .s:last-child { border-right: 0; }
+:is(.ds-preview, .ds-shell) .tabs-seg .s.on { color: var(--fg-1); background: var(--surface-2); }
+:is(.ds-preview, .ds-shell) .tabs-seg .s.on svg { color: var(--accent); opacity: 1; }
+
+/* ── 04 · STEPPER ─────────────────────────────────────────── */
+:is(.ds-preview, .ds-shell) .stepper {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--line-1); border-bottom: 0;
+}
+:is(.ds-preview, .ds-shell) .step {
+  padding: 20px 24px; border-right: 1px solid var(--line-1);
+  display: flex; flex-direction: column; gap: 8px;
+  cursor: pointer; transition: background 120ms;
+  position: relative;
+}
+:is(.ds-preview, .ds-shell) .step:last-child { border-right: 0; }
+:is(.ds-preview, .ds-shell) .step:hover { background: var(--surface); }
+:is(.ds-preview, .ds-shell) .step .num {
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.18em;
+  color: var(--fg-4);
+}
+:is(.ds-preview, .ds-shell) .step .nm {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500; font-size: 15px; letter-spacing: -0.005em;
+  color: var(--fg-3);
+}
+:is(.ds-preview, .ds-shell) .step .meta {
+  font-size: 11px; color: var(--fg-4); margin-top: auto; padding-top: 12px;
+}
+:is(.ds-preview, .ds-shell) .step.done .num { color: var(--accent); }
+:is(.ds-preview, .ds-shell) .step.done .nm { color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .step.done::after {
+  content: ""; position: absolute; top: 20px; right: 24px;
+  width: 14px; height: 14px; background: var(--accent);
+  display: grid; place-items: center;
+}
+:is(.ds-preview, .ds-shell) .step.done::before {
+  content: ""; position: absolute; top: 25px; right: 27px;
+  width: 7px; height: 4px;
+  border-left: 1.5px solid #0A0A0A;
+  border-bottom: 1.5px solid #0A0A0A;
+  transform: rotate(-45deg); z-index: 1;
+}
+:is(.ds-preview, .ds-shell) .step.current .nm { color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .step.current .num { color: var(--accent); }
+:is(.ds-preview, .ds-shell) .step.current { background: var(--surface); }
+:is(.ds-preview, .ds-shell) .step.current::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 2px; background: var(--accent);
+}
+
+/* ── 05 · FORMS ───────────────────────────────────────────── */
+:is(.ds-preview, .ds-shell) .form-shell {
+  display: grid; grid-template-columns: 280px 1fr; gap: 0;
+  border: 1px solid var(--line-1); min-height: 560px;
+}
+:is(.ds-preview, .ds-shell) .form-aside {
+  padding: 32px;
+  border-right: 1px solid var(--line-1);
+  background: var(--surface);
+  display: flex; flex-direction: column; gap: 24px;
+}
+:is(.ds-preview, .ds-shell) .form-aside .eyebrow {
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--fg-4);
+}
+:is(.ds-preview, .ds-shell) .form-aside h3 {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500; font-size: 24px; letter-spacing: -0.02em; line-height: 1.1;
+  margin: 0; color: var(--fg-1);
+}
+:is(.ds-preview, .ds-shell) .form-aside p { margin: 0; font-size: 13px; color: var(--fg-3); line-height: 1.55; }
+:is(.ds-preview, .ds-shell) .form-aside .meta {
+  display: flex; flex-direction: column; gap: 10px;
+  padding-top: 20px; border-top: 1px solid var(--line-2);
+}
+:is(.ds-preview, .ds-shell) .form-aside .meta-row {
+  display: flex; justify-content: space-between; gap: 14px;
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+}
+:is(.ds-preview, .ds-shell) .form-aside .meta-row .k { color: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .form-aside .meta-row .v { color: var(--fg-1); font-variant-numeric: tabular-nums; }
+
+:is(.ds-preview, .ds-shell) .form-main {
+  padding: 40px 48px;
+  display: flex; flex-direction: column; gap: 32px;
+}
+:is(.ds-preview, .ds-shell) .fset { display: flex; flex-direction: column; gap: 18px; }
+:is(.ds-preview, .ds-shell) .fset-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
+  padding-bottom: 10px; border-bottom: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .fset-head h4 {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500; font-size: 14px; letter-spacing: -0.005em;
+  margin: 0; color: var(--fg-1);
+}
+:is(.ds-preview, .ds-shell) .fset-head .tag {
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--fg-4);
+}
+:is(.ds-preview, .ds-shell) .fgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 32px; }
+:is(.ds-preview, .ds-shell) .fgrid.full { grid-template-columns: 1fr; }
+:is(.ds-preview, .ds-shell) .field { display: flex; flex-direction: column; gap: 8px; }
+:is(.ds-preview, .ds-shell) .field.span2 { grid-column: span 2; }
+:is(.ds-preview, .ds-shell) .field-label {
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--fg-3);
+  display: flex; align-items: center; gap: 8px;
+}
+:is(.ds-preview, .ds-shell) .field-label .req { color: var(--danger); font-size: 10px; }
+:is(.ds-preview, .ds-shell) .field-label .hint {
+  margin-left: auto; color: var(--fg-4);
+  text-transform: none; letter-spacing: 0;
+  font-family: "HN Text", sans-serif; font-weight: 400;
+}
+:is(.ds-preview, .ds-shell) .field-input {
+  height: 38px; border: 1px solid var(--line-2);
+  padding: 0 12px; background: var(--bg); color: var(--fg-1);
+  font-size: 13px; outline: 0;
+  transition: border-color 120ms;
+}
+:is(.ds-preview, .ds-shell) .field-input:hover { border-color: var(--line-3); }
+:is(.ds-preview, .ds-shell) .field-input:focus { border-color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .field-input::placeholder { color: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .field-textarea {
+  min-height: 96px; padding: 10px 12px;
+  border: 1px solid var(--line-2); background: var(--bg);
+  resize: vertical; font-size: 13px; line-height: 1.5; outline: 0;
+  font-family: inherit;
+}
+:is(.ds-preview, .ds-shell) .field-help { font-size: 11px; color: var(--fg-4); line-height: 1.5; }
+:is(.ds-preview, .ds-shell) .field-error {
+  color: var(--danger); font-size: 11px;
+  display: flex; align-items: center; gap: 6px;
+}
+:is(.ds-preview, .ds-shell) .field-error::before {
+  content: ""; width: 5px; height: 5px; background: var(--danger);
+}
+:is(.ds-preview, .ds-shell) .field.invalid .field-input { border-color: var(--danger); }
+
+:is(.ds-preview, .ds-shell) .field-select { position: relative; }
+:is(.ds-preview, .ds-shell) .field-select .field-input { padding-right: 32px; appearance: none; }
+:is(.ds-preview, .ds-shell) .field-select::after {
+  content: ""; position: absolute; right: 14px; top: 50%;
+  transform: translateY(-3px) rotate(45deg);
+  width: 6px; height: 6px;
+  border-right: 1.5px solid var(--fg-3);
+  border-bottom: 1.5px solid var(--fg-3);
+  pointer-events: none;
+}
+
+:is(.ds-preview, .ds-shell) .chip-pick {
+  display: flex; flex-wrap: wrap; gap: 0;
+  border: 1px solid var(--line-2);
+}
+:is(.ds-preview, .ds-shell) .chip-pick button {
+  height: 36px; padding: 0 14px;
+  font-family: "HN Display", sans-serif;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--fg-3);
+  border-right: 1px solid var(--line-2);
+  transition: color 120ms, background 120ms;
+}
+:is(.ds-preview, .ds-shell) .chip-pick button:last-child { border-right: 0; }
+:is(.ds-preview, .ds-shell) .chip-pick button.on { color: var(--fg-1); background: var(--surface-2); }
+:is(.ds-preview, .ds-shell) .chip-pick button.on::before {
+  content: ""; display: inline-block;
+  width: 6px; height: 6px; background: var(--accent);
+  margin-right: 8px; vertical-align: middle;
+}
+
+:is(.ds-preview, .ds-shell) .toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0; border-bottom: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .toggle-row:last-child { border-bottom: 0; }
+:is(.ds-preview, .ds-shell) .toggle-row .lbl { font-size: 13px; color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .toggle-row .lbl small { display: block; color: var(--fg-3); font-size: 11px; margin-top: 2px; }
+:is(.ds-preview, .ds-shell) .tg {
+  width: 32px; height: 18px; background: var(--line-2);
+  position: relative; cursor: pointer; transition: background 120ms;
+}
+:is(.ds-preview, .ds-shell) .tg::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; background: var(--bg);
+  transition: left 120ms;
+}
+:is(.ds-preview, .ds-shell) .tg.on { background: var(--accent); }
+:is(.ds-preview, .ds-shell) .tg.on::after { left: 16px; }
+
+:is(.ds-preview, .ds-shell) .upload {
+  border: 1px dashed var(--line-2); padding: 28px;
+  text-align: center;
+  display: flex; flex-direction: column; gap: 6px; align-items: center;
+}
+:is(.ds-preview, .ds-shell) .upload .ttl {
+  font-family: "HN Display", sans-serif;
+  font-size: 13px; font-weight: 500; color: var(--fg-1);
+}
+:is(.ds-preview, .ds-shell) .upload .sub { font-size: 11px; color: var(--fg-3); }
+
+:is(.ds-preview, .ds-shell) .form-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 48px;
+  border-top: 1px solid var(--line-1);
+  background: var(--surface);
+}
+:is(.ds-preview, .ds-shell) .form-foot .l {
+  font-size: 11px; color: var(--fg-3);
+  font-family: "HN Display", sans-serif; letter-spacing: 0.04em;
+}
+:is(.ds-preview, .ds-shell) .form-foot .r {
+  display: flex; gap: 0; border: 1px solid var(--line-2);
+}
+
+/* form/empty button — context-scoped to avoid colliding with sandbox .btn */
+:is(.ds-preview, .ds-shell) :is(.form-foot, .empty .actions) .btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 36px; padding: 0 18px;
+  font-family: "HN Display", sans-serif;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--fg-2);
+  border-right: 1px solid var(--line-2);
+  transition: color 120ms, background 120ms;
+}
+:is(.ds-preview, .ds-shell) :is(.form-foot, .empty .actions) .btn:last-child { border-right: 0; }
+:is(.ds-preview, .ds-shell) :is(.form-foot, .empty .actions) .btn:hover { color: var(--fg-1); background: var(--surface-2); }
+:is(.ds-preview, .ds-shell) :is(.form-foot, .empty .actions) .btn.primary {
+  background: var(--fg-1); color: var(--bg); border-right-color: var(--fg-1);
+}
+:is(.ds-preview, .ds-shell) :is(.form-foot, .empty .actions) .btn.primary:hover {
+  background: var(--accent); color: #0A0A0A; border-right-color: var(--accent);
+}
+:is(.ds-preview, .ds-shell) :is(.form-foot, .empty .actions) .btn.danger { color: var(--danger); }
+
+/* ── 06 · DETAIL LAYOUT ───────────────────────────────────── */
+:is(.ds-preview, .ds-shell) .detail-shell {
+  display: grid; grid-template-columns: 1fr 360px;
+  border: 1px solid var(--line-1); min-height: 680px;
+}
+:is(.ds-preview, .ds-shell) .detail-main { padding: 0; min-width: 0; display: flex; flex-direction: column; }
+:is(.ds-preview, .ds-shell) .detail-aside {
+  border-left: 1px solid var(--line-1);
+  background: var(--surface);
+  display: flex; flex-direction: column;
+}
+:is(.ds-preview, .ds-shell) .detail-head {
+  padding: 32px 40px 24px;
+  border-bottom: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .detail-eyebrow {
+  display: flex; align-items: center; gap: 14px;
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--fg-3); margin-bottom: 16px;
+}
+:is(.ds-preview, .ds-shell) .detail-eyebrow .back { color: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .detail-eyebrow .id { color: var(--fg-1); font-variant-numeric: tabular-nums; }
+:is(.ds-preview, .ds-shell) .detail-title {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500; font-size: 36px; letter-spacing: -0.025em; line-height: 1.05;
+  margin: 0 0 18px;
+}
+:is(.ds-preview, .ds-shell) .detail-meta {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+}
+:is(.ds-preview, .ds-shell) .detail-meta .ph-meta-sep { color: var(--line-2); }
+:is(.ds-preview, .ds-shell) .detail-tabs {
+  display: flex; border-bottom: 1px solid var(--line-1);
+  padding: 0 40px;
+}
+:is(.ds-preview, .ds-shell) .detail-tab {
+  padding: 16px 0; margin-right: 32px;
+  font-family: "HN Display", sans-serif;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--fg-3);
+  border-bottom: 2px solid transparent;
+  transition: color 120ms, border-color 120ms;
+}
+:is(.ds-preview, .ds-shell) .detail-tab:hover { color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .detail-tab.on { color: var(--fg-1); border-bottom-color: var(--accent); }
+:is(.ds-preview, .ds-shell) .detail-tab .count {
+  margin-left: 8px; color: var(--fg-4); font-variant-numeric: tabular-nums;
+}
+:is(.ds-preview, .ds-shell) .detail-body {
+  padding: 40px;
+  display: flex; flex-direction: column; gap: 36px; flex: 1;
+}
+:is(.ds-preview, .ds-shell) .descr-block h5 {
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--fg-4); margin: 0 0 12px;
+}
+:is(.ds-preview, .ds-shell) .descr-block p {
+  margin: 0 0 12px; color: var(--fg-2); line-height: 1.65;
+  font-size: 14px; max-width: 72ch;
+}
+:is(.ds-preview, .ds-shell) .checklist {
+  display: flex; flex-direction: column; gap: 0;
+  border-top: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .checklist-item {
+  display: grid; grid-template-columns: 24px 1fr auto; gap: 14px;
+  padding: 14px 0; border-bottom: 1px solid var(--line-1);
+  align-items: center;
+}
+:is(.ds-preview, .ds-shell) .checklist-item .cb { margin-top: 2px; }
+:is(.ds-preview, .ds-shell) .checklist-item .lbl { color: var(--fg-1); font-size: 14px; }
+:is(.ds-preview, .ds-shell) .checklist-item.done .lbl {
+  color: var(--fg-4); text-decoration: line-through;
+}
+:is(.ds-preview, .ds-shell) .checklist-item .meta {
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--fg-4);
+}
+:is(.ds-preview, .ds-shell) .activity { display: flex; flex-direction: column; gap: 0; }
+:is(.ds-preview, .ds-shell) .act {
+  display: grid; grid-template-columns: 28px 1fr auto; gap: 14px;
+  padding: 14px 0; border-bottom: 1px solid var(--line-1);
+  align-items: start;
+}
+:is(.ds-preview, .ds-shell) .act:last-child { border-bottom: 0; }
+:is(.ds-preview, .ds-shell) .act .av {
+  width: 24px; height: 24px;
+  background: var(--fg-1); color: var(--bg);
+  display: grid; place-items: center;
+  font-family: "HN Display", sans-serif; font-size: 9px; font-weight: 500;
+}
+:is(.ds-preview, .ds-shell) .act .body { font-size: 13px; color: var(--fg-2); line-height: 1.55; }
+:is(.ds-preview, .ds-shell) .act .body strong {
+  font-family: "HN Display", sans-serif; font-weight: 500; color: var(--fg-1);
+}
+:is(.ds-preview, .ds-shell) .act .body .what { color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .act .when {
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--fg-4); white-space: nowrap;
+}
+:is(.ds-preview, .ds-shell) .aside-section {
+  padding: 24px 28px; border-bottom: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .aside-section:last-child { border-bottom: 0; }
+:is(.ds-preview, .ds-shell) .aside-section h6 {
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--fg-4); margin: 0 0 14px;
+}
+:is(.ds-preview, .ds-shell) .kv {
+  display: flex; justify-content: space-between; gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--line-2);
+  align-items: center;
+}
+:is(.ds-preview, .ds-shell) .kv:last-child { border-bottom: 0; }
+:is(.ds-preview, .ds-shell) .kv .k {
+  font-family: "HN Display", sans-serif;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
+  color: var(--fg-3);
+}
+:is(.ds-preview, .ds-shell) .kv .v {
+  font-size: 13px; color: var(--fg-1);
+  font-family: "HN Display", sans-serif;
+  font-variant-numeric: tabular-nums;
+  text-align: right; max-width: 60%;
+}
+:is(.ds-preview, .ds-shell) .kv .v.muted { color: var(--fg-3); }
+
+/* ── 07 · EMPTY STATES ────────────────────────────────────── */
+:is(.ds-preview, .ds-shell) .empties {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  border: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .empty {
+  padding: 64px 48px;
+  border-right: 1px solid var(--line-1);
+  border-bottom: 1px solid var(--line-1);
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  text-align: center; min-height: 360px; justify-content: center;
+}
+:is(.ds-preview, .ds-shell) .empty:nth-child(2n) { border-right: 0; }
+:is(.ds-preview, .ds-shell) .empty:nth-last-child(-n+2) { border-bottom: 0; }
+:is(.ds-preview, .ds-shell) .empty .glyph {
+  width: 56px; height: 56px;
+  border: 1px solid var(--line-2);
+  display: grid; place-items: center;
+  color: var(--fg-3); margin-bottom: 10px;
+}
+:is(.ds-preview, .ds-shell) .empty .glyph svg { width: 22px; height: 22px; stroke-width: 1.25; }
+:is(.ds-preview, .ds-shell) .empty h5 {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500; font-size: 18px; letter-spacing: -0.01em;
+  color: var(--fg-1); margin: 0;
+}
+:is(.ds-preview, .ds-shell) .empty p {
+  margin: 0; color: var(--fg-3); font-size: 13px;
+  max-width: 42ch; line-height: 1.55;
+}
+:is(.ds-preview, .ds-shell) .empty .actions {
+  display: flex; gap: 0; border: 1px solid var(--line-2); margin-top: 14px;
+}
+:is(.ds-preview, .ds-shell) .empty .actions .btn {
+  border-right: 1px solid var(--line-2); height: 34px; padding: 0 16px;
+}
+:is(.ds-preview, .ds-shell) .empty .actions .btn:last-child { border-right: 0; }
+
+/* ── 08 · SKELETONS ───────────────────────────────────────── */
+@keyframes ds-skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+:is(.ds-preview, .ds-shell) .sk {
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface) 50%, var(--surface-2) 100%);
+  background-size: 200% 100%;
+  animation: ds-skeleton-shimmer 1.6s linear infinite;
+  display: block;
+}
+:is(.ds-preview, .ds-shell) .sk.line { height: 10px; }
+:is(.ds-preview, .ds-shell) .sk.line.sm { height: 8px; }
+:is(.ds-preview, .ds-shell) .sk.line.lg { height: 14px; }
+:is(.ds-preview, .ds-shell) .sk.box { height: 96px; }
+:is(.ds-preview, .ds-shell) .sk.av { width: 22px; height: 22px; }
+:is(.ds-preview, .ds-shell) .sk.dot { width: 8px; height: 8px; }
+
+:is(.ds-preview, .ds-shell) .sk-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .sk-tile {
+  padding: 24px;
+  border-right: 1px solid var(--line-1);
+  display: flex; flex-direction: column; gap: 14px;
+}
+:is(.ds-preview, .ds-shell) .sk-tile:last-child { border-right: 0; }
+:is(.ds-preview, .ds-shell) .sk-tile .tag {
+  font-family: "HN Display", sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--fg-4); padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-1);
+}
+
+/* ── note (used inside detail tabs / forms / docs) ────────── */
+:is(.ds-preview, .ds-shell) .note {
+  margin: 24px 0 0;
+  padding: 14px 18px;
+  background: var(--surface);
+  border-left: 2px solid var(--accent);
+  font-size: 12px; color: var(--fg-2); line-height: 1.6;
+}
+:is(.ds-preview, .ds-shell) .note code {
+  font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px; color: var(--fg-1);
+  background: var(--bg); padding: 1px 5px;
+  border: 1px solid var(--line-2);
+}
+
+/* responsive collapse */
+@media (max-width: 1100px) {
+  :is(.ds-preview, .ds-shell) .form-shell { grid-template-columns: 1fr; }
+  :is(.ds-preview, .ds-shell) .form-aside { border-right: 0; border-bottom: 1px solid var(--line-1); }
+  :is(.ds-preview, .ds-shell) .detail-shell { grid-template-columns: 1fr; }
+  :is(.ds-preview, .ds-shell) .detail-aside { border-left: 0; border-top: 1px solid var(--line-1); }
+  :is(.ds-preview, .ds-shell) .stepper { grid-template-columns: 1fr 1fr; }
+  :is(.ds-preview, .ds-shell) .empties { grid-template-columns: 1fr; }
+  :is(.ds-preview, .ds-shell) .empty { border-right: 0; }
+  :is(.ds-preview, .ds-shell) .sk-grid { grid-template-columns: 1fr; }
+  :is(.ds-preview, .ds-shell) .sk-tile { border-right: 0; border-bottom: 1px solid var(--line-1); }
+  :is(.ds-preview, .ds-shell) .sk-tile:last-child { border-bottom: 0; }
+}
+
+/* TEAM */
+:is(.ds-preview, .ds-shell) .team-grid {
+  display: grid; grid-template-columns: repeat(6,1fr); gap: 0;
+  border-top: 1px solid var(--line-1); border-left: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .team-card {
+  border-right: 1px solid var(--line-1);
+  border-bottom: 1px solid var(--line-1);
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  transition: background 160ms; cursor: pointer;
+}
+:is(.ds-preview, .ds-shell) .team-card:hover { background: var(--surface); }
+:is(.ds-preview, .ds-shell) .team-photo {
+  aspect-ratio: 1/1; background: var(--surface-2);
+  position: relative; overflow: hidden;
+  border-bottom: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .team-photo img {
+  width: 100%; height: 100%; object-fit: cover;
+  filter: grayscale(0.4) contrast(1.04);
+  transition: filter 240ms, transform 360ms cubic-bezier(.2,.8,.2,1);
+}
+:is(.ds-preview, .ds-shell) .team-card:hover .team-photo img {
+  filter: grayscale(0); transform: scale(1.03);
+}
+:is(.ds-preview, .ds-shell) .team-photo-fallback {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-family: "HN Display", sans-serif; font-weight: 500; font-size: 32px;
+  letter-spacing: -0.04em; color: var(--fg-3);
+  background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+}
+:is(.ds-preview, .ds-shell) .team-photo-num {
+  position: absolute; left: 14px; top: 14px;
+  font-family: "HN Display", sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.16em; color: rgba(255,255,255,0.85);
+  text-transform: uppercase; mix-blend-mode: difference;
+}
+:is(.ds-preview, .ds-shell) .team-info {
+  padding: 16px 16px 18px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+:is(.ds-preview, .ds-shell) .team-name {
+  font-family: "HN Display", sans-serif; font-weight: 500; font-size: 16px;
+  letter-spacing: -0.01em; color: var(--fg-1); margin-bottom: 4px; line-height: 1.15;
+}
+:is(.ds-preview, .ds-shell) .team-position {
+  font-size: 12px; color: var(--fg-3); margin-bottom: 12px;
+}
+:is(.ds-preview, .ds-shell) .team-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: auto;
+}
+:is(.ds-preview, .ds-shell) .team-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: "HN Display", sans-serif; font-size: 9px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-3);
+  border: 1px solid var(--line-1); padding: 3px 7px;
+}
+:is(.ds-preview, .ds-shell) .team-tag.acc { color: var(--accent); border-color: var(--accent); }
+@media (max-width: 1280px) {
+  :is(.ds-preview, .ds-shell) .team-grid { grid-template-columns: repeat(5,1fr); }
+}
+@media (max-width: 1100px) {
+  :is(.ds-preview, .ds-shell) .team-grid { grid-template-columns: repeat(4,1fr); }
+}
+@media (max-width: 900px) {
+  :is(.ds-preview, .ds-shell) .team-grid { grid-template-columns: repeat(3,1fr); }
+}
+@media (max-width: 720px) {
+  :is(.ds-preview, .ds-shell) .team-grid { grid-template-columns: repeat(2,1fr); }
+}
+:is(.ds-preview, .ds-shell) .tb-dot {
+  position: absolute; top: 16px; right: 18px;
+  width: 6px; height: 6px;
+  background: var(--accent);
+}
+:is(.ds-preview, .ds-shell) .tb-user {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 16px 0 14px;
+  border-left: 1px solid var(--line-1);
+  color: var(--fg-2);
+  font-size: 13px;
+}
+:is(.ds-preview, .ds-shell) .tb-user .avatar { width: 24px; height: 24px; font-size: 10px; }
+:is(.ds-preview, .ds-shell) .tb-user .who-name { font-family: "HN Display", sans-serif; font-weight: 500; color: var(--fg-1); }
+
+/* ============================================================
+   CONTENT
+   ============================================================ */
+:is(.ds-preview, .ds-shell) .content {
+  padding: 40px var(--gutter-x) 96px;
+  flex: 1;
+  max-width: 1480px;
+  width: 100%;
+}
+@media (max-width: 900px) {
+  :is(.ds-preview, .ds-shell) { --gutter-x: 24px; }
+}
+
+/* PageHeader */
+:is(.ds-preview, .ds-shell) .ph {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 24px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line-1);
+  margin-bottom: 40px;
+}
+:is(.ds-preview, .ds-shell) .ph-eyebrow {
+  font-family: "HN Display", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+:is(.ds-preview, .ds-shell) .ph-eyebrow .acc-mark { width: 6px; height: 6px; background: var(--accent); display: inline-block; }
+:is(.ds-preview, .ds-shell) .ph-title {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500;
+  font-size: var(--display);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--fg-1);
+  margin: 0 0 12px;
+  text-wrap: pretty;
+}
+:is(.ds-preview, .ds-shell) .ph-sub {
+  font-size: 14px;
+  color: var(--fg-3);
+  max-width: 60ch;
+  line-height: 1.5;
+}
+:is(.ds-preview, .ds-shell) .ph-sub .meta {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: "HN Display", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+  margin-left: 4px;
+  border-left: 1px solid var(--line-2);
+  padding-left: 10px;
+}
+:is(.ds-preview, .ds-shell) .ph-actions { display: flex; gap: 8px; }
+
+/* Section header */
+:is(.ds-preview, .ds-shell) .section { margin-top: 48px; margin-bottom: 56px; }
+:is(.ds-preview, .ds-shell) .section:first-child { margin-top: 40px; }
+:is(.ds-preview, .ds-shell) .section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+:is(.ds-preview, .ds-shell) .section-head-l {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-width: 0;
+}
+:is(.ds-preview, .ds-shell) .section-eyebrow {
+  font-family: "HN Display", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+  flex-shrink: 0;
+}
+:is(.ds-preview, .ds-shell) .section-title {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--fg-1);
+}
+:is(.ds-preview, .ds-shell) .section-meta {
+  font-family: "HN Display", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+/* KPI — top-border only */
+:is(.ds-preview, .ds-shell) .kpi {
+  border-top: 1px solid var(--line-2);
+  padding: 18px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+:is(.ds-preview, .ds-shell) .kpi.is-positive { border-top-color: var(--accent); }
+:is(.ds-preview, .ds-shell) .kpi.is-warn { border-top-color: var(--warn); }
+:is(.ds-preview, .ds-shell) .kpi.is-danger { border-top-color: var(--danger); }
+:is(.ds-preview, .ds-shell) .kpi-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+:is(.ds-preview, .ds-shell) .kpi-label {
+  font-family: "HN Display", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+:is(.ds-preview, .ds-shell) .kpi-value {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500;
+  font-size: var(--num-xl);
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+  color: var(--fg-1);
+  font-variant-numeric: tabular-nums;
+}
+:is(.ds-preview, .ds-shell) .kpi-value.muted { color: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .kpi-sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+:is(.ds-preview, .ds-shell) .kpi-meta { font-size: 12px; color: var(--fg-3); }
+:is(.ds-preview, .ds-shell) .kpi-meta strong {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500;
+  color: var(--fg-1);
+  font-variant-numeric: tabular-nums;
+}
+
+/* progress bar */
+:is(.ds-preview, .ds-shell) .bar {
+  height: 2px;
+  background: var(--line-1);
+  position: relative;
+  overflow: hidden;
+}
+:is(.ds-preview, .ds-shell) .bar-fill {
+  position: absolute;
+  inset: 0;
+  width: var(--p, 0%);
+  background: var(--fg-1);
+  transition: width 600ms cubic-bezier(.2,.8,.2,1);
+}
+:is(.ds-preview, .ds-shell) .kpi.is-positive .bar-fill { background: var(--accent); }
+:is(.ds-preview, .ds-shell) .kpi.is-warn .bar-fill { background: var(--warn); }
+:is(.ds-preview, .ds-shell) .kpi.is-danger .bar-fill { background: var(--danger); }
+
+/* Frame card */
+:is(.ds-preview, .ds-shell) .frame {
+  border: 1px solid var(--line-1);
+  background: var(--bg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+:is(.ds-preview, .ds-shell) .frame-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .frame-title {
+  font-family: "HN Display", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+
+/* Tile */
+:is(.ds-preview, .ds-shell) .tile {
+  border-top: 1px solid var(--line-1);
+  padding: 12px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+:is(.ds-preview, .ds-shell) .tile-label {
+  font-family: "HN Display", sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+}
+:is(.ds-preview, .ds-shell) .tile-value {
+  font-family: "HN Display", sans-serif;
+  font-weight: 500;
+  font-size: var(--num-md);
+  letter-spacing: -0.03em;
+  color: var(--fg-1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+}
+:is(.ds-preview, .ds-shell) .tile-foot { font-size: 11px; color: var(--fg-3); }
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+:is(.ds-preview, .ds-shell) .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "HN Display", sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  white-space: nowrap;
+}
+:is(.ds-preview, .ds-shell) .badge-dot {
+  width: 6px; height: 6px;
+  background: var(--fg-3);
+  flex-shrink: 0;
+}
+:is(.ds-preview, .ds-shell) .badge.b-active   { color: var(--accent); }   :is(.ds-preview, .ds-shell) .badge.b-active   .badge-dot { background: var(--accent); }
+:is(.ds-preview, .ds-shell) .badge.b-positive { color: var(--accent); }   :is(.ds-preview, .ds-shell) .badge.b-positive .badge-dot { background: var(--accent); }
+:is(.ds-preview, .ds-shell) .badge.b-info     { color: var(--info); }     :is(.ds-preview, .ds-shell) .badge.b-info     .badge-dot { background: var(--info); }
+:is(.ds-preview, .ds-shell) .badge.b-warn     { color: var(--warn); }     :is(.ds-preview, .ds-shell) .badge.b-warn     .badge-dot { background: var(--warn); }
+:is(.ds-preview, .ds-shell) .badge.b-danger   { color: var(--danger); }   :is(.ds-preview, .ds-shell) .badge.b-danger   .badge-dot { background: var(--danger); }
+:is(.ds-preview, .ds-shell) .badge.b-muted    { color: var(--fg-4); }     :is(.ds-preview, .ds-shell) .badge.b-muted    .badge-dot { background: var(--fg-4); }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+:is(.ds-preview, .ds-shell) .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  font-family: "HN Display", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--line-2);
+  color: var(--fg-1);
+  background: var(--bg);
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+:is(.ds-preview, .ds-shell) .btn:hover { background: var(--fg-1); color: var(--bg); border-color: var(--fg-1); }
+:is(.ds-preview, .ds-shell) .btn-primary {
+  background: var(--fg-1);
+  color: var(--bg);
+  border-color: var(--fg-1);
+}
+:is(.ds-preview, .ds-shell) .btn-primary:hover {
+  background: var(--accent);
+  color: #0A0A0A;
+  border-color: var(--accent);
+}
+:is(.ds-preview, .ds-shell) .btn-ghost {
+  border-color: transparent;
+  color: var(--fg-2);
+}
+:is(.ds-preview, .ds-shell) .btn-ghost:hover { background: var(--surface-2); color: var(--fg-1); border-color: var(--line-1); }
+:is(.ds-preview, .ds-shell) .btn svg { width: 14px; height: 14px; stroke-width: 1.5; }
+
+/* ============================================================
+   GRID HELPERS
+   ============================================================ */
+:is(.ds-preview, .ds-shell) .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+:is(.ds-preview, .ds-shell) .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+:is(.ds-preview, .ds-shell) .grid-2-1 { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; }
+@media (max-width: 1100px) {
+  :is(.ds-preview, .ds-shell) .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  :is(.ds-preview, .ds-shell) .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  :is(.ds-preview, .ds-shell) .grid-2-1 { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  :is(.ds-preview, .ds-shell) .grid-3, :is(.ds-preview, .ds-shell) .grid-4 { grid-template-columns: 1fr; gap: 24px; }
+  :is(.ds-preview, .ds-shell) .app, :is(.ds-preview, .ds-shell) .app.sidebar-collapsed { grid-template-columns: 1fr; }
+  :is(.ds-preview, .ds-shell) .sidebar { display: none; }
+}
+
+/* ============================================================
+   LAYOUT — used by LayoutDS (real platform shell).
+   .ds-layout / .ds-layout-main / .ds-layout-content are the
+   grid scaffolding that lives OUTSIDE the .ds-shell scope, so
+   page content under .ds-layout-content stays untouched.
+   ============================================================ */
+.ds-layout {
+  display: grid;
+  grid-template-columns: var(--ds-side-w) 1fr;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;          /* only inner content area scrolls */
+  transition: grid-template-columns 220ms cubic-bezier(.2,.8,.2,1);
+}
+.ds-layout.is-collapsed { grid-template-columns: var(--ds-rail-w) 1fr; }
+.ds-layout-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;          /* topbar pinned, bottom area handles its own layout */
+}
+.ds-layout-bottom {
+  display: grid;
+  grid-template-columns: 1fr;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.ds-layout-bottom.has-sub {
+  grid-template-columns: var(--ds-side-w) 1fr;
+}
+.ds-layout-content {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* page content lives here, NOT inside .ds-shell — keeps existing pages intact */
+}
+@media (max-width: 720px) {
+  .ds-layout, .ds-layout.is-collapsed { grid-template-columns: 1fr; }
+  .ds-layout-bottom.has-sub { grid-template-columns: 1fr; }
+}
+
+/* SUB-SIDEBAR — secondary nav, mirrors main sidebar styling */
+:is(.ds-preview, .ds-shell) .sub-sidebar {
+  height: 100%;
+  border-right: 1px solid var(--line-1);
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+:is(.ds-preview, .ds-shell) .sub-sidebar-nav {
+  flex: 1; overflow-y: auto;
+  padding: 8px 0 16px;
+}
+:is(.ds-preview, .ds-shell) .sub-section-label {
+  font-family: "HN Text", "Helvetica Now Text", Helvetica, Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  padding: 4px 16px;
+  margin-top: 12px;
+  margin-bottom: 2px;
+}
+:is(.ds-preview, .ds-shell) .sub-sidebar-nav > .sub-section-label:first-child { margin-top: 4px; }
+:is(.ds-preview, .ds-shell) .sub-nav-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 28px;
+  margin: 1px 12px;
+  padding: 0 8px;
+  border-radius: 6px;
+  color: var(--fg-2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 120ms, background-color 120ms;
+  user-select: none;
+}
+:is(.ds-preview, .ds-shell) .sub-nav-row:hover {
+  color: var(--fg-1);
+  background-color: var(--surface-3);
+}
+:is(.ds-preview, .ds-shell) .sub-nav-row.active {
+  color: var(--fg-1);
+  font-weight: 500;
+  background-color: var(--surface-2);
+}
+:is(.ds-preview, .ds-shell) .sub-nav-row .nav-active-mark { left: -12px; top: 6px; bottom: 6px; }
+:is(.ds-preview, .ds-shell) .sub-nav-label {
+  flex: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+:is(.ds-preview, .ds-shell) .sub-nav-row.is-disabled {
+  cursor: not-allowed;
+  color: var(--fg-4);
+}
+:is(.ds-preview, .ds-shell) .sub-nav-row.is-disabled:hover { color: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .sub-nav-badge {
+  font-family: "HN Display", sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+  border: 1px solid var(--line-2);
+  padding: 2px 6px;
+  flex-shrink: 0;
+}

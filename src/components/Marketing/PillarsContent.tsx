@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Plus, Pencil, Trash2, Layers, ArrowRight } from 'lucide-react';
 import { useMarketingPillars, type MarketingPillar, type MarketingPillarInput } from '@/hooks/useMarketingPillars';
 import { useMarketingIdeas } from '@/hooks/useMarketingIdeas';
@@ -11,7 +9,6 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { cn } from '@/lib/utils';
 
 interface PostCount { pillar_id: string | null }
 
@@ -59,41 +56,119 @@ export function PillarsContent() {
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex-row items-center justify-between gap-3 space-y-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Layers className="h-5 w-5 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <CardTitle className="text-lg">Pilares de Conteúdo</CardTitle>
-              <CardDescription>Os temas centrais que sua marca representa</CardDescription>
-            </div>
+      <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+        <div
+          style={{
+            padding: '14px 18px',
+            borderBottom: '1px solid hsl(var(--ds-line-1))',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          <Layers size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <span
+              style={{
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                fontWeight: 500,
+                color: 'hsl(var(--ds-fg-2))',
+              }}
+            >
+              Pilares de Conteúdo
+            </span>
+            <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
+              Os temas centrais que sua marca representa
+            </span>
           </div>
-          <Button onClick={openNew} size="sm">
-            <Plus className="h-4 w-4 mr-2" /> Novo Pilar
-          </Button>
-        </CardHeader>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={openNew}
+            style={{ marginLeft: 'auto' }}
+          >
+            <Plus size={13} strokeWidth={1.5} />
+            <span>Novo Pilar</span>
+          </button>
+        </div>
 
-        <CardContent className="space-y-4">
+        <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {loading ? (
-            <div className="text-center text-muted-foreground py-12">Carregando...</div>
+            <div
+              style={{
+                textAlign: 'center',
+                color: 'hsl(var(--ds-fg-3))',
+                padding: '48px 0',
+                fontSize: 13,
+              }}
+            >
+              Carregando...
+            </div>
           ) : pillars.length === 0 ? (
             <button
               type="button"
               onClick={openNew}
-              className="group w-full text-left rounded-lg border-2 border-dashed border-border hover:border-primary/40 hover:bg-background transition-all p-6"
+              className="group"
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                border: '2px dashed hsl(var(--ds-line-1))',
+                background: 'transparent',
+                padding: 24,
+                cursor: 'pointer',
+                transition: 'background 0.15s, border-color 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';
+                e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                e.currentTarget.style.background = 'transparent';
+              }}
             >
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Plus className="h-5 w-5 text-primary" />
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                <div
+                  style={{
+                    height: 48,
+                    width: 48,
+                    background: 'hsl(var(--ds-accent) / 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Plus size={18} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-accent))' }} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold">Criar primeiro pilar</h3>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-0.5" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                    <h3
+                      style={{
+                        fontFamily: '"HN Display", sans-serif',
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: 'hsl(var(--ds-fg-1))',
+                      }}
+                    >
+                      Criar primeiro pilar
+                    </h3>
+                    <ArrowRight
+                      size={14}
+                      strokeWidth={1.5}
+                      style={{ color: 'hsl(var(--ds-fg-3))', flexShrink: 0, marginTop: 2 }}
+                    />
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p
+                    style={{
+                      fontSize: 13,
+                      color: 'hsl(var(--ds-fg-3))',
+                      marginTop: 4,
+                      lineHeight: 1.5,
+                    }}
+                  >
                     3 a 5 temas centrais que sua marca representa. Organizam ideias e posts em torno de uma narrativa coerente.
                   </p>
                 </div>
@@ -102,36 +177,98 @@ export function PillarsContent() {
           ) : (
             <>
               {totalPublished > 0 && (
-                <div className="rounded-lg border border-border bg-background p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-muted-foreground">Distribuição real</h3>
-                    <span className="text-xs text-muted-foreground">
-                      <strong className="text-foreground font-numeric">{totalPublished}</strong> posts publicados
+                <div
+                  style={{
+                    border: '1px solid hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-surface))',
+                    padding: 18,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: 12,
+                    }}
+                  >
+                    <h3
+                      style={{
+                        fontSize: 11,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        fontWeight: 500,
+                        color: 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
+                      Distribuição real
+                    </h3>
+                    <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                      <strong
+                        style={{
+                          color: 'hsl(var(--ds-fg-1))',
+                          fontWeight: 600,
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        {totalPublished}
+                      </strong>{' '}
+                      posts publicados
                     </span>
                   </div>
 
-                  <div className="h-3 w-full rounded-full overflow-hidden bg-muted flex">
+                  <div
+                    style={{
+                      height: 8,
+                      width: '100%',
+                      overflow: 'hidden',
+                      background: 'hsl(var(--ds-line-2) / 0.5)',
+                      display: 'flex',
+                    }}
+                  >
                     {chartData.map((d, i) => {
                       const pct = (d.value / totalPublished) * 100;
                       return (
                         <div
                           key={i}
-                          className="h-full transition-all"
-                          style={{ width: `${pct}%`, backgroundColor: d.color }}
+                          style={{
+                            height: '100%',
+                            width: `${pct}%`,
+                            background: d.color,
+                            transition: 'width 0.2s',
+                          }}
                           title={`${d.name}: ${d.value} (${pct.toFixed(0)}%)`}
                         />
                       );
                     })}
                   </div>
 
-                  <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      columnGap: 16,
+                      rowGap: 8,
+                      marginTop: 12,
+                    }}
+                  >
                     {chartData.map((d, i) => {
                       const pct = (d.value / totalPublished) * 100;
                       return (
-                        <div key={i} className="flex items-center gap-1.5 text-xs">
-                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: d.color }} />
-                          <span className="font-medium">{d.name}</span>
-                          <span className="text-muted-foreground font-numeric">
+                        <div
+                          key={i}
+                          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}
+                        >
+                          <span
+                            style={{
+                              height: 8,
+                              width: 8,
+                              borderRadius: '50%',
+                              background: d.color,
+                            }}
+                          />
+                          <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{d.name}</span>
+                          <span style={{ color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
                             {d.value} ({pct.toFixed(0)}%)
                           </span>
                         </div>
@@ -141,70 +278,223 @@ export function PillarsContent() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                  gap: 16,
+                }}
+              >
                 {stats.map(({ pillar, posts, ideasCount, realPct }) => {
                   const c = getPillarColor(pillar.color);
                   const target = pillar.target_percentage;
                   return (
-                    <Card key={pillar.id} className="p-5 group relative bg-background hover:shadow-md transition-shadow">
-                      <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(pillar)}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setDeletingId(pillar.id)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                    <div
+                      key={pillar.id}
+                      className="group"
+                      style={{
+                        position: 'relative',
+                        border: '1px solid hsl(var(--ds-line-1))',
+                        background: 'hsl(var(--ds-surface))',
+                        padding: 18,
+                        transition: 'border-color 0.15s',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 10,
+                          right: 10,
+                          display: 'flex',
+                          gap: 4,
+                        }}
+                      >
+                        <button
+                          type="button"
+                          className="btn"
+                          style={{ width: 28, height: 28, padding: 0, justifyContent: 'center' }}
+                          onClick={() => openEdit(pillar)}
+                          aria-label="Editar"
+                        >
+                          <Pencil size={12} strokeWidth={1.5} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn"
+                          style={{
+                            width: 28,
+                            height: 28,
+                            padding: 0,
+                            justifyContent: 'center',
+                            color: 'hsl(var(--ds-danger))',
+                          }}
+                          onClick={() => setDeletingId(pillar.id)}
+                          aria-label="Remover"
+                        >
+                          <Trash2 size={12} strokeWidth={1.5} />
+                        </button>
                       </div>
 
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="h-3 w-3 rounded-full" style={{ backgroundColor: c.hex }} />
-                        <h3 className="font-semibold truncate pr-16">{pillar.name}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <span
+                          style={{
+                            height: 10,
+                            width: 10,
+                            borderRadius: '50%',
+                            background: c.hex,
+                            flexShrink: 0,
+                          }}
+                        />
+                        <h3
+                          style={{
+                            fontFamily: '"HN Display", sans-serif',
+                            fontSize: 14,
+                            fontWeight: 600,
+                            color: 'hsl(var(--ds-fg-1))',
+                            paddingRight: 70,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {pillar.name}
+                        </h3>
                       </div>
 
                       {pillar.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{pillar.description}</p>
+                        <p
+                          style={{
+                            fontSize: 13,
+                            color: 'hsl(var(--ds-fg-3))',
+                            marginBottom: 16,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {pillar.description}
+                        </p>
                       )}
 
                       {target != null && (
-                        <div className="mb-3">
-                          <div className="flex items-baseline justify-between text-xs mb-1.5">
+                        <div style={{ marginBottom: 12 }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'baseline',
+                              justifyContent: 'space-between',
+                              fontSize: 11,
+                              marginBottom: 6,
+                            }}
+                          >
                             <span>
-                              <strong className="text-foreground font-numeric">{realPct.toFixed(0)}%</strong>
-                              <span className="text-muted-foreground"> real</span>
+                              <strong
+                                style={{
+                                  color: 'hsl(var(--ds-fg-1))',
+                                  fontWeight: 600,
+                                  fontVariantNumeric: 'tabular-nums',
+                                }}
+                              >
+                                {realPct.toFixed(0)}%
+                              </strong>
+                              <span style={{ color: 'hsl(var(--ds-fg-3))' }}> real</span>
                             </span>
-                            <span className="text-muted-foreground">
-                              meta <strong className="text-foreground font-numeric">{target}%</strong>
+                            <span style={{ color: 'hsl(var(--ds-fg-3))' }}>
+                              meta{' '}
+                              <strong
+                                style={{
+                                  color: 'hsl(var(--ds-fg-1))',
+                                  fontWeight: 600,
+                                  fontVariantNumeric: 'tabular-nums',
+                                }}
+                              >
+                                {target}%
+                              </strong>
                             </span>
                           </div>
-                          <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            style={{
+                              position: 'relative',
+                              height: 6,
+                              background: 'hsl(var(--ds-line-2) / 0.5)',
+                              overflow: 'hidden',
+                            }}
+                          >
                             <div
-                              className="absolute inset-y-0 left-0 rounded-full transition-all"
-                              style={{ width: `${Math.min(realPct, 100)}%`, backgroundColor: c.hex }}
+                              style={{
+                                position: 'absolute',
+                                inset: '0 0 0 0',
+                                width: `${Math.min(realPct, 100)}%`,
+                                background: c.hex,
+                                transition: 'width 0.2s',
+                              }}
                             />
                             <div
-                              className="absolute inset-y-0 w-0.5 bg-foreground/60"
-                              style={{ left: `${Math.min(target, 100)}%` }}
+                              style={{
+                                position: 'absolute',
+                                top: 0,
+                                bottom: 0,
+                                width: 2,
+                                background: 'hsl(var(--ds-fg-1) / 0.6)',
+                                left: `${Math.min(target, 100)}%`,
+                              }}
                             />
                           </div>
                         </div>
                       )}
 
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground pt-3 mt-1 border-t border-border">
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 16,
+                          fontSize: 11,
+                          color: 'hsl(var(--ds-fg-3))',
+                          paddingTop: 12,
+                          marginTop: 4,
+                          borderTop: '1px solid hsl(var(--ds-line-1))',
+                        }}
+                      >
                         <span>
-                          <strong className="text-foreground font-numeric">{posts}</strong> posts
+                          <strong
+                            style={{
+                              color: 'hsl(var(--ds-fg-1))',
+                              fontWeight: 600,
+                              fontVariantNumeric: 'tabular-nums',
+                            }}
+                          >
+                            {posts}
+                          </strong>{' '}
+                          posts
                         </span>
                         <span>
-                          <strong className="text-foreground font-numeric">{ideasCount}</strong> ideias
+                          <strong
+                            style={{
+                              color: 'hsl(var(--ds-fg-1))',
+                              fontWeight: 600,
+                              fontVariantNumeric: 'tabular-nums',
+                            }}
+                          >
+                            {ideasCount}
+                          </strong>{' '}
+                          ideias
                         </span>
                       </div>
-                    </Card>
+                    </div>
                   );
                 })}
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <MarketingPillarDialog
         open={dialogOpen}
@@ -216,7 +506,9 @@ export function PillarsContent() {
       <AlertDialog open={!!deletingId} onOpenChange={(o) => !o && setDeletingId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remover pilar?</AlertDialogTitle>
+            <AlertDialogTitle>
+              <span style={{ fontFamily: '"HN Display", sans-serif' }}>Remover pilar?</span>
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Posts e ideias vinculados perderão o vínculo, mas não serão excluídos.
             </AlertDialogDescription>
@@ -228,7 +520,10 @@ export function PillarsContent() {
                 if (deletingId) await deletePillar(deletingId);
                 setDeletingId(null);
               }}
-              className={cn('bg-destructive text-destructive-foreground hover:bg-destructive/90')}
+              style={{
+                background: 'hsl(var(--ds-danger))',
+                color: 'hsl(var(--ds-surface))',
+              }}
             >
               Remover
             </AlertDialogAction>

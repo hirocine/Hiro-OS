@@ -1,4 +1,3 @@
-import { cn } from '@/lib/utils';
 import {
   splitGenderAge,
   ageEntries,
@@ -19,13 +18,20 @@ export function GenderAgeHero({ audience }: Props) {
 
   const dominantAge = ageList.reduce(
     (max, e) => (e.pct > (max?.pct ?? 0) ? e : max),
-    null as null | (typeof ageList)[number],
+    null as null | (typeof ageList)[number]
   );
 
   if (genderTotal === 0 && ageList.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-muted/30 p-6 text-center">
-        <p className="text-sm text-muted-foreground">
+      <div
+        style={{
+          border: '1px dashed hsl(var(--ds-line-1))',
+          background: 'hsl(var(--ds-line-2) / 0.3)',
+          padding: 24,
+          textAlign: 'center',
+        }}
+      >
+        <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>
           Dados de gênero e idade ainda não disponíveis.
         </p>
       </div>
@@ -33,68 +39,102 @@ export function GenderAgeHero({ audience }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-gradient-to-br from-card to-muted/20 p-5 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-5">
-        <div>
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Perfil dominante
-          </p>
-          <p className="text-2xl sm:text-3xl font-bold tracking-tight mt-1">
-            {dominantAge ? `${dominantAge.key} anos` : '—'}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {fPct >= 55 && 'Maioria mulheres'}
-            {mPct >= 55 && 'Maioria homens'}
-            {fPct < 55 && mPct < 55 && 'Equilibrado'}
-            {dominantAge && ` • ${dominantAge.pct.toFixed(0)}% da audiência`}
-          </p>
-        </div>
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        padding: 20,
+      }}
+    >
+      <div style={{ marginBottom: 18 }}>
+        <p
+          style={{
+            fontSize: 11,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+            color: 'hsl(var(--ds-fg-3))',
+          }}
+        >
+          Perfil dominante
+        </p>
+        <p
+          style={{
+            fontFamily: '"HN Display", sans-serif',
+            fontSize: 28,
+            fontWeight: 700,
+            letterSpacing: '-0.01em',
+            color: 'hsl(var(--ds-fg-1))',
+            marginTop: 4,
+          }}
+        >
+          {dominantAge ? `${dominantAge.key} anos` : '—'}
+        </p>
+        <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
+          {fPct >= 55 && 'Maioria mulheres'}
+          {mPct >= 55 && 'Maioria homens'}
+          {fPct < 55 && mPct < 55 && 'Equilibrado'}
+          {dominantAge && ` • ${dominantAge.pct.toFixed(0)}% da audiência`}
+        </p>
       </div>
 
       {genderTotal > 0 && (
-        <div className="mb-6">
-          <div className="flex items-center justify-between text-xs mb-2">
-            <span className="font-medium text-muted-foreground">Gênero</span>
-          </div>
-          <div className="h-3 rounded-full overflow-hidden flex bg-muted">
+        <div style={{ marginBottom: 24 }}>
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-3))',
+              display: 'block',
+              marginBottom: 8,
+            }}
+          >
+            Gênero
+          </span>
+          <div style={{ height: 8, background: 'hsl(var(--ds-line-2))', overflow: 'hidden', display: 'flex' }}>
             {fPct > 0 && (
               <div
-                className="h-full transition-all duration-500"
-                style={{ width: `${fPct}%`, backgroundColor: GENDER_COLORS.F }}
+                style={{ height: '100%', width: `${fPct}%`, background: GENDER_COLORS.F, transition: 'width 0.5s' }}
                 title={`Mulheres ${fPct.toFixed(1)}%`}
               />
             )}
             {mPct > 0 && (
               <div
-                className="h-full transition-all duration-500"
-                style={{ width: `${mPct}%`, backgroundColor: GENDER_COLORS.M }}
+                style={{ height: '100%', width: `${mPct}%`, background: GENDER_COLORS.M, transition: 'width 0.5s' }}
                 title={`Homens ${mPct.toFixed(1)}%`}
               />
             )}
             {uPct > 0.1 && (
               <div
-                className="h-full transition-all duration-500"
-                style={{ width: `${uPct}%`, backgroundColor: GENDER_COLORS.U }}
+                style={{ height: '100%', width: `${uPct}%`, background: GENDER_COLORS.U, transition: 'width 0.5s' }}
                 title={`Outros ${uPct.toFixed(1)}%`}
               />
             )}
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2.5 text-xs">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: GENDER_COLORS.F }} />
-              <span className="font-medium font-numeric">{fPct.toFixed(1)}%</span>
-              <span className="text-muted-foreground">mulheres</span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px', marginTop: 10, fontSize: 11 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: GENDER_COLORS.F }} />
+              <span style={{ fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))' }}>
+                {fPct.toFixed(1)}%
+              </span>
+              <span style={{ color: 'hsl(var(--ds-fg-3))' }}>mulheres</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: GENDER_COLORS.M }} />
-              <span className="font-medium font-numeric">{mPct.toFixed(1)}%</span>
-              <span className="text-muted-foreground">homens</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: GENDER_COLORS.M }} />
+              <span style={{ fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))' }}>
+                {mPct.toFixed(1)}%
+              </span>
+              <span style={{ color: 'hsl(var(--ds-fg-3))' }}>homens</span>
             </div>
             {uPct > 0.1 && (
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: GENDER_COLORS.U }} />
-                <span className="font-medium font-numeric">{uPct.toFixed(1)}%</span>
-                <span className="text-muted-foreground">outros</span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: GENDER_COLORS.U }} />
+                <span style={{ fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))' }}>
+                  {uPct.toFixed(1)}%
+                </span>
+                <span style={{ color: 'hsl(var(--ds-fg-3))' }}>outros</span>
               </div>
             )}
           </div>
@@ -103,38 +143,60 @@ export function GenderAgeHero({ audience }: Props) {
 
       {ageList.length > 0 && (
         <div>
-          <div className="flex items-center justify-between text-xs mb-3">
-            <span className="font-medium text-muted-foreground">Faixa etária</span>
-          </div>
-          <ul className="space-y-2.5">
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-3))',
+              display: 'block',
+              marginBottom: 12,
+            }}
+          >
+            Faixa etária
+          </span>
+          <ul style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' }}>
             {ageList.map((e) => {
               const isDominant = dominantAge?.key === e.key;
               return (
-                <li key={e.key} className="grid grid-cols-[60px_1fr_50px] items-center gap-3">
+                <li
+                  key={e.key}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '60px 1fr 50px',
+                    alignItems: 'center',
+                    gap: 12,
+                  }}
+                >
                   <span
-                    className={cn(
-                      'text-xs font-medium font-numeric',
-                      isDominant ? 'text-foreground' : 'text-muted-foreground',
-                    )}
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 500,
+                      fontVariantNumeric: 'tabular-nums',
+                      color: isDominant ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+                    }}
                   >
                     {e.key}
                   </span>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div style={{ height: 6, background: 'hsl(var(--ds-line-2))', overflow: 'hidden' }}>
                     <div
-                      className={cn(
-                        'h-full rounded-full transition-all duration-500',
-                        isDominant
-                          ? 'bg-gradient-to-r from-primary/80 to-primary'
-                          : 'bg-primary/40',
-                      )}
-                      style={{ width: `${e.pct}%` }}
+                      style={{
+                        height: '100%',
+                        width: `${e.pct}%`,
+                        background: isDominant ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-accent) / 0.4)',
+                        transition: 'width 0.5s',
+                      }}
                     />
                   </div>
                   <span
-                    className={cn(
-                      'text-xs font-numeric text-right',
-                      isDominant ? 'font-semibold text-foreground' : 'text-muted-foreground',
-                    )}
+                    style={{
+                      fontSize: 11,
+                      fontVariantNumeric: 'tabular-nums',
+                      textAlign: 'right',
+                      fontWeight: isDominant ? 600 : 400,
+                      color: isDominant ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+                    }}
                   >
                     {e.pct.toFixed(1)}%
                   </span>

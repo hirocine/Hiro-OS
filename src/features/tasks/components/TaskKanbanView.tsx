@@ -1,13 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, AlertTriangle } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 import { useTaskMutations } from '../hooks/useTaskMutations';
 import { Task, TaskStatus } from '../types';
 import { format, differenceInDays } from 'date-fns';
@@ -31,12 +27,20 @@ interface TaskKanbanViewProps {
   isLoading?: boolean;
 }
 
-const COLUMNS: { status: TaskStatus; label: string; color: string; bgColor: string }[] = [
-  { status: 'pendente', label: 'Pendente', color: 'text-gray-600 dark:text-gray-400', bgColor: 'bg-gray-100 dark:bg-gray-800/50' },
-  { status: 'em_progresso', label: 'Em Progresso', color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
-  { status: 'concluida', label: 'Concluída', color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-50 dark:bg-green-900/20' },
-  { status: 'arquivada', label: 'Arquivada', color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-50 dark:bg-red-900/20' },
+const COLUMNS: { status: TaskStatus; label: string; tone: string }[] = [
+  { status: 'pendente', label: 'Pendente', tone: 'hsl(var(--ds-fg-3))' },
+  { status: 'em_progresso', label: 'Em Progresso', tone: 'hsl(var(--ds-info))' },
+  { status: 'concluida', label: 'Concluída', tone: 'hsl(var(--ds-success))' },
+  { status: 'arquivada', label: 'Arquivada', tone: 'hsl(var(--ds-danger))' },
 ];
+
+const priorityColor: Record<string, string> = {
+  urgente: 'hsl(var(--ds-danger))',
+  alta: 'hsl(var(--ds-warning))',
+  media: 'hsl(var(--ds-warning))',
+  baixa: 'hsl(var(--ds-info))',
+  standby: 'hsl(var(--ds-fg-4))',
+};
 
 const getDueInfo = (dueDate: string | null) => {
   if (!dueDate) return null;
@@ -51,12 +55,20 @@ const getDueInfo = (dueDate: string | null) => {
   return { text: format(due, 'dd/MM', { locale: ptBR }), isOverdue: false };
 };
 
-function DroppableColumn({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
+function DroppableColumn({ id, children }: { id: string; children: React.ReactNode }) {
   const { isOver, setNodeRef } = useDroppable({ id });
   return (
     <div
       ref={setNodeRef}
-      className={cn(className, isOver && 'ring-2 ring-primary/30 bg-primary/5')}
+      style={{
+        background: 'hsl(var(--ds-surface))',
+        border: '1px solid hsl(var(--ds-line-1))',
+        padding: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: isOver ? 'inset 0 0 0 1px hsl(var(--ds-accent))' : undefined,
+        transition: 'box-shadow 0.15s',
+      }}
     >
       {children}
     </div>
@@ -71,10 +83,12 @@ function DraggableCard({ task, children }: { task: Task; children: React.ReactNo
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={cn(
-        'touch-none',
-        isDragging && 'opacity-30 scale-[0.98] transition-all'
-      )}
+      style={{
+        touchAction: 'none',
+        opacity: isDragging ? 0.3 : 1,
+        transform: isDragging ? 'scale(0.98)' : undefined,
+        transition: 'opacity 0.15s, transform 0.15s',
+      }}
     >
       {children}
     </div>
@@ -88,15 +102,13 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
   const [quickAddTitle, setQuickAddTitle] = useState('');
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   const tasksByStatus = useMemo(() => {
     const grouped: Record<TaskStatus, Task[]> = {
       pendente: [], em_progresso: [], concluida: [], arquivada: [],
     };
-    tasks.forEach(task => {
+    tasks.forEach((task) => {
       if (grouped[task.status]) grouped[task.status].push(task);
     });
     return grouped;
@@ -120,15 +132,19 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
       id: task.id,
       updates: { status: newStatus },
       oldTask: {
-        title: task.title, status: task.status, priority: task.priority,
-        due_date: task.due_date, department: task.department,
-        assigned_to: task.assigned_to, description: task.description,
+        title: task.title,
+        status: task.status,
+        priority: task.priority,
+        due_date: task.due_date,
+        department: task.department,
+        assigned_to: task.assigned_to,
+        description: task.description,
       },
     });
   };
 
   const handleDragStart = (event: DragStartEvent) => {
-    const task = tasks.find(t => t.id === event.active.id);
+    const task = tasks.find((t) => t.id === event.active.id);
     if (task) setActiveTask(task);
   };
 
@@ -136,7 +152,7 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
     const { active, over } = event;
     setActiveTask(null);
     if (!over) return;
-    const task = tasks.find(t => t.id === active.id);
+    const task = tasks.find((t) => t.id === active.id);
     const newStatus = over.id as TaskStatus;
     if (task && task.status !== newStatus) {
       handleMoveTask(task, newStatus);
@@ -145,9 +161,9 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map(i => (
-          <div key={i} className="space-y-3">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <Skeleton className="h-8 w-full" />
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-24 w-full" />
@@ -159,119 +175,235 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 min-h-[500px]">
-        {COLUMNS.map(column => {
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, minHeight: 500 }}>
+        {COLUMNS.map((column) => {
           const columnTasks = tasksByStatus[column.status];
           return (
-            <DroppableColumn key={column.status} id={column.status} className={cn('rounded-xl p-3 flex flex-col transition-all', column.bgColor)}>
-              {/* Header */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <h3 className={cn('text-sm font-semibold', column.color)}>{column.label}</h3>
-                  <Badge variant="secondary" className="text-xs px-1.5 py-0">{columnTasks.length}</Badge>
+            <DroppableColumn key={column.status} id={column.status}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <span
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: column.tone,
+                    }}
+                  />
+                  <h3
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase',
+                      fontWeight: 500,
+                      color: 'hsl(var(--ds-fg-2))',
+                    }}
+                  >
+                    {column.label}
+                  </h3>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: 'hsl(var(--ds-fg-4))',
+                      fontVariantNumeric: 'tabular-nums',
+                      background: 'hsl(var(--ds-line-2))',
+                      padding: '0 6px',
+                    }}
+                  >
+                    {columnTasks.length}
+                  </span>
                 </div>
-                <button onClick={() => setQuickAddColumn(column.status)} className="text-muted-foreground hover:text-foreground transition-colors">
-                  <Plus className="h-4 w-4" />
+                <button
+                  type="button"
+                  onClick={() => setQuickAddColumn(column.status)}
+                  style={{
+                    width: 22,
+                    height: 22,
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: 'hsl(var(--ds-fg-3))',
+                    background: 'transparent',
+                    border: 0,
+                    cursor: 'pointer',
+                  }}
+                  aria-label="Adicionar tarefa"
+                >
+                  <Plus size={14} strokeWidth={1.5} />
                 </button>
               </div>
 
-              {/* Cards */}
-              <div className="flex-1 space-y-2 overflow-y-auto">
-                {columnTasks.map(task => {
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto' }}>
+                {columnTasks.map((task) => {
                   const dueInfo = getDueInfo(task.due_date);
+                  const isOverdueAndOpen = dueInfo?.isOverdue && task.status !== 'concluida';
                   return (
                     <DraggableCard key={task.id} task={task}>
-                      <Card
+                      <div
                         onClick={() => navigate(`/tarefas/${task.id}`)}
-                        className={cn(
-                          'p-3 cursor-pointer hover:shadow-md transition-all hover:border-primary/30 group',
-                          dueInfo?.isOverdue && task.status !== 'concluida' && 'border-l-4 border-l-destructive'
-                        )}
+                        style={{
+                          padding: 10,
+                          background: 'hsl(var(--ds-surface))',
+                          border: '1px solid hsl(var(--ds-line-1))',
+                          borderLeft: isOverdueAndOpen ? '3px solid hsl(var(--ds-danger))' : '1px solid hsl(var(--ds-line-1))',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 8,
+                          transition: 'background 0.15s, border-color 0.15s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'hsl(var(--ds-surface))';
+                        }}
                       >
-                        <div className="flex items-start gap-2 mb-2">
-                          <div className={cn(
-                            "w-2 h-2 rounded-full mt-1.5 shrink-0",
-                            task.priority === 'urgente' && "bg-red-500",
-                            task.priority === 'alta' && "bg-orange-500",
-                            task.priority === 'media' && "bg-yellow-500",
-                            task.priority === 'baixa' && "bg-blue-500",
-                            task.priority === 'standby' && "bg-gray-400",
-                          )} />
-                          <p className="text-sm font-medium leading-tight line-clamp-2">{task.title}</p>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                          <span
+                            style={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              marginTop: 5,
+                              flexShrink: 0,
+                              background: priorityColor[task.priority] ?? priorityColor.standby,
+                            }}
+                          />
+                          <p
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 500,
+                              color: 'hsl(var(--ds-fg-1))',
+                              lineHeight: 1.3,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            {task.title}
+                          </p>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-1.5">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11 }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                             {task.assignees && task.assignees.length > 0 && (
-                              <div className="flex -space-x-1.5">
-                                {task.assignees.slice(0, 3).map(a => (
-                                  <Avatar key={a.user_id} className="h-5 w-5 border border-background">
+                              <div style={{ display: 'inline-flex' }}>
+                                {task.assignees.slice(0, 3).map((a, i) => (
+                                  <Avatar
+                                    key={a.user_id}
+                                    style={{
+                                      width: 18,
+                                      height: 18,
+                                      border: '2px solid hsl(var(--ds-surface))',
+                                      marginLeft: i === 0 ? 0 : -5,
+                                    }}
+                                  >
                                     <AvatarImage src={a.avatar_url || ''} />
-                                    <AvatarFallback className="text-[10px]">{a.display_name?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+                                    <AvatarFallback style={{ fontSize: 8 }}>
+                                      {a.display_name?.[0]?.toUpperCase() || '?'}
+                                    </AvatarFallback>
                                   </Avatar>
                                 ))}
                                 {task.assignees.length > 3 && (
-                                  <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] border border-background">
+                                  <span
+                                    style={{
+                                      width: 18,
+                                      height: 18,
+                                      borderRadius: '50%',
+                                      background: 'hsl(var(--ds-line-2))',
+                                      display: 'grid',
+                                      placeItems: 'center',
+                                      fontSize: 9,
+                                      fontVariantNumeric: 'tabular-nums',
+                                      marginLeft: -5,
+                                      border: '2px solid hsl(var(--ds-surface))',
+                                      color: 'hsl(var(--ds-fg-3))',
+                                    }}
+                                  >
                                     +{task.assignees.length - 3}
-                                  </div>
+                                  </span>
                                 )}
                               </div>
                             )}
                             {task.department && (
-                              <Badge variant="outline" className="text-[10px] px-1 py-0">{task.department}</Badge>
+                              <span className="pill muted" style={{ fontSize: 9 }}>
+                                {task.department}
+                              </span>
                             )}
                           </div>
                           {dueInfo && (
-                            <span className={cn('flex items-center gap-0.5', dueInfo.isOverdue ? 'text-destructive' : 'text-muted-foreground')}>
-                              {dueInfo.isOverdue && <AlertTriangle className="h-3 w-3" />}
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 3,
+                                color: dueInfo.isOverdue ? 'hsl(var(--ds-danger))' : 'hsl(var(--ds-fg-3))',
+                                fontVariantNumeric: 'tabular-nums',
+                              }}
+                            >
+                              {dueInfo.isOverdue && <AlertTriangle size={11} strokeWidth={1.5} />}
                               {dueInfo.text}
                             </span>
                           )}
                         </div>
-
-                        {/* Move buttons on hover */}
-                        <div className="flex sm:opacity-0 sm:group-hover:opacity-100 transition-opacity gap-1 mt-2 pt-2 border-t flex-wrap">
-                          {COLUMNS.filter(c => c.status !== task.status).map(c => (
-                            <Button
-                              key={c.status}
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 text-[10px] px-2"
-                              onClick={(e) => { e.stopPropagation(); handleMoveTask(task, c.status); }}
-                            >
-                              {c.label}
-                            </Button>
-                          ))}
-                        </div>
-                      </Card>
+                      </div>
                     </DraggableCard>
                   );
                 })}
 
-                {/* Quick add input */}
                 {quickAddColumn === column.status && (
-                  <Card className="p-3">
+                  <div
+                    style={{
+                      padding: 10,
+                      background: 'hsl(var(--ds-surface))',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 8,
+                    }}
+                  >
                     <Input
                       autoFocus
-                      placeholder="Título da tarefa..."
+                      placeholder="Título da tarefa…"
                       value={quickAddTitle}
-                      onChange={e => setQuickAddTitle(e.target.value)}
-                      onKeyDown={e => {
+                      onChange={(e) => setQuickAddTitle(e.target.value)}
+                      onKeyDown={(e) => {
                         if (e.key === 'Enter') handleQuickAdd(column.status);
-                        if (e.key === 'Escape') { setQuickAddColumn(null); setQuickAddTitle(''); }
+                        if (e.key === 'Escape') {
+                          setQuickAddColumn(null);
+                          setQuickAddTitle('');
+                        }
                       }}
-                      className="h-8 text-sm mb-2"
                     />
-                    <div className="flex gap-1">
-                      <Button size="sm" className="h-7 text-xs" onClick={() => handleQuickAdd(column.status)} disabled={!quickAddTitle.trim()}>Criar</Button>
-                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setQuickAddColumn(null); setQuickAddTitle(''); }}>Cancelar</Button>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        type="button"
+                        className="btn primary"
+                        style={{ height: 26, padding: '0 10px', fontSize: 11 }}
+                        onClick={() => handleQuickAdd(column.status)}
+                        disabled={!quickAddTitle.trim()}
+                      >
+                        Criar
+                      </button>
+                      <button
+                        type="button"
+                        className="btn"
+                        style={{ height: 26, padding: '0 10px', fontSize: 11 }}
+                        onClick={() => {
+                          setQuickAddColumn(null);
+                          setQuickAddTitle('');
+                        }}
+                      >
+                        Cancelar
+                      </button>
                     </div>
-                  </Card>
+                  </div>
                 )}
 
                 {columnTasks.length === 0 && quickAddColumn !== column.status && (
-                  <div className="text-center py-6 text-xs text-muted-foreground">
-                    <p>Nenhuma tarefa</p>
+                  <div style={{ textAlign: 'center', padding: '24px 0', fontSize: 11, color: 'hsl(var(--ds-fg-4))' }}>
+                    Nenhuma tarefa
                   </div>
                 )}
               </div>
@@ -282,19 +414,44 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
 
       <DragOverlay>
         {activeTask && (
-          <Card className="p-3 shadow-lg rotate-2 w-64 opacity-90">
-            <div className="flex items-start gap-2">
-              <div className={cn(
-                "w-2 h-2 rounded-full mt-1.5 shrink-0",
-                activeTask.priority === 'urgente' && "bg-red-500",
-                activeTask.priority === 'alta' && "bg-orange-500",
-                activeTask.priority === 'media' && "bg-yellow-500",
-                activeTask.priority === 'baixa' && "bg-blue-500",
-                activeTask.priority === 'standby' && "bg-gray-400",
-              )} />
-              <p className="text-sm font-medium leading-tight line-clamp-2">{activeTask.title}</p>
+          <div
+            style={{
+              padding: 10,
+              background: 'hsl(var(--ds-surface))',
+              border: '1px solid hsl(var(--ds-accent))',
+              transform: 'rotate(2deg)',
+              width: 240,
+              opacity: 0.95,
+              boxShadow: '0 8px 24px hsl(0 0% 0% / 0.2)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  marginTop: 5,
+                  flexShrink: 0,
+                  background: priorityColor[activeTask.priority] ?? priorityColor.standby,
+                }}
+              />
+              <p
+                style={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: 'hsl(var(--ds-fg-1))',
+                  lineHeight: 1.3,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {activeTask.title}
+              </p>
             </div>
-          </Card>
+          </div>
         )}
       </DragOverlay>
     </DndContext>

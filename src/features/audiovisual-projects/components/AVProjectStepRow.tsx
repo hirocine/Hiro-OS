@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChevronDown, ChevronRight, Clock, Loader, CheckCircle, XCircle, Calendar, Plus } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -14,13 +12,38 @@ import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { AVProjectStep, AVStepStatus, AV_STEP_STATUS_CONFIG } from '../types';
 import { useUpdateAVStep, useCreateAVSubstep, useUpdateAVSubstep, useDeleteAVSubstep } from '../hooks/useAVProjectDetails';
 import { useUsers } from '@/hooks/useUsers';
-import { cn } from '@/lib/utils';
 
 const STATUS_ICONS = {
   pendente: Clock,
   em_progresso: Loader,
   concluido: CheckCircle,
   bloqueado: XCircle,
+};
+
+// Map config tone (tailwind classes) → DS tonal token
+const toneFromConfig = (key: AVStepStatus): 'warning' | 'info' | 'success' | 'danger' | 'neutral' => {
+  switch (key) {
+    case 'pendente': return 'warning';
+    case 'em_progresso': return 'info';
+    case 'concluido': return 'success';
+    case 'bloqueado': return 'danger';
+    default: return 'neutral';
+  }
+};
+
+const tonalPillStyle = (tone: 'success' | 'warning' | 'neutral' | 'info' | 'danger'): React.CSSProperties => {
+  if (tone === 'neutral') {
+    return {
+      color: 'hsl(var(--ds-fg-2))',
+      borderColor: 'hsl(var(--ds-line-1))',
+      background: 'hsl(var(--ds-line-2) / 0.3)',
+    };
+  }
+  return {
+    color: `hsl(var(--ds-${tone}))`,
+    borderColor: `hsl(var(--ds-${tone}) / 0.3)`,
+    background: `hsl(var(--ds-${tone}) / 0.08)`,
+  };
 };
 
 interface NewSubstepData {
@@ -47,7 +70,7 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
   const [newSubstep, setNewSubstep] = useState<NewSubstepData>(INITIAL_SUBSTEP);
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const [deadlineOpen, setDeadlineOpen] = useState(false);
-  
+
   const { users } = useUsers();
   const updateStep = useUpdateAVStep();
   const createSubstep = useCreateAVSubstep();
@@ -124,19 +147,25 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
     return user?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
   };
 
+  const stepTone = toneFromConfig(step.status);
+
   return (
     <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-      <div className="grid grid-cols-12 gap-2 px-3 py-2 items-center hover:bg-muted/30 transition-colors">
+      <div
+        className="grid grid-cols-12 gap-2 px-3 py-2 items-center"
+        style={{ transition: 'background 0.15s' }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)')}
+        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+      >
         {/* Step Title */}
         <div className="col-span-5 flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-6 w-6 shrink-0"
+          <button
+            type="button"
+            className="btn"
+            style={{ width: 24, height: 24, padding: 0, justifyContent: 'center' }}
             onClick={() => {
               if (!isExpanded) {
                 setIsExpanded(true);
-                // Se não tem substeps, abre formulário automaticamente
                 if (!hasSubsteps) {
                   setIsAddingSubtask(true);
                 }
@@ -147,14 +176,16 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
             }}
           >
             {isExpanded ? (
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown size={13} strokeWidth={1.5} />
             ) : (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight size={13} strokeWidth={1.5} />
             )}
-          </Button>
-          <span className="text-sm font-medium truncate">{step.title}</span>
+          </button>
+          <span style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {step.title}
+          </span>
           {hasSubsteps && (
-            <span className="text-xs text-muted-foreground">
+            <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
               ({step.substeps?.filter((s) => s.is_completed).length}/{step.substeps?.length})
             </span>
           )}
@@ -166,17 +197,22 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
             value={step.responsible_user_id || ''}
             onValueChange={handleResponsibleChange}
           >
-            <SelectTrigger className="h-7 text-xs border-0 bg-transparent px-2 justify-start gap-1 [&>span]:text-muted-foreground [&>span]:italic">
-              <SelectValue placeholder="Selecionar">
+            <SelectTrigger
+              className="h-7 text-xs px-2 justify-start gap-1"
+              style={{ border: 0, background: 'transparent' }}
+            >
+              <SelectValue placeholder={<span style={{ fontStyle: 'italic', color: 'hsl(var(--ds-fg-3))' }}>Selecionar</span>}>
                 {step.responsible_user_name && (
-                  <div className="flex items-center gap-1.5 not-italic text-foreground">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'hsl(var(--ds-fg-1))' }}>
                     <Avatar className="h-5 w-5">
                       <AvatarImage src={getUserAvatarUrl(step.responsible_user_id) || undefined} />
-                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                      <AvatarFallback style={{ fontSize: 10, background: 'hsl(var(--ds-accent) / 0.1)', color: 'hsl(var(--ds-accent))' }}>
                         {getInitials(step.responsible_user_name)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{step.responsible_user_name.split(' ')[0]}</span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {step.responsible_user_name.split(' ')[0]}
+                    </span>
                   </div>
                 )}
               </SelectValue>
@@ -184,10 +220,10 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
             <SelectContent>
               {users?.map((u) => (
                 <SelectItem key={u.id} value={u.id}>
-                  <div className="flex items-center gap-2">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <Avatar className="h-5 w-5">
                       <AvatarImage src={u.avatar_url || u.user_metadata?.avatar_url || u.user_metadata?.picture || undefined} />
-                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                      <AvatarFallback style={{ fontSize: 10, background: 'hsl(var(--ds-accent) / 0.1)', color: 'hsl(var(--ds-accent))' }}>
                         {getInitials(u.display_name || u.email)}
                       </AvatarFallback>
                     </Avatar>
@@ -203,19 +239,26 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
         <div className="col-span-2">
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  'h-7 px-2 text-xs justify-start font-normal',
-                  !step.deadline && 'text-muted-foreground'
-                )}
+              <button
+                type="button"
+                className="btn"
+                style={{
+                  height: 28,
+                  padding: '0 8px',
+                  fontSize: 11,
+                  fontWeight: 400,
+                  border: 0,
+                  background: 'transparent',
+                  justifyContent: 'flex-start',
+                  color: step.deadline ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
               >
-                <Calendar className="h-3 w-3 mr-1" />
+                <Calendar size={12} strokeWidth={1.5} style={{ marginRight: 4 }} />
                 {step.deadline
                   ? format(new Date(step.deadline), 'dd/MM', { locale: ptBR })
-                  : <span className="italic">Selecionar</span>}
-              </Button>
+                  : <span style={{ fontStyle: 'italic' }}>Selecionar</span>}
+              </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <CalendarComponent
@@ -231,104 +274,147 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
         {/* Status */}
         <div className="col-span-2">
           <Select value={step.status} onValueChange={handleStatusChange}>
-            <SelectTrigger className="h-7 border-0 bg-transparent p-0 justify-start gap-1">
+            <SelectTrigger
+              className="h-7 p-0 justify-start gap-1"
+              style={{ border: 0, background: 'transparent' }}
+            >
               <SelectValue>
-                <Badge className={cn('text-xs', statusConfig.bgColor, statusConfig.color, 'border-0')}>
-                  <StatusIcon className="h-3 w-3 mr-1" />
+                <span
+                  className="pill"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, ...tonalPillStyle(stepTone) }}
+                >
+                  <StatusIcon size={11} strokeWidth={1.5} />
                   {statusConfig.label}
-                </Badge>
+                </span>
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {Object.entries(AV_STEP_STATUS_CONFIG).map(([key, config]) => (
-                <SelectItem key={key} value={key}>
-                  <Badge className={cn('text-xs', config.bgColor, config.color, 'border-0')}>
-                    {config.label}
-                  </Badge>
-                </SelectItem>
-              ))}
+              {Object.entries(AV_STEP_STATUS_CONFIG).map(([key, config]) => {
+                const tone = toneFromConfig(key as AVStepStatus);
+                return (
+                  <SelectItem key={key} value={key}>
+                    <span
+                      className="pill"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, ...tonalPillStyle(tone) }}
+                    >
+                      {config.label}
+                    </span>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>
 
-        {/* Spacer - coluna vazia para manter alinhamento */}
+        {/* Spacer */}
         <div className="col-span-1" />
       </div>
 
       {/* Substeps */}
       <CollapsibleContent>
-        <div className="pl-10 pr-3 pb-2 space-y-1">
+        <div style={{ paddingLeft: 40, paddingRight: 12, paddingBottom: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
           {step.substeps?.map((substep) => (
             <div
               key={substep.id}
-              className="grid grid-cols-12 gap-2 py-1.5 items-center text-sm border-l-2 border-muted pl-3 hover:bg-muted/20 rounded-r"
+              className="grid grid-cols-12 gap-2 items-center"
+              style={{
+                fontSize: 13,
+                padding: '6px 0 6px 12px',
+                borderLeft: '2px solid hsl(var(--ds-line-1))',
+              }}
             >
               <div className="col-span-5 flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={substep.is_completed}
                   onChange={() => toggleSubtaskComplete(substep.id, substep.is_completed)}
-                  className="h-4 w-4 rounded border-muted-foreground/30"
+                  style={{ width: 14, height: 14, accentColor: 'hsl(var(--ds-accent))' }}
                 />
-                <span className={cn('text-xs', substep.is_completed && 'line-through text-muted-foreground')}>
+                <span
+                  style={{
+                    fontSize: 12,
+                    textDecoration: substep.is_completed ? 'line-through' : 'none',
+                    color: substep.is_completed ? 'hsl(var(--ds-fg-3))' : 'hsl(var(--ds-fg-1))',
+                  }}
+                >
                   {substep.title}
                 </span>
               </div>
-              <div className="col-span-2 text-xs text-muted-foreground flex items-center gap-1.5">
+              <div className="col-span-2" style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', display: 'flex', alignItems: 'center', gap: 6 }}>
                 {substep.responsible_user_name ? (
                   <>
                     <Avatar className="h-5 w-5">
                       <AvatarImage src={getUserAvatarUrl(substep.responsible_user_id) || undefined} />
-                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                      <AvatarFallback style={{ fontSize: 10, background: 'hsl(var(--ds-accent) / 0.1)', color: 'hsl(var(--ds-accent))' }}>
                         {getInitials(substep.responsible_user_name)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{substep.responsible_user_name.split(' ')[0]}</span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {substep.responsible_user_name.split(' ')[0]}
+                    </span>
                   </>
                 ) : (
-                  <span className="italic">-</span>
+                  <span style={{ fontStyle: 'italic' }}>-</span>
                 )}
               </div>
-              <div className="col-span-2 text-xs text-muted-foreground">
+              <div className="col-span-2" style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
                 {substep.deadline ? format(new Date(substep.deadline), 'dd/MM') : '-'}
               </div>
               <div className="col-span-2">
                 {substep.is_completed ? (
-                  <Badge className="text-[10px] bg-success/10 text-success border-0">Feito</Badge>
+                  <span className="pill" style={{ fontSize: 10, ...tonalPillStyle('success') }}>
+                    Feito
+                  </span>
                 ) : (
-                  <Badge className="text-[10px] bg-muted text-muted-foreground border-0">Pendente</Badge>
+                  <span className="pill" style={{ fontSize: 10, ...tonalPillStyle('neutral') }}>
+                    Pendente
+                  </span>
                 )}
               </div>
               <div className="col-span-1 flex justify-end">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                <button
+                  type="button"
+                  className="btn"
+                  style={{
+                    width: 24,
+                    height: 24,
+                    padding: 0,
+                    justifyContent: 'center',
+                    color: 'hsl(var(--ds-fg-3))',
+                    border: 0,
+                    background: 'transparent',
+                  }}
                   onClick={() => deleteSubstep.mutate({ id: substep.id, projectId })}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-danger))')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-3))')}
                 >
-                  <XCircle className="h-3.5 w-3.5" />
-                </Button>
+                  <XCircle size={13} strokeWidth={1.5} />
+                </button>
               </div>
             </div>
           ))}
 
-          {/* Add Subtask Input - Grid completo estilo tarefas */}
+          {/* Add Subtask Input */}
           {isAddingSubtask && (
-            <div 
-              className={cn(
-                "grid grid-cols-12 gap-2 py-1.5 items-center text-sm border-l-2 pl-3 rounded-r transition-all",
-                "border-dashed border-muted-foreground/30",
-                !newSubstep.title && "opacity-70 hover:opacity-100"
-              )}
+            <div
+              className="grid grid-cols-12 gap-2 items-center"
+              style={{
+                fontSize: 13,
+                padding: '6px 0 6px 12px',
+                borderLeft: '2px dashed hsl(var(--ds-line-1))',
+                opacity: !newSubstep.title ? 0.7 : 1,
+                transition: 'opacity 0.15s',
+              }}
             >
-              {/* Título */}
+              {/* Title */}
               <div className="col-span-5 flex items-center gap-2">
-                <div className="h-4 w-4" /> {/* Spacer para alinhar com checkbox */}
+                <div style={{ width: 14, height: 14 }} />
                 <Input
                   value={newSubstep.title}
                   onChange={(e) => setNewSubstep((prev) => ({ ...prev, title: e.target.value }))}
                   placeholder="Nome da subtarefa..."
-                  className="h-7 text-xs flex-1 bg-transparent border-0 p-0 placeholder:italic placeholder:text-muted-foreground/60 focus-visible:ring-0"
+                  className="h-7 text-xs flex-1 p-0"
+                  style={{ background: 'transparent', border: 0 }}
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && newSubstep.title.trim()) handleAddSubtask();
@@ -343,30 +429,35 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
                   value={newSubstep.responsible_user_id || ''}
                   onValueChange={handleNewSubstepResponsibleChange}
                 >
-                  <SelectTrigger className="h-7 text-xs border-0 bg-transparent p-0 justify-start gap-1">
+                  <SelectTrigger
+                    className="h-7 text-xs p-0 justify-start gap-1"
+                    style={{ border: 0, background: 'transparent' }}
+                  >
                     <SelectValue>
                       {newSubstep.responsible_user_name ? (
-                        <div className="flex items-center gap-1.5">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <Avatar className="h-5 w-5">
                             <AvatarImage src={getUserAvatarUrl(newSubstep.responsible_user_id) || undefined} />
-                            <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                            <AvatarFallback style={{ fontSize: 10, background: 'hsl(var(--ds-accent) / 0.1)', color: 'hsl(var(--ds-accent))' }}>
                               {getInitials(newSubstep.responsible_user_name)}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="truncate">{newSubstep.responsible_user_name.split(' ')[0]}</span>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {newSubstep.responsible_user_name.split(' ')[0]}
+                          </span>
                         </div>
                       ) : (
-                        <span className="italic text-muted-foreground/60">Selecionar</span>
+                        <span style={{ fontStyle: 'italic', color: 'hsl(var(--ds-fg-4))' }}>Selecionar</span>
                       )}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {users?.map((u) => (
                       <SelectItem key={u.id} value={u.id}>
-                        <div className="flex items-center gap-2">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <Avatar className="h-5 w-5">
                             <AvatarImage src={u.avatar_url || u.user_metadata?.avatar_url || u.user_metadata?.picture || undefined} />
-                            <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                            <AvatarFallback style={{ fontSize: 10, background: 'hsl(var(--ds-accent) / 0.1)', color: 'hsl(var(--ds-accent))' }}>
                               {getInitials(u.display_name || u.email)}
                             </AvatarFallback>
                           </Avatar>
@@ -382,18 +473,27 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
               <div className="col-span-2">
                 <Popover open={deadlineOpen} onOpenChange={setDeadlineOpen}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs justify-start font-normal"
+                    <button
+                      type="button"
+                      className="btn"
+                      style={{
+                        height: 28,
+                        padding: '0 8px',
+                        fontSize: 11,
+                        fontWeight: 400,
+                        border: 0,
+                        background: 'transparent',
+                        justifyContent: 'flex-start',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
                     >
-                      <Calendar className="h-3 w-3 mr-1" />
+                      <Calendar size={12} strokeWidth={1.5} style={{ marginRight: 4 }} />
                       {newSubstep.deadline ? (
                         format(newSubstep.deadline, 'dd/MM', { locale: ptBR })
                       ) : (
-                        <span className="italic text-muted-foreground/60">Selecionar</span>
+                        <span style={{ fontStyle: 'italic', color: 'hsl(var(--ds-fg-4))' }}>Selecionar</span>
                       )}
-                    </Button>
+                    </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
                     <CalendarComponent
@@ -412,31 +512,51 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
 
               {/* Status */}
               <div className="col-span-2">
-                <Badge className="text-[10px] bg-muted text-muted-foreground border-0">
-                  <Clock className="h-3 w-3 mr-1" />
+                <span
+                  className="pill"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, ...tonalPillStyle('neutral') }}
+                >
+                  <Clock size={11} strokeWidth={1.5} />
                   Pendente
-                </Badge>
+                </span>
               </div>
 
               {/* Ações */}
               <div className="col-span-1 flex justify-end gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-muted-foreground hover:text-primary"
+                <button
+                  type="button"
+                  className="btn"
+                  style={{
+                    width: 24,
+                    height: 24,
+                    padding: 0,
+                    justifyContent: 'center',
+                    border: 0,
+                    background: 'transparent',
+                    color: 'hsl(var(--ds-fg-3))',
+                    opacity: !newSubstep.title.trim() ? 0.5 : 1,
+                  }}
                   onClick={handleAddSubtask}
                   disabled={!newSubstep.title.trim()}
                 >
-                  <Plus className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                  <Plus size={14} strokeWidth={1.5} />
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  style={{
+                    width: 24,
+                    height: 24,
+                    padding: 0,
+                    justifyContent: 'center',
+                    border: 0,
+                    background: 'transparent',
+                    color: 'hsl(var(--ds-fg-3))',
+                  }}
                   onClick={handleCancelAddSubtask}
                 >
-                  <XCircle className="h-3.5 w-3.5" />
-                </Button>
+                  <XCircle size={13} strokeWidth={1.5} />
+                </button>
               </div>
             </div>
           )}

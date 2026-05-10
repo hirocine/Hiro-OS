@@ -111,7 +111,7 @@ export function PeriodPicker({
           align="end"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <div className="p-3 border-b border-border">
+          <div className="p-3 border-b border-[hsl(var(--ds-line-1))]">
             <p className="text-sm font-medium">Período personalizado</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               Selecione data inicial e final
@@ -136,7 +136,7 @@ export function PeriodPicker({
             }}
             className={cn('p-3 pointer-events-auto')}
           />
-          <div className="flex items-center justify-end gap-2 p-3 border-t border-border">
+          <div className="flex items-center justify-end gap-2 p-3 border-t border-[hsl(var(--ds-line-1))]">
             <Button
               variant="ghost"
               size="sm"

@@ -1,102 +1,205 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { BarChart3, Instagram, Linkedin, Loader2, RefreshCw, Settings, Unlink, ExternalLink, CheckCircle2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import {
+  BarChart3, Instagram, Linkedin, Loader2, RefreshCw, Settings, Unlink,
+  ExternalLink, CheckCircle2, type LucideIcon,
+} from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useMarketingIntegrations, type IntegrationStatus, type MarketingIntegration } from '@/hooks/useMarketingIntegrations';
 import { MarketingIntegrationDialog } from '@/components/Marketing/MarketingIntegrationDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const STATUS_META: Record<IntegrationStatus, { label: string; className: string }> = {
-  connected:    { label: 'Conectado',    className: 'bg-emerald-500/15 text-emerald-500' },
-  disconnected: { label: 'Desconectado', className: 'bg-muted text-muted-foreground' },
-  expired:      { label: 'Expirado',     className: 'bg-amber-500/15 text-amber-500' },
-  error:        { label: 'Erro',         className: 'bg-red-500/15 text-red-500' },
+const HN_DISPLAY: React.CSSProperties = { fontFamily: '"HN Display", sans-serif' };
+
+const eyebrowLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
 };
 
-function IntegrationCard({
+type StatusTone = {
+  fg: string;
+  bg: string;
+  border: string;
+  label: string;
+};
+
+const STATUS_META: Record<IntegrationStatus, StatusTone> = {
+  connected: {
+    label: 'Conectado',
+    fg: 'hsl(var(--ds-success))',
+    bg: 'hsl(var(--ds-success) / 0.08)',
+    border: 'hsl(var(--ds-success) / 0.3)',
+  },
+  disconnected: {
+    label: 'Desconectado',
+    fg: 'hsl(var(--ds-fg-3))',
+    bg: 'hsl(var(--ds-line-2) / 0.3)',
+    border: 'hsl(var(--ds-line-1))',
+  },
+  expired: {
+    label: 'Expirado',
+    fg: 'hsl(var(--ds-warning))',
+    bg: 'hsl(var(--ds-warning) / 0.08)',
+    border: 'hsl(var(--ds-warning) / 0.3)',
+  },
+  error: {
+    label: 'Erro',
+    fg: 'hsl(var(--ds-danger))',
+    bg: 'hsl(var(--ds-danger) / 0.08)',
+    border: 'hsl(var(--ds-danger) / 0.3)',
+  },
+};
+
+function StatusPill({ status }: { status: IntegrationStatus }) {
+  const meta = STATUS_META[status];
+  return (
+    <span
+      className="pill"
+      style={{
+        color: meta.fg,
+        background: meta.bg,
+        borderColor: meta.border,
+      }}
+    >
+      {meta.label}
+    </span>
+  );
+}
+
+function CardShell({
   icon: Icon,
+  title,
+  hint,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+      <div
+        style={{
+          padding: '14px 18px',
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+        }}
+      >
+        <Icon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+        <span
+          style={{
+            fontSize: 11,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+            color: 'hsl(var(--ds-fg-2))',
+          }}
+        >
+          {title}
+        </span>
+        {hint && (
+          <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))' }}>— {hint}</span>
+        )}
+      </div>
+      <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>{children}</div>
+    </div>
+  );
+}
+
+function MetaRow({ label, value, tone }: { label: string; value: React.ReactNode; tone?: 'danger' }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, fontSize: 12 }}>
+      <span style={{ fontWeight: 500, color: tone === 'danger' ? 'hsl(var(--ds-danger))' : 'hsl(var(--ds-fg-1))' }}>
+        {label}
+      </span>
+      <span
+        style={{
+          color: tone === 'danger' ? 'hsl(var(--ds-danger))' : 'hsl(var(--ds-fg-3))',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function IntegrationCard({
+  icon,
   title,
   integration,
   onConfigure,
   onDisconnect,
 }: {
-  icon: typeof Instagram;
+  icon: LucideIcon;
   title: string;
   integration: MarketingIntegration | null;
   onConfigure: () => void;
   onDisconnect: () => void;
 }) {
   const status: IntegrationStatus = integration?.status ?? 'disconnected';
-  const meta = STATUS_META[status];
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Icon className="h-5 w-5" />
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className={cn('text-xs', meta.className)}>
-            {meta.label}
-          </Badge>
-          {integration?.account_name && (
-            <span className="text-sm text-muted-foreground truncate">{integration.account_name}</span>
-          )}
-        </div>
+    <CardShell icon={icon} title={title}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <StatusPill status={status} />
+        {integration?.account_name && (
+          <span
+            style={{
+              fontSize: 13,
+              color: 'hsl(var(--ds-fg-3))',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {integration.account_name}
+          </span>
+        )}
+      </div>
 
-        <dl className="text-xs text-muted-foreground space-y-1">
-          {integration?.account_id && (
-            <div className="flex gap-2">
-              <dt className="font-medium text-foreground">Conta:</dt>
-              <dd className="truncate">{integration.account_id}</dd>
-            </div>
-          )}
-          {integration?.last_sync_at && (
-            <div className="flex gap-2">
-              <dt className="font-medium text-foreground">Última sync:</dt>
-              <dd>{new Date(integration.last_sync_at).toLocaleString('pt-BR')}</dd>
-            </div>
-          )}
-          {integration?.token_expires_at && (
-            <div className="flex gap-2">
-              <dt className="font-medium text-foreground">Token expira:</dt>
-              <dd>{new Date(integration.token_expires_at).toLocaleDateString('pt-BR')}</dd>
-            </div>
-          )}
-          {integration?.status_message && (
-            <div className="flex gap-2 text-red-500">
-              <dt className="font-medium">Mensagem:</dt>
-              <dd>{integration.status_message}</dd>
-            </div>
-          )}
-        </dl>
+      <dl style={{ display: 'flex', flexDirection: 'column', gap: 4, margin: 0 }}>
+        {integration?.account_id && (
+          <MetaRow label="Conta:" value={integration.account_id} />
+        )}
+        {integration?.last_sync_at && (
+          <MetaRow label="Última sync:" value={new Date(integration.last_sync_at).toLocaleString('pt-BR')} />
+        )}
+        {integration?.token_expires_at && (
+          <MetaRow label="Token expira:" value={new Date(integration.token_expires_at).toLocaleDateString('pt-BR')} />
+        )}
+        {integration?.status_message && (
+          <MetaRow label="Mensagem:" value={integration.status_message} tone="danger" />
+        )}
+      </dl>
 
-        <div className="flex gap-2 pt-2">
-          <Button size="sm" onClick={onConfigure} className="gap-1.5">
-            <Settings className="h-3.5 w-3.5" />
-            {integration?.access_token ? 'Editar' : 'Configurar'}
-          </Button>
-          {integration?.access_token && (
-            <Button size="sm" variant="outline" onClick={onDisconnect} className="gap-1.5">
-              <Unlink className="h-3.5 w-3.5" /> Desconectar
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+      <div style={{ display: 'flex', gap: 8, paddingTop: 4, flexWrap: 'wrap' }}>
+        <button type="button" className="btn primary" onClick={onConfigure}>
+          <Settings size={13} strokeWidth={1.5} />
+          <span>{integration?.access_token ? 'Editar' : 'Configurar'}</span>
+        </button>
+        {integration?.access_token && (
+          <button type="button" className="btn" onClick={onDisconnect}>
+            <Unlink size={13} strokeWidth={1.5} />
+            <span>Desconectar</span>
+          </button>
+        )}
+      </div>
+    </CardShell>
   );
 }
 
@@ -110,7 +213,7 @@ function GA4IntegrationCard({
   onDisconnect: () => void;
 }) {
   const isConnected = integration?.status === 'connected' && !!integration?.access_token;
-  const meta = STATUS_META[(integration?.status ?? 'disconnected') as IntegrationStatus];
+  const status: IntegrationStatus = integration?.status ?? 'disconnected';
 
   const [propertyId, setPropertyId] = useState(integration?.account_id ?? '');
   const [savingId, setSavingId] = useState(false);
@@ -177,93 +280,97 @@ function GA4IntegrationCard({
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <BarChart3 className="h-5 w-5" />
-          Google Analytics 4
-          <span className="text-xs font-normal text-muted-foreground ml-1">(hiro.film)</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className={cn('text-xs', meta.className)}>
-            {meta.label}
-          </Badge>
-          {integration?.account_name && (
-            <span className="text-sm text-muted-foreground truncate">{integration.account_name}</span>
-          )}
-        </div>
-
-        {!isConnected ? (
-          <>
-            <p className="text-xs text-muted-foreground">
-              Conecte sua conta Google para puxar métricas de tráfego do site.
-            </p>
-            <Button size="sm" onClick={handleConnect} className="gap-1.5">
-              <ExternalLink className="h-3.5 w-3.5" />
-              Conectar Google Analytics
-            </Button>
-          </>
-        ) : (
-          <>
-            <div className="space-y-2">
-              <Label className="text-xs">Property ID (numérico)</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={propertyId}
-                  onChange={(e) => setPropertyId(e.target.value)}
-                  placeholder="ex: 535009493"
-                  className="h-9 font-mono text-xs font-numeric"
-                />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={savePropertyId}
-                  disabled={savingId || !propertyId.trim() || propertyId === integration?.account_id}
-                >
-                  {savingId ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Salvar'}
-                </Button>
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                GA4 → Admin → Detalhes da propriedade → ID da propriedade
-              </p>
-            </div>
-
-            <dl className="text-xs text-muted-foreground space-y-1">
-              {integration?.last_sync_at && (
-                <div className="flex gap-2">
-                  <dt className="font-medium text-foreground">Última sync:</dt>
-                  <dd>{new Date(integration.last_sync_at).toLocaleString('pt-BR')}</dd>
-                </div>
-              )}
-              {integration?.token_expires_at && (
-                <div className="flex gap-2">
-                  <dt className="font-medium text-foreground">Token expira:</dt>
-                  <dd>{new Date(integration.token_expires_at).toLocaleString('pt-BR')}</dd>
-                </div>
-              )}
-              {integration?.status_message && integration.status_message !== 'Conectado ao Google Analytics' && integration.status_message !== 'Sincronizado' && (
-                <div className="flex gap-2 text-red-500">
-                  <dt className="font-medium">Mensagem:</dt>
-                  <dd>{integration.status_message}</dd>
-                </div>
-              )}
-            </dl>
-
-            <div className="flex gap-2 pt-2 flex-wrap">
-              <Button size="sm" onClick={handleSync} disabled={syncing || !integration?.account_id} className="gap-1.5">
-                {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-                Sincronizar agora
-              </Button>
-              <Button size="sm" variant="outline" onClick={onDisconnect} className="gap-1.5">
-                <Unlink className="h-3.5 w-3.5" /> Desconectar
-              </Button>
-            </div>
-          </>
+    <CardShell icon={BarChart3} title="Google Analytics 4" hint="hiro.film">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <StatusPill status={status} />
+        {integration?.account_name && (
+          <span
+            style={{
+              fontSize: 13,
+              color: 'hsl(var(--ds-fg-3))',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {integration.account_name}
+          </span>
         )}
-      </CardContent>
-    </Card>
+      </div>
+
+      {!isConnected ? (
+        <>
+          <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', margin: 0 }}>
+            Conecte sua conta Google para puxar métricas de tráfego do site.
+          </p>
+          <div>
+            <button type="button" className="btn primary" onClick={handleConnect}>
+              <ExternalLink size={13} strokeWidth={1.5} />
+              <span>Conectar Google Analytics</span>
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <label style={eyebrowLabel}>Property ID (numérico)</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Input
+                value={propertyId}
+                onChange={(e) => setPropertyId(e.target.value)}
+                placeholder="ex: 535009493"
+                style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontVariantNumeric: 'tabular-nums', fontSize: 12 }}
+              />
+              <button
+                type="button"
+                className="btn"
+                onClick={savePropertyId}
+                disabled={savingId || !propertyId.trim() || propertyId === integration?.account_id}
+              >
+                {savingId ? <Loader2 size={13} strokeWidth={1.5} className="animate-spin" /> : <span>Salvar</span>}
+              </button>
+            </div>
+            <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 6 }}>
+              GA4 → Admin → Detalhes da propriedade → ID da propriedade
+            </p>
+          </div>
+
+          <dl style={{ display: 'flex', flexDirection: 'column', gap: 4, margin: 0 }}>
+            {integration?.last_sync_at && (
+              <MetaRow label="Última sync:" value={new Date(integration.last_sync_at).toLocaleString('pt-BR')} />
+            )}
+            {integration?.token_expires_at && (
+              <MetaRow label="Token expira:" value={new Date(integration.token_expires_at).toLocaleString('pt-BR')} />
+            )}
+            {integration?.status_message
+              && integration.status_message !== 'Conectado ao Google Analytics'
+              && integration.status_message !== 'Sincronizado' && (
+                <MetaRow label="Mensagem:" value={integration.status_message} tone="danger" />
+              )}
+          </dl>
+
+          <div style={{ display: 'flex', gap: 8, paddingTop: 4, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleSync}
+              disabled={syncing || !integration?.account_id}
+            >
+              {syncing ? (
+                <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />
+              ) : (
+                <RefreshCw size={13} strokeWidth={1.5} />
+              )}
+              <span>Sincronizar agora</span>
+            </button>
+            <button type="button" className="btn" onClick={onDisconnect}>
+              <Unlink size={13} strokeWidth={1.5} />
+              <span>Desconectar</span>
+            </button>
+          </div>
+        </>
+      )}
+    </CardShell>
   );
 }
 
@@ -284,7 +391,7 @@ export default function MarketingIntegrations() {
     if (ga4Param === 'connected') {
       toast.success('Google Analytics conectado!', {
         description: 'Agora informe o Property ID e clique em Sincronizar.',
-        icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />,
+        icon: <CheckCircle2 size={16} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-success))' }} />,
       });
       fetchIntegrations();
       searchParams.delete('ga4');
@@ -300,24 +407,33 @@ export default function MarketingIntegrations() {
 
   if (roleLoading) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 0' }}>
+            <Loader2 className="animate-spin" size={24} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+          </div>
         </div>
-      </ResponsiveContainer>
+      </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <PageHeader title="Integrações de Marketing" subtitle="Apenas administradores." />
-        <Card>
-          <CardContent className="p-8 text-center text-sm text-muted-foreground">
-            Você precisa ser administrador para acessar esta página.
-          </CardContent>
-        </Card>
-      </ResponsiveContainer>
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner">
+          <div className="ph">
+            <div>
+              <h1 className="ph-title">Integrações de Marketing.</h1>
+              <p className="ph-sub">Apenas administradores.</p>
+            </div>
+          </div>
+          <div className="empties" style={{ marginTop: 24 }}>
+            <div className="empty" style={{ borderRight: 0 }}>
+              <p>Você precisa ser administrador para acessar esta página.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -342,65 +458,81 @@ export default function MarketingIntegrations() {
   const existing = dialogPlatform === 'instagram' ? instagram : linkedin;
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
-      <PageHeader
-        title="Integrações de Marketing"
-        subtitle="Conecte Instagram, LinkedIn e Google Analytics para sincronizar métricas automaticamente."
-      />
-
-      {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Integrações de Marketing.</h1>
+            <p className="ph-sub">Conecte Instagram, LinkedIn e Google Analytics para sincronizar métricas automaticamente.</p>
+          </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <IntegrationCard
-            icon={Instagram}
-            title="Instagram"
-            integration={instagram}
-            onConfigure={() => openDialog('instagram')}
-            onDisconnect={() => setConfirmPlatform('instagram')}
-          />
-          <IntegrationCard
-            icon={Linkedin}
-            title="LinkedIn"
-            integration={linkedin}
-            onConfigure={() => openDialog('linkedin')}
-            onDisconnect={() => setConfirmPlatform('linkedin')}
-          />
-          <GA4IntegrationCard
-            integration={ga4}
-            onRefresh={fetchIntegrations}
-            onDisconnect={() => setConfirmPlatform('google_analytics')}
-          />
+
+        <div style={{ marginTop: 24 }}>
+          {loading ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 0' }}>
+              <Loader2 className="animate-spin" size={24} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                gap: 16,
+              }}
+            >
+              <IntegrationCard
+                icon={Instagram}
+                title="Instagram"
+                integration={instagram}
+                onConfigure={() => openDialog('instagram')}
+                onDisconnect={() => setConfirmPlatform('instagram')}
+              />
+              <IntegrationCard
+                icon={Linkedin}
+                title="LinkedIn"
+                integration={linkedin}
+                onConfigure={() => openDialog('linkedin')}
+                onDisconnect={() => setConfirmPlatform('linkedin')}
+              />
+              <GA4IntegrationCard
+                integration={ga4}
+                onRefresh={fetchIntegrations}
+                onDisconnect={() => setConfirmPlatform('google_analytics')}
+              />
+            </div>
+          )}
         </div>
-      )}
 
-      <p className="text-xs text-muted-foreground mt-6">
-        {integrations.length === 0 && 'Nenhuma integração configurada ainda.'}
-      </p>
+        {integrations.length === 0 && (
+          <p style={{ marginTop: 24, color: 'hsl(var(--ds-fg-4))', fontSize: 12 }}>
+            Nenhuma integração configurada ainda.
+          </p>
+        )}
 
-      <MarketingIntegrationDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        platform={dialogPlatform}
-        existing={existing}
-      />
+        <MarketingIntegrationDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          platform={dialogPlatform}
+          existing={existing}
+        />
 
-      <AlertDialog open={!!confirmPlatform} onOpenChange={(o) => !o && setConfirmPlatform(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Desconectar integração?</AlertDialogTitle>
-            <AlertDialogDescription>
-              O token será removido. Você precisará configurar novamente para voltar a sincronizar métricas.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDisconnect}>Desconectar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </ResponsiveContainer>
+        <AlertDialog open={!!confirmPlatform} onOpenChange={(o) => !o && setConfirmPlatform(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                <span style={HN_DISPLAY}>Desconectar integração?</span>
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                O token será removido. Você precisará configurar novamente para voltar a sincronizar métricas.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDisconnect}>Desconectar</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </div>
   );
 }

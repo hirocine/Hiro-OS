@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useCategories } from '@/hooks/useCategories';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { getCategoryIcon } from '@/lib/categoryIconMap';
 import { logger } from '@/lib/logger';
@@ -46,17 +42,32 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle, ArrowUp, ArrowDown, Camera, Monitor, Mic2, Lightbulb, Package, Video, Zap, HardDrive, GripVertical } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Loader2, Plus, Pencil, Trash2, Search, FileText, ChevronRight, AlertTriangle, GripVertical } from 'lucide-react';
+
+const eyebrowStyle: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const iconBtnStyle: React.CSSProperties = {
+  width: 32,
+  height: 32,
+  padding: 0,
+  justifyContent: 'center',
+};
 
 // Componente Sortable para Item de Categoria
-function SortableCategoryItem({ 
-  id, 
-  children 
-}: { 
-  id: string; 
+function SortableCategoryItem({
+  id,
+  children,
+}: {
+  id: string;
   children: React.ReactNode;
 }) {
   const {
@@ -75,13 +86,22 @@ function SortableCategoryItem({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-2">
+    <div ref={setNodeRef} style={{ ...style, display: 'flex', alignItems: 'center', gap: 8 }}>
       <button
-        className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+        type="button"
         {...attributes}
         {...listeners}
+        style={{
+          cursor: 'grab',
+          padding: 4,
+          background: 'transparent',
+          border: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
       >
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
+        <GripVertical size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
       </button>
       {children}
     </div>
@@ -89,11 +109,11 @@ function SortableCategoryItem({
 }
 
 // Componente Sortable para Item de Subcategoria
-function SortableSubcategoryItem({ 
-  id, 
-  children 
-}: { 
-  id: string; 
+function SortableSubcategoryItem({
+  id,
+  children,
+}: {
+  id: string;
   children: React.ReactNode;
 }) {
   const {
@@ -112,13 +132,23 @@ function SortableSubcategoryItem({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-2">
+    <div ref={setNodeRef} style={{ ...style, display: 'flex', alignItems: 'center', gap: 8 }}>
       <button
-        className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded ml-2"
+        type="button"
         {...attributes}
         {...listeners}
+        style={{
+          cursor: 'grab',
+          padding: 4,
+          marginLeft: 8,
+          background: 'transparent',
+          border: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
       >
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
+        <GripVertical size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
       </button>
       {children}
     </div>
@@ -128,7 +158,7 @@ function SortableSubcategoryItem({
 // Função para retornar placeholder contextual baseado na categoria
 const getSubcategoryPlaceholder = (category: string | null): string => {
   if (!category) return 'Ex: Digite o nome da subcategoria...';
-  
+
   const placeholders: Record<string, string> = {
     'Câmera': 'Ex: Lente, Cage, Filtro, Bateria...',
     'Audio': 'Ex: Microfone, Gravador, Cabo, Braço Articulado...',
@@ -144,7 +174,7 @@ const getSubcategoryPlaceholder = (category: string | null): string => {
     'Transmissão': 'Ex: Mesa de Corte, Placa de Captura, Conversores...',
     'Tripés e Movimento': 'Ex: Tripé, Estabilizador, Slider, Gimbal...',
   };
-  
+
   // Retorna o placeholder específico ou um genérico se a categoria não estiver no mapeamento
   return placeholders[category] || `Ex: Subcategoria de ${category}...`;
 };
@@ -155,8 +185,7 @@ interface CategoryManagementProps {
 }
 
 export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogChange }: CategoryManagementProps = {}) {
-  const { 
-    categories,
+  const {
     loading,
     getCategoriesHierarchy,
     addCategoryOnly,
@@ -166,15 +195,13 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
     deleteSubcategory,
     deleteCategoryWithSubcategories,
     getCategoryUsageCount,
-    reorderSubcategory,
-    syncOrdersWithMapping,
-    refetch
+    refetch,
   } = useCategories();
 
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  
+
   // Dialogs state
   const [internalAddCategoryDialog, setInternalAddCategoryDialog] = useState(false);
   const showAddCategoryDialog = externalAddDialogOpen ?? internalAddCategoryDialog;
@@ -182,7 +209,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
   const [showAddSubcategoryDialog, setShowAddSubcategoryDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  
+
   // Form state
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryIcon, setNewCategoryIcon] = useState<string>('');
@@ -194,7 +221,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
     categoryName: string;
     subcategoryName?: string;
   } | null>(null);
-  
+
   const [deleteTarget, setDeleteTarget] = useState<{
     type: 'category' | 'subcategory';
     id?: string;
@@ -204,8 +231,8 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
   } | null>(null);
 
   const hierarchy = getCategoriesHierarchy();
-  
-  const filteredHierarchy = hierarchy.filter(cat => 
+
+  const filteredHierarchy = hierarchy.filter(cat =>
     cat.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cat.subcategories.some(sub => sub.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -234,7 +261,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
       toast({
         title: 'Nome obrigatório',
         description: 'Digite o nome da categoria',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -244,7 +271,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
     if (result.success) {
       toast({
         title: 'Sucesso',
-        description: 'Categoria criada com sucesso'
+        description: 'Categoria criada com sucesso',
       });
       setShowAddCategoryDialog(false);
       setNewCategoryName('');
@@ -254,7 +281,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
       toast({
         title: 'Erro',
         description: result.error,
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
   };
@@ -264,7 +291,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
       toast({
         title: 'Categoria obrigatória',
         description: 'Selecione uma categoria antes de adicionar a subcategoria',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -273,7 +300,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
       toast({
         title: 'Subcategoria obrigatória',
         description: 'Digite o nome da subcategoria',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -283,7 +310,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
     if (result.success) {
       toast({
         title: 'Sucesso',
-        description: 'Subcategoria adicionada com sucesso'
+        description: 'Subcategoria adicionada com sucesso',
       });
       setShowAddSubcategoryDialog(false);
       setSelectedCategory(null);
@@ -293,7 +320,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
       toast({
         title: 'Erro',
         description: result.error,
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
   };
@@ -306,17 +333,17 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
         toast({
           title: 'Nome obrigatório',
           description: 'Digite o novo nome da categoria',
-          variant: 'destructive'
+          variant: 'destructive',
         });
         return;
       }
 
       const result = await renameCategory(editingItem.categoryName, newCategoryName);
-      
+
       if (result.success) {
         toast({
           title: 'Sucesso',
-          description: 'Categoria renomeada com sucesso'
+          description: 'Categoria renomeada com sucesso',
         });
         setShowEditDialog(false);
         setEditingItem(null);
@@ -326,7 +353,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
         toast({
           title: 'Erro',
           description: result.error,
-          variant: 'destructive'
+          variant: 'destructive',
         });
       }
     } else {
@@ -334,7 +361,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
         toast({
           title: 'Nome obrigatório',
           description: 'Digite o novo nome da subcategoria',
-          variant: 'destructive'
+          variant: 'destructive',
         });
         return;
       }
@@ -348,7 +375,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
       if (result.success) {
         toast({
           title: 'Sucesso',
-          description: 'Subcategoria renomeada com sucesso'
+          description: 'Subcategoria renomeada com sucesso',
         });
         setShowEditDialog(false);
         setEditingItem(null);
@@ -358,7 +385,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
         toast({
           title: 'Erro',
           description: result.error,
-          variant: 'destructive'
+          variant: 'destructive',
         });
       }
     }
@@ -391,20 +418,20 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
 
       toast({
         title: 'Ordem atualizada',
-        description: 'Categorias reordenadas com sucesso'
+        description: 'Categorias reordenadas com sucesso',
       });
-      
+
       await refetch();
     } catch (error) {
       logger.error('Error reordering categories', {
         module: 'category-management',
         action: 'reorder_categories',
-        error
+        error,
       });
       toast({
         title: 'Erro',
         description: 'Erro ao reordenar categorias',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
   };
@@ -430,20 +457,20 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
 
       toast({
         title: 'Ordem atualizada',
-        description: 'Subcategorias reordenadas com sucesso'
+        description: 'Subcategorias reordenadas com sucesso',
       });
-      
+
       await refetch();
     } catch (error) {
       logger.error('Error reordering subcategories', {
         module: 'category-management',
         action: 'reorder_subcategories',
-        error
+        error,
       });
       toast({
         title: 'Erro',
         description: 'Erro ao reordenar subcategorias',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
   };
@@ -489,15 +516,15 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
       type,
       id: subcategoryId,
       categoryName,
-      subcategoryName
+      subcategoryName,
     });
-    
+
     if (type === 'category') {
       setNewCategoryName(categoryName);
     } else {
       setNewSubcategoryName(subcategoryName || '');
     }
-    
+
     setShowEditDialog(true);
   };
 
@@ -508,7 +535,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
     subcategoryId?: string
   ) => {
     let usageCount = 0;
-    
+
     if (type === 'subcategory' && subcategoryName) {
       usageCount = await getCategoryUsageCount(categoryName, subcategoryName);
     } else {
@@ -527,9 +554,9 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
       id: subcategoryId,
       name: subcategoryName || categoryName,
       categoryName: type === 'subcategory' ? categoryName : undefined,
-      usageCount
+      usageCount,
     });
-    
+
     setShowDeleteDialog(true);
   };
 
@@ -540,7 +567,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
       toast({
         title: 'Não é possível deletar',
         description: `${deleteTarget.usageCount} equipamentos usam esta ${deleteTarget.type === 'category' ? 'categoria' : 'subcategoria'}`,
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -552,7 +579,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
     if (result.success) {
       toast({
         title: 'Sucesso',
-        description: `${deleteTarget.type === 'category' ? 'Categoria' : 'Subcategoria'} deletada com sucesso`
+        description: `${deleteTarget.type === 'category' ? 'Categoria' : 'Subcategoria'} deletada com sucesso`,
       });
       setShowDeleteDialog(false);
       setDeleteTarget(null);
@@ -561,36 +588,59 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
       toast({
         title: 'Erro',
         description: result.error,
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
   };
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="pt-6 flex justify-center">
-          <Loader2 className="h-6 w-6 animate-spin" />
-        </CardContent>
-      </Card>
+      <div
+        style={{
+          border: '1px solid hsl(var(--ds-line-1))',
+          background: 'hsl(var(--ds-surface))',
+          padding: 24,
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+      >
+        <Loader2 size={20} strokeWidth={1.5} className="animate-spin" style={{ color: 'hsl(var(--ds-fg-3))' }} />
+      </div>
     );
   }
 
   return (
     <>
-      <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar categorias..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+      <div style={{ position: 'relative', flex: 1 }}>
+        <Search
+          size={14}
+          strokeWidth={1.5}
+          style={{
+            position: 'absolute',
+            left: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'hsl(var(--ds-fg-3))',
+            pointerEvents: 'none',
+          }}
+        />
+        <Input
+          placeholder="Buscar categorias..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
+      </div>
 
-        <Card>
-        <CardContent className="pt-4">
-          <div className="space-y-2">
+      <div
+        style={{
+          border: '1px solid hsl(var(--ds-line-1))',
+          background: 'hsl(var(--ds-surface))',
+          marginTop: 14,
+        }}
+      >
+        <div style={{ padding: 18 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {/* Drag-and-drop para categorias principais */}
             <DndContext
               sensors={sensors}
@@ -604,60 +654,92 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
                 {filteredHierarchy.map((cat) => {
                   const isExpanded = expandedCategories.has(cat.categoryName);
                   const Icon = getCategoryIcon(cat.categoryName);
-                  
+
                   return (
                     <SortableCategoryItem key={cat.categoryName} id={cat.categoryName}>
                       <Collapsible
-                        className="flex-1"
+                        style={{ flex: 1 }}
                         open={isExpanded}
                         onOpenChange={() => toggleCategory(cat.categoryName)}
                       >
-                        <div className="flex items-center justify-between p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
-                          <div className="flex items-center gap-2 flex-1">
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '10px 12px',
+                            border: '1px solid hsl(var(--ds-line-1))',
+                            background: 'hsl(var(--ds-surface))',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
                             <CollapsibleTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                              <button
+                                type="button"
+                                className="btn"
+                                style={{ width: 24, height: 24, padding: 0, justifyContent: 'center' }}
+                              >
                                 <ChevronRight
-                                  className={cn(
-                                    "h-4 w-4 transition-transform",
-                                    isExpanded && "rotate-90"
-                                  )}
+                                  size={14}
+                                  strokeWidth={1.5}
+                                  style={{
+                                    transition: 'transform 0.15s ease',
+                                    transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                                    color: 'hsl(var(--ds-fg-3))',
+                                  }}
                                 />
-                              </Button>
+                              </button>
                             </CollapsibleTrigger>
-                            
-                            <Icon className="h-4 w-4 text-primary" />
-                            <span className="font-medium">{cat.categoryName}</span>
-                            <Badge variant="secondary">
+
+                            <Icon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-accent))' }} />
+                            <span style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                              {cat.categoryName}
+                            </span>
+                            <span className="pill muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
                               {cat.subcategories.length} {cat.subcategories.length === 1 ? 'subcategoria' : 'subcategorias'}
-                            </Badge>
+                            </span>
                           </div>
 
-                          <div className="flex gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button
+                              type="button"
+                              className="btn"
+                              style={iconBtnStyle}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 openEditDialog('category', cat.categoryName);
                               }}
                             >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
+                              <Pencil size={13} strokeWidth={1.5} />
+                            </button>
+                            <button
+                              type="button"
+                              className="btn"
+                              style={{
+                                ...iconBtnStyle,
+                                color: 'hsl(var(--ds-danger))',
+                                borderColor: 'hsl(var(--ds-danger) / 0.3)',
+                              }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 openDeleteDialog('category', cat.categoryName);
                               }}
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                              <Trash2 size={13} strokeWidth={1.5} />
+                            </button>
                           </div>
                         </div>
 
                         <CollapsibleContent>
-                          <div className="ml-8 mt-2 space-y-1">
+                          <div
+                            style={{
+                              marginLeft: 32,
+                              marginTop: 8,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 4,
+                            }}
+                          >
                             {/* Drag-and-drop para subcategorias */}
                             <DndContext
                               sensors={sensors}
@@ -670,30 +752,51 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
                               >
                                 {cat.subcategories.map((sub) => (
                                   <SortableSubcategoryItem key={sub.id} id={sub.id}>
-                                    <div className="flex items-center justify-between p-2 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors flex-1">
-                                      <div className="flex items-center gap-2">
-                                        <FileText className="h-4 w-4 text-muted-foreground" />
-                                        <span>{sub.name}</span>
+                                    <div
+                                      style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '8px 10px',
+                                        border: '1px solid hsl(var(--ds-line-1))',
+                                        background: 'hsl(var(--ds-line-2) / 0.3)',
+                                        flex: 1,
+                                      }}
+                                    >
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <FileText size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+                                        <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-2))' }}>{sub.name}</span>
                                         {sub.usageCount > 0 && (
-                                          <Badge variant="outline">{sub.usageCount} equipamentos</Badge>
+                                          <span className="pill" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                                            {sub.usageCount} equipamentos
+                                          </span>
                                         )}
                                       </div>
 
-                                      <div className="flex gap-1">
-                                        <Button 
-                                          variant="ghost" 
-                                          size="sm"
+                                      <div style={{ display: 'flex', gap: 4 }}>
+                                        <button
+                                          type="button"
+                                          className="btn"
+                                          style={{ width: 28, height: 28, padding: 0, justifyContent: 'center' }}
                                           onClick={() => openEditDialog('subcategory', cat.categoryName, sub.name, sub.id)}
                                         >
-                                          <Pencil className="h-4 w-4" />
-                                        </Button>
-                                        <Button 
-                                          variant="ghost" 
-                                          size="sm"
+                                          <Pencil size={12} strokeWidth={1.5} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className="btn"
+                                          style={{
+                                            width: 28,
+                                            height: 28,
+                                            padding: 0,
+                                            justifyContent: 'center',
+                                            color: 'hsl(var(--ds-danger))',
+                                            borderColor: 'hsl(var(--ds-danger) / 0.3)',
+                                          }}
                                           onClick={() => openDeleteDialog('subcategory', cat.categoryName, sub.name, sub.id)}
                                         >
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                          <Trash2 size={12} strokeWidth={1.5} />
+                                        </button>
                                       </div>
                                     </div>
                                   </SortableSubcategoryItem>
@@ -701,18 +804,18 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
                               </SortableContext>
                             </DndContext>
 
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full"
+                            <button
+                              type="button"
+                              className="btn"
+                              style={{ width: '100%', justifyContent: 'center' }}
                               onClick={() => {
                                 setSelectedCategory(cat.categoryName);
                                 setShowAddSubcategoryDialog(true);
                               }}
                             >
-                              <Plus className="h-4 w-4 mr-2" />
-                              Adicionar Subcategoria
-                            </Button>
+                              <Plus size={13} strokeWidth={1.5} />
+                              <span>Adicionar Subcategoria</span>
+                            </button>
                           </div>
                         </CollapsibleContent>
                       </Collapsible>
@@ -723,27 +826,36 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
             </DndContext>
 
             {filteredHierarchy.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '32px 0',
+                  fontSize: 13,
+                  color: 'hsl(var(--ds-fg-3))',
+                }}
+              >
                 Nenhuma categoria encontrada
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Dialog: Nova Categoria Principal */}
       <Dialog open={showAddCategoryDialog} onOpenChange={setShowAddCategoryDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nova Categoria Principal</DialogTitle>
+            <DialogTitle>
+              <span style={{ fontFamily: '"HN Display", sans-serif' }}>Nova Categoria Principal</span>
+            </DialogTitle>
             <DialogDescription>
               Crie uma nova categoria principal. Adicione subcategorias depois através do botão dentro de cada categoria.
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="space-y-4">
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
-              <Label htmlFor="category">Nome da Categoria *</Label>
+              <label htmlFor="category" style={eyebrowStyle}>Nome da Categoria *</label>
               <Input
                 id="category"
                 placeholder="Ex: Drone, Estabilizador, Monitor..."
@@ -752,7 +864,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
               />
             </div>
             <div>
-              <Label htmlFor="category-icon">Ícone da Categoria (opcional)</Label>
+              <label htmlFor="category-icon" style={eyebrowStyle}>Ícone da Categoria (opcional)</label>
               <Select
                 value={newCategoryIcon}
                 onValueChange={setNewCategoryIcon}
@@ -761,28 +873,34 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
                   <SelectValue placeholder="Selecione um ícone..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Camera">📷 Câmera</SelectItem>
-                  <SelectItem value="Video">🎬 Vídeo</SelectItem>
-                  <SelectItem value="Mic2">🎤 Áudio</SelectItem>
-                  <SelectItem value="Lightbulb">💡 Iluminação</SelectItem>
-                  <SelectItem value="Monitor">🖥️ Monitor</SelectItem>
-                  <SelectItem value="HardDrive">💾 Armazenamento</SelectItem>
-                  <SelectItem value="Zap">⚡ Elétrica</SelectItem>
-                  <SelectItem value="Package">📦 Acessórios</SelectItem>
+                  <SelectItem value="Camera">Câmera</SelectItem>
+                  <SelectItem value="Video">Vídeo</SelectItem>
+                  <SelectItem value="Mic2">Áudio</SelectItem>
+                  <SelectItem value="Lightbulb">Iluminação</SelectItem>
+                  <SelectItem value="Monitor">Monitor</SelectItem>
+                  <SelectItem value="HardDrive">Armazenamento</SelectItem>
+                  <SelectItem value="Zap">Elétrica</SelectItem>
+                  <SelectItem value="Package">Acessórios</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setShowAddCategoryDialog(false);
-              setNewCategoryName('');
-              setNewCategoryIcon('');
-            }}>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                setShowAddCategoryDialog(false);
+                setNewCategoryName('');
+                setNewCategoryIcon('');
+              }}
+            >
               Cancelar
-            </Button>
-            <Button onClick={handleAddCategory}>Criar</Button>
+            </button>
+            <button type="button" className="btn primary" onClick={handleAddCategory}>
+              Criar
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -791,17 +909,19 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
       <Dialog open={showAddSubcategoryDialog} onOpenChange={setShowAddSubcategoryDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Adicionar Subcategoria</DialogTitle>
+            <DialogTitle>
+              <span style={{ fontFamily: '"HN Display", sans-serif' }}>Adicionar Subcategoria</span>
+            </DialogTitle>
             <DialogDescription>
-              {selectedCategory 
+              {selectedCategory
                 ? `Adicionar subcategoria à categoria "${selectedCategory}"`
                 : 'Adicionar subcategoria a uma categoria existente'}
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="space-y-4">
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
-              <Label htmlFor="select-category">Categoria *</Label>
+              <label htmlFor="select-category" style={eyebrowStyle}>Categoria *</label>
               <Select
                 value={selectedCategory || ''}
                 onValueChange={setSelectedCategory}
@@ -820,9 +940,9 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
-              <Label htmlFor="new-subcategory">Nome da Subcategoria *</Label>
+              <label htmlFor="new-subcategory" style={eyebrowStyle}>Nome da Subcategoria *</label>
               <Input
                 id="new-subcategory"
                 placeholder={getSubcategoryPlaceholder(selectedCategory)}
@@ -833,8 +953,9 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
           </div>
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <button
+              type="button"
+              className="btn"
               onClick={() => {
                 setShowAddSubcategoryDialog(false);
                 setSelectedCategory(null);
@@ -842,13 +963,15 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
               }}
             >
               Cancelar
-            </Button>
-            <Button 
+            </button>
+            <button
+              type="button"
+              className="btn primary"
               onClick={handleAddSubcategoryToExisting}
               disabled={!selectedCategory}
             >
               Adicionar
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -858,7 +981,9 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingItem?.type === 'category' ? 'Renomear Categoria' : 'Renomear Subcategoria'}
+              <span style={{ fontFamily: '"HN Display", sans-serif' }}>
+                {editingItem?.type === 'category' ? 'Renomear Categoria' : 'Renomear Subcategoria'}
+              </span>
             </DialogTitle>
             <DialogDescription>
               {editingItem?.type === 'category'
@@ -866,17 +991,30 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
                 : `Renomear subcategoria da categoria "${editingItem?.categoryName}"`}
             </DialogDescription>
           </DialogHeader>
-          
+
           {editingItem?.type === 'category' ? (
-            <div className="space-y-4">
-              <Alert>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  padding: '10px 12px',
+                  border: '1px solid hsl(var(--ds-warning) / 0.3)',
+                  background: 'hsl(var(--ds-warning) / 0.08)',
+                }}
+              >
+                <AlertTriangle
+                  size={14}
+                  strokeWidth={1.5}
+                  style={{ color: 'hsl(var(--ds-warning))', flexShrink: 0, marginTop: 2 }}
+                />
+                <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-2))' }}>
                   Atenção: Isso irá atualizar todos os equipamentos desta categoria
-                </AlertDescription>
-              </Alert>
+                </span>
+              </div>
               <div>
-                <Label htmlFor="edit-category">Novo Nome da Categoria *</Label>
+                <label htmlFor="edit-category" style={eyebrowStyle}>Novo Nome da Categoria *</label>
                 <Input
                   id="edit-category"
                   value={newCategoryName}
@@ -885,13 +1023,13 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <Label>Categoria</Label>
+                <label style={eyebrowStyle}>Categoria</label>
                 <Input value={editingItem?.categoryName || ''} disabled />
               </div>
               <div>
-                <Label htmlFor="edit-subcategory">Novo Nome da Subcategoria *</Label>
+                <label htmlFor="edit-subcategory" style={eyebrowStyle}>Novo Nome da Subcategoria *</label>
                 <Input
                   id="edit-subcategory"
                   value={newSubcategoryName}
@@ -902,8 +1040,9 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
           )}
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <button
+              type="button"
+              className="btn"
               onClick={() => {
                 setShowEditDialog(false);
                 setEditingItem(null);
@@ -912,8 +1051,10 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
               }}
             >
               Cancelar
-            </Button>
-            <Button onClick={handleEdit}>Salvar</Button>
+            </button>
+            <button type="button" className="btn primary" onClick={handleEdit}>
+              Salvar
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

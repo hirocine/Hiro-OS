@@ -30,7 +30,11 @@ const PHASE_ICONS: Record<PhaseId, LucideIcon> = {
 interface Props {
   phase: Phase;
   onTogglePhase: (enabled: boolean) => void;
-  onUpdateItem: (subIdx: number, itemId: string, patch: Partial<Pick<ServiceItem, 'label' | 'specification' | 'quantity' | 'included'>>) => void;
+  onUpdateItem: (
+    subIdx: number,
+    itemId: string,
+    patch: Partial<Pick<ServiceItem, 'label' | 'specification' | 'quantity' | 'included'>>,
+  ) => void;
   onAddItem: (subIdx: number, label?: string) => void;
   onRemoveItem: (subIdx: number, itemId: string) => void;
   onDuplicateItem: (subIdx: number, itemId: string) => void;
@@ -38,6 +42,14 @@ interface Props {
   onUnselectAll: () => void;
   onClearSpecs: () => void;
 }
+
+const eyebrowStyle: React.CSSProperties = {
+  fontSize: 10,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+};
 
 export function PhaseCard({
   phase,
@@ -64,25 +76,67 @@ export function PhaseCard({
   };
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        overflow: 'hidden',
+      }}
+    >
       {/* Header da fase */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
-        <div className="flex items-center gap-3 min-w-0">
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 18px',
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
           <div
-            className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
-              phase.enabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-            }`}
+            style={{
+              width: 32,
+              height: 32,
+              display: 'grid',
+              placeItems: 'center',
+              flexShrink: 0,
+              background: phase.enabled ? 'hsl(var(--ds-accent) / 0.1)' : 'hsl(var(--ds-line-2) / 0.4)',
+              color: phase.enabled ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-3))',
+              border: `1px solid ${phase.enabled ? 'hsl(var(--ds-accent) / 0.25)' : 'hsl(var(--ds-line-1))'}`,
+              transition: 'background 0.15s, color 0.15s, border-color 0.15s',
+            }}
           >
-            <Icon className="w-4 h-4" />
+            <Icon size={14} strokeWidth={1.5} />
           </div>
-          <div className="min-w-0">
-            <h4 className="text-sm font-semibold leading-tight truncate">{phase.name}</h4>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
+          <div style={{ minWidth: 0 }}>
+            <h4
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 13,
+                fontWeight: 600,
+                lineHeight: 1.2,
+                color: 'hsl(var(--ds-fg-1))',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {phase.name}
+            </h4>
+            <p
+              style={{
+                fontSize: 11,
+                color: 'hsl(var(--ds-fg-3))',
+                marginTop: 2,
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
               {phase.enabled ? `${includedCount}/${totalItems} inclusos` : 'Fase desativada'}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Switch
             checked={phase.enabled}
             onCheckedChange={onTogglePhase}
@@ -90,21 +144,40 @@ export function PhaseCard({
           />
           <DropdownMenu>
             <DropdownMenuTrigger
-              className="h-7 w-7 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              style={{
+                width: 28,
+                height: 28,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'transparent',
+                border: 0,
+                cursor: 'pointer',
+                color: 'hsl(var(--ds-fg-3))',
+                transition: 'background 0.15s, color 0.15s',
+              }}
               aria-label="Ações da fase"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
+                e.currentTarget.style.color = 'hsl(var(--ds-fg-1))';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = 'hsl(var(--ds-fg-3))';
+              }}
             >
-              <MoreVertical className="h-4 w-4" />
+              <MoreVertical size={14} strokeWidth={1.5} />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onSelectAll}>
-                <CheckSquare className="h-3.5 w-3.5 mr-2" /> Marcar todos
+                <CheckSquare size={13} strokeWidth={1.5} style={{ marginRight: 8 }} /> Marcar todos
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onUnselectAll}>
-                <Square className="h-3.5 w-3.5 mr-2" /> Desmarcar todos
+                <Square size={13} strokeWidth={1.5} style={{ marginRight: 8 }} /> Desmarcar todos
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onClearSpecs}>
-                <Eraser className="h-3.5 w-3.5 mr-2" /> Limpar especificações
+                <Eraser size={13} strokeWidth={1.5} style={{ marginRight: 8 }} /> Limpar especificações
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -120,24 +193,50 @@ export function PhaseCard({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="overflow-hidden"
+            style={{ overflow: 'hidden' }}
           >
             {/* Header de colunas */}
             <div
-              className={`${ROW_GRID} bg-muted/30 border-b border-border text-[10px] uppercase tracking-wider text-muted-foreground font-medium`}
+              className={ROW_GRID}
+              style={{
+                background: 'hsl(var(--ds-line-2) / 0.3)',
+                borderBottom: '1px solid hsl(var(--ds-line-1))',
+              }}
             >
-              <div className="py-2.5" />
-              <div className="py-2.5 px-3 border-l border-border">Recurso</div>
-              <div className="py-2.5 px-3 border-l border-border">Especificação</div>
-              <div className="py-2.5 px-3 border-l border-border text-right">Qtd</div>
-              <div className="py-2.5 border-l border-border" />
+              <div style={{ padding: '10px 0' }} />
+              <div style={{ padding: '10px 12px', borderLeft: '1px solid hsl(var(--ds-line-1))', ...eyebrowStyle }}>
+                Recurso
+              </div>
+              <div style={{ padding: '10px 12px', borderLeft: '1px solid hsl(var(--ds-line-1))', ...eyebrowStyle }}>
+                Especificação
+              </div>
+              <div
+                style={{
+                  padding: '10px 12px',
+                  borderLeft: '1px solid hsl(var(--ds-line-1))',
+                  textAlign: 'right',
+                  ...eyebrowStyle,
+                }}
+              >
+                Qtd
+              </div>
+              <div style={{ padding: '10px 0', borderLeft: '1px solid hsl(var(--ds-line-1))' }} />
             </div>
 
             {/* Subcategorias + items */}
             {phase.subcategories.map((sub, subIdx) => (
               <div key={subIdx}>
                 {sub.name && (
-                  <div className="px-3 py-2 bg-muted/20 border-b border-border/50 text-[11px] font-medium text-muted-foreground">
+                  <div
+                    style={{
+                      padding: '8px 12px',
+                      background: 'hsl(var(--ds-line-2) / 0.2)',
+                      borderBottom: '1px solid hsl(var(--ds-line-1))',
+                      fontSize: 11,
+                      fontWeight: 500,
+                      color: 'hsl(var(--ds-fg-3))',
+                    }}
+                  >
                     {sub.name}
                   </div>
                 )}
@@ -166,13 +265,41 @@ export function PhaseCard({
             ))}
 
             {/* Footer adicionar item */}
-            <div className="p-3 bg-muted/20 border-t border-border space-y-2">
+            <div
+              style={{
+                padding: 12,
+                background: 'hsl(var(--ds-line-2) / 0.2)',
+                borderTop: '1px solid hsl(var(--ds-line-1))',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+              }}
+            >
               {phase.subcategories.map((sub, subIdx) => (
                 <button
                   key={subIdx}
                   type="button"
                   onClick={() => handleAddItem(subIdx)}
-                  className="w-full py-2 text-[13px] text-muted-foreground border border-dashed border-border rounded-md hover:bg-accent/50 hover:text-foreground transition"
+                  style={{
+                    width: '100%',
+                    padding: '8px 0',
+                    fontSize: 13,
+                    color: 'hsl(var(--ds-fg-3))',
+                    border: '1px dashed hsl(var(--ds-line-1))',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    transition: 'background 0.15s, color 0.15s, border-color 0.15s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'hsl(var(--ds-accent) / 0.05)';
+                    e.currentTarget.style.color = 'hsl(var(--ds-fg-1))';
+                    e.currentTarget.style.borderColor = 'hsl(var(--ds-accent) / 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = 'hsl(var(--ds-fg-3))';
+                    e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                  }}
                 >
                   + Adicionar item{sub.name ? ` em ${sub.name}` : ''}
                 </button>

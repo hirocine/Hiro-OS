@@ -1,17 +1,68 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Download, Upload, Clock, Database, Shield, CheckCircle } from 'lucide-react';
+import { Download, Upload, Clock, Database, Shield, CheckCircle, type LucideIcon } from 'lucide-react';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 interface BackupSystemProps {
   onExportData: () => Promise<void>;
   onImportData: (file: File) => Promise<void>;
+}
+
+const eyebrowStyle: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+function Section({
+  icon: Icon,
+  title,
+  description,
+  badge,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  badge?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+      <div
+        style={{
+          padding: '14px 18px',
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 4,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Icon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-2))',
+            }}
+          >
+            {title}
+          </span>
+          {badge}
+        </div>
+        <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginLeft: 24 }}>{description}</p>
+      </div>
+      <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>{children}</div>
+    </div>
+  );
 }
 
 export function BackupSystem({ onExportData, onImportData }: BackupSystemProps) {
@@ -26,9 +77,8 @@ export function BackupSystem({ onExportData, onImportData }: BackupSystemProps) 
     setBackupProgress(0);
 
     try {
-      // Simulate backup progress
       const interval = setInterval(() => {
-        setBackupProgress(prev => {
+        setBackupProgress((prev) => {
           if (prev >= 90) {
             clearInterval(interval);
             return 90;
@@ -38,11 +88,11 @@ export function BackupSystem({ onExportData, onImportData }: BackupSystemProps) 
       }, 200);
 
       await onExportData();
-      
+
       clearInterval(interval);
       setBackupProgress(100);
       setLastBackup(new Date());
-      
+
       setTimeout(() => {
         setBackupProgress(0);
         setIsBackingUp(false);
@@ -79,149 +129,175 @@ export function BackupSystem({ onExportData, onImportData }: BackupSystemProps) 
       });
     }
 
-    // Reset file input
     event.target.value = '';
   };
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       {/* Backup Manual */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            Backup Manual
-          </CardTitle>
-          <CardDescription>
-            Faça backup dos seus dados a qualquer momento
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {isBackingUp && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span>Exportando dados...</span>
-                <span>{backupProgress}%</span>
-              </div>
-              <Progress value={backupProgress} className="h-2" />
+      <Section icon={Database} title="Backup Manual" description="Faça backup dos seus dados a qualquer momento">
+        {isBackingUp && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+              <span style={{ color: 'hsl(var(--ds-fg-2))' }}>Exportando dados...</span>
+              <span style={{ color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>{backupProgress}%</span>
             </div>
-          )}
-          
-          <div className="flex gap-4">
-            <Button
-              onClick={handleAutoBackup}
-              disabled={isBackingUp}
-              className="flex-1"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              {isBackingUp ? 'Fazendo Backup...' : 'Fazer Backup'}
-            </Button>
-            
-            <div className="flex-1">
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleFileImport}
-                className="hidden"
-                id="restore-input"
+            <div style={{ height: 4, background: 'hsl(var(--ds-line-2))', overflow: 'hidden' }}>
+              <div
+                style={{
+                  width: `${backupProgress}%`,
+                  height: '100%',
+                  background: 'hsl(var(--ds-accent))',
+                  transition: 'width 0.3s ease',
+                }}
               />
-              <Label htmlFor="restore-input" className="cursor-pointer">
-                <Button variant="outline" className="w-full" asChild>
-                  <span>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Restaurar Backup
-                  </span>
-                </Button>
-              </Label>
             </div>
           </div>
+        )}
 
-          {lastBackup && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-              Último backup: {lastBackup.toLocaleString('pt-BR')}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={handleAutoBackup}
+            disabled={isBackingUp}
+            style={{ flex: 1, justifyContent: 'center' }}
+          >
+            <Download size={13} strokeWidth={1.5} />
+            <span>{isBackingUp ? 'Fazendo Backup...' : 'Fazer Backup'}</span>
+          </button>
+
+          <div style={{ flex: 1 }}>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleFileImport}
+              style={{ display: 'none' }}
+              id="restore-input"
+            />
+            <label htmlFor="restore-input" style={{ display: 'block', cursor: 'pointer' }}>
+              <span
+                className="btn"
+                style={{ width: '100%', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <Upload size={13} strokeWidth={1.5} />
+                <span>Restaurar Backup</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        {lastBackup && (
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 13,
+              color: 'hsl(var(--ds-fg-3))',
+            }}
+          >
+            <CheckCircle size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-success))' }} />
+            <span>
+              Último backup:{' '}
+              <span style={{ fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-2))' }}>
+                {lastBackup.toLocaleString('pt-BR')}
+              </span>
+            </span>
+          </div>
+        )}
+      </Section>
 
       {/* Backup Automático */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Backup Automático
-            <Badge variant="secondary">Em breve</Badge>
-          </CardTitle>
-          <CardDescription>
-            Configure backups automáticos para maior segurança
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="auto-backup">Backup Automático</Label>
-              <p className="text-sm text-muted-foreground">
-                Realiza backup automaticamente conforme configurado
-              </p>
-            </div>
-            <Switch
-              id="auto-backup"
-              checked={autoBackup}
-              onCheckedChange={setAutoBackup}
-              disabled
-            />
+      <Section
+        icon={Clock}
+        title="Backup Automático"
+        description="Configure backups automáticos para maior segurança"
+        badge={<span className="pill muted">Em breve</span>}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <label htmlFor="auto-backup" style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+              Backup Automático
+            </label>
+            <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>
+              Realiza backup automaticamente conforme configurado
+            </p>
           </div>
+          <Switch id="auto-backup" checked={autoBackup} onCheckedChange={setAutoBackup} disabled />
+        </div>
 
-          {autoBackup && (
-            <div className="space-y-2">
-              <Label>Frequência do Backup</Label>
-              <Select value={backupFrequency} onValueChange={setBackupFrequency} disabled>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Diário</SelectItem>
-                  <SelectItem value="weekly">Semanal</SelectItem>
-                  <SelectItem value="monthly">Mensal</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {autoBackup && (
+          <div>
+            <label style={eyebrowStyle}>Frequência do Backup</label>
+            <Select value={backupFrequency} onValueChange={setBackupFrequency} disabled>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Diário</SelectItem>
+                <SelectItem value="weekly">Semanal</SelectItem>
+                <SelectItem value="monthly">Mensal</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </Section>
 
       {/* Segurança dos Dados */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Segurança dos Dados
-          </CardTitle>
-          <CardDescription>
-            Informações sobre a proteção dos seus dados
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">256-bit</div>
-              <div className="text-sm text-muted-foreground">Criptografia AES</div>
+      <Section icon={Shield} title="Segurança dos Dados" description="Informações sobre a proteção dos seus dados">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+          <div
+            style={{
+              textAlign: 'center',
+              padding: 16,
+              border: '1px solid hsl(var(--ds-line-1))',
+              background: 'hsl(var(--ds-surface))',
+            }}
+          >
+            <div
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 22,
+                fontWeight: 600,
+                color: 'hsl(var(--ds-success))',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              256-bit
             </div>
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-primary">99.9%</div>
-              <div className="text-sm text-muted-foreground">Uptime garantido</div>
+            <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>Criptografia AES</div>
+          </div>
+          <div
+            style={{
+              textAlign: 'center',
+              padding: 16,
+              border: '1px solid hsl(var(--ds-line-1))',
+              background: 'hsl(var(--ds-surface))',
+            }}
+          >
+            <div
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 22,
+                fontWeight: 600,
+                color: 'hsl(var(--ds-accent))',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              99.9%
             </div>
+            <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>Uptime garantido</div>
           </div>
-          
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>• Todos os dados são criptografados em trânsito e em repouso</p>
-            <p>• Backups são armazenados em múltiplas localizações geográficas</p>
-            <p>• Acesso aos dados é registrado para auditoria</p>
-            <p>• Conformidade com LGPD e regulamentações de privacidade</p>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <ul style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, color: 'hsl(var(--ds-fg-3))', listStyle: 'none', padding: 0, margin: 0 }}>
+          <li>· Todos os dados são criptografados em trânsito e em repouso</li>
+          <li>· Backups são armazenados em múltiplas localizações geográficas</li>
+          <li>· Acesso aos dados é registrado para auditoria</li>
+          <li>· Conformidade com LGPD e regulamentações de privacidade</li>
+        </ul>
+      </Section>
     </div>
   );
 }

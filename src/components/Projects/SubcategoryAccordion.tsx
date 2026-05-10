@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Plus, Check, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { Search, Plus, ChevronDown, CheckCircle2 } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -7,8 +7,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
@@ -41,6 +39,12 @@ interface SubcategoryAccordionProps {
   className?: string;
 }
 
+const successPill: React.CSSProperties = {
+  color: 'hsl(var(--ds-success))',
+  borderColor: 'hsl(var(--ds-success) / 0.3)',
+  background: 'hsl(var(--ds-success) / 0.08)',
+};
+
 export function SubcategoryAccordion({
   subcategories,
   selectedEquipment,
@@ -71,14 +75,12 @@ export function SubcategoryAccordion({
   // Count selected equipment in a subcategory
   const getSubcategorySelectedCount = (equipment: Equipment[]) => {
     let count = 0;
-    
+
     equipment.forEach(eq => {
-      // Contar o item principal se estiver selecionado
       if (selectedEquipment.includes(eq.id)) {
         count++;
       }
-      
-      // Contar os acessórios deste item se estiverem selecionados
+
       if (eq.accessories && eq.accessories.length > 0) {
         eq.accessories.forEach(acc => {
           if (selectedEquipment.includes(acc.id)) {
@@ -87,15 +89,14 @@ export function SubcategoryAccordion({
         });
       }
     });
-    
+
     return count;
   };
 
   // Handle toggle (add/remove from selection)
   const handleToggle = (equipmentId: string, hasAccessories?: boolean) => {
     onEquipmentChange(equipmentId);
-    
-    // Se tem acessórios e está sendo adicionado, expandir automaticamente
+
     if (hasAccessories && !selectedEquipment.includes(equipmentId)) {
       setExpandedItems(prev => new Set(prev).add(equipmentId));
     }
@@ -120,7 +121,6 @@ export function SubcategoryAccordion({
     return equipment.accessories.filter(acc => selectedEquipment.includes(acc.id)).length;
   };
 
-
   // Filter out empty subcategories
   const nonEmptySubcategories = subcategories.filter(
     (sub) => sub.equipment.length > 0
@@ -128,24 +128,53 @@ export function SubcategoryAccordion({
 
   if (nonEmptySubcategories.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <Search className="h-12 w-12 mb-4 opacity-50" />
-        <p className="text-sm">Nenhum equipamento disponível nesta categoria</p>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '48px 0',
+          color: 'hsl(var(--ds-fg-3))',
+        }}
+      >
+        <Search size={32} strokeWidth={1.5} style={{ marginBottom: 16, opacity: 0.5 }} />
+        <p style={{ fontSize: 13 }}>Nenhum equipamento disponível nesta categoria</p>
       </div>
     );
   }
 
   return (
-    <div className={cn('space-y-4', className)}>
-      {/* Summary Badge */}
+    <div className={cn(className)} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Summary */}
       {totalSelected > 0 && (
-        <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/20">
-          <span className="text-sm font-medium text-foreground">
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '14px 18px',
+            border: '1px solid hsl(var(--ds-line-1))',
+            background: 'hsl(var(--ds-surface))',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-2))',
+            }}
+          >
             Total selecionado nesta categoria
           </span>
-          <Badge className="bg-success/20 text-success border-success/50 text-base px-3 py-1">
+          <span
+            className="pill"
+            style={{ ...successPill, fontVariantNumeric: 'tabular-nums' }}
+          >
             {totalSelected} {totalSelected === 1 ? 'item' : 'itens'}
-          </Badge>
+          </span>
         </div>
       )}
 
@@ -168,30 +197,64 @@ export function SubcategoryAccordion({
             <AccordionItem
               key={subcategory.key}
               value={subcategory.key}
-              className="border rounded-lg bg-card shadow-sm hover:shadow-md transition-shadow"
+              className="border-0"
+              style={{
+                border: '1px solid hsl(var(--ds-line-1))',
+                background: 'hsl(var(--ds-surface))',
+              }}
             >
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                <div className="flex items-center justify-between w-full pr-4">
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium text-foreground">
+              <AccordionTrigger
+                className="hover:no-underline"
+                style={{ padding: '14px 18px' }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    paddingRight: 16,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span
+                      style={{
+                        fontFamily: '"HN Display", sans-serif',
+                        fontWeight: 500,
+                        color: 'hsl(var(--ds-fg-1))',
+                      }}
+                    >
                       {subcategory.name}
                     </span>
-                    <Badge variant="secondary" className="text-xs">
+                    <span className="pill muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
                       {availableCount}
-                    </Badge>
+                    </span>
                   </div>
-            {selectedCount > 0 && (
-              <Badge className="bg-success/20 text-success border-success/50 ml-2">
-                {selectedCount} selecionado{selectedCount > 1 ? 's' : ''}
-              </Badge>
-            )}
+                  {selectedCount > 0 && (
+                    <span
+                      className="pill"
+                      style={{ ...successPill, marginLeft: 8, fontVariantNumeric: 'tabular-nums' }}
+                    >
+                      {selectedCount} selecionado{selectedCount > 1 ? 's' : ''}
+                    </span>
+                  )}
                 </div>
               </AccordionTrigger>
 
-              <AccordionContent className="px-4 pb-4">
+              <AccordionContent style={{ padding: '0 18px 18px' }}>
                 {/* Search Bar */}
-                <div className="relative mb-4">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <div style={{ position: 'relative', marginBottom: 16 }}>
+                  <Search
+                    size={14}
+                    strokeWidth={1.5}
+                    style={{
+                      position: 'absolute',
+                      left: 12,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: 'hsl(var(--ds-fg-3))',
+                    }}
+                  />
                   <Input
                     placeholder={`Buscar em ${subcategory.name}...`}
                     value={searchTerms[subcategory.key] || ''}
@@ -208,179 +271,289 @@ export function SubcategoryAccordion({
                 {/* Equipment List */}
                 <ScrollArea className="h-[400px] pr-4">
                   {filteredEquipment.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground text-sm">
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        padding: '32px 0',
+                        color: 'hsl(var(--ds-fg-3))',
+                        fontSize: 13,
+                      }}
+                    >
                       {searchTerms[subcategory.key]
                         ? 'Nenhum equipamento encontrado'
                         : 'Nenhum equipamento disponível'}
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       {filteredEquipment.map((equipment) => {
                         const isSelected = selectedEquipment.includes(equipment.id);
                         const isExpanded = expandedItems.has(equipment.id);
                         const selectedAccessoriesCount = getSelectedAccessoriesCount(equipment);
 
                         return (
-                          <div key={equipment.id} className="space-y-2">
+                          <div key={equipment.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                             {/* Item Principal */}
                             <div
-                              className={cn(
-                                'flex items-center gap-3 p-3 rounded-lg border transition-all duration-300 relative',
-                                isSelected
-                                  ? 'bg-success/10 border-success ring-1 ring-success/20'
-                                  : 'bg-card hover:bg-muted/50 border-border'
-                              )}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 12,
+                                padding: 12,
+                                border: isSelected
+                                  ? '1px solid hsl(var(--ds-success) / 0.5)'
+                                  : '1px solid hsl(var(--ds-line-1))',
+                                background: isSelected
+                                  ? 'hsl(var(--ds-success) / 0.06)'
+                                  : 'hsl(var(--ds-surface))',
+                                transition: 'border-color 0.15s, background 0.15s',
+                              }}
                             >
                               {/* Equipment Image */}
                               {equipment.image && (
                                 <img
                                   src={equipment.image}
                                   alt={equipment.name}
-                                  className="w-12 h-12 object-cover rounded-md flex-shrink-0"
+                                  style={{
+                                    width: 48,
+                                    height: 48,
+                                    objectFit: 'cover',
+                                    flexShrink: 0,
+                                    border: '1px solid hsl(var(--ds-line-1))',
+                                  }}
                                 />
                               )}
 
                               {/* Equipment Info */}
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm truncate text-foreground">
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p
+                                  style={{
+                                    fontWeight: 500,
+                                    fontSize: 13,
+                                    color: 'hsl(var(--ds-fg-1))',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
                                   {equipment.name}
                                 </p>
-                                <p className="text-xs text-muted-foreground truncate">
+                                <p
+                                  style={{
+                                    fontSize: 12,
+                                    color: 'hsl(var(--ds-fg-3))',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
                                   {equipment.brand}
                                 </p>
-                                <div className="flex items-center gap-2 mt-1">
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    marginTop: 4,
+                                    flexWrap: 'wrap',
+                                  }}
+                                >
                                   {equipment.patrimonyNumber && (
-                                    <span className="text-xs text-muted-foreground/70">
+                                    <span
+                                      style={{
+                                        fontSize: 11,
+                                        color: 'hsl(var(--ds-fg-4))',
+                                        fontVariantNumeric: 'tabular-nums',
+                                      }}
+                                    >
                                       Pat. {equipment.patrimonyNumber}
                                     </span>
                                   )}
-              {equipment.hasAccessories && (
-                <Badge 
-                  variant={selectedAccessoriesCount > 0 ? "default" : "outline"}
-                  className={cn(
-                    "text-xs",
-                    selectedAccessoriesCount > 0 && "bg-success/20 text-success border-success/50"
-                  )}
-                >
-                  {selectedAccessoriesCount > 0 
-                    ? `${selectedAccessoriesCount}/${equipment.accessoryCount} acessórios`
-                    : `${equipment.accessoryCount} acessórios`
-                  }
-                </Badge>
-              )}
+                                  {equipment.hasAccessories && (
+                                    <span
+                                      className="pill"
+                                      style={
+                                        selectedAccessoriesCount > 0
+                                          ? { ...successPill, fontVariantNumeric: 'tabular-nums' }
+                                          : { fontVariantNumeric: 'tabular-nums' }
+                                      }
+                                    >
+                                      {selectedAccessoriesCount > 0
+                                        ? `${selectedAccessoriesCount}/${equipment.accessoryCount} acessórios`
+                                        : `${equipment.accessoryCount} acessórios`}
+                                    </span>
+                                  )}
                                 </div>
                               </div>
 
                               {/* Action Buttons */}
-                              <div className="flex items-center gap-2 shrink-0">
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                                 {equipment.hasAccessories && (
-                                  <>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => toggleExpanded(equipment.id)}
-                                      className="px-2"
-                                    >
-                                      <ChevronDown
-                                        className={cn(
-                                          "h-4 w-4 transition-transform",
-                                          isExpanded && "rotate-180"
-                                        )}
-                                      />
-                                    </Button>
-                                  </>
+                                  <button
+                                    type="button"
+                                    className="btn"
+                                    onClick={() => toggleExpanded(equipment.id)}
+                                    style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}
+                                    aria-label={isExpanded ? 'Recolher acessórios' : 'Expandir acessórios'}
+                                  >
+                                    <ChevronDown
+                                      size={14}
+                                      strokeWidth={1.5}
+                                      style={{
+                                        transition: 'transform 0.15s',
+                                        transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                      }}
+                                    />
+                                  </button>
                                 )}
-                                <Button
-                                  size="sm"
-                                  variant={isSelected ? 'default' : 'outline'}
+                                <button
+                                  type="button"
+                                  className={isSelected ? 'btn primary' : 'btn'}
                                   onClick={() => handleToggle(equipment.id, equipment.hasAccessories)}
-                                  className={cn(
-                                    "transition-all duration-200",
-                                    isSelected && "bg-success hover:bg-success/90 text-white border-success"
-                                  )}
                                 >
                                   {isSelected ? (
                                     <>
-                                      <CheckCircle2 className="h-4 w-4 mr-1" />
-                                      Adicionado
+                                      <CheckCircle2 size={13} strokeWidth={1.5} />
+                                      <span>Adicionado</span>
                                     </>
                                   ) : (
                                     <>
-                                      <Plus className="h-4 w-4 mr-1" />
-                                      Adicionar
+                                      <Plus size={13} strokeWidth={1.5} />
+                                      <span>Adicionar</span>
                                     </>
                                   )}
-                                </Button>
+                                </button>
                               </div>
                             </div>
 
                             {/* Lista de Acessórios (Expandível) */}
                             {equipment.hasAccessories && isExpanded && equipment.accessories && (
-                              <div className={cn(
-                                "ml-4 mt-3 p-3 rounded-lg border-2 space-y-2 animate-in slide-in-from-top-2 fade-in-0 duration-300",
-                                isSelected 
-                                  ? "bg-success/5 border-success/30" 
-                                  : "bg-muted/20 border-muted"
-                              )}>
+                              <div
+                                style={{
+                                  marginLeft: 16,
+                                  marginTop: 8,
+                                  padding: 12,
+                                  border: isSelected
+                                    ? '1px solid hsl(var(--ds-success) / 0.3)'
+                                    : '1px solid hsl(var(--ds-line-1))',
+                                  background: isSelected
+                                    ? 'hsl(var(--ds-success) / 0.04)'
+                                    : 'hsl(var(--ds-line-2) / 0.3)',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: 8,
+                                }}
+                              >
                                 {/* Título dos acessórios */}
-                                <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/50">
-                                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    marginBottom: 4,
+                                    paddingBottom: 8,
+                                    borderBottom: '1px solid hsl(var(--ds-line-1))',
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      fontSize: 11,
+                                      letterSpacing: '0.14em',
+                                      textTransform: 'uppercase',
+                                      fontWeight: 500,
+                                      color: 'hsl(var(--ds-fg-3))',
+                                    }}
+                                  >
                                     Acessórios deste equipamento
                                   </span>
                                 </div>
-                                
+
                                 {equipment.accessories.map((accessory) => {
                                   const isAccessorySelected = selectedEquipment.includes(accessory.id);
-                                  
+
                                   return (
                                     <div
                                       key={accessory.id}
-                                      className={cn(
-                                        'flex items-center justify-between p-2 rounded-md border transition-all duration-300 relative',
-                                        isAccessorySelected
-                                          ? 'bg-success/15 border-success/50'
-                                          : 'bg-muted/30 hover:bg-muted/50 border-transparent hover:border-muted'
-                                      )}
+                                      style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: 8,
+                                        border: isAccessorySelected
+                                          ? '1px solid hsl(var(--ds-success) / 0.5)'
+                                          : '1px solid hsl(var(--ds-line-1))',
+                                        background: isAccessorySelected
+                                          ? 'hsl(var(--ds-success) / 0.08)'
+                                          : 'hsl(var(--ds-surface))',
+                                        transition: 'border-color 0.15s, background 0.15s',
+                                      }}
                                     >
-                                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                                      <div
+                                        style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 8,
+                                          flex: 1,
+                                          minWidth: 0,
+                                        }}
+                                      >
                                         {accessory.image && (
                                           <img
                                             src={accessory.image}
                                             alt={accessory.name}
-                                            className="w-8 h-8 object-cover rounded flex-shrink-0"
+                                            style={{
+                                              width: 32,
+                                              height: 32,
+                                              objectFit: 'cover',
+                                              flexShrink: 0,
+                                              border: '1px solid hsl(var(--ds-line-1))',
+                                            }}
                                           />
                                         )}
-                                        <div className="flex flex-col min-w-0">
-                                          <span className="text-sm font-medium truncate">
+                                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                          <span
+                                            style={{
+                                              fontSize: 13,
+                                              fontWeight: 500,
+                                              color: 'hsl(var(--ds-fg-1))',
+                                              overflow: 'hidden',
+                                              textOverflow: 'ellipsis',
+                                              whiteSpace: 'nowrap',
+                                            }}
+                                          >
                                             {accessory.name}
                                           </span>
-                                          <span className="text-xs text-muted-foreground truncate">
+                                          <span
+                                            style={{
+                                              fontSize: 11,
+                                              color: 'hsl(var(--ds-fg-3))',
+                                              overflow: 'hidden',
+                                              textOverflow: 'ellipsis',
+                                              whiteSpace: 'nowrap',
+                                            }}
+                                          >
                                             {accessory.brand}
                                           </span>
                                         </div>
                                       </div>
 
-                                      <Button
-                                        size="sm"
-                                        variant={isAccessorySelected ? 'default' : 'outline'}
+                                      <button
+                                        type="button"
+                                        className={isAccessorySelected ? 'btn primary' : 'btn'}
                                         onClick={() => handleToggle(accessory.id)}
-                                        className={cn(
-                                          "shrink-0 transition-all duration-200",
-                                          isAccessorySelected && "bg-success hover:bg-success/90 text-white border-success"
-                                        )}
+                                        style={{ flexShrink: 0 }}
                                       >
                                         {isAccessorySelected ? (
                                           <>
-                                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                                            Adicionado
+                                            <CheckCircle2 size={12} strokeWidth={1.5} />
+                                            <span>Adicionado</span>
                                           </>
                                         ) : (
                                           <>
-                                            <Plus className="h-3 w-3 mr-1" />
-                                            Adicionar
+                                            <Plus size={12} strokeWidth={1.5} />
+                                            <span>Adicionar</span>
                                           </>
                                         )}
-                                      </Button>
+                                      </button>
                                     </div>
                                   );
                                 })}

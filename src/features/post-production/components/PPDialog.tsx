@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -12,9 +10,8 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { PostProductionItem, PPStatus, PPPriority, PP_STATUS_CONFIG, PP_PRIORITY_CONFIG } from '../types';
 import { PPStatusBadge } from './PPStatusBadge';
 import { PPPriorityBadge } from './PPPriorityBadge';
-import { Trash2, CalendarIcon, X } from 'lucide-react';
+import { Trash2, CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
@@ -38,8 +35,24 @@ const defaultForm = {
   notes: '',
 };
 
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <label style={fieldLabel}>{label}</label>
+    {children}
+  </div>
+);
+
 function parseTitle(title: string): { client_name: string; project_name: string; suffix: string } {
-  // Try to parse "Empresa: Projeto - Sufixo"
   const colonIdx = title.indexOf(':');
   if (colonIdx === -1) return { client_name: title, project_name: '', suffix: '' };
 
@@ -64,7 +77,7 @@ function getUserAvatarUrl(user: { avatar_url?: string | null; user_metadata?: { 
 
 function getInitials(name: string | null | undefined): string {
   if (!name) return '?';
-  return name.split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+  return name.split(' ').map((n) => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
 }
 
 export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
@@ -97,19 +110,18 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
   }, [item, open]);
 
   const composedTitle = composeTitle(form.client_name, form.project_name, form.suffix);
-
-  const selectedEditor = users.find(u => u.id === form.editor_id);
+  const selectedEditor = users.find((u) => u.id === form.editor_id);
 
   const handleSave = async () => {
     if (!form.client_name.trim()) return;
     const title = composedTitle;
-    const editorUser = users.find(u => u.id === form.editor_id);
+    const editorUser = users.find((u) => u.id === form.editor_id);
 
     if (isCreating) {
       if (!user) return;
       try {
         await createItem.mutateAsync({
-           title,
+          title,
           project_name: form.project_name || null,
           client_name: form.client_name || null,
           editor_id: form.editor_id || null,
@@ -138,7 +150,9 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
           due_date: form.due_date || null,
           start_date: form.start_date || null,
           notes: form.notes || null,
-          ...(form.status === 'entregue' && !item.delivered_date ? { delivered_date: new Date().toISOString().split('T')[0] } : {}),
+          ...(form.status === 'entregue' && !item.delivered_date
+            ? { delivered_date: new Date().toISOString().split('T')[0] }
+            : {}),
         },
       });
       onOpenChange(false);
@@ -155,60 +169,78 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isCreating ? 'Novo Vídeo' : 'Editar Vídeo'}</DialogTitle>
+          <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
+            {isCreating ? 'Novo Vídeo' : 'Editar Vídeo'}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="pp-client">Empresa</Label>
-              <Input id="pp-client" value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Ex: Cacau Show" />
-            </div>
-            <div>
-              <Label htmlFor="pp-project">Projeto</Label>
-              <Input id="pp-project" value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Ex: Campanha de Natal" />
-            </div>
-            <div>
-              <Label htmlFor="pp-suffix">Sufixo</Label>
-              <Input id="pp-suffix" value={form.suffix} onChange={e => setForm(prev => ({ ...prev, suffix: e.target.value }))} placeholder="Ex: Criativo 1" />
-            </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            <Field label="Empresa">
+              <Input
+                value={form.client_name}
+                onChange={(e) => setForm((prev) => ({ ...prev, client_name: e.target.value }))}
+                placeholder="Ex: Cacau Show"
+              />
+            </Field>
+            <Field label="Projeto">
+              <Input
+                value={form.project_name}
+                onChange={(e) => setForm((prev) => ({ ...prev, project_name: e.target.value }))}
+                placeholder="Ex: Campanha de Natal"
+              />
+            </Field>
+            <Field label="Sufixo">
+              <Input
+                value={form.suffix}
+                onChange={(e) => setForm((prev) => ({ ...prev, suffix: e.target.value }))}
+                placeholder="Ex: Criativo 1"
+              />
+            </Field>
           </div>
 
-          <div>
-            <Label>Título do Vídeo</Label>
+          <Field label="Título do Vídeo">
             <Input
               value={composedTitle}
               readOnly
               disabled
-              className="bg-muted text-muted-foreground cursor-not-allowed"
-              placeholder="Preencha os campos acima..."
+              style={{
+                background: 'hsl(var(--ds-line-2) / 0.4)',
+                color: 'hsl(var(--ds-fg-3))',
+                cursor: 'not-allowed',
+              }}
+              placeholder="Preencha os campos acima…"
             />
-          </div>
+          </Field>
 
-          {/* Editor com Avatar */}
-          <div>
-            <Label>Editor</Label>
-            <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
+          <Field label="Editor">
+            <Select value={form.editor_id} onValueChange={(v) => setForm((prev) => ({ ...prev, editor_id: v }))}>
               <SelectTrigger>
                 {selectedEditor ? (
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <Avatar style={{ width: 22, height: 22 }}>
                       <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
-                      <AvatarFallback className="text-[10px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
+                      <AvatarFallback style={{ fontSize: 9 }}>
+                        {getInitials(selectedEditor.display_name)}
+                      </AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{selectedEditor.display_name || selectedEditor.email}</span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {selectedEditor.display_name || selectedEditor.email}
+                    </span>
                   </div>
                 ) : (
                   <SelectValue placeholder="Selecionar editor" />
                 )}
               </SelectTrigger>
               <SelectContent>
-                {users.map(u => (
+                {users.map((u) => (
                   <SelectItem key={u.id} value={u.id}>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <Avatar style={{ width: 22, height: 22 }}>
                         <AvatarImage src={getUserAvatarUrl(u)} />
-                        <AvatarFallback className="text-[10px]">{getInitials(u.display_name)}</AvatarFallback>
+                        <AvatarFallback style={{ fontSize: 9 }}>
+                          {getInitials(u.display_name)}
+                        </AvatarFallback>
                       </Avatar>
                       <span>{u.display_name || u.email}</span>
                     </div>
@@ -216,58 +248,69 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
 
-          {/* Etapa e Prioridade com Badges */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Etapa</Label>
-              <Select value={form.status} onValueChange={v => setForm(prev => ({ ...prev, status: v as PPStatus }))}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            <Field label="Etapa">
+              <Select value={form.status} onValueChange={(v) => setForm((prev) => ({ ...prev, status: v as PPStatus }))}>
                 <SelectTrigger>
                   <PPStatusBadge status={form.status} />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.keys(PP_STATUS_CONFIG).map(v => (
+                  {Object.keys(PP_STATUS_CONFIG).map((v) => (
                     <SelectItem key={v} value={v}>
                       <PPStatusBadge status={v as PPStatus} />
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div>
-              <Label>Prioridade</Label>
-              <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
+            </Field>
+            <Field label="Prioridade">
+              <Select value={form.priority} onValueChange={(v) => setForm((prev) => ({ ...prev, priority: v as PPPriority }))}>
                 <SelectTrigger>
                   <PPPriorityBadge priority={form.priority} />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.keys(PP_PRIORITY_CONFIG).map(v => (
+                  {Object.keys(PP_PRIORITY_CONFIG).map((v) => (
                     <SelectItem key={v} value={v}>
                       <PPPriorityBadge priority={v as PPPriority} />
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Início</Label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            <Field label="Início">
               <Popover modal={false} open={startDateOpen} onOpenChange={setStartDateOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !form.start_date && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {form.start_date ? format(new Date(form.start_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'Selecionar data'}
-                  </Button>
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{
+                      width: '100%',
+                      justifyContent: 'flex-start',
+                      gap: 8,
+                      color: form.start_date ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-4))',
+                    }}
+                  >
+                    <CalendarIcon size={14} strokeWidth={1.5} />
+                    {form.start_date
+                      ? format(new Date(form.start_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })
+                      : 'Selecionar data'}
+                  </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-[200]" align="start" onCloseAutoFocus={e => e.preventDefault()}>
+                <PopoverContent
+                  className="w-auto p-0 z-[200]"
+                  align="start"
+                  onCloseAutoFocus={(e) => e.preventDefault()}
+                >
                   <Calendar
                     mode="single"
                     selected={form.start_date ? new Date(form.start_date + 'T00:00:00') : undefined}
                     onSelect={(date) => {
-                      setForm(prev => ({ ...prev, start_date: date ? format(date, 'yyyy-MM-dd') : '' }));
+                      setForm((prev) => ({ ...prev, start_date: date ? format(date, 'yyyy-MM-dd') : '' }));
                       setStartDateOpen(false);
                     }}
                     initialFocus
@@ -276,26 +319,52 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                 </PopoverContent>
               </Popover>
               {form.start_date && (
-                <button type="button" className="text-xs text-muted-foreground hover:text-foreground mt-1 ml-1" onClick={() => setForm(prev => ({ ...prev, start_date: '' }))}>
+                <button
+                  type="button"
+                  style={{
+                    fontSize: 11,
+                    color: 'hsl(var(--ds-fg-3))',
+                    background: 'transparent',
+                    border: 0,
+                    cursor: 'pointer',
+                    marginTop: 4,
+                    alignSelf: 'flex-start',
+                  }}
+                  onClick={() => setForm((prev) => ({ ...prev, start_date: '' }))}
+                >
                   Limpar
                 </button>
               )}
-            </div>
-            <div>
-              <Label>Data de Entrega</Label>
+            </Field>
+            <Field label="Data de Entrega">
               <Popover modal={false} open={dueDateOpen} onOpenChange={setDueDateOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !form.due_date && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {form.due_date ? format(new Date(form.due_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'Selecionar data'}
-                  </Button>
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{
+                      width: '100%',
+                      justifyContent: 'flex-start',
+                      gap: 8,
+                      color: form.due_date ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-4))',
+                    }}
+                  >
+                    <CalendarIcon size={14} strokeWidth={1.5} />
+                    {form.due_date
+                      ? format(new Date(form.due_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })
+                      : 'Selecionar data'}
+                  </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-[200]" align="start" onCloseAutoFocus={e => e.preventDefault()}>
+                <PopoverContent
+                  className="w-auto p-0 z-[200]"
+                  align="start"
+                  onCloseAutoFocus={(e) => e.preventDefault()}
+                >
                   <Calendar
                     mode="single"
                     selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
                     onSelect={(date) => {
-                      setForm(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }));
+                      setForm((prev) => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }));
                       setDueDateOpen(false);
                     }}
                     initialFocus
@@ -304,30 +373,63 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                 </PopoverContent>
               </Popover>
               {form.due_date && (
-                <button type="button" className="text-xs text-muted-foreground hover:text-foreground mt-1 ml-1" onClick={() => setForm(prev => ({ ...prev, due_date: '' }))}>
+                <button
+                  type="button"
+                  style={{
+                    fontSize: 11,
+                    color: 'hsl(var(--ds-fg-3))',
+                    background: 'transparent',
+                    border: 0,
+                    cursor: 'pointer',
+                    marginTop: 4,
+                    alignSelf: 'flex-start',
+                  }}
+                  onClick={() => setForm((prev) => ({ ...prev, due_date: '' }))}
+                >
                   Limpar
                 </button>
               )}
-            </div>
+            </Field>
           </div>
 
-          <div>
-            <Label htmlFor="pp-notes">Observações</Label>
-            <Textarea id="pp-notes" value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3} />
-          </div>
+          <Field label="Observações">
+            <Textarea
+              value={form.notes}
+              onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
+              rows={3}
+            />
+          </Field>
         </div>
 
-        <DialogFooter className="flex justify-between sm:justify-between">
+        <DialogFooter style={{ justifyContent: 'space-between', display: 'flex' }}>
           {!isCreating ? (
-            <Button variant="destructive" size="sm" onClick={handleDelete}>
-              <Trash2 className="h-4 w-4 mr-1" /> Excluir
-            </Button>
-          ) : <div />}
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={!form.client_name.trim()}>
+            <button
+              type="button"
+              className="btn"
+              style={{
+                color: 'hsl(var(--ds-danger))',
+                borderColor: 'hsl(var(--ds-danger) / 0.3)',
+              }}
+              onClick={handleDelete}
+            >
+              <Trash2 size={14} strokeWidth={1.5} />
+              <span>Excluir</span>
+            </button>
+          ) : (
+            <div />
+          )}
+          <div style={{ display: 'inline-flex', gap: 8 }}>
+            <button type="button" className="btn" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleSave}
+              disabled={!form.client_name.trim()}
+            >
               {isCreating ? 'Criar' : 'Salvar'}
-            </Button>
+            </button>
           </div>
         </DialogFooter>
       </DialogContent>

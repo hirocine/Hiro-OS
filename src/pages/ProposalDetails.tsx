@@ -1,16 +1,10 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -19,9 +13,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   ExternalLink, Building2, Calendar, DollarSign,
-  User, Phone, FileText, MessageSquare, Trash2, Copy, MoreHorizontal, Upload, Save,
+  FileText, MessageSquare, Trash2, Copy, MoreHorizontal, Upload, Save,
   AlertTriangle, Briefcase, Package, Plus, X, Check, Pencil, Sparkles, Loader2
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useProposalAI } from '@/features/proposals/hooks/useProposalAI';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
@@ -34,7 +29,6 @@ import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory, Proposa
 import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS, CASE_TAG_OPTIONS } from '@/features/proposals/types';
 import { usePainPoints } from '@/features/proposals/hooks/usePainPoints';
 import { useTestimonials } from '@/features/proposals/hooks/useTestimonials';
-import type { Testimonial } from '@/features/proposals/types';
 import { useProposalCases } from '@/features/proposals/hooks/useProposalCases';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
@@ -43,14 +37,40 @@ import { PaymentOptionsEditor } from '@/features/proposals/components/PaymentOpt
 import { buildPaymentOption, DEFAULT_PRESET_PARAMS } from '@/features/proposals/lib/paymentPresets';
 import { ServicesSection } from '@/features/proposals/components/admin/ServicesSection';
 
-const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
-  draft: { label: 'Rascunho', variant: 'neutral' },
-  sent: { label: 'Enviada', variant: 'info' },
-  opened: { label: 'Aberta', variant: 'warning' },
-  new_version: { label: 'Nova Versão', variant: 'info' },
-  approved: { label: 'Aprovada', variant: 'success' },
-  expired: { label: 'Arquivada', variant: 'destructive' },
+type StatusTone = 'neutral' | 'info' | 'warning' | 'success' | 'danger';
+
+const statusMap: Record<string, { label: string; tone: StatusTone }> = {
+  draft: { label: 'Rascunho', tone: 'neutral' },
+  sent: { label: 'Enviada', tone: 'info' },
+  opened: { label: 'Aberta', tone: 'warning' },
+  new_version: { label: 'Nova Versão', tone: 'info' },
+  approved: { label: 'Aprovada', tone: 'success' },
+  expired: { label: 'Arquivada', tone: 'danger' },
 };
+
+const toneColor: Record<StatusTone, string> = {
+  neutral: 'hsl(var(--ds-fg-3))',
+  info: 'hsl(var(--ds-info))',
+  warning: 'hsl(var(--ds-warning))',
+  success: 'hsl(var(--ds-success))',
+  danger: 'hsl(var(--ds-danger))',
+};
+
+function statusPillStyle(tone: StatusTone): React.CSSProperties {
+  if (tone === 'neutral') {
+    return {
+      color: 'hsl(var(--ds-fg-2))',
+      borderColor: 'hsl(var(--ds-line-1))',
+      background: 'hsl(var(--ds-line-2) / 0.3)',
+    };
+  }
+  const c = toneColor[tone];
+  return {
+    color: c,
+    borderColor: `${c.replace(')', ' / 0.3)')}`,
+    background: `${c.replace(')', ' / 0.08)')}`,
+  };
+}
 
 async function compressImage(file: File): Promise<Blob> {
   return new Promise((resolve) => {
@@ -89,6 +109,57 @@ function formatWhatsApp(value: string): string {
   return `+${digits.slice(0,2)} (${digits.slice(2,4)}) ${digits.slice(4,9)}-${digits.slice(9)}`;
 }
 
+// DS shared styles
+const sectionShellStyle: React.CSSProperties = {
+  border: '1px solid hsl(var(--ds-line-1))',
+  background: 'hsl(var(--ds-surface))',
+};
+
+const sectionHeaderStyle: React.CSSProperties = {
+  padding: '14px 18px',
+  borderBottom: '1px solid hsl(var(--ds-line-1))',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 10,
+};
+
+const sectionTitleStyle: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-2))',
+};
+
+const eyebrowLabelStyle: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const SectionShell: React.FC<{
+  icon: LucideIcon;
+  title: string;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ icon: Icon, title, actions, children }) => (
+  <div style={sectionShellStyle}>
+    <div style={sectionHeaderStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Icon size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+        <span style={sectionTitleStyle}>{title}</span>
+      </div>
+      {actions}
+    </div>
+    <div style={{ padding: 18 }}>{children}</div>
+  </div>
+);
+
 // Vimeo thumbnail component - defined at module level to avoid re-creation on every render
 function VimeoThumbnail({ videoId, videoHash, alt, className }: { videoId: string; videoHash?: string; alt?: string; className?: string }) {
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
@@ -119,8 +190,16 @@ function VimeoThumbnail({ videoId, videoHash, alt, className }: { videoId: strin
 
   if (failed || !thumbUrl) {
     return (
-      <div className={`bg-muted flex items-center justify-center ${className || ''}`}>
-        <Briefcase className="h-8 w-8 text-muted-foreground/30" />
+      <div
+        className={className || ''}
+        style={{
+          background: 'hsl(var(--ds-line-2) / 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Briefcase size={32} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-4))' }} />
       </div>
     );
   }
@@ -388,7 +467,7 @@ export default function ProposalDetails() {
   if (!proposal) {
     return (
       <ResponsiveContainer maxWidth="7xl">
-        <p className="text-muted-foreground text-center py-12">Proposta não encontrada.</p>
+        <p style={{ color: 'hsl(var(--ds-fg-3))', textAlign: 'center', padding: '48px 0' }}>Proposta não encontrada.</p>
       </ResponsiveContainer>
     );
   }
@@ -574,6 +653,9 @@ export default function ProposalDetails() {
     [investForm.list_price, investForm.discount_pct],
   );
 
+  const formatCurrencyBR = (v: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+
   // Dores helpers
   const removeDor = (i: number) => setDoresForm(prev => prev.filter((_, idx) => idx !== i));
 
@@ -606,7 +688,6 @@ export default function ProposalDetails() {
     setExclusiveDorForm({ label: '⭐', title: '', desc: '' });
     setShowExclusiveDor(false);
   };
-
 
 
 
@@ -690,22 +771,24 @@ export default function ProposalDetails() {
     });
   };
 
+  const currentStatus = statusMap[proposal.status] || statusMap.draft;
+
   return (
     <ResponsiveContainer maxWidth="7xl">
       <div className="animate-fade-in space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <BreadcrumbNav items={[
             { label: 'Orçamentos', href: '/orcamentos' },
             { label: proposal.project_name || 'Sem nome', href: `/orcamentos/${proposal.slug}/overview` },
             { label: 'Edição' },
           ]} className="mb-0" />
-          <div className="flex items-center gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
+                <button className="btn" style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}>
+                  <MoreHorizontal size={16} strokeWidth={1.5} />
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 {!isNewProposal && (
@@ -714,59 +797,70 @@ export default function ProposalDetails() {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
+                <DropdownMenuItem onClick={handleDelete} style={{ color: 'hsl(var(--ds-danger))' }}>
                   <Trash2 className="mr-2 h-4 w-4" /> Excluir
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             {!isNewProposal && (
-              <Button variant="outline" size="sm" onClick={() => window.open(`/orcamento/${proposal.slug}?v=${Date.now()}`, '_blank')}>
-                <ExternalLink className="h-4 w-4 mr-1.5" /> Ver Proposta
-              </Button>
+              <button className="btn" onClick={() => window.open(`/orcamento/${proposal.slug}?v=${Date.now()}`, '_blank')}>
+                <ExternalLink size={14} strokeWidth={1.5} style={{ marginRight: 6 }} /> Ver Proposta
+              </button>
             )}
           </div>
         </div>
 
         {/* Summary Card */}
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center gap-4">
-              <div className="relative group">
+        <div style={sectionShellStyle}>
+          <div style={{ padding: 18 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div className="relative group" style={{ position: 'relative' }}>
                 <Avatar className="h-16 w-16 shrink-0">
                   {proposal.client_logo ? <AvatarImage src={proposal.client_logo} alt={proposal.client_name} /> : null}
-                  <AvatarFallback className="bg-muted"><Building2 className="h-6 w-6 text-muted-foreground" /></AvatarFallback>
+                  <AvatarFallback style={{ background: 'hsl(var(--ds-line-2) / 0.3)' }}>
+                    <Building2 size={22} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+                  </AvatarFallback>
                 </Avatar>
                 <button
                   onClick={() => logoInputRef.current?.click()}
-                  className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ background: 'rgba(0,0,0,0.4)', borderRadius: '9999px' }}
                   disabled={uploadingLogo}
                 >
-                  <Upload className="h-4 w-4 text-white" />
+                  <Upload size={16} strokeWidth={1.5} style={{ color: 'white' }} />
                 </button>
                 <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2">
-                  <h1 className="text-xl font-semibold leading-tight">{proposal.project_name || 'Nova Proposta'}</h1>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                  <h1 style={{ fontSize: 20, fontWeight: 600, lineHeight: 1.2, color: 'hsl(var(--ds-fg-1))', fontFamily: '"HN Display", sans-serif' }}>
+                    {proposal.project_name || 'Nova Proposta'}
+                  </h1>
                   {proposal.project_number && (
-                    <span className="text-xl text-muted-foreground">Nº {proposal.project_number}</span>
+                    <span style={{ fontSize: 20, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
+                      Nº {proposal.project_number}
+                    </span>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">{proposal.client_name || 'Preencha os dados do cliente'}</p>
+                <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
+                  {proposal.client_name || 'Preencha os dados do cliente'}
+                </p>
               </div>
               {!isNewProposal && (
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs text-muted-foreground">Status</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))' }}>
+                    Status
+                  </span>
                   <Select value={proposal.status} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-[140px] h-8 border-0 bg-transparent p-0 shadow-none focus:ring-0 [&>svg]:ml-1">
-                      <Badge variant={(statusMap[proposal.status] || statusMap.draft).variant as any}>
-                        {(statusMap[proposal.status] || statusMap.draft).label}
-                      </Badge>
+                      <span className="pill" style={statusPillStyle(currentStatus.tone)}>
+                        {currentStatus.label}
+                      </span>
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.entries(statusMap).map(([value, { label, variant }]) => (
+                      {Object.entries(statusMap).map(([value, { label, tone }]) => (
                         <SelectItem key={value} value={value}>
-                          <Badge variant={variant as any}>{label}</Badge>
+                          <span className="pill" style={statusPillStyle(tone)}>{label}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -774,46 +868,84 @@ export default function ProposalDetails() {
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         <div className="space-y-6">
           {/* Client Section */}
-          <Card>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-md bg-muted"><Building2 className="h-4 w-4 text-foreground/70" /></div>
-                  <CardTitle className="text-sm font-semibold tracking-tight">Cliente e Projeto</CardTitle>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" disabled={isParsing} onClick={() => { setTranscriptText(''); setShowTranscriptDialog(true); }}>
-                    {isParsing ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
-                    Importar Transcrição
-                  </Button>
-                  {clientDirty && (
-                    <Button size="sm" onClick={() => handleSaveClick('client')} disabled={updateProposal.isPending}>
-                      <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                    </Button>
-                  )}
-                </div>
-            </div>
-            <CardContent className="pt-6 space-y-4">
+          <SectionShell
+            icon={Building2}
+            title="Cliente e Projeto"
+            actions={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button className="btn" disabled={isParsing} onClick={() => { setTranscriptText(''); setShowTranscriptDialog(true); }}>
+                  {isParsing ? <Loader2 size={14} className="animate-spin" style={{ marginRight: 4 }} /> : <Sparkles size={14} strokeWidth={1.5} style={{ marginRight: 4 }} />}
+                  Importar Transcrição
+                </button>
+                {clientDirty && (
+                  <button className="btn primary" onClick={() => handleSaveClick('client')} disabled={updateProposal.isPending}>
+                    <Save size={14} strokeWidth={1.5} style={{ marginRight: 6 }} /> Salvar
+                  </button>
+                )}
+              </div>
+            }
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label className="text-xs">Nº do Projeto *</Label><Input className={clientErrors.project_number ? 'border-destructive' : ''} value={clientForm.project_number} onChange={e => { setClientForm(p => ({ ...p, project_number: e.target.value })); setClientErrors(p => ({ ...p, project_number: false })); }} placeholder="Ex: 001" maxLength={4} />{clientErrors.project_number && <p className="text-xs text-destructive mt-1">Obrigatório</p>}</div>
-                <div className="space-y-1.5"><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
-                <div className="space-y-1.5"><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
-                <div className="space-y-1.5"><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
-                <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação *</Label><Input className={clientErrors.whatsapp_number ? 'border-destructive' : ''} value={clientForm.whatsapp_number} onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); setClientErrors(p => ({ ...p, whatsapp_number: false })); }} maxLength={20} placeholder="+55 (11) 95151-3862" />{clientErrors.whatsapp_number && <p className="text-xs text-destructive mt-1">Informe um número válido com DDD</p>}</div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Validade *</Label>
+                <div>
+                  <label style={eyebrowLabelStyle}>Nº do Projeto *</label>
+                  <Input
+                    style={clientErrors.project_number ? { borderColor: 'hsl(var(--ds-danger))' } : undefined}
+                    value={clientForm.project_number}
+                    onChange={e => { setClientForm(p => ({ ...p, project_number: e.target.value })); setClientErrors(p => ({ ...p, project_number: false })); }}
+                    placeholder="Ex: 001"
+                    maxLength={4}
+                  />
+                  {clientErrors.project_number && <p style={{ fontSize: 12, color: 'hsl(var(--ds-danger))', marginTop: 4 }}>Obrigatório</p>}
+                </div>
+                <div>
+                  <label style={eyebrowLabelStyle}>Nome do Cliente</label>
+                  <Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} />
+                </div>
+                <div>
+                  <label style={eyebrowLabelStyle}>Nome do Projeto</label>
+                  <Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} />
+                </div>
+                <div>
+                  <label style={eyebrowLabelStyle}>Responsável</label>
+                  <Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} />
+                </div>
+                <div>
+                  <label style={eyebrowLabelStyle}>WhatsApp para Aprovação *</label>
+                  <Input
+                    style={clientErrors.whatsapp_number ? { borderColor: 'hsl(var(--ds-danger))' } : undefined}
+                    value={clientForm.whatsapp_number}
+                    onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); setClientErrors(p => ({ ...p, whatsapp_number: false })); }}
+                    maxLength={20}
+                    placeholder="+55 (11) 95151-3862"
+                  />
+                  {clientErrors.whatsapp_number && <p style={{ fontSize: 12, color: 'hsl(var(--ds-danger))', marginTop: 4 }}>Informe um número válido com DDD</p>}
+                </div>
+                <div>
+                  <label style={eyebrowLabelStyle}>Validade *</label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className={`w-full justify-start text-left font-normal ${!clientForm.validity_date ? 'text-muted-foreground' : ''} ${clientErrors.validity_date ? 'border-destructive' : ''}`}>
-                        <Calendar className="h-4 w-4 mr-2" />
+                      <button
+                        className="btn"
+                        style={{
+                          width: '100%',
+                          justifyContent: 'flex-start',
+                          fontWeight: 400,
+                          color: !clientForm.validity_date ? 'hsl(var(--ds-fg-3))' : 'hsl(var(--ds-fg-1))',
+                          borderColor: clientErrors.validity_date ? 'hsl(var(--ds-danger))' : undefined,
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        <Calendar size={14} strokeWidth={1.5} style={{ marginRight: 8 }} />
                         {clientForm.validity_date
                           ? new Date(clientForm.validity_date + 'T12:00:00').toLocaleDateString('pt-BR')
                           : 'Selecionar data'}
-                      </Button>
+                      </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <CalendarComponent
@@ -825,47 +957,49 @@ export default function ProposalDetails() {
                       />
                     </PopoverContent>
                   </Popover>
-                  {clientErrors.validity_date && <p className="text-xs text-destructive mt-1">Obrigatório</p>}
+                  {clientErrors.validity_date && <p style={{ fontSize: 12, color: 'hsl(var(--ds-danger))', marginTop: 4 }}>Obrigatório</p>}
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs">Descrição da empresa</Label>
-                  <Button variant="outline" size="sm" disabled={isEnriching || !clientForm.client_name} onClick={async () => {
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <label style={{ ...eyebrowLabelStyle, marginBottom: 0 }}>Descrição da empresa</label>
+                  <button className="btn" disabled={isEnriching || !clientForm.client_name} onClick={async () => {
                     try {
                       const desc = await enrichClient(clientForm.client_name);
                       if (desc) { setClientForm(p => ({ ...p, company_description: desc })); toast.success('Descrição preenchida com IA'); }
                     } catch (err) { toast.error('Erro ao buscar descrição: ' + (err instanceof Error ? err.message : 'Erro desconhecido')); }
                   }}>
-                    {isEnriching ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                    {isEnriching ? <Loader2 size={14} className="animate-spin" style={{ marginRight: 4 }} /> : <Sparkles size={14} strokeWidth={1.5} style={{ marginRight: 4 }} />}
                     Buscar com IA
-                  </Button>
+                  </button>
                 </div>
                 <Textarea value={clientForm.company_description} onChange={e => setClientForm(p => ({ ...p, company_description: e.target.value }))} rows={4} />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </SectionShell>
 
           {/* Investment Section */}
-          <Card>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-md bg-muted"><DollarSign className="h-4 w-4 text-foreground/70" /></div>
-                  <CardTitle className="text-sm font-semibold tracking-tight">Investimento</CardTitle>
-                </div>
-                {investDirty && (
-                  <Button size="sm" onClick={() => handleSaveClick('invest')} disabled={updateProposal.isPending}>
-                    <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                  </Button>
-                )}
-            </div>
-            <CardContent className="pt-6 space-y-4">
+          <SectionShell
+            icon={DollarSign}
+            title="Investimento"
+            actions={
+              investDirty && (
+                <button className="btn primary" onClick={() => handleSaveClick('invest')} disabled={updateProposal.isPending}>
+                  <Save size={14} strokeWidth={1.5} style={{ marginRight: 6 }} /> Salvar
+                </button>
+              )
+            }
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Valor sem desconto (R$) *</Label>
+                <div>
+                  <label style={eyebrowLabelStyle}>Valor sem desconto (R$) *</label>
                   <Input
-                    className={investErrors.list_price ? 'border-destructive' : ''}
-                    value={investForm.list_price ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investForm.list_price) : ''}
+                    style={{
+                      ...(investErrors.list_price ? { borderColor: 'hsl(var(--ds-danger))' } : {}),
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                    value={investForm.list_price ? formatCurrencyBR(investForm.list_price) : ''}
                     onChange={e => {
                       const raw = e.target.value.replace(/[^\d]/g, '');
                       setInvestForm(p => ({ ...p, list_price: Number(raw) / 100 }));
@@ -873,15 +1007,37 @@ export default function ProposalDetails() {
                     }}
                     placeholder="R$ 0,00"
                   />
-                  {investErrors.list_price && <p className="text-xs text-destructive mt-1">Obrigatório</p>}
+                  {investErrors.list_price && <p style={{ fontSize: 12, color: 'hsl(var(--ds-danger))', marginTop: 4 }}>Obrigatório</p>}
                 </div>
-                <div className="space-y-1.5"><Label className="text-xs">Desconto (%)</Label><Input type="number" value={investForm.discount_pct} onChange={e => setInvestForm(p => ({ ...p, discount_pct: Number(e.target.value) }))} /></div>
+                <div>
+                  <label style={eyebrowLabelStyle}>Desconto (%)</label>
+                  <Input
+                    type="number"
+                    style={{ fontVariantNumeric: 'tabular-nums' }}
+                    value={investForm.discount_pct}
+                    onChange={e => setInvestForm(p => ({ ...p, discount_pct: Number(e.target.value) }))}
+                  />
+                </div>
               </div>
-              <div className="p-3 rounded-lg bg-muted/50 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Valor Final: </span>
-                <span className="font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investFinalValue)}</span>
+              <div style={{
+                padding: 12,
+                border: '1px solid hsl(var(--ds-line-1))',
+                background: 'hsl(var(--ds-line-2) / 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+                <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))' }}>
+                  Valor Final
+                </span>
+                <span style={{ fontWeight: 600, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>
+                  {formatCurrencyBR(investFinalValue)}
+                </span>
               </div>
-              <div className="space-y-1.5"><Label className="text-xs">Condições de Pagamento</Label><Textarea value={investForm.payment_terms} onChange={e => setInvestForm(p => ({ ...p, payment_terms: e.target.value }))} rows={4} /></div>
+              <div>
+                <label style={eyebrowLabelStyle}>Condições de Pagamento</label>
+                <Textarea value={investForm.payment_terms} onChange={e => setInvestForm(p => ({ ...p, payment_terms: e.target.value }))} rows={4} />
+              </div>
 
               {/* Payment Options */}
               <PaymentOptionsEditor
@@ -889,88 +1045,112 @@ export default function ProposalDetails() {
                 onChange={next => setInvestForm(p => ({ ...p, payment_options: next }))}
                 finalValue={investFinalValue}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </SectionShell>
 
           {/* Objective Section */}
-          <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-md bg-muted"><FileText className="h-4 w-4 text-foreground/70" /></div>
-                  <CardTitle className="text-sm font-semibold tracking-tight">Objetivo</CardTitle>
-                </div>
-                {diagDirty && (
-                  <Button size="sm" onClick={() => handleSaveClick('diag')} disabled={updateProposal.isPending}>
-                    <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                  </Button>
-                )}
-            </div>
-            <CardContent className="pt-6">
-              <Textarea value={diagForm.objetivo} onChange={e => setDiagForm({ objetivo: e.target.value })} rows={8} />
-            </CardContent>
-          </Card>
+          <SectionShell
+            icon={FileText}
+            title="Objetivo"
+            actions={
+              diagDirty && (
+                <button className="btn primary" onClick={() => handleSaveClick('diag')} disabled={updateProposal.isPending}>
+                  <Save size={14} strokeWidth={1.5} style={{ marginRight: 6 }} /> Salvar
+                </button>
+              )
+            }
+          >
+            <Textarea value={diagForm.objetivo} onChange={e => setDiagForm({ objetivo: e.target.value })} rows={8} />
+          </SectionShell>
 
           {/* Dores do Cliente Section */}
-          <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-md bg-muted"><AlertTriangle className="h-4 w-4 text-foreground/70" /></div>
-                  <CardTitle className="text-sm font-semibold tracking-tight">Dores do Cliente</CardTitle>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" disabled={isSuggesting} onClick={async () => {
-                    try {
-                      const dores = await suggestPainPoints(clientForm.client_name, clientForm.project_name, diagForm.objetivo);
-                      if (dores.length > 0) { setDoresForm(dores); toast.success(`${dores.length} dores sugeridas pela IA`); }
-                    } catch (err) { toast.error('Erro ao sugerir dores: ' + (err instanceof Error ? err.message : 'Erro desconhecido')); }
-                  }}>
-                    {isSuggesting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
-                    Sugerir com IA
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={openDoresBank}>
-                    <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Dores
-                  </Button>
-                  {doresDirty && (
-                    <Button size="sm" onClick={() => handleSaveClick('dores')} disabled={updateProposal.isPending}>
-                      <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                    </Button>
-                  )}
-                </div>
-            </div>
-            <CardContent className="pt-6">
-              {doresForm.length === 0 ? (
-                <EmptyState icon={AlertTriangle} title="Nenhuma dor selecionada" description="Nenhuma dor selecionada." compact action={{ label: "Selecionar do banco de dores", onClick: openDoresBank }} />
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {doresForm.map((dor, i) => (
-                    <div key={i} className="group relative border border-border rounded-lg p-4 hover:border-primary/30 transition-colors">
-                      <button
-                        onClick={() => removeDor(i)}
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                      <div className="flex gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-xl shrink-0">
-                          {dor.label || '⭐'}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium leading-tight">{dor.title}</p>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{dor.desc}</p>
-                        </div>
+          <SectionShell
+            icon={AlertTriangle}
+            title="Dores do Cliente"
+            actions={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button className="btn" disabled={isSuggesting} onClick={async () => {
+                  try {
+                    const dores = await suggestPainPoints(clientForm.client_name, clientForm.project_name, diagForm.objetivo);
+                    if (dores.length > 0) { setDoresForm(dores); toast.success(`${dores.length} dores sugeridas pela IA`); }
+                  } catch (err) { toast.error('Erro ao sugerir dores: ' + (err instanceof Error ? err.message : 'Erro desconhecido')); }
+                }}>
+                  {isSuggesting ? <Loader2 size={14} className="animate-spin" style={{ marginRight: 4 }} /> : <Sparkles size={14} strokeWidth={1.5} style={{ marginRight: 4 }} />}
+                  Sugerir com IA
+                </button>
+                <button className="btn" onClick={openDoresBank}>
+                  <Plus size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Adicionar Dores
+                </button>
+                {doresDirty && (
+                  <button className="btn primary" onClick={() => handleSaveClick('dores')} disabled={updateProposal.isPending}>
+                    <Save size={14} strokeWidth={1.5} style={{ marginRight: 6 }} /> Salvar
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {doresForm.length === 0 ? (
+              <EmptyState icon={AlertTriangle} title="Nenhuma dor selecionada" description="Nenhuma dor selecionada." compact action={{ label: "Selecionar do banco de dores", onClick: openDoresBank }} />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {doresForm.map((dor, i) => (
+                  <div
+                    key={i}
+                    className="group"
+                    style={{
+                      position: 'relative',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      padding: 16,
+                      background: 'hsl(var(--ds-surface))',
+                    }}
+                  >
+                    <button
+                      onClick={() => removeDor(i)}
+                      className="opacity-0 group-hover:opacity-100"
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        color: 'hsl(var(--ds-fg-3))',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <X size={16} strokeWidth={1.5} />
+                    </button>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <div style={{
+                        width: 40,
+                        height: 40,
+                        background: 'hsl(var(--ds-accent) / 0.08)',
+                        border: '1px solid hsl(var(--ds-line-1))',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 20,
+                        flexShrink: 0,
+                      }}>
+                        {dor.label || '⭐'}
+                      </div>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <p style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3, color: 'hsl(var(--ds-fg-1))' }}>{dor.title}</p>
+                        <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {dor.desc}
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                  </div>
+                ))}
+              </div>
+            )}
+          </SectionShell>
 
           {/* Dores Bank Dialog */}
           <Dialog open={showDoresBank} onOpenChange={setShowDoresBank}>
             <DialogContent className="sm:max-w-4xl max-h-[85vh] flex flex-col p-0">
-              <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
-                <DialogTitle>Banco de Dores</DialogTitle>
+              <DialogHeader className="px-6 pt-6 pb-4 shrink-0" style={{ borderBottom: '1px solid hsl(var(--ds-line-1))' }}>
+                <DialogTitle>
+                  <span style={{ fontFamily: '"HN Display", sans-serif' }}>Banco de Dores</span>
+                </DialogTitle>
                 <div className="pt-3">
                   <Input
                     value={doresBankSearch}
@@ -987,8 +1167,10 @@ export default function ProposalDetails() {
                   if (pps.length === 0) return null;
                   return (
                     <div key={cat}>
-                      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground font-mono">{String(catIdx + 1).padStart(2, '0')}</span>
+                      <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8, color: 'hsl(var(--ds-fg-1))' }}>
+                        <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
+                          {String(catIdx + 1).padStart(2, '0')}
+                        </span>
                         {cat}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -999,22 +1181,35 @@ export default function ProposalDetails() {
                               key={pp.id}
                               type="button"
                               onClick={() => toggleBankDor(pp)}
-                              className={`text-left p-3 rounded-lg border transition-all ${
-                                selected
-                                  ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
-                                  : 'border-border hover:border-primary/30'
-                              }`}
+                              style={{
+                                textAlign: 'left',
+                                padding: 12,
+                                border: selected ? '1px solid hsl(var(--ds-accent))' : '1px solid hsl(var(--ds-line-1))',
+                                background: selected ? 'hsl(var(--ds-accent) / 0.05)' : 'hsl(var(--ds-surface))',
+                                transition: 'all 0.15s',
+                              }}
                             >
-                              <div className="flex gap-3">
-                                <div className="w-8 h-8 rounded-md bg-muted/50 flex items-center justify-center text-base shrink-0">
+                              <div style={{ display: 'flex', gap: 12 }}>
+                                <div style={{
+                                  width: 32,
+                                  height: 32,
+                                  background: 'hsl(var(--ds-line-2) / 0.3)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: 16,
+                                  flexShrink: 0,
+                                }}>
                                   {pp.label}
                                 </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-sm font-medium leading-tight flex-1">{pp.title}</p>
-                                    {selected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <p style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3, flex: 1, color: 'hsl(var(--ds-fg-1))' }}>{pp.title}</p>
+                                    {selected && <Check size={16} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-accent))', flexShrink: 0 }} />}
                                   </div>
-                                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{pp.description}</p>
+                                  <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                    {pp.description}
+                                  </p>
                                 </div>
                               </div>
                             </button>
@@ -1026,20 +1221,20 @@ export default function ProposalDetails() {
                 })}
 
                 {/* Exclusive pain point section */}
-                <div className="border-t border-border pt-4">
+                <div style={{ borderTop: '1px solid hsl(var(--ds-line-1))', paddingTop: 16 }}>
                   {!showExclusiveDor ? (
-                    <Button variant="ghost" size="sm" onClick={() => setShowExclusiveDor(true)} className="w-full">
-                      <Plus className="h-3.5 w-3.5 mr-1" /> Criar dor exclusiva para este projeto
-                    </Button>
+                    <button className="btn" onClick={() => setShowExclusiveDor(true)} style={{ width: '100%', justifyContent: 'center' }}>
+                      <Plus size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Criar dor exclusiva para este projeto
+                    </button>
                   ) : (
-                    <div className="space-y-3 p-4 border border-dashed border-border rounded-lg">
-                      <h4 className="text-sm font-medium">Dor exclusiva (não salva no banco)</h4>
-                      <div className="flex items-end gap-3">
+                    <div style={{ padding: 16, border: '1px dashed hsl(var(--ds-line-1))', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <h4 style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>Dor exclusiva (não salva no banco)</h4>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-10 w-10 p-0 shrink-0 text-lg">
+                            <button className="btn" style={{ height: 40, width: 40, padding: 0, justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
                               {exclusiveDorForm.label}
-                            </Button>
+                            </button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-2" align="start">
                             <div className="grid grid-cols-8 gap-1">
@@ -1048,9 +1243,16 @@ export default function ProposalDetails() {
                                   key={opt.value}
                                   type="button"
                                   onClick={() => setExclusiveDorForm(p => ({ ...p, label: opt.value }))}
-                                  className={`h-8 w-8 rounded-md flex items-center justify-center text-base transition-colors ${
-                                    exclusiveDorForm.label === opt.value ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted'
-                                  }`}
+                                  style={{
+                                    height: 32,
+                                    width: 32,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: 16,
+                                    border: exclusiveDorForm.label === opt.value ? '1px solid hsl(var(--ds-accent))' : '1px solid transparent',
+                                    background: exclusiveDorForm.label === opt.value ? 'hsl(var(--ds-accent) / 0.1)' : 'transparent',
+                                  }}
                                 >
                                   {opt.value}
                                 </button>
@@ -1058,95 +1260,117 @@ export default function ProposalDetails() {
                             </div>
                           </PopoverContent>
                         </Popover>
-                        <div className="flex-1 space-y-1.5">
-                          <Label className="text-xs">Título</Label>
+                        <div style={{ flex: 1 }}>
+                          <label style={eyebrowLabelStyle}>Título</label>
                           <Input value={exclusiveDorForm.title} onChange={e => setExclusiveDorForm(p => ({ ...p, title: e.target.value }))} placeholder="Título da dor" />
                         </div>
                       </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Descrição</Label>
+                      <div>
+                        <label style={eyebrowLabelStyle}>Descrição</label>
                         <Textarea value={exclusiveDorForm.desc} onChange={e => setExclusiveDorForm(p => ({ ...p, desc: e.target.value }))} rows={3} placeholder="Descreva a dor..." />
                       </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={addExclusiveDor} disabled={!exclusiveDorForm.title.trim()}>
-                          <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setShowExclusiveDor(false)}>Cancelar</Button>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="btn primary" onClick={addExclusiveDor} disabled={!exclusiveDorForm.title.trim()}>
+                          <Plus size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Adicionar
+                        </button>
+                        <button className="btn" onClick={() => setShowExclusiveDor(false)}>Cancelar</button>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="px-6 py-4 border-t border-border shrink-0 flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+              <div className="px-6 py-4 shrink-0" style={{ borderTop: '1px solid hsl(var(--ds-line-1))', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
                   {doresBankSelection.length} dore{doresBankSelection.length !== 1 ? 's' : ''} selecionada{doresBankSelection.length !== 1 ? 's' : ''}
                 </span>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setShowDoresBank(false)}>Cancelar</Button>
-                  <Button onClick={confirmDoresBank}>Confirmar</Button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button className="btn" onClick={() => setShowDoresBank(false)}>Cancelar</button>
+                  <button className="btn primary" onClick={confirmDoresBank}>Confirmar</button>
                 </div>
               </div>
             </DialogContent>
           </Dialog>
 
           {/* Cases / Portfólio Section */}
-          <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-md bg-muted"><Briefcase className="h-4 w-4 text-foreground/70" /></div>
-                  <CardTitle className="text-sm font-semibold tracking-tight">Cases / Portfólio</CardTitle>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={openCasesBank}>
-                    <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Cases
-                  </Button>
-                  {casesDirty && (
-                    <Button size="sm" onClick={() => handleSaveClick('cases')} disabled={updateProposal.isPending}>
-                      <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                    </Button>
-                  )}
-                </div>
-            </div>
-            <CardContent className="pt-6">
-              {casesForm.length === 0 ? (
-                <EmptyState icon={Briefcase} title="Nenhum case selecionado" description="Nenhum case selecionado." compact action={{ label: "Selecionar do banco de cases", onClick: openCasesBank }} />
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                  {casesForm.map((c, i) => (
-                    <div key={i} className="group relative border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-colors">
-                      <button
-                        onClick={() => removeCase(i)}
-                        className="absolute top-2 right-2 z-10 p-1 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 text-white hover:text-destructive transition-all"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                      {c.vimeoId && (
-                        <div className="aspect-video">
-                          <VimeoThumbnail videoId={c.vimeoId} videoHash={c.vimeoHash} alt={c.titulo || ''} className="w-full h-full" />
+          <SectionShell
+            icon={Briefcase}
+            title="Cases / Portfólio"
+            actions={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button className="btn" onClick={openCasesBank}>
+                  <Plus size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Adicionar Cases
+                </button>
+                {casesDirty && (
+                  <button className="btn primary" onClick={() => handleSaveClick('cases')} disabled={updateProposal.isPending}>
+                    <Save size={14} strokeWidth={1.5} style={{ marginRight: 6 }} /> Salvar
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {casesForm.length === 0 ? (
+              <EmptyState icon={Briefcase} title="Nenhum case selecionado" description="Nenhum case selecionado." compact action={{ label: "Selecionar do banco de cases", onClick: openCasesBank }} />
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {casesForm.map((c, i) => (
+                  <div
+                    key={i}
+                    className="group"
+                    style={{
+                      position: 'relative',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      overflow: 'hidden',
+                      background: 'hsl(var(--ds-surface))',
+                    }}
+                  >
+                    <button
+                      onClick={() => removeCase(i)}
+                      className="opacity-0 group-hover:opacity-100"
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        zIndex: 10,
+                        padding: 4,
+                        borderRadius: '9999px',
+                        background: 'rgba(0,0,0,0.6)',
+                        color: 'white',
+                      }}
+                    >
+                      <X size={16} strokeWidth={1.5} />
+                    </button>
+                    {c.vimeoId && (
+                      <div className="aspect-video">
+                        <VimeoThumbnail videoId={c.vimeoId} videoHash={c.vimeoHash} alt={c.titulo || ''} className="w-full h-full" />
+                      </div>
+                    )}
+                    <div style={{ padding: 12 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <p style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3, color: 'hsl(var(--ds-fg-1))' }}>{c.titulo || 'Sem título'}</p>
+                          <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>{c.descricao}</p>
                         </div>
-                      )}
-                      <div className="p-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium leading-tight">{c.titulo || 'Sem título'}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{c.descricao}</p>
-                          </div>
-                          {c.tipo && <Badge variant="secondary" className="text-[10px] whitespace-nowrap shrink-0 self-center">{c.tipo}</Badge>}
-                        </div>
+                        {c.tipo && (
+                          <span className="pill muted" style={{ fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0, alignSelf: 'center' }}>
+                            {c.tipo}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                  </div>
+                ))}
+              </div>
+            )}
+          </SectionShell>
 
           {/* Cases Bank Dialog */}
           <Dialog open={showCasesBank} onOpenChange={setShowCasesBank}>
             <DialogContent className="sm:max-w-4xl max-h-[85vh] flex flex-col p-0">
-              <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
-                <DialogTitle>Banco de Cases</DialogTitle>
+              <DialogHeader className="px-6 pt-6 pb-4 shrink-0" style={{ borderBottom: '1px solid hsl(var(--ds-line-1))' }}>
+                <DialogTitle>
+                  <span style={{ fontFamily: '"HN Display", sans-serif' }}>Banco de Cases</span>
+                </DialogTitle>
                 <div className="pt-3">
                   <Input
                     value={casesBankSearch}
@@ -1169,31 +1393,40 @@ export default function ProposalDetails() {
                         key={bc.id}
                         type="button"
                         onClick={() => toggleBankCase(bc)}
-                        className={`text-left rounded-lg border overflow-hidden transition-all ${
-                          selected
-                            ? 'border-primary ring-1 ring-primary/30'
-                            : 'border-border hover:border-primary/30'
-                        }`}
+                        style={{
+                          textAlign: 'left',
+                          border: selected ? '1px solid hsl(var(--ds-accent))' : '1px solid hsl(var(--ds-line-1))',
+                          background: selected ? 'hsl(var(--ds-accent) / 0.05)' : 'hsl(var(--ds-surface))',
+                          overflow: 'hidden',
+                          transition: 'all 0.15s',
+                        }}
                       >
                         {bc.vimeo_id && (
-                          <div className="aspect-video relative">
+                          <div className="aspect-video" style={{ position: 'relative' }}>
                             <VimeoThumbnail videoId={bc.vimeo_id} videoHash={bc.vimeo_hash || undefined} alt={bc.campaign_name} className="w-full h-full" />
                             {selected && (
-                              <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1">
-                                <Check className="h-3 w-3" />
+                              <div style={{
+                                position: 'absolute',
+                                top: 8,
+                                right: 8,
+                                background: 'hsl(var(--ds-accent))',
+                                color: 'white',
+                                borderRadius: '9999px',
+                                padding: 4,
+                              }}>
+                                <Check size={12} strokeWidth={1.5} />
                               </div>
                             )}
                           </div>
                         )}
-                        <div className="p-3">
-                          <div className="flex items-center gap-2 mb-1">
+                        <div style={{ padding: 12 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
                             {(bc.tags || []).map(tag => (
-                              <Badge key={tag} variant="secondary" className="text-[10px]">{tag}</Badge>
+                              <span key={tag} className="pill muted" style={{ fontSize: 10 }}>{tag}</span>
                             ))}
-                            
                           </div>
-                          <p className="text-sm font-medium leading-tight">{bc.campaign_name}</p>
-                          <p className="text-xs text-muted-foreground">{bc.client_name}</p>
+                          <p style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3, color: 'hsl(var(--ds-fg-1))' }}>{bc.campaign_name}</p>
+                          <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>{bc.client_name}</p>
                         </div>
                       </button>
                     );
@@ -1201,121 +1434,140 @@ export default function ProposalDetails() {
                 </div>
 
                 {/* Create new case section */}
-                <div className="border-t border-border pt-4">
+                <div style={{ borderTop: '1px solid hsl(var(--ds-line-1))', paddingTop: 16 }}>
                   {!showNewCase ? (
-                    <Button variant="ghost" size="sm" onClick={() => setShowNewCase(true)} className="w-full">
-                      <Plus className="h-3.5 w-3.5 mr-1" /> Criar novo case (salva no banco)
-                    </Button>
+                    <button className="btn" onClick={() => setShowNewCase(true)} style={{ width: '100%', justifyContent: 'center' }}>
+                      <Plus size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Criar novo case (salva no banco)
+                    </button>
                   ) : (
-                    <div className="space-y-3 p-4 border border-dashed border-border rounded-lg">
-                      <h4 className="text-sm font-medium">Novo case</h4>
+                    <div style={{ padding: 16, border: '1px dashed hsl(var(--ds-line-1))', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <h4 style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>Novo case</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Cliente</Label>
+                        <div>
+                          <label style={eyebrowLabelStyle}>Cliente</label>
                           <Input value={newCaseForm.client_name} onChange={e => setNewCaseForm(p => ({ ...p, client_name: e.target.value }))} placeholder="Nome do cliente" />
                         </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Campanha</Label>
+                        <div>
+                          <label style={eyebrowLabelStyle}>Campanha</label>
                           <Input value={newCaseForm.campaign_name} onChange={e => setNewCaseForm(p => ({ ...p, campaign_name: e.target.value }))} placeholder="Nome da campanha" />
                         </div>
-                        <div className="space-y-1.5 col-span-2">
-                          <Label className="text-xs">Link do Vimeo</Label>
+                        <div className="col-span-2">
+                          <label style={eyebrowLabelStyle}>Link do Vimeo</label>
                           <Input value={newCaseForm.vimeo_url} onChange={e => setNewCaseForm(p => ({ ...p, vimeo_url: e.target.value }))} placeholder="https://vimeo.com/1234567890/abc123def" />
                           {(() => {
                             const parsed = parseVimeoUrl(newCaseForm.vimeo_url);
                             return parsed ? (
-                              <img src={`https://vumbnail.com/${parsed.vimeo_id}.jpg`} alt="Preview" className="rounded-lg mt-2 w-full max-w-xs" />
+                              <img src={`https://vumbnail.com/${parsed.vimeo_id}.jpg`} alt="Preview" style={{ marginTop: 8, width: '100%', maxWidth: 320, border: '1px solid hsl(var(--ds-line-1))' }} />
                             ) : null;
                           })()}
                         </div>
                       </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Tags</Label>
-                        <div className="flex flex-wrap gap-2">
-                          {CASE_TAG_OPTIONS.map(tag => (
-                            <button
-                              key={tag}
-                              type="button"
-                              onClick={() => setNewCaseForm(p => ({
-                                ...p,
-                                tags: p.tags.includes(tag) ? p.tags.filter(t => t !== tag) : [...p.tags, tag],
-                              }))}
-                              className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
-                                newCaseForm.tags.includes(tag)
-                                  ? 'bg-primary/10 border-primary text-primary'
-                                  : 'border-border hover:border-primary/30'
-                              }`}
-                            >
-                              {tag}
-                            </button>
-                          ))}
+                      <div>
+                        <label style={eyebrowLabelStyle}>Tags</label>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                          {CASE_TAG_OPTIONS.map(tag => {
+                            const active = newCaseForm.tags.includes(tag);
+                            return (
+                              <button
+                                key={tag}
+                                type="button"
+                                onClick={() => setNewCaseForm(p => ({
+                                  ...p,
+                                  tags: p.tags.includes(tag) ? p.tags.filter(t => t !== tag) : [...p.tags, tag],
+                                }))}
+                                className="pill"
+                                style={active ? {
+                                  color: 'hsl(var(--ds-accent))',
+                                  borderColor: 'hsl(var(--ds-accent))',
+                                  background: 'hsl(var(--ds-accent) / 0.1)',
+                                } : {}}
+                              >
+                                {tag}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={handleCreateCase} disabled={!newCaseForm.client_name.trim() || !newCaseForm.campaign_name.trim() || createCase.isPending}>
-                          <Plus className="h-3.5 w-3.5 mr-1" /> Criar e Adicionar
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setShowNewCase(false)}>Cancelar</Button>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="btn primary" onClick={handleCreateCase} disabled={!newCaseForm.client_name.trim() || !newCaseForm.campaign_name.trim() || createCase.isPending}>
+                          <Plus size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Criar e Adicionar
+                        </button>
+                        <button className="btn" onClick={() => setShowNewCase(false)}>Cancelar</button>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="px-6 py-4 border-t border-border shrink-0 flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+              <div className="px-6 py-4 shrink-0" style={{ borderTop: '1px solid hsl(var(--ds-line-1))', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
                   {casesBankSelection.length} case{casesBankSelection.length !== 1 ? 's' : ''} selecionado{casesBankSelection.length !== 1 ? 's' : ''}
                 </span>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setShowCasesBank(false)}>Cancelar</Button>
-                  <Button onClick={confirmCasesBank}>Confirmar</Button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button className="btn" onClick={() => setShowCasesBank(false)}>Cancelar</button>
+                  <button className="btn primary" onClick={confirmCasesBank}>Confirmar</button>
                 </div>
               </div>
             </DialogContent>
           </Dialog>
 
           {/* Entregas e Serviços Section */}
-          <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-md bg-muted"><Package className="h-4 w-4 text-foreground/70" /></div>
-                  <CardTitle className="text-sm font-semibold tracking-tight">Entregas (Output)</CardTitle>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={addEntregavel}>
-                    <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar
-                  </Button>
-                  {outputDirty && (
-                    <Button size="sm" onClick={() => handleSaveClick('output')} disabled={updateProposal.isPending}>
-                      <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Entregáveis
-                    </Button>
-                  )}
-                </div>
-            </div>
-            <CardContent className="pt-6 space-y-4">
+          <SectionShell
+            icon={Package}
+            title="Entregas (Output)"
+            actions={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button className="btn" onClick={addEntregavel}>
+                  <Plus size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Adicionar
+                </button>
+                {outputDirty && (
+                  <button className="btn primary" onClick={() => handleSaveClick('output')} disabled={updateProposal.isPending}>
+                    <Save size={14} strokeWidth={1.5} style={{ marginRight: 6 }} /> Salvar Entregáveis
+                  </button>
+                )}
+              </div>
+            }
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {outputForm.length === 0 && (
                 <EmptyState icon={Package} title="Nenhuma entrega" description="Nenhuma entrega adicionada." compact />
               )}
               {outputForm.map((ent, i) => (
-                <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
-                  <button onClick={() => removeEntregavel(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
-                    <X className="h-4 w-4" />
+                <div key={i} style={{
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  padding: 16,
+                  background: 'hsl(var(--ds-surface))',
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 12,
+                }}>
+                  <button
+                    onClick={() => removeEntregavel(i)}
+                    style={{ position: 'absolute', top: 8, right: 8, color: 'hsl(var(--ds-fg-3))', transition: 'color 0.15s' }}
+                  >
+                    <X size={16} strokeWidth={1.5} />
                   </button>
                   <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_auto] gap-3 items-end">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Título</Label>
+                    <div>
+                      <label style={eyebrowLabelStyle}>Título</label>
                       <Input value={ent.titulo} onChange={e => updateEntregavel(i, 'titulo', e.target.value)} placeholder="Nome da entrega" />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Quantidade</Label>
-                      <Input value={ent.quantidade} onChange={e => updateEntregavel(i, 'quantidade', e.target.value)} placeholder="Ex: 3" />
+                    <div>
+                      <label style={eyebrowLabelStyle}>Quantidade</label>
+                      <Input
+                        style={{ fontVariantNumeric: 'tabular-nums' }}
+                        value={ent.quantidade}
+                        onChange={e => updateEntregavel(i, 'quantidade', e.target.value)}
+                        placeholder="Ex: 3"
+                      />
                     </div>
                     <div>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className="h-10 w-10 p-0 text-lg">
+                          <button className="btn" style={{ height: 40, width: 40, padding: 0, justifyContent: 'center', fontSize: 18 }}>
                             {ent.icone || '🎬'}
-                          </Button>
+                          </button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-2" align="end">
                           <div className="grid grid-cols-8 gap-1">
@@ -1324,9 +1576,16 @@ export default function ProposalDetails() {
                                 key={opt.value}
                                 type="button"
                                 onClick={() => updateEntregavel(i, 'icone', opt.value)}
-                                className={`h-8 w-8 rounded-md flex items-center justify-center text-base transition-colors ${
-                                  ent.icone === opt.value ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted'
-                                }`}
+                                style={{
+                                  height: 32,
+                                  width: 32,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: 16,
+                                  border: ent.icone === opt.value ? '1px solid hsl(var(--ds-accent))' : '1px solid transparent',
+                                  background: ent.icone === opt.value ? 'hsl(var(--ds-accent) / 0.1)' : 'transparent',
+                                }}
                               >
                                 {opt.value}
                               </button>
@@ -1336,14 +1595,14 @@ export default function ProposalDetails() {
                       </Popover>
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Descrição</Label>
+                  <div>
+                    <label style={eyebrowLabelStyle}>Descrição</label>
                     <Input value={ent.descricao} onChange={e => updateEntregavel(i, 'descricao', e.target.value)} placeholder="Descrição breve" />
                   </div>
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </SectionShell>
 
           {/* Serviços (Pré, Gravação, Pós) — novo editor com fallback legado */}
           {proposal && (
@@ -1356,54 +1615,66 @@ export default function ProposalDetails() {
           )}
 
           {/* Testimonial Section */}
-          <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-md bg-muted"><MessageSquare className="h-4 w-4 text-foreground/70" /></div>
-                  <CardTitle className="text-sm font-semibold tracking-tight">Depoimento</CardTitle>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="outline" onClick={() => { setShowTestimonialBank(true); setTestimonialBankSearch(''); }}>
-                    <Plus className="h-3.5 w-3.5 mr-1.5" /> Selecionar do Banco
-                  </Button>
-                  {testimonialDirty && (
-                    <Button size="sm" onClick={() => handleSaveClick('testimonial')} disabled={updateProposal.isPending}>
-                      <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                    </Button>
-                  )}
-                </div>
-            </div>
-            <CardContent className="pt-6">
-              {testimonialForm.testimonial_name ? (
-                <div className="border rounded-xl bg-muted/30 p-5 flex gap-4 items-start">
-                  <Avatar className="h-14 w-14 shrink-0">
-                    <AvatarImage src={testimonialForm.testimonial_image || undefined} />
-                    <AvatarFallback>{testimonialForm.testimonial_name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-sm">{testimonialForm.testimonial_name}</p>
-                      {testimonialForm.testimonial_role && (
-                        <span className="text-xs text-muted-foreground">• {testimonialForm.testimonial_role}</span>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1 italic">"{testimonialForm.testimonial_text}"</p>
+          <SectionShell
+            icon={MessageSquare}
+            title="Depoimento"
+            actions={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button className="btn" onClick={() => { setShowTestimonialBank(true); setTestimonialBankSearch(''); }}>
+                  <Plus size={14} strokeWidth={1.5} style={{ marginRight: 6 }} /> Selecionar do Banco
+                </button>
+                {testimonialDirty && (
+                  <button className="btn primary" onClick={() => handleSaveClick('testimonial')} disabled={updateProposal.isPending}>
+                    <Save size={14} strokeWidth={1.5} style={{ marginRight: 6 }} /> Salvar
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {testimonialForm.testimonial_name ? (
+              <div style={{
+                border: '1px solid hsl(var(--ds-line-1))',
+                background: 'hsl(var(--ds-line-2) / 0.3)',
+                padding: 20,
+                display: 'flex',
+                gap: 16,
+                alignItems: 'flex-start',
+              }}>
+                <Avatar className="h-14 w-14 shrink-0">
+                  <AvatarImage src={testimonialForm.testimonial_image || undefined} />
+                  <AvatarFallback>{testimonialForm.testimonial_name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <p style={{ fontWeight: 600, fontSize: 13, color: 'hsl(var(--ds-fg-1))' }}>{testimonialForm.testimonial_name}</p>
+                    {testimonialForm.testimonial_role && (
+                      <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>• {testimonialForm.testimonial_role}</span>
+                    )}
                   </div>
-                  <Button size="icon" variant="ghost" className="shrink-0 h-8 w-8" onClick={() => setTestimonialForm({ testimonial_name: '', testimonial_role: '', testimonial_text: '', testimonial_image: '' })}>
-                    <X className="h-4 w-4" />
-                  </Button>
+                  <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-2))', marginTop: 4, fontStyle: 'italic' }}>
+                    "{testimonialForm.testimonial_text}"
+                  </p>
                 </div>
-              ) : (
-                <EmptyState icon={MessageSquare} title="Nenhum depoimento selecionado" description="Clique em 'Selecionar do Banco' para escolher" compact />
-              )}
-            </CardContent>
-          </Card>
+                <button
+                  className="btn"
+                  style={{ width: 32, height: 32, padding: 0, justifyContent: 'center', flexShrink: 0 }}
+                  onClick={() => setTestimonialForm({ testimonial_name: '', testimonial_role: '', testimonial_text: '', testimonial_image: '' })}
+                >
+                  <X size={16} strokeWidth={1.5} />
+                </button>
+              </div>
+            ) : (
+              <EmptyState icon={MessageSquare} title="Nenhum depoimento selecionado" description="Clique em 'Selecionar do Banco' para escolher" compact />
+            )}
+          </SectionShell>
 
           {/* Testimonial Bank Dialog */}
           <Dialog open={showTestimonialBank} onOpenChange={(open) => { setShowTestimonialBank(open); if (!open) { setShowNewTestimonial(false); setEditingTestimonialId(null); } }}>
             <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col p-0">
-              <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
-                <DialogTitle>Banco de Depoimentos</DialogTitle>
+              <DialogHeader className="px-6 pt-6 pb-4 shrink-0" style={{ borderBottom: '1px solid hsl(var(--ds-line-1))' }}>
+                <DialogTitle>
+                  <span style={{ fontFamily: '"HN Display", sans-serif' }}>Banco de Depoimentos</span>
+                </DialogTitle>
                 <div className="pt-3">
                   <Input
                     value={testimonialBankSearch}
@@ -1425,11 +1696,18 @@ export default function ProposalDetails() {
                           return (
                             <div
                               key={t.id}
-                              className={`relative text-left border rounded-lg p-3 transition-all flex gap-3 items-start cursor-pointer ${
-                                isSelected
-                                  ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
-                                  : 'border-border hover:border-primary/30'
-                              }`}
+                              style={{
+                                position: 'relative',
+                                textAlign: 'left',
+                                border: isSelected ? '1px solid hsl(var(--ds-accent))' : '1px solid hsl(var(--ds-line-1))',
+                                background: isSelected ? 'hsl(var(--ds-accent) / 0.05)' : 'hsl(var(--ds-surface))',
+                                padding: 12,
+                                transition: 'all 0.15s',
+                                display: 'flex',
+                                gap: 12,
+                                alignItems: 'flex-start',
+                                cursor: 'pointer',
+                              }}
                               onClick={() => {
                                 setTestimonialForm({
                                   testimonial_name: t.name,
@@ -1444,18 +1722,19 @@ export default function ProposalDetails() {
                                 <AvatarImage src={t.image || undefined} />
                                 <AvatarFallback className="text-xs">{t.name.charAt(0)}</AvatarFallback>
                               </Avatar>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <p className="font-medium text-sm flex-1">{t.name}</p>
-                                  {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <p style={{ fontWeight: 500, fontSize: 13, flex: 1, color: 'hsl(var(--ds-fg-1))' }}>{t.name}</p>
+                                  {isSelected && <Check size={16} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-accent))', flexShrink: 0 }} />}
                                 </div>
-                                {t.role && <p className="text-xs text-muted-foreground">{t.role}</p>}
-                                <p className="text-xs text-muted-foreground mt-1 line-clamp-2 italic">"{t.text}"</p>
+                                {t.role && <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>{t.role}</p>}
+                                <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 4, fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                  "{t.text}"
+                                </p>
                               </div>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="shrink-0 h-7 w-7 opacity-50 hover:opacity-100"
+                              <button
+                                className="btn"
+                                style={{ width: 28, height: 28, padding: 0, justifyContent: 'center', flexShrink: 0, opacity: 0.5 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setEditingTestimonialId(t.id);
@@ -1463,8 +1742,8 @@ export default function ProposalDetails() {
                                   setShowNewTestimonial(true);
                                 }}
                               >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
+                                <Pencil size={14} strokeWidth={1.5} />
+                              </button>
                             </div>
                           );
                         })}
@@ -1472,35 +1751,37 @@ export default function ProposalDetails() {
                         <EmptyState icon={MessageSquare} title="Nenhum depoimento encontrado" description="Nenhum depoimento encontrado." compact />
                       )}
                     </div>
-                    <div className="border-t border-border pt-4 mt-4">
-                      <Button variant="ghost" size="sm" className="w-full" onClick={() => { setShowNewTestimonial(true); setEditingTestimonialId(null); setNewTestimonialForm({ name: '', role: '', text: '', image: '' }); }}>
-                        <Plus className="h-3.5 w-3.5 mr-1" /> Criar novo depoimento
-                      </Button>
+                    <div style={{ borderTop: '1px solid hsl(var(--ds-line-1))', paddingTop: 16, marginTop: 16 }}>
+                      <button className="btn" style={{ width: '100%', justifyContent: 'center' }} onClick={() => { setShowNewTestimonial(true); setEditingTestimonialId(null); setNewTestimonialForm({ name: '', role: '', text: '', image: '' }); }}>
+                        <Plus size={14} strokeWidth={1.5} style={{ marginRight: 4 }} /> Criar novo depoimento
+                      </button>
                     </div>
                   </>
                 ) : (
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-medium">{editingTestimonialId ? 'Editar depoimento' : 'Novo depoimento'}</h4>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Nome *</Label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <h4 style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                      {editingTestimonialId ? 'Editar depoimento' : 'Novo depoimento'}
+                    </h4>
+                    <div>
+                      <label style={eyebrowLabelStyle}>Nome *</label>
                       <Input value={newTestimonialForm.name} onChange={e => setNewTestimonialForm(p => ({ ...p, name: e.target.value }))} placeholder="Nome da pessoa" />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Cargo</Label>
+                    <div>
+                      <label style={eyebrowLabelStyle}>Cargo</label>
                       <Input value={newTestimonialForm.role} onChange={e => setNewTestimonialForm(p => ({ ...p, role: e.target.value }))} placeholder="Cargo, Empresa" />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Texto do depoimento *</Label>
+                    <div>
+                      <label style={eyebrowLabelStyle}>Texto do depoimento *</label>
                       <Textarea value={newTestimonialForm.text} onChange={e => setNewTestimonialForm(p => ({ ...p, text: e.target.value }))} rows={3} placeholder="O que a pessoa disse..." />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Foto</Label>
-                      <div className="flex items-center gap-3">
+                    <div>
+                      <label style={eyebrowLabelStyle}>Foto</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={newTestimonialForm.image || undefined} />
                           <AvatarFallback className="text-xs">{newTestimonialForm.name.charAt(0) || '?'}</AvatarFallback>
                         </Avatar>
-                        <Button variant="outline" size="sm" disabled={uploadingTestimonialImage} onClick={() => {
+                        <button className="btn" disabled={uploadingTestimonialImage} onClick={() => {
                           const input = document.createElement('input');
                           input.type = 'file';
                           input.accept = 'image/*';
@@ -1523,13 +1804,13 @@ export default function ProposalDetails() {
                           };
                           input.click();
                         }}>
-                          <Upload className="h-3.5 w-3.5 mr-1.5" /> {uploadingTestimonialImage ? 'Enviando...' : 'Upload'}
-                        </Button>
+                          <Upload size={14} strokeWidth={1.5} style={{ marginRight: 6 }} /> {uploadingTestimonialImage ? 'Enviando...' : 'Upload'}
+                        </button>
                       </div>
                     </div>
-                    <div className="flex gap-2 pt-2 border-t border-border">
-                      <Button variant="ghost" size="sm" onClick={() => { setShowNewTestimonial(false); setEditingTestimonialId(null); }}>Voltar</Button>
-                      <Button size="sm" disabled={!newTestimonialForm.name.trim() || !newTestimonialForm.text.trim() || createTestimonial.isPending || updateTestimonial.isPending} onClick={async () => {
+                    <div style={{ display: 'flex', gap: 8, paddingTop: 8, borderTop: '1px solid hsl(var(--ds-line-1))' }}>
+                      <button className="btn" onClick={() => { setShowNewTestimonial(false); setEditingTestimonialId(null); }}>Voltar</button>
+                      <button className="btn primary" disabled={!newTestimonialForm.name.trim() || !newTestimonialForm.text.trim() || createTestimonial.isPending || updateTestimonial.isPending} onClick={async () => {
                         try {
                           const payload = {
                             name: newTestimonialForm.name.trim(),
@@ -1550,8 +1831,8 @@ export default function ProposalDetails() {
                           toast.error('Erro ao salvar depoimento');
                         }
                       }}>
-                        <Check className="h-3.5 w-3.5 mr-1.5" /> {editingTestimonialId ? 'Salvar alterações' : 'Salvar no banco'}
-                      </Button>
+                        <Check size={14} strokeWidth={1.5} style={{ marginRight: 6 }} /> {editingTestimonialId ? 'Salvar alterações' : 'Salvar no banco'}
+                      </button>
                     </div>
                   </div>
                 )}
@@ -1564,7 +1845,9 @@ export default function ProposalDetails() {
         <Dialog open={showTranscriptDialog} onOpenChange={setShowTranscriptDialog}>
           <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
             <DialogHeader>
-              <DialogTitle>Importar Transcrição</DialogTitle>
+              <DialogTitle>
+                <span style={{ fontFamily: '"HN Display", sans-serif' }}>Importar Transcrição</span>
+              </DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-hidden">
               <Textarea
@@ -1575,8 +1858,8 @@ export default function ProposalDetails() {
               />
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowTranscriptDialog(false)}>Cancelar</Button>
-              <Button disabled={isParsing || !transcriptText.trim()} onClick={async () => {
+              <button className="btn" onClick={() => setShowTranscriptDialog(false)}>Cancelar</button>
+              <button className="btn primary" disabled={isParsing || !transcriptText.trim()} onClick={async () => {
                 try {
                   const result = await parseTranscript(transcriptText);
                   if (result.client_name) setClientForm(p => ({ ...p, client_name: result.client_name! }));
@@ -1589,9 +1872,9 @@ export default function ProposalDetails() {
                   setShowTranscriptDialog(false);
                 } catch (err) { toast.error('Erro ao processar: ' + (err instanceof Error ? err.message : 'Erro desconhecido')); }
               }}>
-                {isParsing ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                {isParsing ? <Loader2 size={14} className="animate-spin" style={{ marginRight: 4 }} /> : <Sparkles size={14} strokeWidth={1.5} style={{ marginRight: 4 }} />}
                 Processar
-              </Button>
+              </button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -1601,19 +1884,21 @@ export default function ProposalDetails() {
       <Dialog open={showVersionDialog} onOpenChange={setShowVersionDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Como deseja salvar?</DialogTitle>
+            <DialogTitle>
+              <span style={{ fontFamily: '"HN Display", sans-serif' }}>Como deseja salvar?</span>
+            </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
+          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
             Você pode alterar a versão atual ou criar uma nova versão desta proposta.
           </p>
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => handleVersionChoice('update')} disabled={createNewVersion.isPending}>
+            <button className="btn" onClick={() => handleVersionChoice('update')} disabled={createNewVersion.isPending}>
               Alterar esta versão
-            </Button>
-            <Button onClick={() => handleVersionChoice('new')} disabled={createNewVersion.isPending}>
-              {createNewVersion.isPending ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : null}
+            </button>
+            <button className="btn primary" onClick={() => handleVersionChoice('new')} disabled={createNewVersion.isPending}>
+              {createNewVersion.isPending ? <Loader2 size={14} className="animate-spin" style={{ marginRight: 4 }} /> : null}
               Criar nova versão
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

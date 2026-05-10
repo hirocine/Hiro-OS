@@ -1,5 +1,3 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { Clock, User } from 'lucide-react';
 import { formatBRL, type DealWithRelations } from '../../types/crm.types';
 
@@ -13,25 +11,75 @@ export function DealCard({ deal, isDragging }: DealCardProps) {
   const isStale = daysInStage > 7;
 
   return (
-    <Card className={cn(
-      'cursor-grab active:cursor-grabbing transition-all duration-150',
-      isDragging && 'opacity-50 shadow-lg',
-      isStale && 'border-orange-400 border-2',
-    )}>
-      <CardContent className="p-3 space-y-2">
-        <p className="text-sm font-medium leading-tight">{deal.title}</p>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <User className="h-3 w-3" />
-          <span className="truncate">{deal.contact_name}</span>
-        </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-medium text-foreground">{formatBRL(deal.estimated_value)}</span>
-          <span className={cn('flex items-center gap-1', isStale ? 'text-orange-500 font-medium' : 'text-muted-foreground')}>
-            <Clock className="h-3 w-3" />
-            {daysInStage}d
-          </span>
-        </div>
-      </CardContent>
-    </Card>
+    <div
+      style={{
+        border: isStale ? '1px solid hsl(var(--ds-warning) / 0.5)' : '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        padding: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        cursor: 'grab',
+        opacity: isDragging ? 0.5 : 1,
+        boxShadow: isDragging ? '0 6px 20px hsl(0 0% 0% / 0.15)' : undefined,
+        transition: 'opacity 0.15s, box-shadow 0.15s',
+      }}
+    >
+      <p
+        style={{
+          fontSize: 13,
+          fontWeight: 500,
+          color: 'hsl(var(--ds-fg-1))',
+          lineHeight: 1.3,
+        }}
+      >
+        {deal.title}
+      </p>
+      <div
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 11,
+          color: 'hsl(var(--ds-fg-3))',
+        }}
+      >
+        <User size={11} strokeWidth={1.5} style={{ flexShrink: 0 }} />
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {deal.contact_name}
+        </span>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: 11,
+        }}
+      >
+        <span
+          style={{
+            fontWeight: 500,
+            color: 'hsl(var(--ds-fg-1))',
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          {formatBRL(deal.estimated_value)}
+        </span>
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            fontWeight: isStale ? 500 : 400,
+            color: isStale ? 'hsl(var(--ds-warning))' : 'hsl(var(--ds-fg-3))',
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          <Clock size={11} strokeWidth={1.5} />
+          {daysInStage}d
+        </span>
+      </div>
+    </div>
   );
 }

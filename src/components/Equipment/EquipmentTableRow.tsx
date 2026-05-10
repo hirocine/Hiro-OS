@@ -1,7 +1,5 @@
 import React, { useRef, memo, useCallback } from 'react';
 import { Equipment } from '@/types/equipment';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package, ArrowUpRight, Upload } from 'lucide-react';
@@ -23,6 +21,27 @@ interface EquipmentTableRowProps {
   onToggleSelection?: (id: string) => void;
 }
 
+const COLS = '40px 40px 60px minmax(250px, 1fr) minmax(140px, 200px) minmax(120px, 160px) 100px 120px 120px';
+
+const statusToneStyle: Record<string, React.CSSProperties> = {
+  available:   { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
+  in_use:      { color: 'hsl(var(--ds-info))',    borderColor: 'hsl(var(--ds-info) / 0.3)' },
+  maintenance: { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
+  loaned:      { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
+  damaged:     { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+};
+
+const iconBtnStyle: React.CSSProperties = {
+  width: 28,
+  height: 28,
+  display: 'grid',
+  placeItems: 'center',
+  background: 'transparent',
+  border: 0,
+  cursor: 'pointer',
+  color: 'hsl(var(--ds-fg-3))',
+};
+
 export const EquipmentTableRow = memo(function EquipmentTableRow({
   equipment,
   accessories = [],
@@ -32,14 +51,12 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
   onImageUpload,
   onConvertToAccessory,
   level = 0,
-  className = '',
   selected = false,
   onToggleSelection,
 }: EquipmentTableRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { getCategoryTitle } = useCategories();
   const {
-    getStatusVariant,
     getStatusLabel,
     formatCurrency,
     handleImageUpload,
@@ -52,27 +69,42 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
     fileInputRef.current?.click();
   }, []);
 
-  const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && onImageUpload) {
-      await handleImageUpload(equipment, file, (eq, f) => onImageUpload(eq.id, f));
-    }
-  }, [equipment, onImageUpload, handleImageUpload]);
+  const handleFileChange = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file && onImageUpload) {
+        await handleImageUpload(equipment, file, (eq, f) => onImageUpload(eq.id, f));
+      }
+    },
+    [equipment, onImageUpload, handleImageUpload]
+  );
 
   const isMainItem = equipment.itemType === 'main';
   const hasAccessories = accessories.length > 0;
   const isExpanded = equipment.isExpanded;
+  const tone = statusToneStyle[equipment.status] || statusToneStyle.available;
 
   return (
     <>
-      <div 
-        className={`grid grid-cols-[40px_40px_60px_minmax(250px,1fr)_minmax(140px,200px)_minmax(120px,160px)_100px_120px_120px] gap-2 lg:gap-3 px-2 lg:px-4 py-3 border-b transition-all duration-200 hover:bg-muted/30 border-border ${
-          selected ? 'bg-primary/5 border-primary/20' : ''
-        } ${level > 0 ? 'ml-6 border-l-2 border-primary/20 bg-muted/10' : ''} ${className}`}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: COLS,
+          gap: 12,
+          padding: '12px 16px',
+          alignItems: 'center',
+          borderBottom: '1px solid hsl(var(--ds-line-2))',
+          background: selected
+            ? 'hsl(var(--ds-accent) / 0.05)'
+            : level > 0
+              ? 'hsl(var(--ds-line-2) / 0.2)'
+              : 'transparent',
+          marginLeft: level > 0 ? 24 : 0,
+          borderLeft: level > 0 ? '2px solid hsl(var(--ds-accent) / 0.2)' : undefined,
+          transition: 'background 0.15s',
+        }}
       >
-
-        {/* Checkbox */}
-        <div className="flex items-center justify-center">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {onToggleSelection && level === 0 && (
             <Checkbox
               checked={selected}
@@ -81,83 +113,55 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
           )}
         </div>
 
-        {/* Expansão / Tipo */}
-        <div className="flex items-center justify-center">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {isMainItem && hasAccessories ? (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onToggleExpansion(equipment.id)}
-                    className="h-7 w-7 p-0 hover:bg-accent/30 transition-colors"
-                  >
-                    {isExpanded ? (
-                      <ChevronDown className="h-4 w-4 text-primary" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4 text-primary" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{isExpanded ? 'Recolher' : 'Expandir'} acessórios</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <button
+              type="button"
+              onClick={() => onToggleExpansion(equipment.id)}
+              style={{ ...iconBtnStyle, color: 'hsl(var(--ds-accent))' }}
+              aria-label={isExpanded ? 'Recolher acessórios' : 'Expandir acessórios'}
+            >
+              {isExpanded ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
+            </button>
           ) : (
-            <div className="h-7 w-7 flex items-center justify-center">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="cursor-default">
-                      {isMainItem ? (
-                        <Package className="h-4 w-4 text-primary" />
-                      ) : (
-                        <div className="flex items-center text-muted-foreground">
-                          <div className="w-3 h-3 border-l-2 border-b-2 border-muted-foreground/40 mr-1"></div>
-                          <Package className="h-3 w-3" />
-                        </div>
-                      )}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{isMainItem ? 'Item principal' : 'Acessório'}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+            <div style={{ width: 28, height: 28, display: 'grid', placeItems: 'center', color: isMainItem ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-4))' }}>
+              <Package size={isMainItem ? 14 : 12} strokeWidth={1.5} />
             </div>
           )}
         </div>
 
-        {/* Imagem */}
-        <div className="flex items-center justify-center">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div 
-                  className="w-12 h-12 rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/50 cursor-pointer hover:border-accent hover:bg-accent/10 transition-all duration-200 flex items-center justify-center group relative overflow-hidden"
+                <button
+                  type="button"
                   onClick={handleImageClick}
+                  style={{
+                    width: 44,
+                    height: 44,
+                    border: '1px dashed hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-line-2) / 0.3)',
+                    color: 'hsl(var(--ds-fg-3))',
+                    cursor: 'pointer',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    display: 'grid',
+                    placeItems: 'center',
+                  }}
                 >
                   {uploading ? (
-                    <div className="animate-pulse">
-                      <Upload className="h-4 w-4 text-primary animate-bounce" />
-                    </div>
+                    <Upload size={14} strokeWidth={1.5} className="animate-pulse" style={{ color: 'hsl(var(--ds-accent))' }} />
                   ) : equipment.image ? (
-                    <>
-                      <img 
-                        src={equipment.image} 
-                        alt={equipment.name} 
-                        className="w-full h-full object-cover rounded-md"
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Camera className="h-4 w-4 text-white" />
-                      </div>
-                    </>
+                    <img
+                      src={equipment.image}
+                      alt={equipment.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
                   ) : (
-                    <Camera className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors" />
+                    <Camera size={14} strokeWidth={1.5} />
                   )}
-                </div>
+                </button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{equipment.image ? 'Alterar imagem' : 'Adicionar imagem'}</p>
@@ -169,196 +173,135 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
             type="file"
             accept="image/*"
             onChange={handleFileChange}
-            className="hidden"
+            style={{ display: 'none' }}
           />
         </div>
 
-        {/* Nome e modelo */}
-        <div className="flex flex-col justify-center min-w-0">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="cursor-default">
-                  <span className="font-medium text-sm leading-tight truncate block" title={equipment.name}>
-                    {equipment.name}
-                  </span>
-                  {equipment.serialNumber && (
-                    <span className="text-xs text-muted-foreground truncate block mt-0.5" title={`SN: ${equipment.serialNumber}`}>
-                      SN: {equipment.serialNumber}
-                    </span>
-                  )}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-xs">
-                <div>
-                  <p className="font-medium">{equipment.name}</p>
-                  {equipment.serialNumber && (
-                    <p className="text-xs text-muted-foreground">Serial: {equipment.serialNumber}</p>
-                  )}
-                  {equipment.patrimonyNumber && (
-                    <p className="text-xs text-muted-foreground">Patrimônio: {equipment.patrimonyNumber}</p>
-                  )}
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <span
+            className="t-title"
+            title={equipment.name}
+            style={{
+              fontWeight: 500,
+              fontSize: 13,
+              lineHeight: 1.3,
+              color: 'hsl(var(--ds-fg-1))',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {equipment.name}
+          </span>
+          {equipment.serialNumber && (
+            <span
+              style={{
+                fontSize: 11,
+                color: 'hsl(var(--ds-fg-3))',
+                fontVariantNumeric: 'tabular-nums',
+                marginTop: 2,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+              title={`SN: ${equipment.serialNumber}`}
+            >
+              SN: {equipment.serialNumber}
+            </span>
+          )}
           {isMainItem && hasAccessories && (
-            <div className="mt-1">
-              <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                {accessories.length} acessório{accessories.length !== 1 ? 's' : ''}
-              </Badge>
-            </div>
+            <span className="pill muted" style={{ fontSize: 10, marginTop: 4, alignSelf: 'flex-start' }}>
+              {accessories.length} acessório{accessories.length !== 1 ? 's' : ''}
+            </span>
           )}
         </div>
 
-        {/* Marca */}
-        <div className="flex items-center min-w-0">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-sm truncate cursor-default" title={equipment.brand}>
-                  {equipment.brand}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{equipment.brand}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div style={{ display: 'flex', alignItems: 'center', minWidth: 0, fontSize: 13, color: 'hsl(var(--ds-fg-2))' }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={equipment.brand}>
+            {equipment.brand}
+          </span>
         </div>
 
-        {/* Categoria */}
-        <div className="flex items-center min-w-0">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="cursor-default">
-                  <span className="text-sm truncate block">
-                    {getCategoryTitle(equipment.category)}
-                  </span>
-                  {equipment.subcategory && (
-                    <span className="text-xs text-muted-foreground truncate block">
-                      {equipment.subcategory}
-                    </span>
-                  )}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <div>
-                  <p>{getCategoryTitle(equipment.category)}</p>
-                  {equipment.subcategory && (
-                    <p className="text-xs text-muted-foreground">{equipment.subcategory}</p>
-                  )}
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-
-        {/* Status */}
-        <div className="flex items-center">
-          <Badge 
-            variant={getStatusVariant(equipment.status)}
-            className="text-xs font-medium"
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, justifyContent: 'center' }}>
+          <span
+            style={{
+              fontSize: 13,
+              color: 'hsl(var(--ds-fg-2))',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
           >
+            {getCategoryTitle(equipment.category)}
+          </span>
+          {equipment.subcategory && (
+            <span
+              style={{
+                fontSize: 11,
+                color: 'hsl(var(--ds-fg-3))',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {equipment.subcategory}
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <span
+            className="pill"
+            style={{ ...tone, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          >
+            <span className="dot" style={{ background: 'currentColor' }} />
             {getStatusLabel(equipment.status)}
-          </Badge>
+          </span>
         </div>
 
-        {/* Valor */}
-        <div className="flex items-center">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-sm font-medium cursor-default">
-                  {formatCurrency(equipment.value)}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                <div>
-                  {equipment.value && (
-                    <>
-                      <p>Valor: {formatCurrency(equipment.value)}</p>
-                      {equipment.depreciatedValue && equipment.depreciatedValue !== equipment.value && (
-                        <p className="text-xs text-muted-foreground">
-                          Depreciado: {formatCurrency(equipment.depreciatedValue)}
-                        </p>
-                      )}
-                    </>
-                  )}
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div style={{ display: 'flex', alignItems: 'center', fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>
+          {formatCurrency(equipment.value)}
         </div>
 
-        {/* Ações */}
-        <div className="flex items-center justify-center gap-1">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => onEdit(equipment)}
-                  className="h-8 w-8 p-0 hover:bg-accent/30 hover:text-accent-foreground transition-colors"
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Editar equipamento</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          
-          {isMainItem && onConvertToAccessory && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => onConvertToAccessory(equipment)}
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-accent hover:bg-accent/10 transition-colors"
-                  >
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Converter para acessório</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          
-          <AdminOnly 
-            fallback={<div className="h-8 w-8" />}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+          <button
+            type="button"
+            onClick={() => onEdit(equipment)}
+            style={iconBtnStyle}
+            aria-label="Editar"
+            title="Editar equipamento"
           >
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => onDelete(equipment.id)}
-                    className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Excluir equipamento</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Edit size={14} strokeWidth={1.5} />
+          </button>
+
+          {isMainItem && onConvertToAccessory && (
+            <button
+              type="button"
+              onClick={() => onConvertToAccessory(equipment)}
+              style={iconBtnStyle}
+              aria-label="Converter"
+              title="Converter para acessório"
+            >
+              <ArrowUpRight size={14} strokeWidth={1.5} />
+            </button>
+          )}
+
+          <AdminOnly fallback={<div style={{ width: 28, height: 28 }} />}>
+            <button
+              type="button"
+              onClick={() => onDelete(equipment.id)}
+              style={{ ...iconBtnStyle, color: 'hsl(var(--ds-danger))' }}
+              aria-label="Excluir"
+              title="Excluir equipamento"
+            >
+              <Trash2 size={14} strokeWidth={1.5} />
+            </button>
           </AdminOnly>
         </div>
       </div>
 
-      {/* Acessórios expandidos com animação */}
       {isMainItem && isExpanded && accessories.length > 0 && (
-        <div className="animate-fade-in">
+        <div>
           {accessories.map((accessory) => (
             <EquipmentTableRow
               key={accessory.id}
@@ -369,7 +312,6 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
               onImageUpload={onImageUpload}
               onConvertToAccessory={onConvertToAccessory}
               level={level + 1}
-              className="animate-fade-in"
             />
           ))}
         </div>

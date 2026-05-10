@@ -1,40 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Plus, Pencil, UserCheck } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { WhatsAppIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { formatCurrency } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { useSuppliers } from '@/features/suppliers/hooks/useSuppliers';
 import { SupplierDialog } from '@/features/suppliers/components/SupplierDialog';
 import { SupplierFilters } from '@/features/suppliers/components/SupplierFilters';
 import { ExpertiseBadge } from '@/features/suppliers/components/ExpertiseBadge';
 import { StarRating } from '@/features/suppliers/components/StarRating';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { SupplierFilters as Filters, Supplier } from '@/features/suppliers/types';
+
+const FORN_COLS = '1.5fr 1fr 110px 130px 130px 100px 44px';
 
 export default function Suppliers() {
   const navigate = useNavigate();
   const { canAccessSuppliers, roleLoading } = useAuthContext();
-  const {
-    suppliers,
-    loading,
-    fetchSuppliers,
-    createSupplier,
-    updateSupplier,
-  } = useSuppliers();
+  const { suppliers, loading, fetchSuppliers, createSupplier, updateSupplier } = useSuppliers();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | undefined>();
@@ -44,27 +26,14 @@ export default function Suppliers() {
     fetchSuppliers(filters);
   }, [filters]);
 
-  const handleSearchChange = (search: string) => {
+  const handleSearchChange = (search: string) =>
     setFilters((prev) => ({ ...prev, search: search || undefined }));
-  };
-
-  const handleRoleChange = (role: string) => {
+  const handleRoleChange = (role: string) =>
     setFilters((prev) => ({ ...prev, role: role === 'all' ? undefined : role }));
-  };
-
-  const handleExpertiseChange = (expertise: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      expertise: expertise === 'all' ? undefined : (expertise as any),
-    }));
-  };
-
-  const handleRatingChange = (rating: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      minRating: rating === 'all' ? undefined : parseInt(rating),
-    }));
-  };
+  const handleExpertiseChange = (expertise: string) =>
+    setFilters((prev) => ({ ...prev, expertise: expertise === 'all' ? undefined : (expertise as any) }));
+  const handleRatingChange = (rating: string) =>
+    setFilters((prev) => ({ ...prev, minRating: rating === 'all' ? undefined : parseInt(rating) }));
 
   const handleSave = async (data: any) => {
     if (editingSupplier) {
@@ -75,22 +44,10 @@ export default function Suppliers() {
     setEditingSupplier(undefined);
   };
 
-  const formatWhatsApp = (number: string) => {
-    const cleaned = number.replace(/\D/g, '');
-    return `https://wa.me/${cleaned}`;
-  };
+  const formatWhatsApp = (number: string) => `https://wa.me/${number.replace(/\D/g, '')}`;
+  const formatInstagram = (username: string) => `https://instagram.com/${username.replace('@', '')}`;
+  const formatCurrencyValue = (value?: number) => (!value ? '—' : formatCurrency(value));
 
-  const formatInstagram = (username: string) => {
-    const cleaned = username.replace('@', '');
-    return `https://instagram.com/${cleaned}`;
-  };
-
-  const formatCurrencyValue = (value?: number) => {
-    if (!value) return '-';
-    return formatCurrency(value);
-  };
-
-  // Proteção de rota: apenas admins podem acessar
   if (roleLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -98,168 +55,166 @@ export default function Suppliers() {
       </div>
     );
   }
-
-  if (!canAccessSuppliers) {
-    return <Navigate to="/" replace />;
-  }
+  if (!canAccessSuppliers) return <Navigate to="/" replace />;
 
   return (
-    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-      <PageHeader
-        title="Freelancers"
-        subtitle="Gerencie sua rede de freelancers"
-        actions={
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Fornecedor
-          </Button>
-        }
-      />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Freelancers.</h1>
+            <p className="ph-sub">Gerencie sua rede de freelancers.</p>
+          </div>
+          <div className="ph-actions">
+            <button className="btn primary" onClick={() => setDialogOpen(true)} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Novo Fornecedor</span>
+            </button>
+          </div>
+        </div>
 
-      <SupplierFilters
-        onSearchChange={handleSearchChange}
-        onRoleChange={handleRoleChange}
-        onExpertiseChange={handleExpertiseChange}
-        onRatingChange={handleRatingChange}
-      />
+        <div style={{ marginTop: 28 }}>
+          <SupplierFilters
+            onSearchChange={handleSearchChange}
+            onRoleChange={handleRoleChange}
+            onExpertiseChange={handleExpertiseChange}
+            onRatingChange={handleRatingChange}
+          />
+        </div>
 
-      <div className="rounded-lg border bg-card">
-        <Table className="table-fixed">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[20%]">Nome</TableHead>
-              <TableHead className="w-[18%]">Função</TableHead>
-              <TableHead className="w-[12%]">Expertise</TableHead>
-              <TableHead className="w-[12%]">Rating</TableHead>
-              <TableHead className="w-[14%]">Diária Média</TableHead>
-              <TableHead className="w-[12%]">Contatos</TableHead>
-              <TableHead className="w-[12%] text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i} className="animate-pulse">
-                  <TableCell>
-                    <div className="space-y-1">
-                      <Skeleton className="h-4 w-28" />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-3 w-16" />
-                    </div>
-                  </TableCell>
-                  <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      {[1,2,3,4,5].map(s => <Skeleton key={s} className="h-4 w-4" />)}
-                    </div>
-                  </TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Skeleton className="h-4 w-4" />
-                      <Skeleton className="h-4 w-4" />
-                    </div>
-                  </TableCell>
-                  <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                </TableRow>
-              ))
-            ) : suppliers.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7}>
-                  <EmptyState icon={UserCheck} title="Nenhum fornecedor encontrado" description="Cadastre freelancers e prestadores de serviço" />
-                </TableCell>
-              </TableRow>
-            ) : (
-              suppliers.map((supplier) => (
-                <TableRow
+        {/* Tabela */}
+        <div className="tbl forn" style={{ gridTemplateColumns: FORN_COLS, marginTop: 20, border: '1px solid hsl(var(--ds-line-1))' }}>
+          <div className="tbl-head">
+            <div>Nome</div>
+            <div>Função</div>
+            <div>Expertise</div>
+            <div>Rating</div>
+            <div>Diária Média</div>
+            <div>Contatos</div>
+            <div></div>
+          </div>
+
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={`sk-${i}`} className={'tbl-row' + (i === 4 ? ' last' : '')}>
+                <div><span className="sk line lg" style={{ width: 160 }} /></div>
+                <div><span className="sk line" style={{ width: 100 }} /></div>
+                <div><span className="sk line" style={{ width: 70 }} /></div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <span key={s} className="sk dot" style={{ width: 10, height: 10 }} />
+                  ))}
+                </div>
+                <div><span className="sk line" style={{ width: 80 }} /></div>
+                <div><span className="sk dot" /></div>
+                <div></div>
+              </div>
+            ))
+          ) : suppliers.length === 0 ? (
+            <div style={{ gridColumn: `1 / -1`, padding: 0 }}>
+              <div className="empties" style={{ borderTop: 0, borderLeft: 0, borderRight: 0 }}>
+                <div className="empty" style={{ borderRight: 0 }}>
+                  <div className="glyph">
+                    <UserCheck strokeWidth={1.25} />
+                  </div>
+                  <h5>Nenhum fornecedor encontrado</h5>
+                  <p>Cadastre freelancers e prestadores de serviço para acompanhar sua rede.</p>
+                  <div className="actions">
+                    <button className="btn primary" onClick={() => setDialogOpen(true)} type="button">
+                      <Plus size={14} strokeWidth={1.5} />
+                      <span>Cadastrar primeiro</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            suppliers.map((supplier, idx) => {
+              const isLast = idx === suppliers.length - 1;
+              return (
+                <div
                   key={supplier.id}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className={'tbl-row' + (isLast ? ' last' : '')}
                   onClick={() => navigate(`/fornecedores/freelancers/${supplier.id}`)}
                 >
-                  <TableCell className="font-medium">
-                    {supplier.full_name}
-                    {!supplier.is_active && (
-                      <Badge variant="outline" className="ml-2 text-xs">
-                        Inativo
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>{supplier.primary_role}</span>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                      <span className="t-title">{supplier.full_name}</span>
+                      {!supplier.is_active && (
+                        <span className="pill muted"><span className="dot" />Inativo</span>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                      <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-2))' }}>{supplier.primary_role}</span>
                       {supplier.secondary_role && (
-                        <span className="text-xs text-muted-foreground">
-                          {supplier.secondary_role}
-                        </span>
+                        <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))' }}>{supplier.secondary_role}</span>
                       )}
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <ExpertiseBadge expertise={supplier.expertise} />
-                  </TableCell>
-                  <TableCell>
-                    <StarRating rating={supplier.rating} readonly />
-                  </TableCell>
-                  <TableCell>{formatCurrencyValue(supplier.daily_rate)}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {supplier.whatsapp && (
-                        <a
-                          href={formatWhatsApp(supplier.whatsapp)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-green-600 hover:text-green-700 dark:text-green-400"
-                        >
-                          <WhatsAppIcon className="h-4 w-4" />
-                        </a>
-                      )}
-                      {supplier.instagram && (
-                        <a
-                          href={formatInstagram(supplier.instagram)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-pink-600 hover:text-pink-700 dark:text-pink-400"
-                        >
-                          <InstagramIcon className="h-4 w-4" />
-                        </a>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
+                  </div>
+                  <div><ExpertiseBadge expertise={supplier.expertise} /></div>
+                  <div><StarRating rating={supplier.rating} readonly /></div>
+                  <div className="t-mono" style={{ color: 'hsl(var(--ds-fg-1))' }}>
+                    {formatCurrencyValue(supplier.daily_rate)}
+                  </div>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    {supplier.whatsapp && (
+                      <a
+                        href={formatWhatsApp(supplier.whatsapp)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ color: 'hsl(var(--ds-accent))', display: 'inline-flex' }}
+                      >
+                        <WhatsAppIcon className="h-4 w-4" />
+                      </a>
+                    )}
+                    {supplier.instagram && (
+                      <a
+                        href={formatInstagram(supplier.instagram)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ color: 'hsl(var(--ds-fg-3))', display: 'inline-flex' }}
+                      >
+                        <InstagramIcon className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
+                  <div style={{ justifyContent: 'flex-end' }}>
+                    <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         setEditingSupplier(supplier);
                         setDialogOpen(true);
                       }}
+                      style={{
+                        width: 28, height: 28, display: 'grid', placeItems: 'center',
+                        color: 'hsl(var(--ds-fg-3))', cursor: 'pointer',
+                      }}
+                      aria-label="Editar"
                     >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                      <Pencil size={14} strokeWidth={1.5} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
 
-      <SupplierDialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) setEditingSupplier(undefined);
-        }}
-        supplier={editingSupplier}
-        onSave={handleSave}
-      />
-    </ResponsiveContainer>
+        <SupplierDialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) setEditingSupplier(undefined);
+          }}
+          supplier={editingSupplier}
+          onSave={handleSave}
+        />
+      </div>
+    </div>
   );
 }

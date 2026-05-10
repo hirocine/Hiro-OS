@@ -1,10 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { EmptyState } from '@/components/ui/empty-state';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Button } from '@/components/ui/button';
 import {
   AlertTriangle,
   ArrowDown,
@@ -12,7 +8,6 @@ import {
   RefreshCw,
   Plug,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useMarketingPostMetrics, type PostWithMetrics } from '@/hooks/useMarketingPostMetrics';
 import { useMarketingAccountSnapshots } from '@/hooks/useMarketingAccountSnapshots';
 import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
@@ -423,45 +418,56 @@ export default function MarketingDashboard() {
     }
   };
 
-  // Empty state — Instagram not connected
   if (!integrationsLoading && !instagramConnected) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <PageHeader
-          title="Dashboard de Marketing"
-          subtitle="Visão consolidada da conta Instagram e dos seus conteúdos"
-        />
-        <EmptyState
-          icon={Plug}
-          title="Conecte o Instagram para ver dados em tempo real"
-          description="Configure a integração em Admin → Integrações de Marketing para ver seguidores, alcance, demografia e métricas dos seus posts atualizadas automaticamente todos os dias."
-          action={{
-            label: 'Ir para Integrações',
-            onClick: () => navigate('/administracao/integracoes'),
-          }}
-        />
-      </ResponsiveContainer>
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner">
+          <div className="ph">
+            <div>
+              <h1 className="ph-title">Dashboard de Marketing.</h1>
+              <p className="ph-sub">Visão consolidada da conta Instagram e dos seus conteúdos.</p>
+            </div>
+          </div>
+          <div className="empties" style={{ marginTop: 24 }}>
+            <div className="empty" style={{ borderRight: 0 }}>
+              <div className="glyph"><Plug strokeWidth={1.25} /></div>
+              <h5>Conecte o Instagram para ver dados em tempo real</h5>
+              <p>Configure a integração em Admin → Integrações de Marketing para ver seguidores, alcance, demografia e métricas dos seus posts atualizadas automaticamente todos os dias.</p>
+              <div className="actions">
+                <button className="btn primary" onClick={() => navigate('/administracao/integracoes')} type="button">
+                  <span>Ir para Integrações</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
+  const lastSync = ga4Integration?.last_sync_at || instagramIntegration?.last_sync_at;
+  const elapsed = lastSync ? Date.now() - new Date(lastSync).getTime() : Infinity;
+  const canSync = !syncing && (!lastSync || elapsed > 60000);
+  const remainingSec = !canSync && !syncing && lastSync
+    ? Math.max(0, Math.ceil((60000 - elapsed) / 1000))
+    : 0;
+
   return (
-    <ResponsiveContainer maxWidth="7xl">
-      <PageHeader
-        title="Dashboard de Marketing"
-        subtitle="Visão consolidada da conta Instagram e dos seus conteúdos"
-        actions={
-          <div className="flex items-center gap-2 flex-wrap">
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Dashboard de Marketing.</h1>
+            <p className="ph-sub">Visão consolidada da conta Instagram e dos seus conteúdos.</p>
+          </div>
+          <div className="ph-actions" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <PeriodPicker
               preset={periodPreset}
               customRange={customRange}
               oldestSnapshotDate={oldestAccount?.captured_at ? new Date(oldestAccount.captured_at) : null}
               onPresetChange={(p) => {
-                if (p === 'custom') {
-                  setCustomPickerOpen(true);
-                } else {
-                  setPeriodPreset(p);
-                  setCustomRange(null);
-                }
+                if (p === 'custom') setCustomPickerOpen(true);
+                else { setPeriodPreset(p); setCustomRange(null); }
               }}
               onCustomRangeChange={(range) => {
                 setCustomRange(range);
@@ -471,116 +477,95 @@ export default function MarketingDashboard() {
               customPickerOpen={customPickerOpen}
               onCustomPickerOpenChange={setCustomPickerOpen}
             />
-            {(() => {
-              const lastSync = ga4Integration?.last_sync_at || instagramIntegration?.last_sync_at;
-              const elapsed = lastSync ? Date.now() - new Date(lastSync).getTime() : Infinity;
-              const canSync = !syncing && (!lastSync || elapsed > 60000);
-              const remainingSec = !canSync && !syncing && lastSync
-                ? Math.max(0, Math.ceil((60000 - elapsed) / 1000))
-                : 0;
-
-              return (
-                <Button
-                  onClick={handleSync}
-                  disabled={syncing || !canSync}
-                  size="sm"
-                  className="gap-2"
-                  title={!canSync && remainingSec > 0 ? `Aguarde ${remainingSec}s` : undefined}
-                >
-                  <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin')} />
-                  {syncing
-                    ? 'Sincronizando...'
-                    : !canSync && remainingSec > 0
-                      ? `Aguarde ${remainingSec}s`
-                      : 'Sincronizar agora'}
-                </Button>
-              );
-            })()}
+            <button
+              className="btn primary"
+              onClick={handleSync}
+              disabled={syncing || !canSync}
+              type="button"
+              title={!canSync && remainingSec > 0 ? `Aguarde ${remainingSec}s` : undefined}
+            >
+              <RefreshCw size={14} strokeWidth={1.5} className={syncing ? 'animate-spin' : ''} />
+              <span>{syncing ? 'Sincronizando…' : !canSync && remainingSec > 0 ? `Aguarde ${remainingSec}s` : 'Sincronizar agora'}</span>
+            </button>
           </div>
-        }
-      />
+        </div>
 
-      <div className="space-y-6">
-        {/* Banner com identidade do Instagram */}
-        <InstagramIdentityBanner
-          integration={instagramIntegration}
-          rightAction={
-            instagramConnected ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={() => navigate('/marketing/social-media/instagram')}
-              >
-                Ver dados completos
-                <ArrowDown className="h-3.5 w-3.5 -rotate-90" />
-              </Button>
-            ) : undefined
-          }
-        />
-
-        {/* KPIs principais da CONTA */}
-        <AccountKpisSection
-          accountSnapshotsLength={accountSnapshots.length}
-          accountLoading={accountLoading}
-          latestAccount={latestAccount}
-          accountKpis={accountKpis}
-          onSync={handleSync}
-        />
-
-        {accountSnapshots.length > 0 && (
-          <>
-            <AccountChartsSection
-              followersSeries={followersSeries}
-              reachSeries={reachSeries}
-              periodLabel={periodLabel}
-            />
-
-            <AudienceSection
-              audience={audience}
-              syncingAudience={syncingAudience}
-              onSyncAudience={handleSyncAudience}
-            />
-          </>
-        )}
-
-        {/* ===== Tráfego do site (GA4) ===== */}
-        {ga4Connected && (
-          <>
-            {/* Banner com identidade do Site */}
-            <SiteIdentityBanner
-              integration={ga4Integration}
-              rightAction={
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  onClick={() => navigate('/marketing/social-media/site')}
+        <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <InstagramIdentityBanner
+            integration={instagramIntegration}
+            rightAction={
+              instagramConnected ? (
+                <button
+                  className="btn"
+                  onClick={() => navigate('/marketing/social-media/instagram')}
+                  type="button"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 >
-                  Ver dados completos
-                  <ArrowDown className="h-3.5 w-3.5 -rotate-90" />
-                </Button>
-              }
-            />
-            <Ga4TrafficSection ga4={ga4} periodLabel={periodLabel} />
-          </>
-        )}
+                  <span>Ver dados completos</span>
+                  <ArrowDown size={14} strokeWidth={1.5} style={{ transform: 'rotate(-90deg)' }} />
+                </button>
+              ) : undefined
+            }
+          />
 
-        {/* ===== Conteúdos publicados ===== */}
-        <ContentPerformanceSection
-          loading={loading}
-          publishedPostsLength={publishedPosts.length}
-          topPosts={topPosts}
-          snapshots={snapshots}
-          kpis={kpis}
-          platformData={platformData}
-          pillarPerformance={pillarPerformance}
-          formatPerformance={formatPerformance}
-          alerts={alerts}
-          periodLabel={periodLabel}
-          onNavigate={navigate}
-        />
+          <AccountKpisSection
+            accountSnapshotsLength={accountSnapshots.length}
+            accountLoading={accountLoading}
+            latestAccount={latestAccount}
+            accountKpis={accountKpis}
+            onSync={handleSync}
+          />
+
+          {accountSnapshots.length > 0 && (
+            <>
+              <AccountChartsSection
+                followersSeries={followersSeries}
+                reachSeries={reachSeries}
+                periodLabel={periodLabel}
+              />
+              <AudienceSection
+                audience={audience}
+                syncingAudience={syncingAudience}
+                onSyncAudience={handleSyncAudience}
+              />
+            </>
+          )}
+
+          {ga4Connected && (
+            <>
+              <SiteIdentityBanner
+                integration={ga4Integration}
+                rightAction={
+                  <button
+                    className="btn"
+                    onClick={() => navigate('/marketing/social-media/site')}
+                    type="button"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <span>Ver dados completos</span>
+                    <ArrowDown size={14} strokeWidth={1.5} style={{ transform: 'rotate(-90deg)' }} />
+                  </button>
+                }
+              />
+              <Ga4TrafficSection ga4={ga4} periodLabel={periodLabel} />
+            </>
+          )}
+
+          <ContentPerformanceSection
+            loading={loading}
+            publishedPostsLength={publishedPosts.length}
+            topPosts={topPosts}
+            snapshots={snapshots}
+            kpis={kpis}
+            platformData={platformData}
+            pillarPerformance={pillarPerformance}
+            formatPerformance={formatPerformance}
+            alerts={alerts}
+            periodLabel={periodLabel}
+            onNavigate={navigate}
+          />
+        </div>
       </div>
-    </ResponsiveContainer>
+    </div>
   );
 }

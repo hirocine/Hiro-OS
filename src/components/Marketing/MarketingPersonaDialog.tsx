@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, X, Loader2, User } from 'lucide-react';
 import {
@@ -18,6 +15,26 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   persona?: MarketingPersona | null;
 }
+
+const fieldLabel: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+  display: 'block',
+  marginBottom: 6,
+};
+
+const Field = ({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) => (
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <label style={fieldLabel}>
+      {label}
+      {required && <span style={{ marginLeft: 4, color: 'hsl(var(--ds-danger))' }}>*</span>}
+    </label>
+    {children}
+  </div>
+);
 
 interface TagFieldProps {
   label: string;
@@ -37,9 +54,8 @@ function TagField({ label, placeholder, values, onChange }: TagFieldProps) {
   };
 
   return (
-    <div className="space-y-1.5">
-      <Label>{label}</Label>
-      <div className="flex gap-2">
+    <Field label={label}>
+      <div style={{ display: 'flex', gap: 6 }}>
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -51,27 +67,41 @@ function TagField({ label, placeholder, values, onChange }: TagFieldProps) {
             }
           }}
         />
-        <Button type="button" variant="secondary" onClick={add}>
+        <button type="button" className="btn" onClick={add}>
           Adicionar
-        </Button>
+        </button>
       </div>
       {values.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 pt-1">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
           {values.map((v) => (
-            <Badge key={v} variant="secondary" className="gap-1">
+            <span
+              key={v}
+              className="pill muted"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+            >
               {v}
               <button
                 type="button"
                 onClick={() => onChange(values.filter((x) => x !== v))}
-                className="hover:text-destructive"
+                style={{
+                  display: 'inline-grid',
+                  placeItems: 'center',
+                  width: 14,
+                  height: 14,
+                  color: 'hsl(var(--ds-fg-3))',
+                  background: 'transparent',
+                  border: 0,
+                  cursor: 'pointer',
+                }}
+                aria-label={`Remover ${v}`}
               >
-                <X className="h-3 w-3" />
+                <X size={10} strokeWidth={1.5} />
               </button>
-            </Badge>
+            </span>
           ))}
         </div>
       )}
-    </div>
+    </Field>
   );
 }
 
@@ -158,70 +188,104 @@ export function MarketingPersonaDialog({ open, onOpenChange, persona }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>{persona ? 'Editar persona' : 'Nova persona'}</DialogTitle>
+          <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
+            {persona ? 'Editar persona' : 'Nova persona'}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 14,
+            paddingRight: 4,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Avatar style={{ width: 76, height: 76 }}>
               <AvatarImage src={avatarUrl || undefined} alt={name} />
               <AvatarFallback>
-                {name ? name.charAt(0).toUpperCase() : <User className="h-8 w-8" />}
+                {name ? name.charAt(0).toUpperCase() : <User size={28} strokeWidth={1.5} />}
               </AvatarFallback>
             </Avatar>
-            <div className="flex flex-col gap-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                className="hidden"
+                style={{ display: 'none' }}
                 onChange={(e) => {
                   const f = e.target.files?.[0];
                   if (f) handleAvatar(f);
                 }}
               />
-              <Button
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
+                className="btn"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
               >
-                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                {avatarUrl ? 'Trocar avatar' : 'Enviar avatar'}
-              </Button>
+                {uploading ? (
+                  <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />
+                ) : (
+                  <Upload size={14} strokeWidth={1.5} />
+                )}
+                <span>{avatarUrl ? 'Trocar avatar' : 'Enviar avatar'}</span>
+              </button>
               {avatarUrl && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setAvatarUrl('')}>
+                <button
+                  type="button"
+                  style={{
+                    fontSize: 11,
+                    color: 'hsl(var(--ds-fg-3))',
+                    background: 'transparent',
+                    border: 0,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    padding: 0,
+                  }}
+                  onClick={() => setAvatarUrl('')}
+                >
                   Remover
-                </Button>
+                </button>
               )}
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Nome *</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Marina, Diretora de Marketing" />
-          </div>
+          <Field label="Nome" required>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ex: Marina, Diretora de Marketing"
+            />
+          </Field>
 
-          <div className="space-y-1.5">
-            <Label>Descrição curta</Label>
+          <Field label="Descrição curta">
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Quem é essa persona, o que faz, o que busca..."
+              placeholder="Quem é essa persona, o que faz, o que busca…"
               rows={3}
             />
-          </div>
+          </Field>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Segmento</Label>
-              <Input value={segment} onChange={(e) => setSegment(e.target.value)} placeholder="Ex: Tecnologia, Saúde..." />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Porte da empresa</Label>
-              <Input value={companySize} onChange={(e) => setCompanySize(e.target.value)} placeholder="Ex: Startup, Mid-market..." />
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            <Field label="Segmento">
+              <Input
+                value={segment}
+                onChange={(e) => setSegment(e.target.value)}
+                placeholder="Ex: Tecnologia, Saúde…"
+              />
+            </Field>
+            <Field label="Porte da empresa">
+              <Input
+                value={companySize}
+                onChange={(e) => setCompanySize(e.target.value)}
+                placeholder="Ex: Startup, Mid-market…"
+              />
+            </Field>
           </div>
 
           <TagField
@@ -244,20 +308,25 @@ export function MarketingPersonaDialog({ open, onOpenChange, persona }: Props) {
           />
           <TagField
             label="Canais consumidos"
-            placeholder="Ex: Instagram, LinkedIn, podcasts..."
+            placeholder="Ex: Instagram, LinkedIn, podcasts…"
             values={channelsConsumed}
             onChange={setChannelsConsumed}
           />
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <button type="button" className="btn" onClick={() => onOpenChange(false)}>
             Cancelar
-          </Button>
-          <Button onClick={handleSave} disabled={saving || !name.trim()}>
-            {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Salvar
-          </Button>
+          </button>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={handleSave}
+            disabled={saving || !name.trim()}
+          >
+            {saving && <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />}
+            <span>Salvar</span>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -424,7 +424,7 @@ export function PlatformAccessDialog({
               control={form.control}
               name="isFavorite"
               render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                <FormItem className="flex items-center justify-between border border-[hsl(var(--ds-line-1))] p-4">
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">Marcar como Favorito</FormLabel>
                     <FormDescription>
@@ -446,7 +446,7 @@ export function PlatformAccessDialog({
               control={form.control}
               name="isActive"
               render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                <FormItem className="flex items-center justify-between border border-[hsl(var(--ds-line-1))] p-4">
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">Status</FormLabel>
                     <FormDescription>

@@ -105,7 +105,14 @@ export function PlatformAccessGrid({
 
       {/* Grid */}
       {accesses.length === 0 ? (
-        <div className="text-center py-12 border-2 border-dashed rounded-lg">
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px 0',
+            border: '2px dashed hsl(var(--ds-line-1))',
+            background: 'hsl(var(--ds-surface))',
+          }}
+        >
           <div className="space-y-4">
             <div className="w-20 h-20 mx-auto bg-muted rounded-full flex items-center justify-center">
               <Plus className="h-10 w-10 text-muted-foreground" />

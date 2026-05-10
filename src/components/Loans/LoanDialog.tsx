@@ -94,7 +94,14 @@ export function LoanDialog({ open, onOpenChange, equipment, mode, currentLoan, o
           </ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
         
-        <div className="mb-4 p-4 bg-muted rounded-lg">
+        <div
+          style={{
+            marginBottom: 16,
+            padding: 14,
+            background: 'hsl(var(--ds-line-2) / 0.4)',
+            border: '1px solid hsl(var(--ds-line-1))',
+          }}
+        >
           <h4 className="font-medium">{equipment.name}</h4>
           <p className="text-sm text-muted-foreground">{equipment.brand}</p>
           {currentLoan && (

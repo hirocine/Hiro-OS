@@ -1,13 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 import { PriorityBadge } from './PriorityBadge';
-import { StatusBadge } from './StatusBadge';
 import { Task } from '../types';
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek,
@@ -22,12 +17,20 @@ interface TaskCalendarViewProps {
   isLoading?: boolean;
 }
 
-const PRIORITY_PILL: Record<string, string> = {
-  urgente: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-  alta: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-  media: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-  baixa: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-  standby: 'bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400',
+const priorityBg: Record<string, { bg: string; fg: string }> = {
+  urgente: { bg: 'hsl(var(--ds-danger) / 0.15)', fg: 'hsl(var(--ds-danger))' },
+  alta:    { bg: 'hsl(var(--ds-warning) / 0.15)', fg: 'hsl(var(--ds-warning))' },
+  media:   { bg: 'hsl(var(--ds-warning) / 0.1)', fg: 'hsl(var(--ds-warning))' },
+  baixa:   { bg: 'hsl(var(--ds-info) / 0.15)', fg: 'hsl(var(--ds-info))' },
+  standby: { bg: 'hsl(var(--ds-line-2))', fg: 'hsl(var(--ds-fg-3))' },
+};
+
+const priorityBorder: Record<string, string> = {
+  urgente: 'hsl(var(--ds-danger))',
+  alta:    'hsl(var(--ds-warning))',
+  media:   'hsl(var(--ds-warning))',
+  baixa:   'hsl(var(--ds-info))',
+  standby: 'hsl(var(--ds-fg-4))',
 };
 
 const WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -43,14 +46,14 @@ export function TaskCalendarView({ tasks, isLoading }: TaskCalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [animKey, setAnimKey] = useState(0);
 
-  const activeTasks = useMemo(() =>
-    tasks.filter(t => t.status !== 'concluida' && t.status !== 'arquivada' && t.due_date),
+  const activeTasks = useMemo(
+    () => tasks.filter((t) => t.status !== 'concluida' && t.status !== 'arquivada' && t.due_date),
     [tasks]
   );
 
   const tasksByDate = useMemo(() => {
     const map = new Map<string, Task[]>();
-    activeTasks.forEach(task => {
+    activeTasks.forEach((task) => {
       if (task.due_date) {
         const dateKey = task.due_date.split('T')[0];
         const existing = map.get(dateKey) || [];
@@ -76,9 +79,9 @@ export function TaskCalendarView({ tasks, isLoading }: TaskCalendarViewProps) {
   }, [view, currentDate]);
 
   const navigatePeriod = (dir: 1 | -1) => {
-    if (view === 'month') setCurrentDate(d => dir === 1 ? addMonths(d, 1) : subMonths(d, 1));
-    else if (view === 'week') setCurrentDate(d => dir === 1 ? addWeeks(d, 1) : subWeeks(d, 1));
-    setAnimKey(k => k + 1);
+    if (view === 'month') setCurrentDate((d) => (dir === 1 ? addMonths(d, 1) : subMonths(d, 1)));
+    else if (view === 'week') setCurrentDate((d) => (dir === 1 ? addWeeks(d, 1) : subWeeks(d, 1)));
+    setAnimKey((k) => k + 1);
   };
 
   const calendarDays = useMemo(() => {
@@ -113,7 +116,7 @@ export function TaskCalendarView({ tasks, isLoading }: TaskCalendarViewProps) {
 
     const nextWeekStart = addWeeks(startOfWeek(today, { weekStartsOn: 0 }), 1);
 
-    sorted.forEach(task => {
+    sorted.forEach((task) => {
       if (!task.due_date) return;
       const d = parseLocalDate(task.due_date);
       const todayStart = startOfDay(today);
@@ -124,232 +127,431 @@ export function TaskCalendarView({ tasks, isLoading }: TaskCalendarViewProps) {
       else groups[4].tasks.push(task);
     });
 
-    return groups.filter(g => g.tasks.length > 0);
+    return groups.filter((g) => g.tasks.length > 0);
   }, [activeTasks]);
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          <Skeleton className="h-8 w-48" />
-          <div className="grid grid-cols-7 gap-2">
-            {Array.from({ length: 35 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 rounded-lg" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))', padding: 24 }}>
+        <Skeleton className="h-8 w-48 mb-4" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+          {Array.from({ length: 35 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full" />
+          ))}
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardContent className="p-4 sm:p-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <CalendarDays className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">Calendário de Tarefas</h3>
-              <p className="text-xs text-muted-foreground">
-                {activeTasks.length} tarefas ativas com prazo
-              </p>
-            </div>
+    <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))', padding: 18 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          marginBottom: 16,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              display: 'grid',
+              placeItems: 'center',
+              background: 'hsl(var(--ds-accent) / 0.1)',
+              color: 'hsl(var(--ds-accent))',
+            }}
+          >
+            <CalendarDays size={16} strokeWidth={1.5} />
           </div>
-
-          <div className="flex items-center gap-2">
-            {view !== 'list' && (
-              <div className="flex items-center gap-1 mr-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs px-2.5 mr-1"
-                  onClick={() => { setCurrentDate(new Date()); setAnimKey(k => k + 1); }}
-                >
-                  Hoje
-                </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigatePeriod(-1)}>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm font-medium min-w-[160px] text-center capitalize">{periodLabel}</span>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigatePeriod(1)}>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-
-            <div className="flex bg-muted rounded-lg p-0.5 gap-0.5">
-              {(['month', 'week', 'list'] as const).map(v => (
-                <button
-                  key={v}
-                  onClick={() => { setView(v); setAnimKey(k => k + 1); }}
-                  className={cn(
-                    'text-xs px-2.5 py-1 rounded-md transition-all font-medium',
-                    view === v
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  {v === 'month' ? 'Mês' : v === 'week' ? 'Semana' : 'Lista'}
-                </button>
-              ))}
-            </div>
+          <div>
+            <h3 style={{ fontFamily: '"HN Display", sans-serif', fontSize: 15, fontWeight: 600, color: 'hsl(var(--ds-fg-1))' }}>
+              Calendário de Tarefas
+            </h3>
+            <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
+              {activeTasks.length} {activeTasks.length === 1 ? 'tarefa ativa' : 'tarefas ativas'} com prazo
+            </p>
           </div>
         </div>
 
-        {/* Content */}
-        <div key={animKey} className="animate-in fade-in-0 duration-200">
-          {/* MONTH VIEW */}
-          {view === 'month' && (
-            <div>
-              <div className="grid grid-cols-7 mb-1">
-                {WEEKDAY_LABELS.map(d => (
-                  <div key={d} className="text-center text-xs font-medium text-muted-foreground py-2">{d}</div>
-                ))}
-              </div>
-              <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden">
-                {calendarDays.map((day, idx) => {
-                  const sameMonth = isSameMonth(day, currentDate);
-                  const dayTasks = sameMonth ? getTasksForDay(day) : [];
-                  const today = isToday(day);
-                  return (
-                    <div
-                      key={idx}
-                      className={cn(
-                        'min-h-[80px] p-1.5 bg-card transition-colors',
-                        !sameMonth && 'bg-muted/30',
-                      )}
-                    >
-                      {today ? (
-                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                          {format(day, 'd')}
-                        </span>
-                      ) : (
-                        <span className={cn('text-xs', !sameMonth ? 'text-muted-foreground/40' : 'text-muted-foreground')}>
-                          {format(day, 'd')}
-                        </span>
-                      )}
-                      <div className="mt-1 space-y-0.5">
-                        {dayTasks.slice(0, 2).map(task => (
-                          <div
-                            key={task.id}
-                            onClick={(e) => { e.stopPropagation(); navigate(`/tarefas/${task.id}`); }}
-                            className={cn(
-                              'text-[10px] px-1.5 py-0.5 rounded truncate w-full cursor-pointer font-medium',
-                              PRIORITY_PILL[task.priority] || PRIORITY_PILL.standby
-                            )}
-                          >
-                            {task.title}
-                          </div>
-                        ))}
-                        {dayTasks.length > 2 && (
-                          <span className="text-[9px] text-muted-foreground pl-1">+{dayTasks.length - 2} mais</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {view !== 'list' && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <button
+                type="button"
+                className="btn"
+                style={{ height: 26, padding: '0 10px', fontSize: 11 }}
+                onClick={() => {
+                  setCurrentDate(new Date());
+                  setAnimKey((k) => k + 1);
+                }}
+              >
+                Hoje
+              </button>
+              <button
+                type="button"
+                onClick={() => navigatePeriod(-1)}
+                style={{ width: 26, height: 26, display: 'grid', placeItems: 'center', background: 'transparent', border: 0, cursor: 'pointer', color: 'hsl(var(--ds-fg-3))' }}
+                aria-label="Anterior"
+              >
+                <ChevronLeft size={14} strokeWidth={1.5} />
+              </button>
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  minWidth: 160,
+                  textAlign: 'center',
+                  textTransform: 'capitalize',
+                  color: 'hsl(var(--ds-fg-1))',
+                }}
+              >
+                {periodLabel}
+              </span>
+              <button
+                type="button"
+                onClick={() => navigatePeriod(1)}
+                style={{ width: 26, height: 26, display: 'grid', placeItems: 'center', background: 'transparent', border: 0, cursor: 'pointer', color: 'hsl(var(--ds-fg-3))' }}
+                aria-label="Próximo"
+              >
+                <ChevronRight size={14} strokeWidth={1.5} />
+              </button>
             </div>
           )}
 
-          {/* WEEK VIEW */}
-          {view === 'week' && (
-            <div className="space-y-2">
+          <div className="tabs-seg">
+            {(['month', 'week', 'list'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => {
+                  setView(v);
+                  setAnimKey((k) => k + 1);
+                }}
+                className={'seg' + (view === v ? ' on' : '')}
+              >
+                {v === 'month' ? 'Mês' : v === 'week' ? 'Semana' : 'Lista'}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div key={animKey}>
+        {view === 'month' && (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 4 }}>
+              {WEEKDAY_LABELS.map((d) => (
+                <div
+                  key={d}
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 10,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    fontWeight: 500,
+                    color: 'hsl(var(--ds-fg-3))',
+                    padding: '8px 0',
+                  }}
+                >
+                  {d}
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(7, 1fr)',
+                gap: 1,
+                background: 'hsl(var(--ds-line-1))',
+                border: '1px solid hsl(var(--ds-line-1))',
+              }}
+            >
               {calendarDays.map((day, idx) => {
-                const dayTasks = getTasksForDay(day);
+                const sameMonth = isSameMonth(day, currentDate);
+                const dayTasks = sameMonth ? getTasksForDay(day) : [];
                 const today = isToday(day);
                 return (
                   <div
                     key={idx}
-                    className={cn(
-                      'flex gap-4 p-3 rounded-lg border',
-                      today && 'border-primary/40 bg-primary/5'
-                    )}
+                    style={{
+                      minHeight: 80,
+                      padding: 6,
+                      background: sameMonth
+                        ? today
+                          ? 'hsl(var(--ds-accent) / 0.05)'
+                          : 'hsl(var(--ds-surface))'
+                        : 'hsl(var(--ds-line-2) / 0.3)',
+                      borderTop: today ? '2px solid hsl(var(--ds-accent))' : undefined,
+                    }}
                   >
-                    <div className="text-center min-w-[48px]">
-                      <p className="text-xs text-muted-foreground font-medium">{WEEKDAY_LABELS[day.getDay()]}</p>
-                      <p className={cn('text-lg font-bold', today ? 'text-primary' : 'text-foreground')}>
+                    {today ? (
+                      <span
+                        style={{
+                          display: 'inline-grid',
+                          placeItems: 'center',
+                          width: 22,
+                          height: 22,
+                          borderRadius: '50%',
+                          background: 'hsl(var(--ds-accent))',
+                          color: '#fff',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
                         {format(day, 'd')}
-                      </p>
-                    </div>
-                    <div className="flex-1 space-y-1.5">
-                      {dayTasks.length === 0 && (
-                        <p className="text-xs text-muted-foreground py-1">Sem tarefas</p>
-                      )}
-                      {dayTasks.map(task => {
-                        const borderColor =
-                          task.priority === 'urgente' ? 'border-l-red-500' :
-                          task.priority === 'alta' ? 'border-l-orange-500' :
-                          task.priority === 'media' ? 'border-l-yellow-500' :
-                          task.priority === 'baixa' ? 'border-l-blue-500' :
-                          'border-l-gray-400';
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          fontSize: 11,
+                          color: !sameMonth ? 'hsl(var(--ds-fg-4) / 0.5)' : 'hsl(var(--ds-fg-3))',
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        {format(day, 'd')}
+                      </span>
+                    )}
+                    <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                      {dayTasks.slice(0, 2).map((task) => {
+                        const tone = priorityBg[task.priority] || priorityBg.standby;
                         return (
                           <div
                             key={task.id}
-                            onClick={() => navigate(`/tarefas/${task.id}`)}
-                            className={cn('rounded-lg p-2 bg-muted/40 border-l-2 cursor-pointer hover:bg-muted/60 transition-colors', borderColor)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/tarefas/${task.id}`);
+                            }}
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 500,
+                              padding: '2px 5px',
+                              cursor: 'pointer',
+                              background: tone.bg,
+                              color: tone.fg,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
                           >
-                            <p className="text-sm font-medium truncate">{task.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {task.assignees?.[0]?.display_name?.split(' ')[0] || 'Sem responsável'}
-                            </p>
+                            {task.title}
                           </div>
                         );
                       })}
+                      {dayTasks.length > 2 && (
+                        <span style={{ fontSize: 9, color: 'hsl(var(--ds-fg-4))', paddingLeft: 4, fontVariantNumeric: 'tabular-nums' }}>
+                          +{dayTasks.length - 2} mais
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
               })}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* LIST VIEW */}
-          {view === 'list' && (
-            <div className="space-y-6">
-              {groupTasksForList.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">Nenhuma tarefa com prazo definido</p>
-              ) : (
-                groupTasksForList.map(group => (
-                  <div key={group.label}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <h4 className="text-sm font-semibold text-foreground">{group.label}</h4>
-                      <Badge variant="secondary" className="text-xs">{group.tasks.length}</Badge>
-                    </div>
-                    <div className="space-y-2">
-                      {group.tasks.map(task => {
-                        const d = task.due_date ? parseLocalDate(task.due_date) : new Date();
-                        return (
-                          <div
-                            key={task.id}
-                            onClick={() => navigate(`/tarefas/${task.id}`)}
-                            className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/30 transition-colors"
-                          >
-                            <div className="text-center min-w-[40px] p-1.5 rounded-md bg-muted/50">
-                              <p className="text-sm font-bold leading-none">{format(d, 'd')}</p>
-                              <p className="text-[10px] text-muted-foreground capitalize">{format(d, 'MMM', { locale: ptBR })}</p>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{task.title}</p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {task.assignees?.[0]?.display_name || 'Sem responsável'}
-                                {task.department && ` · ${task.department}`}
-                              </p>
-                            </div>
-                            <PriorityBadge priority={task.priority} />
-                          </div>
-                        );
-                      })}
-                    </div>
+        {view === 'week' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {calendarDays.map((day, idx) => {
+              const dayTasks = getTasksForDay(day);
+              const today = isToday(day);
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    display: 'flex',
+                    gap: 16,
+                    padding: 12,
+                    border: today ? '1px solid hsl(var(--ds-accent) / 0.4)' : '1px solid hsl(var(--ds-line-1))',
+                    background: today ? 'hsl(var(--ds-accent) / 0.05)' : 'hsl(var(--ds-surface))',
+                  }}
+                >
+                  <div style={{ textAlign: 'center', minWidth: 48 }}>
+                    <p
+                      style={{
+                        fontSize: 10,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        fontWeight: 500,
+                        color: 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
+                      {WEEKDAY_LABELS[day.getDay()]}
+                    </p>
+                    <p
+                      style={{
+                        fontFamily: '"HN Display", sans-serif',
+                        fontSize: 22,
+                        fontWeight: 700,
+                        fontVariantNumeric: 'tabular-nums',
+                        color: today ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-1))',
+                      }}
+                    >
+                      {format(day, 'd')}
+                    </p>
                   </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {dayTasks.length === 0 && (
+                      <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', padding: '4px 0' }}>Sem tarefas</p>
+                    )}
+                    {dayTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        onClick={() => navigate(`/tarefas/${task.id}`)}
+                        style={{
+                          padding: 8,
+                          background: 'hsl(var(--ds-line-2) / 0.3)',
+                          borderLeft: `2px solid ${priorityBorder[task.priority] ?? priorityBorder.standby}`,
+                          cursor: 'pointer',
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.6)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+                        }}
+                      >
+                        <p
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 500,
+                            color: 'hsl(var(--ds-fg-1))',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {task.title}
+                        </p>
+                        <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                          {task.assignees?.[0]?.display_name?.split(' ')[0] || 'Sem responsável'}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {view === 'list' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {groupTasksForList.length === 0 ? (
+              <p style={{ textAlign: 'center', color: 'hsl(var(--ds-fg-3))', padding: '32px 0', fontSize: 13 }}>
+                Nenhuma tarefa com prazo definido
+              </p>
+            ) : (
+              groupTasksForList.map((group) => (
+                <div key={group.label}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <h4
+                      style={{
+                        fontSize: 11,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        fontWeight: 500,
+                        color: 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
+                      {group.label}
+                    </h4>
+                    <span className="pill muted" style={{ fontSize: 10, fontVariantNumeric: 'tabular-nums' }}>
+                      {group.tasks.length}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {group.tasks.map((task) => {
+                      const d = task.due_date ? parseLocalDate(task.due_date) : new Date();
+                      return (
+                        <div
+                          key={task.id}
+                          onClick={() => navigate(`/tarefas/${task.id}`)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            padding: 12,
+                            border: '1px solid hsl(var(--ds-line-1))',
+                            background: 'hsl(var(--ds-surface))',
+                            cursor: 'pointer',
+                            transition: 'background 0.15s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'hsl(var(--ds-surface))';
+                          }}
+                        >
+                          <div
+                            style={{
+                              textAlign: 'center',
+                              minWidth: 44,
+                              padding: '6px 8px',
+                              background: 'hsl(var(--ds-line-2))',
+                            }}
+                          >
+                            <p
+                              style={{
+                                fontFamily: '"HN Display", sans-serif',
+                                fontSize: 14,
+                                fontWeight: 700,
+                                lineHeight: 1,
+                                fontVariantNumeric: 'tabular-nums',
+                                color: 'hsl(var(--ds-fg-1))',
+                              }}
+                            >
+                              {format(d, 'd')}
+                            </p>
+                            <p style={{ fontSize: 10, color: 'hsl(var(--ds-fg-3))', textTransform: 'capitalize', marginTop: 2 }}>
+                              {format(d, 'MMM', { locale: ptBR })}
+                            </p>
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p
+                              style={{
+                                fontSize: 13,
+                                fontWeight: 500,
+                                color: 'hsl(var(--ds-fg-1))',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {task.title}
+                            </p>
+                            <p
+                              style={{
+                                fontSize: 11,
+                                color: 'hsl(var(--ds-fg-3))',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {task.assignees?.[0]?.display_name || 'Sem responsável'}
+                              {task.department && ` · ${task.department}`}
+                            </p>
+                          </div>
+                          <PriorityBadge priority={task.priority} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

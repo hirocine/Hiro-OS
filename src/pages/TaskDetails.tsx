@@ -2,8 +2,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText, CheckSquare, MessageCircle } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,7 +17,6 @@ import { InlineEditCell } from '@/features/tasks/components/InlineEditCell';
 import { TaskHistorySection } from '@/features/tasks/components/TaskHistorySection';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
 import { useUsers } from '@/hooks/useUsers';
 import { useDepartments } from '@/features/tasks/hooks/useDepartments';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TaskPriority, TaskStatus, TaskLinkType } from '@/features/tasks/types';
@@ -41,15 +38,15 @@ import {
 function getLinkIcon(linkType: TaskLinkType) {
   switch (linkType) {
     case 'google_drive':
-      return <HardDrive className="w-4 h-4 text-blue-500" />;
+      return <HardDrive size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-info))' }} />;
     case 'dropbox':
-      return <Cloud className="w-4 h-4 text-blue-600" />;
+      return <Cloud size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-info))' }} />;
     case 'notion':
-      return <FileText className="w-4 h-4 text-foreground" />;
+      return <FileText size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-1))' }} />;
     case 'onedrive':
-      return <Cloud className="w-4 h-4 text-sky-500" />;
+      return <Cloud size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-info))' }} />;
     default:
-      return <Link2 className="w-4 h-4 text-muted-foreground" />;
+      return <Link2 size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />;
   }
 }
 
@@ -62,6 +59,28 @@ function getDomain(url: string): string {
     return url;
   }
 }
+
+const eyebrow: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+};
+
+const sectionHeader: React.CSSProperties = {
+  fontSize: 16,
+  fontWeight: 600,
+  marginBottom: 12,
+  color: 'hsl(var(--ds-fg-1))',
+  fontFamily: '"HN Display", sans-serif',
+};
+
+const sepStyle: React.CSSProperties = {
+  height: 1,
+  background: 'hsl(var(--ds-line-1))',
+  margin: '24px 0',
+};
 
 export default function TaskDetails() {
   const { id } = useParams<{ id: string }>();
@@ -86,18 +105,22 @@ export default function TaskDetails() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 md:p-8 space-y-6">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-32" />
-        <Skeleton className="h-64" />
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-64" />
+        </div>
       </div>
     );
   }
 
   if (!task) {
     return (
-      <div className="container mx-auto p-6 md:p-8">
-        <p className="text-muted-foreground">Tarefa não encontrada</p>
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner" style={{ textAlign: 'center', padding: '64px 0', color: 'hsl(var(--ds-fg-3))' }}>
+          Tarefa não encontrada.
+        </div>
       </div>
     );
   }
@@ -131,8 +154,8 @@ export default function TaskDetails() {
 
   const handleSaveDescription = async () => {
     if (description === task?.description) return;
-    await updateTask.mutateAsync({ 
-      id: task!.id, 
+    await updateTask.mutateAsync({
+      id: task!.id,
       updates: { description: description || null },
       oldTask: {
         title: task!.title,
@@ -147,8 +170,8 @@ export default function TaskDetails() {
   };
 
   const handleUpdateTask = async (updates: Partial<typeof task>) => {
-    await updateTask.mutateAsync({ 
-      id: task.id, 
+    await updateTask.mutateAsync({
+      id: task.id,
       updates,
       oldTask: {
         title: task.title,
@@ -162,56 +185,67 @@ export default function TaskDetails() {
     });
   };
 
-  const priorityOptions = Object.entries(PRIORITY_CONFIG).map(([value, config]) => ({ 
-    value, 
-    label: config.label 
+  const priorityOptions = Object.entries(PRIORITY_CONFIG).map(([value, config]) => ({
+    value,
+    label: config.label
   }));
-  
-  const statusOptions = Object.entries(STATUS_CONFIG).map(([value, config]) => ({ 
-    value, 
-    label: config.label 
+
+  const statusOptions = Object.entries(STATUS_CONFIG).map(([value, config]) => ({
+    value,
+    label: config.label
   }));
 
   return (
-    <div className="container mx-auto p-6 md:p-8">
-      <BreadcrumbNav 
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+      <BreadcrumbNav
         items={[
           { label: 'Tarefas', href: '/tarefas' },
-          { label: task.title }
-        ]} 
+          { label: task.title },
+        ]}
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
           <InlineEditCell
             value={task.title}
             onSave={(newTitle) => handleUpdateTask({ title: newTitle })}
             className="text-3xl font-bold"
           />
-          <p className="text-sm text-muted-foreground mt-1">
+          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>
             Criada em {format(new Date(task.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
-            <Trash2 className="w-4 h-4 mr-2" />
-            Excluir
-          </Button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setDeleteOpen(true)}
+            style={{
+              color: 'hsl(var(--ds-danger))',
+              borderColor: 'hsl(var(--ds-danger) / 0.3)',
+            }}
+          >
+            <Trash2 size={13} strokeWidth={1.5} />
+            <span>Excluir</span>
+          </button>
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Details Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Detalhes</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid hsl(var(--ds-line-1))', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>
+              Detalhes
+            </span>
+          </div>
+          <div style={{ padding: 18 }}>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {/* Status */}
-              <div className="flex flex-col gap-1">
-                <span className="text-sm text-muted-foreground">Status</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={eyebrow}>Status</span>
                 <InlineSelectCell
                   value={task.status}
                   options={statusOptions}
@@ -222,8 +256,8 @@ export default function TaskDetails() {
               </div>
 
               {/* Priority */}
-              <div className="flex flex-col gap-1">
-                <span className="text-sm text-muted-foreground">Prioridade</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={eyebrow}>Prioridade</span>
                 <InlineSelectCell
                   value={task.priority}
                   options={priorityOptions}
@@ -234,8 +268,8 @@ export default function TaskDetails() {
               </div>
 
               {/* Due Date */}
-              <div className="flex flex-col gap-1">
-                <span className="text-sm text-muted-foreground">Prazo</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={eyebrow}>Prazo</span>
                 <InlineDateCell
                   value={task.due_date}
                   onSave={(newDate) => handleUpdateTask({ due_date: newDate })}
@@ -243,8 +277,8 @@ export default function TaskDetails() {
               </div>
 
               {/* Department */}
-              <div className="flex flex-col gap-1">
-                <span className="text-sm text-muted-foreground">Departamento</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={eyebrow}>Departamento</span>
                 <InlineDepartmentCell
                   value={task.department}
                   departments={departments}
@@ -253,8 +287,8 @@ export default function TaskDetails() {
               </div>
 
               {/* Responsável */}
-              <div className="flex flex-col gap-1">
-                <span className="text-sm text-muted-foreground">Responsável</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={eyebrow}>Responsável</span>
                 <InlineAssigneeCell
                   value={task.assignees?.map(a => a.user_id) || (task.assigned_to ? [task.assigned_to] : [])}
                   users={users}
@@ -262,16 +296,16 @@ export default function TaskDetails() {
                 />
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Unified Content Card */}
-        <Card>
-          <CardContent className="p-6 space-y-6">
+        <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))', padding: 24 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {/* Seção: Descrição */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">Descrição</h3>
-              <div className="relative border rounded-md focus-within:ring-1 focus-within:ring-ring">
+              <h3 style={sectionHeader}>Descrição</h3>
+              <div style={{ position: 'relative', border: '1px solid hsl(var(--ds-line-1))' }}>
                 <Textarea
                   placeholder="Adicionar descrição..."
                   value={description}
@@ -283,19 +317,30 @@ export default function TaskDetails() {
               </div>
             </div>
 
-            <Separator />
+            <div style={sepStyle} />
 
             {/* Seção: Subtarefas */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">
-                Subtarefas ({task.subtasks.filter(s => s.is_completed).length}/{task.subtasks.length})
+              <h3 style={sectionHeader}>
+                Subtarefas <span style={{ fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-3))', fontWeight: 400 }}>
+                  ({task.subtasks.filter(s => s.is_completed).length}/{task.subtasks.length})
+                </span>
               </h3>
               {task.subtasks && task.subtasks.length > 0 ? (
-                <div className="space-y-2">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {task.subtasks.map((subtask) => (
-                    <div 
-                      key={subtask.id} 
-                      className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 group transition-colors"
+                    <div
+                      key={subtask.id}
+                      className="group"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        padding: 8,
+                        transition: 'background 150ms',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                     >
                       <Checkbox
                         checked={subtask.is_completed}
@@ -308,21 +353,32 @@ export default function TaskDetails() {
                         }
                         disabled={updateSubtask.isPending}
                       />
-                      <span className={cn(
-                        "flex-1 text-sm",
-                        subtask.is_completed && "line-through text-muted-foreground"
-                      )}>
+                      <span
+                        className={cn(
+                          "flex-1 text-sm",
+                          subtask.is_completed && "line-through"
+                        )}
+                        style={{
+                          color: subtask.is_completed ? 'hsl(var(--ds-fg-3))' : 'hsl(var(--ds-fg-1))',
+                        }}
+                      >
                         {subtask.title}
                       </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+                      <button
+                        type="button"
+                        className="btn opacity-0 group-hover:opacity-100"
+                        style={{
+                          width: 28,
+                          height: 28,
+                          padding: 0,
+                          justifyContent: 'center',
+                          color: 'hsl(var(--ds-fg-3))',
+                        }}
                         onClick={() => deleteSubtask.mutateAsync({ id: subtask.id, title: subtask.title })}
                         disabled={deleteSubtask.isPending}
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                        <Trash2 size={13} strokeWidth={1.5} />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -330,54 +386,71 @@ export default function TaskDetails() {
                 <EmptyState icon={CheckSquare} title="Nenhuma subtarefa" description="Nenhuma subtarefa." compact />
               )}
 
-              <form onSubmit={handleAddSubtask} className="mt-3">
-                <div className="flex items-center border rounded-md focus-within:ring-1 focus-within:ring-ring">
+              <form onSubmit={handleAddSubtask} style={{ marginTop: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid hsl(var(--ds-line-1))' }}>
                   <Input
                     placeholder="Adicionar subtarefa..."
                     value={newSubtask}
                     onChange={(e) => setNewSubtask(e.target.value)}
                     className="h-9 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
-                  <Button 
-                    type="submit" 
-                    variant="ghost" 
-                    size="sm"
-                    className="h-7 mr-1 px-2"
+                  <button
+                    type="submit"
+                    className="btn"
+                    style={{ height: 28, marginRight: 4, padding: '0 8px', justifyContent: 'center' }}
                     disabled={addSubtask.isPending || !newSubtask.trim()}
                   >
-                    <Plus className="w-4 h-4" />
-                  </Button>
+                    <Plus size={13} strokeWidth={1.5} />
+                  </button>
                 </div>
               </form>
             </div>
 
-            <Separator />
+            <div style={sepStyle} />
 
             {/* Seção: Comentários */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">Comentários ({task.comments.length})</h3>
+              <h3 style={sectionHeader}>
+                Comentários <span style={{ fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-3))', fontWeight: 400 }}>({task.comments.length})</span>
+              </h3>
               {task.comments && task.comments.length > 0 ? (
-                <div className="space-y-4">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {task.comments.map((comment) => (
-                    <div key={comment.id} className="border-l-2 border-primary/20 pl-4 py-1">
-                      <div className="flex items-start justify-between">
+                    <div
+                      key={comment.id}
+                      style={{
+                        borderLeft: '2px solid hsl(var(--ds-accent) / 0.3)',
+                        paddingLeft: 16,
+                        paddingTop: 4,
+                        paddingBottom: 4,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                         <div>
-                          <p className="font-medium text-sm">{comment.user_name || 'Usuário'}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p style={{ fontWeight: 500, fontSize: 13, color: 'hsl(var(--ds-fg-1))' }}>{comment.user_name || 'Usuário'}</p>
+                          <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
                             {format(new Date(comment.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                           </p>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        <button
+                          type="button"
+                          className="btn"
+                          style={{
+                            width: 28,
+                            height: 28,
+                            padding: 0,
+                            justifyContent: 'center',
+                            color: 'hsl(var(--ds-fg-3))',
+                          }}
                           onClick={() => deleteComment.mutateAsync(comment.id)}
                           disabled={deleteComment.isPending}
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                          <Trash2 size={13} strokeWidth={1.5} />
+                        </button>
                       </div>
-                      <p className="mt-2 text-sm whitespace-pre-wrap">{comment.content}</p>
+                      <p style={{ marginTop: 8, fontSize: 13, whiteSpace: 'pre-wrap', color: 'hsl(var(--ds-fg-1))' }}>
+                        {comment.content}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -385,8 +458,8 @@ export default function TaskDetails() {
                 <EmptyState icon={MessageCircle} title="Nenhum comentário" description="Nenhum comentário." compact />
               )}
 
-              <form onSubmit={handleAddComment} className="mt-3">
-                <div className="relative border rounded-md focus-within:ring-1 focus-within:ring-ring">
+              <form onSubmit={handleAddComment} style={{ marginTop: 12 }}>
+                <div style={{ position: 'relative', border: '1px solid hsl(var(--ds-line-1))' }}>
                   <Textarea
                     placeholder="Adicionar comentário..."
                     value={newComment}
@@ -394,61 +467,86 @@ export default function TaskDetails() {
                     rows={2}
                     className="resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 pb-10"
                   />
-                  <div className="absolute bottom-2 right-2">
-                    <Button 
-                      type="submit" 
-                      variant="ghost" 
-                      size="sm"
-                      className="h-7 px-2"
+                  <div style={{ position: 'absolute', bottom: 8, right: 8 }}>
+                    <button
+                      type="submit"
+                      className="btn"
+                      style={{ height: 28, padding: '0 8px', justifyContent: 'center' }}
                       disabled={addComment.isPending || !newComment.trim()}
                     >
-                      <Send className="w-4 h-4" />
-                    </Button>
+                      <Send size={13} strokeWidth={1.5} />
+                    </button>
                   </div>
                 </div>
               </form>
             </div>
 
-            <Separator />
+            <div style={sepStyle} />
 
             {/* Seção: Links Externos */}
             <div>
-              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <Link2 className="w-5 h-5" />
-                Links Externos ({task.links?.length || 0})
+              <h3 style={{ ...sectionHeader, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Link2 size={18} strokeWidth={1.5} />
+                Links Externos <span style={{ fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-3))', fontWeight: 400 }}>({task.links?.length || 0})</span>
               </h3>
-              
+
               {task.links && task.links.length > 0 ? (
-                <div className="space-y-2 mb-4">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
                   {task.links.map((link) => (
-                    <div 
-                      key={link.id} 
-                      className="flex items-center gap-3 p-3 rounded-md border hover:bg-muted/50 group transition-colors"
+                    <div
+                      key={link.id}
+                      className="group"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        padding: 12,
+                        border: '1px solid hsl(var(--ds-line-1))',
+                        transition: 'background 150ms',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                     >
                       {getLinkIcon(link.link_type)}
-                      <div className="flex-1 min-w-0">
-                        <a 
-                          href={link.url} 
-                          target="_blank" 
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <a
+                          href={link.url}
+                          target="_blank"
                           rel="noopener noreferrer"
-                          className="font-medium text-sm hover:underline flex items-center gap-1"
+                          style={{
+                            fontWeight: 500,
+                            fontSize: 13,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            color: 'hsl(var(--ds-fg-1))',
+                            textDecoration: 'none',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                          onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
                         >
                           {link.title}
-                          <ExternalLink className="w-3 h-3 opacity-50" />
+                          <ExternalLink size={11} strokeWidth={1.5} style={{ opacity: 0.5 }} />
                         </a>
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {getDomain(link.url)}
                         </p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+                      <button
+                        type="button"
+                        className="btn opacity-0 group-hover:opacity-100"
+                        style={{
+                          width: 28,
+                          height: 28,
+                          padding: 0,
+                          justifyContent: 'center',
+                          color: 'hsl(var(--ds-fg-3))',
+                        }}
                         onClick={() => deleteLink.mutateAsync({ id: link.id, title: link.title })}
                         disabled={deleteLink.isPending}
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                        <Trash2 size={13} strokeWidth={1.5} />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -456,8 +554,8 @@ export default function TaskDetails() {
                 <EmptyState icon={Link2} title="Nenhum link externo" description="Nenhum link externo." compact />
               )}
 
-              <form onSubmit={handleAddLink} className="space-y-3">
-                <div className="border rounded-md focus-within:ring-1 focus-within:ring-ring">
+              <form onSubmit={handleAddLink} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ border: '1px solid hsl(var(--ds-line-1))' }}>
                   <Input
                     placeholder="https://drive.google.com/..."
                     value={newLinkUrl}
@@ -465,8 +563,8 @@ export default function TaskDetails() {
                     className="h-10 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 </div>
-                <div className="flex gap-2">
-                  <div className="flex-1 border rounded-md focus-within:ring-1 focus-within:ring-ring">
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ flex: 1, border: '1px solid hsl(var(--ds-line-1))' }}>
                     <Input
                       placeholder="Título do link (ex: Briefing do projeto)"
                       value={newLinkTitle}
@@ -474,20 +572,20 @@ export default function TaskDetails() {
                       className="h-10 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                   </div>
-                  <Button 
-                    type="submit" 
-                    size="default"
-                    className="h-10 px-4"
+                  <button
+                    type="submit"
+                    className="btn primary"
+                    style={{ height: 40, padding: '0 16px' }}
                     disabled={addLink.isPending || !newLinkUrl.trim() || !newLinkTitle.trim()}
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Adicionar
-                  </Button>
+                    <Plus size={13} strokeWidth={1.5} />
+                    <span>Adicionar</span>
+                  </button>
                 </div>
               </form>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Histórico de Ações */}
         <TaskHistorySection taskId={task.id} taskCreatedAt={task.created_at} />
@@ -496,19 +594,25 @@ export default function TaskDetails() {
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir tarefa?</AlertDialogTitle>
+            <AlertDialogTitle>
+              <span style={{ fontFamily: '"HN Display", sans-serif' }}>Excluir tarefa?</span>
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Esta ação não pode ser desfeita. A tarefa e todos os seus dados (subtarefas, comentários, anexos) serão permanentemente excluídos.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
+            <AlertDialogAction
+              onClick={handleDelete}
+              style={{ background: 'hsl(var(--ds-danger))', color: 'white' }}
+            >
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </div>
     </div>
   );
 }

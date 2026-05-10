@@ -1,5 +1,16 @@
 import { TaskStatus, STATUS_CONFIG } from '../types';
-import { Badge } from '@/components/ui/badge';
+
+const toneFor = (status: TaskStatus): React.CSSProperties => {
+  switch (status) {
+    case 'concluida':
+      return { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' };
+    case 'em_progresso':
+      return { color: 'hsl(var(--ds-info))', borderColor: 'hsl(var(--ds-info) / 0.3)' };
+    case 'pendente':
+    default:
+      return { color: 'hsl(var(--ds-fg-3))' };
+  }
+};
 
 interface StatusBadgeProps {
   status: TaskStatus;
@@ -7,13 +18,15 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status }: StatusBadgeProps) {
   const config = STATUS_CONFIG[status];
-  
   return (
-    <Badge 
-      variant="outline" 
-      className={`${config.color} ${config.bgColor} transition-colors hover:brightness-95 dark:hover:brightness-110 cursor-pointer`}
+    <span
+      className="pill"
+      style={{
+        ...toneFor(status),
+        cursor: 'pointer',
+      }}
     >
       {config.label}
-    </Badge>
+    </span>
   );
 }

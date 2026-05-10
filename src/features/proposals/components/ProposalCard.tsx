@@ -1,21 +1,25 @@
 import { useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Copy, CopyPlus, ExternalLink, Trash2, Building2, MoreHorizontal, Eye, EyeOff, Pencil, Clock } from 'lucide-react';
+import { Copy, CopyPlus, Trash2, Building2, MoreHorizontal, Eye, EyeOff, Pencil } from 'lucide-react';
 import { differenceInDays, format } from 'date-fns';
 import { toast } from 'sonner';
 import type { Proposal } from '../types';
 
-const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
-  draft:       { label: 'Rascunho',    variant: 'neutral' },
-  sent:        { label: 'Enviada',     variant: 'info' },
-  opened:      { label: 'Aberta',      variant: 'warning' },
-  new_version: { label: 'Nova Versão', variant: 'info' },
-  approved:    { label: 'Aprovada',    variant: 'success' },
-  expired:     { label: 'Arquivada',   variant: 'destructive' },
+const statusMap: Record<string, { label: string; tone: 'neutral' | 'info' | 'warning' | 'success' | 'destructive' }> = {
+  draft:       { label: 'Rascunho',    tone: 'neutral' },
+  sent:        { label: 'Enviada',     tone: 'info' },
+  opened:      { label: 'Aberta',      tone: 'warning' },
+  new_version: { label: 'Nova Versão', tone: 'info' },
+  approved:    { label: 'Aprovada',    tone: 'success' },
+  expired:     { label: 'Arquivada',   tone: 'destructive' },
+};
+
+const toneStyles: Record<string, React.CSSProperties> = {
+  neutral:     { color: 'hsl(var(--ds-fg-3))' },
+  info:        { color: 'hsl(var(--ds-info))', borderColor: 'hsl(var(--ds-info) / 0.3)' },
+  warning:     { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
+  success:     { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
+  destructive: { color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' },
 };
 
 interface Props {
@@ -39,57 +43,105 @@ export function ProposalCard({ proposal, onDelete, onDuplicate }: Props) {
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
-      {/* Topo: logo + info + menu */}
-      <div className="p-4 flex items-start gap-4">
-        <Avatar className="h-12 w-12 rounded-lg shrink-0">
-          {proposal.client_logo && (
-            <AvatarImage src={proposal.client_logo} alt={proposal.client_name} className="rounded-lg" />
+    <div
+      style={{
+        border: '1px solid hsl(var(--ds-line-1))',
+        background: 'hsl(var(--ds-surface))',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{ padding: 16, display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            display: 'grid',
+            placeItems: 'center',
+            background: 'hsl(var(--ds-line-2))',
+            color: 'hsl(var(--ds-fg-3))',
+            flexShrink: 0,
+            overflow: 'hidden',
+          }}
+        >
+          {proposal.client_logo ? (
+            <img
+              src={proposal.client_logo}
+              alt={proposal.client_name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <Building2 size={18} strokeWidth={1.5} />
           )}
-          <AvatarFallback className="bg-muted rounded-lg">
-            <Building2 className="h-5 w-5 text-muted-foreground" />
-          </AvatarFallback>
-        </Avatar>
+        </div>
 
-        <div className="flex-1 min-w-0">
-          {/* Linha 1: nome + badges */}
-          <div className="flex items-center gap-2 flex-wrap">
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             {proposal.project_number && (
-              <span className="text-xs text-muted-foreground/60 font-medium">Nº {proposal.project_number}</span>
+              <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>
+                Nº {proposal.project_number}
+              </span>
             )}
-            <h3 className="font-semibold text-base leading-tight truncate">{proposal.project_name}</h3>
-            <Badge variant={status.variant} className="text-xs px-2 py-0.5 shrink-0">{status.label}</Badge>
+            <h3
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 15,
+                fontWeight: 600,
+                color: 'hsl(var(--ds-fg-1))',
+                lineHeight: 1.25,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '100%',
+              }}
+            >
+              {proposal.project_name}
+            </h3>
+            <span className="pill" style={toneStyles[status.tone]}>
+              <span className="dot" style={{ background: 'currentColor' }} />
+              {status.label}
+            </span>
             {proposal.version > 1 && (
-              <Badge variant="outline" className="text-xs px-2 py-0.5 shrink-0">v{proposal.version}</Badge>
+              <span className="pill muted">v{proposal.version}</span>
             )}
             {daysLeft <= 3 && daysLeft > 0 && (
-              <Badge variant="warning" className="text-xs px-2 py-0.5 shrink-0">Expira em {daysLeft}d</Badge>
+              <span className="pill" style={toneStyles.warning}>Expira em {daysLeft}d</span>
             )}
             {daysLeft <= 0 && proposal.status !== 'approved' && (
-              <Badge variant="destructive" className="text-xs px-2 py-0.5 shrink-0">Expirada</Badge>
+              <span className="pill" style={toneStyles.destructive}>Expirada</span>
             )}
           </div>
 
-          {/* Linha 2: cliente · responsável */}
-          <p className="text-sm text-muted-foreground mt-0.5 truncate">
+          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {proposal.client_name}
             {proposal.client_responsible && ` · ${proposal.client_responsible}`}
           </p>
 
-          {/* Linha 3: datas */}
-          <p className="text-xs text-muted-foreground/60 mt-0.5">
+          <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>
             {proposal.created_at && `Criada em ${format(new Date(proposal.created_at), 'dd/MM/yyyy')}`}
             {proposal.sent_date && ` · Enviada em ${format(new Date(proposal.sent_date + 'T12:00:00'), 'dd/MM/yyyy')}`}
             {proposal.validity_date && ` · Válida até ${format(new Date(proposal.validity_date + 'T12:00:00'), 'dd/MM/yyyy')}`}
           </p>
         </div>
 
-        {/* Menu kebab */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="shrink-0 h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
+            <button
+              type="button"
+              style={{
+                width: 28,
+                height: 28,
+                display: 'grid',
+                placeItems: 'center',
+                color: 'hsl(var(--ds-fg-3))',
+                cursor: 'pointer',
+                flexShrink: 0,
+                background: 'transparent',
+                border: 0,
+              }}
+              aria-label="Ações"
+            >
+              <MoreHorizontal size={16} strokeWidth={1.5} />
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={handleOpenProposal}>
@@ -121,32 +173,54 @@ export function ProposalCard({ proposal, onDelete, onDuplicate }: Props) {
         </DropdownMenu>
       </div>
 
-      {/* Rodapé: métricas à esquerda, ações à direita */}
-      <div className="border-t border-border px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
-        {/* Métricas */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <div
+        style={{
+          borderTop: '1px solid hsl(var(--ds-line-1))',
+          padding: '10px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 8,
+        }}
+      >
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>
           {proposal.views_count > 0 ? (
-            <span className="flex items-center gap-1.5">
-              <Eye className="h-3.5 w-3.5" />
-              {proposal.views_count} {proposal.views_count === 1 ? 'visualização' : 'visualizações'}
-            </span>
+            <>
+              <Eye size={13} strokeWidth={1.5} />
+              <span>
+                {proposal.views_count} {proposal.views_count === 1 ? 'visualização' : 'visualizações'}
+              </span>
+            </>
           ) : (
-            <span className="flex items-center gap-1.5 text-muted-foreground/50">
-              <EyeOff className="h-3.5 w-3.5" /> Não visualizada
-            </span>
+            <>
+              <EyeOff size={13} strokeWidth={1.5} style={{ opacity: 0.6 }} />
+              <span style={{ opacity: 0.7 }}>Não visualizada</span>
+            </>
           )}
         </div>
 
-        {/* Ações */}
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleCopyLink} className="h-7 text-xs px-3">
-            <Copy className="mr-1.5 h-3 w-3" /> Copiar Link
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate(`/orcamentos/${proposal.slug}/overview`)} className="h-7 text-xs px-3">
-            <Pencil className="mr-1.5 h-3 w-3" /> Editar
-          </Button>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <button
+            type="button"
+            className="btn"
+            style={{ height: 28, padding: '0 10px', fontSize: 11, gap: 4 }}
+            onClick={handleCopyLink}
+          >
+            <Copy size={12} strokeWidth={1.5} />
+            <span>Copiar Link</span>
+          </button>
+          <button
+            type="button"
+            className="btn"
+            style={{ height: 28, padding: '0 10px', fontSize: 11, gap: 4 }}
+            onClick={() => navigate(`/orcamentos/${proposal.slug}/overview`)}
+          >
+            <Pencil size={12} strokeWidth={1.5} />
+            <span>Editar</span>
+          </button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

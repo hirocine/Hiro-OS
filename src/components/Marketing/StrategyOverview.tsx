@@ -1,9 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Target, Layers, ArrowRight, UserCircle, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { getPillarColor } from '@/lib/marketing-colors';
 
 interface PersonaSummary {
@@ -31,6 +28,14 @@ interface Props {
   postsThisMonth: PostSummary[];
 }
 
+const eyebrow: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-3))',
+};
+
 export function StrategyOverview({ persona, pillars, postsThisMonth }: Props) {
   const distribution = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -55,173 +60,336 @@ export function StrategyOverview({ persona, pillars, postsThisMonth }: Props) {
   const top3 = distribution.slice(0, 3);
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-            <Sparkles className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <CardTitle className="text-base">Estratégia ativa</CardTitle>
-            <p className="text-xs text-muted-foreground">
-              Para quem você produz e em que temas se posiciona
-            </p>
-          </div>
+    <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+      <div
+        style={{
+          padding: '14px 18px',
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+        }}
+      >
+        <Sparkles size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              fontWeight: 500,
+              color: 'hsl(var(--ds-fg-2))',
+            }}
+          >
+            Estratégia ativa
+          </span>
+          <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
+            Para quem você produz e em que temas se posiciona
+          </span>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div style={{ padding: 18 }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(12, 1fr)',
+            gap: 24,
+          }}
+        >
           {/* Persona */}
-          <div className="lg:col-span-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <UserCircle className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Persona</h3>
+          <div style={{ gridColumn: 'span 12 / span 12', display: 'flex', flexDirection: 'column', gap: 12 }} className="strategy-persona-col">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <UserCircle size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+                <h3
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: 'hsl(var(--ds-fg-1))',
+                    fontFamily: '"HN Display", sans-serif',
+                  }}
+                >
+                  Persona
+                </h3>
               </div>
-              <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
-                <Link to="/marketing/estrategia?aba=persona">
-                  Ver completo
-                  <ArrowRight className="h-3 w-3 ml-1" />
-                </Link>
-              </Button>
+              <Link
+                to="/marketing/estrategia?aba=persona"
+                className="btn"
+                style={{ fontSize: 11, padding: '4px 10px' }}
+              >
+                Ver completo
+                <ArrowRight size={11} strokeWidth={1.5} />
+              </Link>
             </div>
 
             {persona ? (
-              <div className="space-y-2 rounded-lg border border-border p-4">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Cliente ideal
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  padding: 16,
+                }}
+              >
+                <p style={eyebrow}>Cliente ideal</p>
+                <p
+                  style={{
+                    fontFamily: '"HN Display", sans-serif',
+                    fontSize: 15,
+                    fontWeight: 600,
+                    lineHeight: 1.3,
+                    color: 'hsl(var(--ds-fg-1))',
+                  }}
+                >
+                  {persona.name}
                 </p>
-                <p className="text-base font-semibold leading-snug">{persona.name}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {persona.segment && (
-                    <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-[11px] text-foreground/80">
-                      {persona.segment}
-                    </span>
-                  )}
-                  {persona.company_size && (
-                    <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-[11px] text-foreground/80">
-                      {persona.company_size}
-                    </span>
-                  )}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {persona.segment && <span className="pill muted">{persona.segment}</span>}
+                  {persona.company_size && <span className="pill muted">{persona.company_size}</span>}
                 </div>
                 {persona.channels_consumed && persona.channels_consumed.length > 0 && (
-                  <p className="text-xs text-muted-foreground pt-1">
+                  <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', paddingTop: 4 }}>
                     Canais: {persona.channels_consumed.slice(0, 3).join(', ')}
                   </p>
                 )}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border p-6 text-center">
-                <UserCircle className="h-8 w-8 text-muted-foreground mb-2" />
-                <p className="text-sm font-medium">Defina sua persona</p>
-                <p className="text-xs text-muted-foreground mt-1">
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '2px dashed hsl(var(--ds-line-1))',
+                  padding: 24,
+                  textAlign: 'center',
+                }}
+              >
+                <UserCircle size={28} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))', marginBottom: 8 }} />
+                <p
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: 'hsl(var(--ds-fg-1))',
+                    fontFamily: '"HN Display", sans-serif',
+                  }}
+                >
+                  Defina sua persona
+                </p>
+                <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
                   Quem é o cliente ideal da Hiro Films?
                 </p>
-                <Button asChild variant="outline" size="sm" className="mt-3 h-7 text-xs">
-                  <Link to="/marketing/estrategia?aba=persona">Criar persona</Link>
-                </Button>
+                <Link
+                  to="/marketing/estrategia?aba=persona"
+                  className="btn"
+                  style={{ marginTop: 12, fontSize: 11 }}
+                >
+                  Criar persona
+                </Link>
               </div>
             )}
           </div>
 
           {/* Pilares */}
-          <div className="lg:col-span-7 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Target className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">
+          <div style={{ gridColumn: 'span 12 / span 12', display: 'flex', flexDirection: 'column', gap: 12 }} className="strategy-pillars-col">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Target size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+                <h3
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: 'hsl(var(--ds-fg-1))',
+                    fontFamily: '"HN Display", sans-serif',
+                  }}
+                >
                   Top pilares (últimos 30 dias)
                 </h3>
               </div>
-              <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
-                <Link to="/marketing/estrategia?aba=pilares">
-                  Ver completo
-                  <ArrowRight className="h-3 w-3 ml-1" />
-                </Link>
-              </Button>
+              <Link
+                to="/marketing/estrategia?aba=pilares"
+                className="btn"
+                style={{ fontSize: 11, padding: '4px 10px' }}
+              >
+                Ver completo
+                <ArrowRight size={11} strokeWidth={1.5} />
+              </Link>
             </div>
 
             {pillars.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border p-6 text-center">
-                <Layers className="h-8 w-8 text-muted-foreground mb-2" />
-                <p className="text-sm font-medium">Defina seus pilares</p>
-                <p className="text-xs text-muted-foreground mt-1">
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '2px dashed hsl(var(--ds-line-1))',
+                  padding: 24,
+                  textAlign: 'center',
+                }}
+              >
+                <Layers size={28} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))', marginBottom: 8 }} />
+                <p
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: 'hsl(var(--ds-fg-1))',
+                    fontFamily: '"HN Display", sans-serif',
+                  }}
+                >
+                  Defina seus pilares
+                </p>
+                <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
                   Os 3-5 temas que sua marca representa
                 </p>
-                <Button asChild variant="outline" size="sm" className="mt-3 h-7 text-xs">
-                  <Link to="/marketing/estrategia?aba=pilares">Criar pilares</Link>
-                </Button>
+                <Link
+                  to="/marketing/estrategia?aba=pilares"
+                  className="btn"
+                  style={{ marginTop: 12, fontSize: 11 }}
+                >
+                  Criar pilares
+                </Link>
               </div>
             ) : top3.length === 0 || postsThisMonth.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border p-6 text-center">
-                <p className="text-sm text-muted-foreground">
+              <div
+                style={{
+                  border: '2px dashed hsl(var(--ds-line-1))',
+                  padding: 24,
+                  textAlign: 'center',
+                }}
+              >
+                <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
                   Nenhum post publicado nos últimos 30 dias
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {top3.map((d) => (
-                  <div key={d.pillar.id} className="space-y-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span
-                          className="h-2.5 w-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: d.color }}
-                        />
-                        <span className="text-sm font-medium truncate">
-                          {d.pillar.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-sm font-semibold font-numeric">
-                          {d.realPct.toFixed(0)}%
-                        </span>
-                        {d.variance !== null && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {top3.map((d) => {
+                  const variance = d.variance;
+                  let varColor = 'hsl(var(--ds-fg-3))';
+                  if (variance !== null) {
+                    const abs = Math.abs(variance);
+                    if (abs < 5) varColor = 'hsl(var(--ds-success))';
+                    else if (abs < 15) varColor = 'hsl(var(--ds-warning))';
+                    else varColor = 'hsl(var(--ds-danger))';
+                  }
+                  return (
+                    <div key={d.pillar.id} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                           <span
-                            className={cn(
-                              'text-[11px] font-numeric',
-                              Math.abs(d.variance) < 5 && 'text-emerald-500',
-                              Math.abs(d.variance) >= 5 && Math.abs(d.variance) < 15 && 'text-amber-500',
-                              Math.abs(d.variance) >= 15 && 'text-destructive',
-                            )}
+                            style={{
+                              height: 10,
+                              width: 10,
+                              borderRadius: '50%',
+                              flexShrink: 0,
+                              background: d.color,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 500,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              color: 'hsl(var(--ds-fg-1))',
+                            }}
                           >
-                            {d.variance > 0 ? '+' : ''}
-                            {d.variance.toFixed(0)}% vs meta
+                            {d.pillar.name}
                           </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                          <span
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: 'hsl(var(--ds-fg-1))',
+                              fontVariantNumeric: 'tabular-nums',
+                            }}
+                          >
+                            {d.realPct.toFixed(0)}%
+                          </span>
+                          {variance !== null && (
+                            <span
+                              style={{
+                                fontSize: 11,
+                                color: varColor,
+                                fontVariantNumeric: 'tabular-nums',
+                              }}
+                            >
+                              {variance > 0 ? '+' : ''}
+                              {variance.toFixed(0)}% vs meta
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          position: 'relative',
+                          height: 6,
+                          width: '100%',
+                          overflow: 'hidden',
+                          background: 'hsl(var(--ds-line-2) / 0.5)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            bottom: 0,
+                            left: 0,
+                            background: d.color,
+                            width: `${Math.min(100, d.realPct)}%`,
+                          }}
+                        />
+                        {d.targetPct !== null && d.targetPct > 0 && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: 0,
+                              bottom: 0,
+                              width: 1,
+                              background: 'hsl(var(--ds-fg-1) / 0.6)',
+                              left: `${Math.min(100, d.targetPct)}%`,
+                            }}
+                          />
                         )}
                       </div>
-                    </div>
 
-                    <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-muted">
                       <div
-                        className="absolute inset-y-0 left-0 rounded-full"
                         style={{
-                          backgroundColor: d.color,
-                          width: `${Math.min(100, d.realPct)}%`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          fontSize: 10,
+                          color: 'hsl(var(--ds-fg-3))',
+                          fontVariantNumeric: 'tabular-nums',
                         }}
-                      />
-                      {d.targetPct !== null && d.targetPct > 0 && (
-                        <div
-                          className="absolute inset-y-0 w-px bg-foreground/60"
-                          style={{ left: `${Math.min(100, d.targetPct)}%` }}
-                        />
-                      )}
+                      >
+                        <span>
+                          {d.count} {d.count === 1 ? 'post' : 'posts'}
+                        </span>
+                        {d.targetPct !== null && <span>Meta: {d.targetPct}%</span>}
+                      </div>
                     </div>
-
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground font-numeric">
-                      <span>
-                        {d.count} {d.count === 1 ? 'post' : 'posts'}
-                      </span>
-                      {d.targetPct !== null && <span>Meta: {d.targetPct}%</span>}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <style>{`
+        @media (min-width: 1024px) {
+          .strategy-persona-col { grid-column: span 5 / span 5 !important; }
+          .strategy-pillars-col { grid-column: span 7 / span 7 !important; }
+        }
+      `}</style>
+    </div>
   );
 }

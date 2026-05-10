@@ -2,20 +2,12 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Instagram, RefreshCw, Plug, Images, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { EmptyState } from '@/components/ui/empty-state';
-import { cn } from '@/lib/utils';
 
 import { PeriodPicker, type PeriodPreset, type PeriodDateRange } from '@/components/Marketing/PeriodPicker';
-
 import { resolvePeriod, resolvePrevRange, pctChange } from '@/lib/marketing-dashboard-utils';
 import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
 import { useMarketingAccountSnapshots } from '@/hooks/useMarketingAccountSnapshots';
 import { useMarketingPostMetrics, type PostWithMetrics } from '@/hooks/useMarketingPostMetrics';
-
 import { InstagramIdentityBanner } from '@/components/Marketing/dashboard/InstagramIdentityBanner';
 import { AccountKpisSection } from '@/components/Marketing/dashboard/AccountKpisSection';
 
@@ -41,10 +33,7 @@ export default function MarketingInstagram() {
     oldest: oldestAccount,
     loading: accountLoading,
     syncNow,
-  } = useMarketingAccountSnapshots(snapshotsRange, {
-    includeAudience: false,
-    limit: 90,
-  });
+  } = useMarketingAccountSnapshots(snapshotsRange, { includeAudience: false, limit: 90 });
 
   const [syncing, setSyncing] = useState(false);
 
@@ -98,36 +87,47 @@ export default function MarketingInstagram() {
 
   if (!integrationsLoading && !instagramConnected) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <PageHeader title="Instagram" subtitle="Métricas detalhadas da conta @hirofilm" />
-        <EmptyState
-          icon={Plug}
-          title="Conecte o Instagram para ver dados em tempo real"
-          description="Configure a integração em Admin → Integrações de Marketing."
-          action={{ label: 'Ir para Integrações', onClick: () => navigate('/administracao/integracoes') }}
-        />
-      </ResponsiveContainer>
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner">
+          <div className="ph">
+            <div>
+              <h1 className="ph-title">Instagram.</h1>
+              <p className="ph-sub">Métricas detalhadas da conta @hirofilm.</p>
+            </div>
+          </div>
+          <div className="empties" style={{ marginTop: 24 }}>
+            <div className="empty" style={{ borderRight: 0 }}>
+              <div className="glyph"><Plug strokeWidth={1.25} /></div>
+              <h5>Conecte o Instagram para ver dados em tempo real</h5>
+              <p>Configure a integração em Admin → Integrações de Marketing.</p>
+              <div className="actions">
+                <button className="btn primary" onClick={() => navigate('/administracao/integracoes')} type="button">
+                  <span>Ir para Integrações</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
-      <PageHeader
-        title="Instagram"
-        subtitle="Visão geral da conta Instagram"
-        actions={
-          <div className="flex items-center gap-2 flex-wrap">
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Instagram.</h1>
+            <p className="ph-sub">Visão geral da conta Instagram.</p>
+          </div>
+          <div className="ph-actions" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <PeriodPicker
               preset={periodPreset}
               customRange={customRange}
               oldestSnapshotDate={oldestAccount?.captured_at ? new Date(oldestAccount.captured_at) : null}
               onPresetChange={(p) => {
-                if (p === 'custom') {
-                  setCustomPickerOpen(true);
-                } else {
-                  setPeriodPreset(p);
-                  setCustomRange(null);
-                }
+                if (p === 'custom') setCustomPickerOpen(true);
+                else { setPeriodPreset(p); setCustomRange(null); }
               }}
               onCustomRangeChange={(range) => {
                 setCustomRange(range);
@@ -137,98 +137,112 @@ export default function MarketingInstagram() {
               customPickerOpen={customPickerOpen}
               onCustomPickerOpenChange={setCustomPickerOpen}
             />
-            <Button onClick={handleSync} disabled={syncing} size="sm" className="gap-2">
-              <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin')} />
-              {syncing ? 'Sincronizando...' : 'Sincronizar agora'}
-            </Button>
+            <button className="btn primary" onClick={handleSync} disabled={syncing} type="button">
+              <RefreshCw size={14} strokeWidth={1.5} className={syncing ? 'animate-spin' : ''} />
+              <span>{syncing ? 'Sincronizando…' : 'Sincronizar agora'}</span>
+            </button>
           </div>
-        }
-      />
+        </div>
 
-      <div className="space-y-6">
-        <InstagramIdentityBanner
-          integration={instagramIntegration}
-          rightAction={
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/marketing/dashboard')}
-              className="gap-2"
-            >
-              Ver dados completos
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          }
-        />
+        <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <InstagramIdentityBanner
+            integration={instagramIntegration}
+            rightAction={
+              <button className="btn" onClick={() => navigate('/marketing/dashboard')} type="button">
+                <span>Ver dados completos</span>
+                <ArrowRight size={14} strokeWidth={1.5} />
+              </button>
+            }
+          />
 
-        <AccountKpisSection
-          accountSnapshotsLength={accountSnapshots.length}
-          accountLoading={accountLoading}
-          latestAccount={latestAccount}
-          accountKpis={accountKpis}
-          onSync={handleSync}
-        />
+          <AccountKpisSection
+            accountSnapshotsLength={accountSnapshots.length}
+            accountLoading={accountLoading}
+            latestAccount={latestAccount}
+            accountKpis={accountKpis}
+            onSync={handleSync}
+          />
 
-        {/* Posts recentes preview */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-2 pb-3">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Images className="h-4 w-4 text-primary" />
-              Posts recentes
-            </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1"
-              onClick={() => navigate('/marketing/social-media/instagram/posts')}
-            >
-              Ver todos
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          </CardHeader>
-          <CardContent>
+          <section className="section">
+            <div className="section-head">
+              <div className="section-head-l">
+                <span className="section-eyebrow">Recentes</span>
+                <span className="section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <Images size={14} strokeWidth={1.5} />
+                  Posts recentes
+                </span>
+              </div>
+              <button
+                className="btn"
+                onClick={() => navigate('/marketing/social-media/instagram/posts')}
+                type="button"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              >
+                <span>Ver todos</span>
+                <ArrowRight size={14} strokeWidth={1.5} />
+              </button>
+            </div>
+
             {recentPosts.length === 0 ? (
-              <EmptyState
-                icon={Images}
-                title="Nenhum post publicado ainda"
-                description="Quando você publicar posts no Instagram eles aparecerão aqui."
-                action={{
-                  label: 'Ir para Posts',
-                  onClick: () => navigate('/marketing/social-media/instagram/posts'),
-                }}
-              />
+              <div className="empties">
+                <div className="empty" style={{ borderRight: 0 }}>
+                  <div className="glyph"><Images strokeWidth={1.25} /></div>
+                  <h5>Nenhum post publicado ainda</h5>
+                  <p>Quando você publicar posts no Instagram eles aparecerão aqui.</p>
+                  <div className="actions">
+                    <button
+                      className="btn primary"
+                      onClick={() => navigate('/marketing/social-media/instagram/posts')}
+                      type="button"
+                    >
+                      <span>Ir para Posts</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
                 {recentPosts.slice(0, 10).map((p) => (
                   <button
                     key={p.id}
                     onClick={() => navigate('/marketing/social-media/instagram/posts')}
-                    className="group relative aspect-square rounded-lg overflow-hidden bg-muted border border-border hover:border-primary/50 transition"
+                    type="button"
+                    style={{
+                      position: 'relative', aspectRatio: '1 / 1',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      background: 'hsl(var(--ds-surface))',
+                      overflow: 'hidden', cursor: 'pointer',
+                    }}
+                    className="group"
                   >
                     {p.cover_url ? (
                       <img
                         src={p.cover_url}
                         alt={p.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Instagram className="h-6 w-6 text-muted-foreground" />
+                      <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', color: 'hsl(var(--ds-fg-4))' }}>
+                        <Instagram size={20} strokeWidth={1.5} />
                       </div>
                     )}
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                      <p className="text-[10px] text-white font-medium truncate">
+                    <div style={{
+                      position: 'absolute', insetInline: 0, bottom: 0,
+                      background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+                      padding: 8,
+                    }}>
+                      <span style={{ fontSize: 10, fontWeight: 500, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>
                         {(p.views ?? 0).toLocaleString('pt-BR')} views
-                      </p>
+                      </span>
                     </div>
                   </button>
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </section>
+        </div>
       </div>
-    </ResponsiveContainer>
+    </div>
   );
 }

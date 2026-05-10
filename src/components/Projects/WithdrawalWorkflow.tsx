@@ -1,5 +1,4 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
 import { ProjectStep, ProjectStatus, StepChange } from '@/types/project';
 import { stepLabels, stepOrder } from '@/lib/projectSteps';
 import { Check, Play, Circle } from 'lucide-react';
@@ -9,7 +8,6 @@ interface WithdrawalWorkflowProps {
   stepHistory: StepChange[];
   projectStatus?: ProjectStatus;
   className?: string;
-  // Step user tracking from project
   separationUser?: { name?: string; time?: string };
   withdrawalUser?: { name?: string; time?: string };
   verificationUser?: { name?: string; time?: string };
@@ -18,9 +16,9 @@ interface WithdrawalWorkflowProps {
   createdByUser?: { name?: string; time?: string };
 }
 
-export function WithdrawalWorkflow({ 
-  currentStep, 
-  stepHistory, 
+export function WithdrawalWorkflow({
+  currentStep,
+  stepHistory,
   projectStatus,
   className,
   separationUser,
@@ -28,7 +26,7 @@ export function WithdrawalWorkflow({
   verificationUser,
   officeReceiptUser,
   completedByUser,
-  createdByUser
+  createdByUser,
 }: WithdrawalWorkflowProps) {
   const currentStepIndex = stepOrder.indexOf(currentStep);
 
@@ -44,46 +42,48 @@ export function WithdrawalWorkflow({
   };
 
   const getStepData = (step: ProjectStep): { date?: string; userName?: string } => {
-    // First check step history
-    const historyItem = stepHistory.find(h => h.step === step);
+    const historyItem = stepHistory.find((h) => h.step === step);
     if (historyItem) {
       return {
         date: new Date(historyItem.timestamp).toLocaleDateString('pt-BR'),
-        userName: historyItem.userName
+        userName: historyItem.userName,
       };
     }
 
-    // Fallback to user tracking props based on step
     switch (step) {
       case 'pending_separation':
         return {
           date: createdByUser?.time ? new Date(createdByUser.time).toLocaleDateString('pt-BR') : undefined,
-          userName: createdByUser?.name
+          userName: createdByUser?.name,
         };
       case 'ready_for_pickup':
         return {
           date: separationUser?.time ? new Date(separationUser.time).toLocaleDateString('pt-BR') : undefined,
-          userName: separationUser?.name
+          userName: separationUser?.name,
         };
       case 'in_use':
         return {
           date: withdrawalUser?.time ? new Date(withdrawalUser.time).toLocaleDateString('pt-BR') : undefined,
-          userName: withdrawalUser?.name
+          userName: withdrawalUser?.name,
         };
       case 'pending_verification':
         return {
-          date: verificationUser?.time ? new Date(verificationUser.time).toLocaleDateString('pt-BR') : undefined,
-          userName: verificationUser?.name
+          date: verificationUser?.time
+            ? new Date(verificationUser.time).toLocaleDateString('pt-BR')
+            : undefined,
+          userName: verificationUser?.name,
         };
       case 'office_receipt':
         return {
-          date: officeReceiptUser?.time ? new Date(officeReceiptUser.time).toLocaleDateString('pt-BR') : undefined,
-          userName: officeReceiptUser?.name
+          date: officeReceiptUser?.time
+            ? new Date(officeReceiptUser.time).toLocaleDateString('pt-BR')
+            : undefined,
+          userName: officeReceiptUser?.name,
         };
       case 'verified':
         return {
           date: completedByUser?.time ? new Date(completedByUser.time).toLocaleDateString('pt-BR') : undefined,
-          userName: completedByUser?.name
+          userName: completedByUser?.name,
         };
       default:
         return {};
@@ -91,7 +91,7 @@ export function WithdrawalWorkflow({
   };
 
   return (
-    <div className={cn("space-y-1", className)}>
+    <div className={className} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {stepOrder.map((step, index) => {
         const status = getStepStatus(index);
         const stepData = getStepData(step);
@@ -100,40 +100,67 @@ export function WithdrawalWorkflow({
         return (
           <div
             key={step}
-            className={cn(
-              "flex items-center gap-3 py-2 px-3 rounded-md transition-colors",
-              status === 'current' && "bg-primary/5"
-            )}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '8px 12px',
+              background: status === 'current' ? 'hsl(var(--ds-accent) / 0.05)' : 'transparent',
+              transition: 'background 0.15s',
+            }}
           >
             {/* Icon */}
             {status === 'completed' && (
-              <Check className="w-4 h-4 text-success flex-shrink-0" />
+              <Check
+                size={14}
+                strokeWidth={1.75}
+                style={{ color: 'hsl(var(--ds-success))', flexShrink: 0 }}
+              />
             )}
             {status === 'current' && (
-              <Play className="w-4 h-4 text-primary flex-shrink-0" />
+              <Play
+                size={14}
+                strokeWidth={1.75}
+                style={{ color: 'hsl(var(--ds-accent))', flexShrink: 0 }}
+              />
             )}
             {status === 'pending' && (
-              <Circle className="w-4 h-4 text-muted-foreground/40 flex-shrink-0" />
+              <Circle
+                size={14}
+                strokeWidth={1.5}
+                style={{ color: 'hsl(var(--ds-fg-4) / 0.5)', flexShrink: 0 }}
+              />
             )}
 
             {/* Step name */}
-            <span className={cn(
-              "text-sm flex-1",
-              status === 'completed' && "text-foreground",
-              status === 'current' && "font-medium text-foreground",
-              status === 'pending' && "text-muted-foreground"
-            )}>
+            <span
+              style={{
+                fontSize: 13,
+                flex: 1,
+                fontWeight: status === 'current' ? 500 : 400,
+                color:
+                  status === 'pending' ? 'hsl(var(--ds-fg-3))' : 'hsl(var(--ds-fg-1))',
+              }}
+            >
               {stepLabels[step]}
             </span>
 
-            {/* User and date info - only show if data exists */}
+            {/* User and date info */}
             {hasData && (
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  fontSize: 13,
+                  color: 'hsl(var(--ds-fg-3))',
+                }}
+              >
                 {stepData.userName && (
                   <span className="hidden sm:inline">{stepData.userName}</span>
                 )}
                 {stepData.date && (
-                  <span className="tabular-nums">{stepData.date}</span>
+                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>{stepData.date}</span>
                 )}
               </div>
             )}

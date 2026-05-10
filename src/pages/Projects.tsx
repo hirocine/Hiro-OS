@@ -1,13 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { ResponsiveButton } from '@/components/ui/responsive-button';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Plus, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronRight, ClipboardList, FileEdit, Camera } from 'lucide-react';
+import { Plus, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronRight, FileEdit, Camera, type LucideIcon } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useProjects } from '@/features/projects';
 import { useEquipmentProjectSync } from '@/hooks/useEquipmentProjectSync';
@@ -23,29 +18,95 @@ import { ProjectCardSkeleton } from '@/components/ui/skeleton-loaders';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 
+interface SectionProps {
+  title: string;
+  count: number;
+  icon: LucideIcon;
+  iconColor?: string;
+  children: React.ReactNode;
+  collapsible?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+function ProjectSection({ title, count, icon: Icon, iconColor, children, collapsible, open, onOpenChange }: SectionProps) {
+  const header = (
+    <div
+      style={{
+        padding: '14px 18px',
+        borderBottom: '1px solid hsl(var(--ds-line-1))',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 10,
+        cursor: collapsible ? 'pointer' : 'default',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Icon size={14} strokeWidth={1.5} style={{ color: iconColor || 'hsl(var(--ds-fg-3))' }} />
+        <span
+          style={{
+            fontSize: 11,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+            color: 'hsl(var(--ds-fg-2))',
+          }}
+        >
+          {title} ({count})
+        </span>
+      </div>
+      {collapsible && (
+        open ? (
+          <ChevronDown size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+        ) : (
+          <ChevronRight size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+        )
+      )}
+    </div>
+  );
+
+  const body = <div style={{ padding: 18 }}>{children}</div>;
+
+  if (collapsible) {
+    return (
+      <Collapsible open={open} onOpenChange={onOpenChange}>
+        <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+          <CollapsibleTrigger asChild>{header}</CollapsibleTrigger>
+          <CollapsibleContent>{body}</CollapsibleContent>
+        </div>
+      </Collapsible>
+    );
+  }
+
+  return (
+    <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
+      {header}
+      {body}
+    </div>
+  );
+}
+
 export default function Projects() {
   const navigate = useNavigate();
-  const { 
-    projects: allFilteredProjects, 
-    stats, 
-    filters, 
-    setFilters, 
+  const {
+    projects: allFilteredProjects,
+    stats,
     loading,
     error,
-    addProject, 
-    updateProject, 
+    updateProject,
     updateProjectStep,
-    completeProject, 
+    completeProject,
     archiveProject,
-    fetchProjects
+    fetchProjects,
   } = useProjects();
-  
+
   // Sincronização automática entre equipamentos e projetos
   useEquipmentProjectSync();
-  
+
   // Verificar se há rascunho salvo
   const { hasDraft, isLoading: draftLoading } = useWithdrawalDraft();
-  
+
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showStepDialog, setShowStepDialog] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -58,61 +119,65 @@ export default function Projects() {
   useEffect(() => {
     const checkSessionAndFetch = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         logger.warn('No active session on Projects page', {
           module: 'projects',
-          action: 'check_session'
+          action: 'check_session',
         });
         await supabase.auth.refreshSession();
       }
-      
+
       fetchProjects();
     };
-    
+
     checkSessionAndFetch();
   }, [fetchProjects]);
 
   // Organize projects by categories
   const today = new Date().toISOString().split('T')[0];
-  
+
   // Próximos Projetos - Active projects sorted by start date
   const upcomingProjects = allFilteredProjects
-    .filter(project => project.status === 'active' && project.expectedEndDate >= today)
+    .filter((project) => project.status === 'active' && project.expectedEndDate >= today)
     .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
   // Pendente Devolução - Active projects past expected end date
   const overdueProjects = allFilteredProjects
-    .filter(project => project.status === 'active' && project.expectedEndDate < today)
+    .filter((project) => project.status === 'active' && project.expectedEndDate < today)
     .sort((a, b) => new Date(a.expectedEndDate).getTime() - new Date(b.expectedEndDate).getTime());
 
   // Finalizados - Completed projects
   const completedProjects = allFilteredProjects
-    .filter(project => project.status === 'completed')
-    .sort((a, b) => new Date(b.actualEndDate || b.expectedEndDate).getTime() - new Date(a.actualEndDate || a.expectedEndDate).getTime());
+    .filter((project) => project.status === 'completed')
+    .sort(
+      (a, b) =>
+        new Date(b.actualEndDate || b.expectedEndDate).getTime() -
+        new Date(a.actualEndDate || a.expectedEndDate).getTime(),
+    );
 
   // Arquivados - Archived projects
   const archivedProjects = allFilteredProjects
-    .filter(project => project.status === 'archived')
+    .filter((project) => project.status === 'archived')
     .sort((a, b) => new Date(b.expectedEndDate).getTime() - new Date(a.expectedEndDate).getTime());
 
   const handleEditProject = async (projectId: string, updates: Partial<Project>) => {
     try {
       await updateProject(projectId, updates);
       toast({
-        title: "Projeto atualizado",
-        description: "As informações foram salvas com sucesso.",
+        title: 'Projeto atualizado',
+        description: 'As informações foram salvas com sucesso.',
       });
     } catch (error) {
       logger.error('Error updating project', {
-        module: 'projects-page', 
+        module: 'projects-page',
         action: 'update_project',
-        error
+        error,
       });
       toast({
-        title: "Erro ao atualizar projeto",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive",
+        title: 'Erro ao atualizar projeto',
+        description: 'Tente novamente em alguns instantes.',
+        variant: 'destructive',
       });
     } finally {
       setShowEditDialog(false);
@@ -126,19 +191,19 @@ export default function Projects() {
     try {
       await updateProjectStep(stepProject.id, step, notes);
       toast({
-        title: "Etapa atualizada",
+        title: 'Etapa atualizada',
         description: `Projeto movido para: ${getStepLabel(step)}`,
       });
     } catch (error) {
       logger.error('Error updating step', {
         module: 'projects-page',
-        action: 'update_step', 
-        error
+        action: 'update_step',
+        error,
       });
       toast({
-        title: "Erro ao atualizar etapa",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive",
+        title: 'Erro ao atualizar etapa',
+        description: 'Tente novamente em alguns instantes.',
+        variant: 'destructive',
       });
     } finally {
       setShowStepDialog(false);
@@ -150,19 +215,19 @@ export default function Projects() {
     try {
       await completeProject(projectId);
       toast({
-        title: "Projeto finalizado",
-        description: "O projeto foi marcado como finalizado.",
+        title: 'Projeto finalizado',
+        description: 'O projeto foi marcado como finalizado.',
       });
     } catch (error) {
       logger.error('Error completing project', {
         module: 'projects-page',
         action: 'complete_project',
-        error
+        error,
       });
       toast({
-        title: "Erro ao finalizar projeto",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive",
+        title: 'Erro ao finalizar projeto',
+        description: 'Tente novamente em alguns instantes.',
+        variant: 'destructive',
       });
     }
   };
@@ -171,114 +236,133 @@ export default function Projects() {
     try {
       await archiveProject(projectId);
       toast({
-        title: "Projeto arquivado",
-        description: "O projeto foi arquivado.",
+        title: 'Projeto arquivado',
+        description: 'O projeto foi arquivado.',
       });
     } catch (error) {
       logger.error('Error archiving project', {
         module: 'projects-page',
         action: 'archive_project',
-        error  
+        error,
       });
       toast({
-        title: "Erro ao arquivar projeto",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive",
+        title: 'Erro ao arquivar projeto',
+        description: 'Tente novamente em alguns instantes.',
+        variant: 'destructive',
       });
     }
   };
 
-
   // Loading state with skeletons
   if (loading) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <PageHeader 
-          title="Retiradas" 
-          subtitle="Gerencie retiradas e devoluções de equipamentos por projeto"
-        />
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner">
+          <div className="ph">
+            <div>
+              <h1 className="ph-title">Retiradas.</h1>
+              <p className="ph-sub">Gerencie retiradas e devoluções de equipamentos por projeto.</p>
+            </div>
+          </div>
 
-        <ProjectStatsCards stats={undefined} isLoading={true} />
+          <div style={{ marginTop: 24 }}>
+            <ProjectStatsCards stats={undefined} isLoading={true} />
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <ProjectCardSkeleton key={i} />
-          ))}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+              gap: 12,
+              marginTop: 24,
+            }}
+          >
+            {Array.from({ length: 10 }).map((_, i) => (
+              <ProjectCardSkeleton key={i} />
+            ))}
+          </div>
         </div>
-      </ResponsiveContainer>
+      </div>
     );
   }
 
   // Error state
   if (error) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <PageHeader 
-          title="Retiradas" 
-        />
-
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="text-destructive">Erro ao carregar projetos</CardTitle>
-            <CardDescription>
-              {error}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => fetchProjects()} variant="outline">
+      <div className="ds-shell ds-page">
+        <div className="ds-page-inner">
+          <div className="ph">
+            <div>
+              <h1 className="ph-title">Retiradas.</h1>
+            </div>
+          </div>
+          <div
+            style={{
+              marginTop: 24,
+              border: '1px solid hsl(var(--ds-line-1))',
+              padding: 24,
+              background: 'hsl(var(--ds-surface))',
+            }}
+          >
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: 'hsl(var(--ds-danger))', marginBottom: 4 }}>
+              Erro ao carregar projetos
+            </h3>
+            <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginBottom: 16 }}>{error}</p>
+            <button className="btn" onClick={() => fetchProjects()} type="button">
               Tentar novamente
-            </Button>
-          </CardContent>
-        </Card>
-      </ResponsiveContainer>
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
+  const gridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+    gap: 16,
+  };
+
   return (
-    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-      <PageHeader 
-        title="Retiradas" 
-        subtitle="Gerencie retiradas e devoluções de equipamentos por projeto"
-        actions={
-          <div className="flex items-center gap-3">
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Retiradas.</h1>
+            <p className="ph-sub">Gerencie retiradas e devoluções de equipamentos por projeto.</p>
+          </div>
+          <div className="ph-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {hasDraft && !draftLoading && (
-              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <FileEdit className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">1 Rascunho Salvo</span>
-                <span className="sm:hidden">1 Rascunho</span>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 12,
+                  color: 'hsl(var(--ds-fg-3))',
+                }}
+              >
+                <FileEdit size={13} strokeWidth={1.5} />
+                <span>1 Rascunho Salvo</span>
               </span>
             )}
-            <ResponsiveButton 
-              onClick={() => navigate('/retiradas/nova')}
-              icon={Plus}
-              className="shadow-elegant"
-              mobileText="Nova"
-              desktopText="Nova Retirada"
-            />
+            <button className="btn primary" onClick={() => navigate('/retiradas/nova')} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Nova Retirada</span>
+            </button>
           </div>
-        }
-      />
+        </div>
 
-      {/* Statistics Cards */}
-      <ProjectStatsCards stats={stats} isLoading={false} />
+        <div style={{ marginTop: 24 }}>
+          <ProjectStatsCards stats={stats} isLoading={false} />
+        </div>
 
-      {/* Projects Grid */}
-      <div className="space-y-6">
-        {/* Upcoming Projects */}
-        {upcomingProjects.length > 0 && (
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Clock className="h-4 w-4 text-primary" />
-                </div>
-                <CardTitle className="text-lg">
-                  Próximas Retiradas ({upcomingProjects.length})
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+        {/* Projects Sections */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24 }}>
+          {/* Upcoming Projects */}
+          {upcomingProjects.length > 0 && (
+            <ProjectSection title="Próximas Retiradas" count={upcomingProjects.length} icon={Clock} iconColor="hsl(var(--ds-accent))">
+              <div style={gridStyle}>
                 {upcomingProjects.map((project) => (
                   <ProjectSummaryCard
                     key={project.id}
@@ -292,25 +376,18 @@ export default function Projects() {
                   />
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </ProjectSection>
+          )}
 
-        {/* Overdue Projects */}
-        {overdueProjects.length > 0 && (
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-destructive/10">
-                  <Package className="h-4 w-4 text-destructive" />
-                </div>
-                <CardTitle className="text-lg">
-                  Pendente Devolução ({overdueProjects.length})
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          {/* Overdue Projects */}
+          {overdueProjects.length > 0 && (
+            <ProjectSection
+              title="Pendente Devolução"
+              count={overdueProjects.length}
+              icon={Package}
+              iconColor="hsl(var(--ds-danger))"
+            >
+              <div style={gridStyle}>
                 {overdueProjects.map((project) => (
                   <ProjectSummaryCard
                     key={project.id}
@@ -324,128 +401,96 @@ export default function Projects() {
                   />
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </ProjectSection>
+          )}
+
+          {/* Completed Projects - Collapsible */}
+          {completedProjects.length > 0 && (
+            <ProjectSection
+              title="Retiradas Finalizadas"
+              count={completedProjects.length}
+              icon={CheckCircle}
+              iconColor="hsl(var(--ds-success))"
+              collapsible
+              open={showCompleted}
+              onOpenChange={setShowCompleted}
+            >
+              <div style={gridStyle}>
+                {completedProjects.map((project) => (
+                  <ProjectSummaryCard
+                    key={project.id}
+                    project={project}
+                    onEdit={(proj) => {
+                      setEditingProject(proj);
+                      setShowEditDialog(true);
+                    }}
+                    onComplete={handleCompleteProject}
+                    onArchive={handleArchiveProject}
+                  />
+                ))}
+              </div>
+            </ProjectSection>
+          )}
+
+          {/* Archived Projects - Collapsible */}
+          {archivedProjects.length > 0 && (
+            <ProjectSection
+              title="Retiradas Arquivadas"
+              count={archivedProjects.length}
+              icon={Archive}
+              collapsible
+              open={showArchived}
+              onOpenChange={setShowArchived}
+            >
+              <div style={gridStyle}>
+                {archivedProjects.map((project) => (
+                  <ProjectSummaryCard
+                    key={project.id}
+                    project={project}
+                    onEdit={(proj) => {
+                      setEditingProject(proj);
+                      setShowEditDialog(true);
+                    }}
+                    onComplete={handleCompleteProject}
+                    onArchive={handleArchiveProject}
+                  />
+                ))}
+              </div>
+            </ProjectSection>
+          )}
+
+          {/* No projects found */}
+          {allFilteredProjects.length === 0 && (
+            <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))', padding: 18 }}>
+              <EmptyState
+                icon={Camera}
+                title="Nenhuma retirada encontrada"
+                description="Comece criando sua primeira retirada de equipamentos"
+                action={{ label: 'Criar Retirada', onClick: () => navigate('/retiradas/nova') }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Dialogs */}
+        {editingProject && (
+          <EditProjectDialog
+            open={showEditDialog}
+            onOpenChange={setShowEditDialog}
+            project={editingProject}
+            onSave={handleEditProject}
+          />
         )}
 
-        {/* Completed Projects - Collapsible */}
-        {completedProjects.length > 0 && (
-          <Collapsible open={showCompleted} onOpenChange={setShowCompleted}>
-            <Card>
-              <CollapsibleTrigger asChild>
-                <CardHeader className="pb-4 cursor-pointer hover:bg-muted/30 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="p-2 rounded-lg bg-success/10">
-                        <CheckCircle className="h-4 w-4 text-success" />
-                      </div>
-                      <CardTitle className="text-lg">
-                        Retiradas Finalizadas ({completedProjects.length})
-                      </CardTitle>
-                    </div>
-                    {showCompleted ? (
-                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
-                </CardHeader>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                    {completedProjects.map((project) => (
-                      <ProjectSummaryCard
-                        key={project.id}
-                        project={project}
-                        onEdit={(proj) => {
-                          setEditingProject(proj);
-                          setShowEditDialog(true);
-                        }}
-                        onComplete={handleCompleteProject}
-                        onArchive={handleArchiveProject}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
-        )}
-
-        {/* Archived Projects - Collapsible */}
-        {archivedProjects.length > 0 && (
-          <Collapsible open={showArchived} onOpenChange={setShowArchived}>
-            <Card>
-              <CollapsibleTrigger asChild>
-                <CardHeader className="pb-4 cursor-pointer hover:bg-muted/30 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="p-2 rounded-lg bg-muted">
-                        <Archive className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <CardTitle className="text-lg">
-                        Retiradas Arquivadas ({archivedProjects.length})
-                      </CardTitle>
-                    </div>
-                    {showArchived ? (
-                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
-                </CardHeader>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                    {archivedProjects.map((project) => (
-                      <ProjectSummaryCard
-                        key={project.id}
-                        project={project}
-                        onEdit={(proj) => {
-                          setEditingProject(proj);
-                          setShowEditDialog(true);
-                        }}
-                        onComplete={handleCompleteProject}
-                        onArchive={handleArchiveProject}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
-        )}
-        
-        {/* No projects found */}
-        {allFilteredProjects.length === 0 && (
-          <Card className="shadow-card">
-            <CardContent className="py-4">
-              <EmptyState icon={Camera} title="Nenhuma retirada encontrada" description="Comece criando sua primeira retirada de equipamentos" action={{ label: "Criar Retirada", onClick: () => navigate('/retiradas/nova') }} />
-            </CardContent>
-          </Card>
+        {stepProject && (
+          <StepUpdateDialog
+            open={showStepDialog}
+            onOpenChange={setShowStepDialog}
+            project={stepProject}
+            onUpdate={handleUpdateStep}
+          />
         )}
       </div>
-
-      {/* Dialogs */}
-      {editingProject && (
-        <EditProjectDialog
-          open={showEditDialog}
-          onOpenChange={setShowEditDialog}
-          project={editingProject}
-          onSave={handleEditProject}
-        />
-      )}
-
-      {stepProject && (
-        <StepUpdateDialog
-          open={showStepDialog}
-          onOpenChange={setShowStepDialog}
-          project={stepProject}
-          onUpdate={handleUpdateStep}
-        />
-      )}
-    </ResponsiveContainer>
+    </div>
   );
 }

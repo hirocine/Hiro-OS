@@ -1,12 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, User, CheckCircle, Archive, CheckSquare, List, Columns3, CalendarDays, Search } from 'lucide-react';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { PageHeader } from '@/components/ui/page-header';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Plus, User, CheckCircle, Archive, List, Columns3, CalendarDays, Search } from 'lucide-react';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { TaskSummaryBar } from '@/features/tasks/components/TaskSummaryBar';
 import { TasksTable } from '@/features/tasks/components/TasksTable';
@@ -19,16 +13,16 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useDepartments } from '@/features/tasks/hooks/useDepartments';
 import { PRIORITY_CONFIG, STATUS_CONFIG } from '@/features/tasks/types';
-import { cn } from '@/lib/utils';
 
 type ViewType = 'lista' | 'kanban' | 'calendario';
+type ListaTab = 'active' | 'mine' | 'completed' | 'archived';
 
 export default function Tasks() {
   const { user } = useAuthContext();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // View state
   const [currentView, setCurrentView] = useState<ViewType>('lista');
+  const [listaTab, setListaTab] = useState<ListaTab>('active');
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,12 +38,12 @@ export default function Tasks() {
     }
   }, [currentView]);
 
-  // Data hooks
+  // Data
   const { tasks, isLoading } = useTasks();
   const { users } = useUsers();
   const { departments } = useDepartments();
 
-  // Apply all filters
+  // Filters
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
       if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
@@ -61,92 +55,104 @@ export default function Tasks() {
     });
   }, [tasks, searchQuery, filterPriority, filterStatus, filterDepartment, filterAssignee]);
 
-  // Calculate stats from filtered tasks
   const stats = useFilteredTaskStats(filteredTasks);
 
-  // Filter tasks by category
   const activeTasks = useMemo(() =>
     filteredTasks.filter(t => t.status !== 'concluida' && t.status !== 'arquivada'),
     [filteredTasks]
   );
-
   const myTasks = useMemo(() =>
-    activeTasks.filter(t =>
-      t.assignees?.some(a => a.user_id === user?.id)
-    ),
+    activeTasks.filter(t => t.assignees?.some(a => a.user_id === user?.id)),
     [activeTasks, user?.id]
   );
-
   const completedTasks = useMemo(() =>
     filteredTasks.filter(t => t.status === 'concluida'),
     [filteredTasks]
   );
-
   const archivedTasks = useMemo(() =>
     filteredTasks.filter(t => t.status === 'arquivada'),
     [filteredTasks]
   );
 
-  const viewButtons: { key: ViewType; label: string; icon: React.ReactNode }[] = [
-    { key: 'lista', label: 'Lista', icon: <List className="h-3.5 w-3.5" /> },
-    { key: 'kanban', label: 'Kanban', icon: <Columns3 className="h-3.5 w-3.5" /> },
-    { key: 'calendario', label: 'Calendário', icon: <CalendarDays className="h-3.5 w-3.5" /> },
-  ];
+  const hasActiveFilter = searchQuery || filterPriority !== 'all' || filterStatus !== 'all' ||
+    filterDepartment !== 'all' || filterAssignee !== 'all';
+
+  const tasksForActiveTab =
+    listaTab === 'active' ? activeTasks :
+    listaTab === 'mine' ? myTasks :
+    listaTab === 'completed' ? completedTasks : archivedTasks;
 
   return (
-    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
-      <PageHeader
-        title="Tarefas"
-        subtitle="Gerencie suas tarefas e acompanhe o progresso"
-        actions={
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Nova Tarefa
-          </Button>
-        }
-      />
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        {/* Page header */}
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Tarefas.</h1>
+            <p className="ph-sub">Gerencie suas tarefas e acompanhe o progresso.</p>
+          </div>
+          <div className="ph-actions">
+            <button className="btn primary" onClick={() => setDialogOpen(true)} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Nova Tarefa</span>
+            </button>
+          </div>
+        </div>
 
-      <div className="space-y-4">
-        {/* Summary Bar */}
-        <TaskSummaryBar stats={stats} isLoading={isLoading} />
+        {/* Summary stats */}
+        <div className="summary" style={{ marginTop: 24 }}>
+          <div className="stat">
+            <span className="stat-lbl">Ativas</span>
+            <span className="stat-num">{isLoading ? '—' : stats.active}</span>
+          </div>
+          <div className={'stat' + (stats.overdue > 0 ? ' danger' : ' muted')}>
+            <span className="stat-lbl">Atrasadas</span>
+            <span className="stat-num">{isLoading ? '—' : stats.overdue}</span>
+          </div>
+          <div className={'stat' + (stats.urgent > 0 ? ' warn' : ' muted')}>
+            <span className="stat-lbl">Urgentes</span>
+            <span className="stat-num">{isLoading ? '—' : stats.urgent}</span>
+          </div>
+          <div className="stat success">
+            <span className="stat-lbl">Concluídas</span>
+            <span className="stat-num">{isLoading ? '—' : stats.completed}</span>
+          </div>
+        </div>
 
         {/* Toolbar */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* View toggle */}
-          <div className="flex bg-muted rounded-lg p-0.5 gap-0.5">
-            {viewButtons.map(v => (
-              <button
-                key={v.key}
-                onClick={() => setCurrentView(v.key)}
-                className={cn(
-                  'flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md transition-all font-medium',
-                  currentView === v.key
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {v.icon}
-                {v.label}
-              </button>
-            ))}
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 20 }}>
+          {/* View toggle (segmented) */}
+          <div className="tabs-seg">
+            <button className={'s' + (currentView === 'lista' ? ' on' : '')} onClick={() => setCurrentView('lista')} type="button">
+              <List />Lista
+            </button>
+            <button className={'s' + (currentView === 'kanban' ? ' on' : '')} onClick={() => setCurrentView('kanban')} type="button">
+              <Columns3 />Kanban
+            </button>
+            <button className={'s' + (currentView === 'calendario' ? ' on' : '')} onClick={() => setCurrentView('calendario')} type="button">
+              <CalendarDays />Calendário
+            </button>
           </div>
 
           {/* Search */}
-          <div className="relative flex-1 min-w-[180px]">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar tarefas..."
+          <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+            <Search
+              size={14}
+              strokeWidth={1.5}
+              style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'hsl(var(--ds-fg-4))', pointerEvents: 'none' }}
+            />
+            <input
+              className="field-input"
+              placeholder="Buscar tarefas…"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-9 h-9"
+              style={{ width: '100%', paddingLeft: 34 }}
             />
           </div>
 
           {/* Priority filter */}
           <Select value={filterPriority} onValueChange={setFilterPriority}>
-            <SelectTrigger className="w-[140px] h-9">
-              <SelectValue placeholder="Prioridade" />
-            </SelectTrigger>
+            <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Prioridade" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas</SelectItem>
               {Object.entries(PRIORITY_CONFIG).map(([key, cfg]) => (
@@ -155,12 +161,9 @@ export default function Tasks() {
             </SelectContent>
           </Select>
 
-          {/* Status filter - hidden in lista view (tabs handle this) */}
           {currentView !== 'lista' && (
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[140px] h-9">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
+              <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
                 {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
@@ -170,43 +173,30 @@ export default function Tasks() {
             </Select>
           )}
 
-          {/* Department filter */}
           <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-            <SelectTrigger className="w-[160px] h-9">
-              <SelectValue placeholder="Departamento" />
-            </SelectTrigger>
+            <SelectTrigger className="w-[160px] h-9"><SelectValue placeholder="Departamento" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
-              {departments.map(d => (
-                <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
-              ))}
+              {departments.map(d => (<SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>))}
             </SelectContent>
           </Select>
 
-          {/* Assignee filter */}
           <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-            <SelectTrigger className="w-[160px] h-9">
-              <SelectValue placeholder="Responsável" />
-            </SelectTrigger>
+            <SelectTrigger className="w-[160px] h-9"><SelectValue placeholder="Responsável" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
-              {users.map(u => (
-                <SelectItem key={u.id} value={u.id}>{u.display_name || u.email}</SelectItem>
-              ))}
+              {users.map(u => (<SelectItem key={u.id} value={u.id}>{u.display_name || u.email}</SelectItem>))}
             </SelectContent>
           </Select>
         </div>
 
         {/* Active filters indicator */}
-        {(searchQuery || filterPriority !== 'all' || filterStatus !== 'all' || filterDepartment !== 'all' || filterAssignee !== 'all') && (
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground text-xs">
-              Filtros ativos: mostrando {filteredTasks.length} de {tasks.length} tarefas
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 text-xs px-2 text-muted-foreground hover:text-foreground"
+        {hasActiveFilter && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>
+            <span>Filtros ativos · mostrando <strong style={{ color: 'hsl(var(--ds-fg-1))' }}>{filteredTasks.length}</strong> de {tasks.length} tarefas</span>
+            <button
+              type="button"
+              style={{ fontFamily: '"HN Display"', fontSize: 10, fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'hsl(var(--ds-fg-3))', cursor: 'pointer' }}
               onClick={() => {
                 setSearchQuery('');
                 setFilterPriority('all');
@@ -216,75 +206,60 @@ export default function Tasks() {
               }}
             >
               Limpar filtros
-            </Button>
+            </button>
           </div>
         )}
 
         {/* Content */}
-        {currentView === 'lista' && (
-          <Card className="border-l-4 border-l-primary">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <CheckSquare className="w-5 h-5 text-primary" />
-                </div>
-                <CardTitle>Tarefas</CardTitle>
+        <div style={{ marginTop: 24 }}>
+          {currentView === 'lista' && (
+            <>
+              <div className="tabs-bar">
+                <button className={'tab' + (listaTab === 'active' ? ' on' : '')} onClick={() => setListaTab('active')} type="button">
+                  Ativas <span className="ct">{activeTasks.length}</span>
+                </button>
+                <button className={'tab' + (listaTab === 'mine' ? ' on' : '')} onClick={() => setListaTab('mine')} type="button">
+                  <User />Minhas <span className="ct">{myTasks.length}</span>
+                </button>
+                <button className={'tab' + (listaTab === 'completed' ? ' on' : '')} onClick={() => setListaTab('completed')} type="button">
+                  <CheckCircle />Concluídas <span className="ct">{completedTasks.length}</span>
+                </button>
+                <button className={'tab' + (listaTab === 'archived' ? ' on' : '')} onClick={() => setListaTab('archived')} type="button">
+                  <Archive />Arquivadas <span className="ct">{archivedTasks.length}</span>
+                </button>
               </div>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="active">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="active">
-                    Ativas
-                    <Badge variant="secondary" className="ml-2">{activeTasks.length}</Badge>
-                  </TabsTrigger>
-                  <TabsTrigger value="mine">
-                    <User className="w-3 h-3 mr-1" />
-                    Minhas
-                    <Badge variant="secondary" className="ml-2">{myTasks.length}</Badge>
-                  </TabsTrigger>
-                  <TabsTrigger value="completed">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Concluídas
-                    <Badge variant="secondary" className="ml-2">{completedTasks.length}</Badge>
-                  </TabsTrigger>
-                  <TabsTrigger value="archived">
-                    <Archive className="w-3 h-3 mr-1" />
-                    Arquivadas
-                    <Badge variant="secondary" className="ml-2">{archivedTasks.length}</Badge>
-                  </TabsTrigger>
-                </TabsList>
 
-                <TabsContent value="active">
-                  <TasksTable tasks={activeTasks} isLoading={isLoading} showCreationRow={true} showAssignee={true} />
-                </TabsContent>
+              {/* Wrap TasksTable outside ds-shell so its own shadcn Table styles apply normally */}
+              <div style={{ marginTop: 16 }} className="ds-page-table-host">
+                <Tabs value={listaTab}>
+                  <TabsContent value="active">
+                    <TasksTable tasks={activeTasks} isLoading={isLoading} showCreationRow={true} showAssignee={true} />
+                  </TabsContent>
+                  <TabsContent value="mine">
+                    <TasksTable tasks={myTasks} isLoading={isLoading} showAssignee={true} />
+                  </TabsContent>
+                  <TabsContent value="completed">
+                    <TasksTable tasks={completedTasks} isLoading={isLoading} showAssignee={true} />
+                  </TabsContent>
+                  <TabsContent value="archived">
+                    <TasksTable tasks={archivedTasks} isLoading={isLoading} showAssignee={true} />
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </>
+          )}
 
-                <TabsContent value="mine">
-                  <TasksTable tasks={myTasks} isLoading={isLoading} showAssignee={true} />
-                </TabsContent>
+          {currentView === 'kanban' && (
+            <TaskKanbanView tasks={filteredTasks} isLoading={isLoading} />
+          )}
 
-                <TabsContent value="completed">
-                  <TasksTable tasks={completedTasks} isLoading={isLoading} showAssignee={true} />
-                </TabsContent>
-
-                <TabsContent value="archived">
-                  <TasksTable tasks={archivedTasks} isLoading={isLoading} showAssignee={true} />
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        )}
-
-        {currentView === 'kanban' && (
-          <TaskKanbanView tasks={filteredTasks} isLoading={isLoading} />
-        )}
-
-        {currentView === 'calendario' && (
-          <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} />
-        )}
+          {currentView === 'calendario' && (
+            <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} />
+          )}
+        </div>
       </div>
 
       <TaskDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-    </ResponsiveContainer>
+    </div>
   );
 }

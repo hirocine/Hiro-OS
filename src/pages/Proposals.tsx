@@ -1,12 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Plus, Clock, CheckCircle, Archive, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { Plus, ChevronDown, ChevronRight, Receipt, CheckCircle, Archive } from 'lucide-react';
 import { useProposals, ProposalCard } from '@/features/proposals';
 import type { Proposal } from '@/features/proposals';
 
@@ -21,7 +16,7 @@ export default function Proposals() {
   const archivedProposals = (proposals || []).filter(p => p.status === 'expired');
 
   const renderList = (items: Proposal[]) => (
-    <div className="flex flex-col gap-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {items.map(p => (
         <ProposalCard
           key={p.id}
@@ -33,90 +28,116 @@ export default function Proposals() {
     </div>
   );
 
-  return (
-    <ResponsiveContainer maxWidth="7xl">
-      <PageHeader
-        title="Orçamentos"
-        subtitle="Gerencie suas propostas comerciais"
-        actions={
-          <Button onClick={() => navigate('/orcamentos/novo')}>
-            <Plus className="h-4 w-4 mr-2" /> Nova Proposta
-          </Button>
-        }
-      />
-      <div className="space-y-6">
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Clock className="h-4 w-4 text-primary" />
-              </div>
-              <CardTitle className="text-lg">
-                Orçamentos Ativos ({activeProposals.length})
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {activeProposals.length > 0 ? renderList(activeProposals) : (
-              <EmptyState icon={Receipt} title="Nenhum orçamento ativo" description="Crie sua primeira proposta comercial" action={{ label: "Nova Proposta", onClick: () => navigate('/orcamentos/novo') }} />
-            )}
-          </CardContent>
-        </Card>
+  const sectionHeader = (eyebrow: string, title: string, count: number) => (
+    <div className="section-head">
+      <div className="section-head-l">
+        <span className="section-eyebrow">{eyebrow}</span>
+        <span className="section-title">{title}</span>
+      </div>
+      <span className="section-meta">{count} {count === 1 ? 'item' : 'itens'}</span>
+    </div>
+  );
 
-        <Collapsible open={showApproved} onOpenChange={setShowApproved}>
-          <Card>
-            <CollapsibleTrigger asChild>
-              <CardHeader className="py-4 cursor-pointer hover:bg-muted/30 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-success/10">
-                      <CheckCircle className="h-4 w-4 text-success" />
-                    </div>
-                    <CardTitle className="text-lg">
-                      Aprovados ({approvedProposals.length})
-                    </CardTitle>
-                  </div>
-                  {showApproved ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />}
+  return (
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
+        <div className="ph">
+          <div>
+            <h1 className="ph-title">Orçamentos.</h1>
+            <p className="ph-sub">Gerencie suas propostas comerciais.</p>
+          </div>
+          <div className="ph-actions">
+            <button className="btn primary" onClick={() => navigate('/orcamentos/novo')} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Nova Proposta</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Ativos */}
+        <section className="section">
+          {sectionHeader('01', 'Orçamentos ativos', activeProposals.length)}
+          {activeProposals.length > 0 ? (
+            renderList(activeProposals)
+          ) : (
+            <div className="empties">
+              <div className="empty" style={{ borderRight: 0 }}>
+                <div className="glyph"><Receipt strokeWidth={1.25} /></div>
+                <h5>Nenhum orçamento ativo</h5>
+                <p>Crie sua primeira proposta comercial.</p>
+                <div className="actions">
+                  <button className="btn primary" onClick={() => navigate('/orcamentos/novo')} type="button">
+                    <Plus size={14} strokeWidth={1.5} />
+                    <span>Nova proposta</span>
+                  </button>
                 </div>
-              </CardHeader>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Aprovados */}
+        <Collapsible open={showApproved} onOpenChange={setShowApproved}>
+          <section className="section">
+            <CollapsibleTrigger asChild>
+              <div style={{ cursor: 'pointer' }} className="section-head">
+                <div className="section-head-l">
+                  <span className="section-eyebrow">02</span>
+                  <span className="section-title">Aprovados</span>
+                </div>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <span className="section-meta">{approvedProposals.length} {approvedProposals.length === 1 ? 'item' : 'itens'}</span>
+                  {showApproved ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
+                </span>
+              </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <CardContent>
-                {approvedProposals.length > 0 ? renderList(approvedProposals) : (
-                  <EmptyState icon={CheckCircle} title="Nenhum orçamento aprovado" description="Orçamentos aprovados pelo cliente aparecerão aqui" compact />
-                )}
-              </CardContent>
+              {approvedProposals.length > 0 ? (
+                renderList(approvedProposals)
+              ) : (
+                <div className="empties">
+                  <div className="empty" style={{ borderRight: 0, padding: '40px 48px', minHeight: 220 }}>
+                    <div className="glyph"><CheckCircle strokeWidth={1.25} /></div>
+                    <h5>Nenhum orçamento aprovado</h5>
+                    <p>Orçamentos aprovados pelo cliente aparecerão aqui.</p>
+                  </div>
+                </div>
+              )}
             </CollapsibleContent>
-          </Card>
+          </section>
         </Collapsible>
 
+        {/* Arquivados */}
         <Collapsible open={showArchived} onOpenChange={setShowArchived}>
-          <Card>
+          <section className="section">
             <CollapsibleTrigger asChild>
-              <CardHeader className="py-4 cursor-pointer hover:bg-muted/30 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-muted">
-                      <Archive className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <CardTitle className="text-lg">
-                      Arquivados ({archivedProposals.length})
-                    </CardTitle>
-                  </div>
-                  {showArchived ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />}
+              <div style={{ cursor: 'pointer' }} className="section-head">
+                <div className="section-head-l">
+                  <span className="section-eyebrow">03</span>
+                  <span className="section-title">Arquivados</span>
                 </div>
-              </CardHeader>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <span className="section-meta">{archivedProposals.length} {archivedProposals.length === 1 ? 'item' : 'itens'}</span>
+                  {showArchived ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
+                </span>
+              </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <CardContent>
-                {archivedProposals.length > 0 ? renderList(archivedProposals) : (
-                  <EmptyState icon={Archive} title="Nenhum orçamento arquivado" description="Orçamentos expirados serão movidos para cá" compact />
-                )}
-              </CardContent>
+              {archivedProposals.length > 0 ? (
+                renderList(archivedProposals)
+              ) : (
+                <div className="empties">
+                  <div className="empty" style={{ borderRight: 0, padding: '40px 48px', minHeight: 220 }}>
+                    <div className="glyph"><Archive strokeWidth={1.25} /></div>
+                    <h5>Nenhum orçamento arquivado</h5>
+                    <p>Orçamentos expirados serão movidos para cá.</p>
+                  </div>
+                </div>
+              )}
             </CollapsibleContent>
-          </Card>
+          </section>
         </Collapsible>
       </div>
-    </ResponsiveContainer>
+    </div>
   );
 }

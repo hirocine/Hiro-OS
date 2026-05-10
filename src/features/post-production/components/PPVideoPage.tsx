@@ -5,9 +5,6 @@ import {
   ExternalLink, Plus, Send, Trash2, X, CalendarIcon, Check,
   Clapperboard, MessageSquare, Pencil, MoreHorizontal
 } from 'lucide-react';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -15,7 +12,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
@@ -27,7 +23,7 @@ import { usePPVersions } from '../hooks/usePPVersions';
 import { usePPComments } from '../hooks/usePPComments';
 import { useUsers } from '@/hooks/useUsers';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { PostProductionItem, PPStatus, PPPriority, PP_STATUS_CONFIG, PP_PRIORITY_CONFIG } from '../types';
+import { PostProductionItem, PPStatus, PPPriority, PP_PRIORITY_CONFIG } from '../types';
 import { PPStatusBadge } from './PPStatusBadge';
 import { PPPriorityBadge } from './PPPriorityBadge';
 
@@ -75,6 +71,28 @@ function getInitials(name: string | null | undefined): string {
   if (!name) return '?';
   return name.split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
 }
+
+const sectionShellStyle: React.CSSProperties = {
+  border: '1px solid hsl(var(--ds-line-1))',
+  background: 'hsl(var(--ds-surface))',
+};
+
+const sectionHeaderStyle: React.CSSProperties = {
+  padding: '14px 18px',
+  borderBottom: '1px solid hsl(var(--ds-line-1))',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 10,
+};
+
+const sectionTitleStyle: React.CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  color: 'hsl(var(--ds-fg-2))',
+};
 
 interface Props {
   item: PostProductionItem;
@@ -206,7 +224,8 @@ export function PPVideoPage({ item, onBack }: Props) {
 
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
+    <div className="ds-shell ds-page">
+      <div className="ds-page-inner">
       <div className="animate-fade-in space-y-6">
 
         {/* HEADER */}
@@ -216,17 +235,26 @@ export function PPVideoPage({ item, onBack }: Props) {
             { label: composedTitle || 'Vídeo' },
           ]} className="mb-0" />
           <div className="flex items-center gap-2 shrink-0">
-            <Button variant="outline" size="sm" onClick={() => navigate(`/esteira-de-pos/${item.id}/editar`)}>
-              <Pencil className="h-4 w-4 mr-1.5" /> Editar
-            </Button>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => navigate(`/esteira-de-pos/${item.id}/editar`)}
+            >
+              <Pencil size={13} strokeWidth={1.5} /> Editar
+            </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}
+                  aria-label="Mais ações"
+                >
+                  <MoreHorizontal size={14} strokeWidth={1.5} />
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
+                <DropdownMenuItem onClick={handleDelete} style={{ color: 'hsl(var(--ds-danger))' }}>
                   <Trash2 className="mr-2 h-4 w-4" /> Excluir
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -234,24 +262,49 @@ export function PPVideoPage({ item, onBack }: Props) {
           </div>
         </div>
 
-        {/* SUMMARY CARD */}
-        <Card>
-          <CardContent className="p-5">
+        {/* SUMMARY (no header) */}
+        <div style={sectionShellStyle}>
+          <div style={{ padding: 18 }}>
             {/* Title row */}
             <div className="flex items-start justify-between gap-4 mb-4">
               <div className="min-w-0">
-                <h1 className="text-xl font-semibold leading-tight truncate">
+                <h1
+                  style={{
+                    fontFamily: '"HN Display", sans-serif',
+                    fontSize: 20,
+                    fontWeight: 600,
+                    color: 'hsl(var(--ds-fg-1))',
+                    lineHeight: 1.2,
+                  }}
+                  className="truncate"
+                >
                   {composedTitle || 'Novo Vídeo'}
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p
+                  style={{
+                    fontSize: 13,
+                    color: 'hsl(var(--ds-fg-3))',
+                    marginTop: 4,
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
                   {form.client_name}{form.project_name ? ` · ${form.project_name}` : ''}
                   {' · '}criado em {format(parseISO(item.created_at), 'dd/MM/yyyy')}
                 </p>
               </div>
               {latestVersion && (
-                <Badge variant="outline" className="shrink-0 text-xs">
+                <span
+                  className="pill"
+                  style={{
+                    flexShrink: 0,
+                    color: 'hsl(var(--ds-fg-2))',
+                    borderColor: 'hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-line-2) / 0.3)',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
                   v{latestVersion.version_number}
-                </Badge>
+                </span>
               )}
             </div>
 
@@ -262,13 +315,13 @@ export function PPVideoPage({ item, onBack }: Props) {
 
               {/* Etapa */}
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-muted-foreground">Etapa</span>
+                <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))' }}>Etapa</span>
                 <PPStatusBadge status={form.status} />
               </div>
 
               {/* Prioridade */}
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-muted-foreground">Prioridade</span>
+                <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))' }}>Prioridade</span>
                 <Select value={form.priority} onValueChange={v => {
                   setForm(prev => ({ ...prev, priority: v as PPPriority }));
                   updateItem.mutate({ id: item.id, updates: { priority: v as PPPriority } });
@@ -288,7 +341,7 @@ export function PPVideoPage({ item, onBack }: Props) {
 
               {/* Editor */}
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-muted-foreground">Editor</span>
+                <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))' }}>Editor</span>
                 <Select value={form.editor_id} onValueChange={v => {
                   const editorUser = users.find(u => u.id === v);
                   setForm(prev => ({ ...prev, editor_id: v }));
@@ -301,10 +354,10 @@ export function PPVideoPage({ item, onBack }: Props) {
                           <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
                           <AvatarFallback className="text-[9px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
                         </Avatar>
-                        <span className="text-sm font-medium">{selectedEditor.display_name?.split(' ')[0] || selectedEditor.email}</span>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{selectedEditor.display_name?.split(' ')[0] || selectedEditor.email}</span>
                       </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground">Sem editor</span>
+                      <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>Sem editor</span>
                     )}
                   </SelectTrigger>
                   <SelectContent>
@@ -325,14 +378,18 @@ export function PPVideoPage({ item, onBack }: Props) {
 
               {/* Prazo */}
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-muted-foreground">Prazo</span>
+                <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))' }}>Prazo</span>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <button className="flex items-center gap-1 text-sm font-medium hover:opacity-70 transition-opacity">
-                      <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 hover:opacity-70 transition-opacity"
+                      style={{ fontSize: 13, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))' }}
+                    >
+                      <CalendarIcon size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
                       {form.due_date
                         ? format(new Date(form.due_date + 'T00:00:00'), 'dd/MM/yyyy')
-                        : <span className="text-muted-foreground">—</span>}
+                        : <span style={{ color: 'hsl(var(--ds-fg-3))' }}>—</span>}
                     </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -347,13 +404,18 @@ export function PPVideoPage({ item, onBack }: Props) {
                       initialFocus className="p-3 pointer-events-auto"
                     />
                     {form.due_date && (
-                      <div className="p-2 border-t">
-                        <Button variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => {
-                          setForm(prev => ({ ...prev, due_date: '' }));
-                          updateItem.mutate({ id: item.id, updates: { due_date: null } });
-                        }}>
-                          <X className="w-3.5 h-3.5 mr-1" /> Limpar
-                        </Button>
+                      <div style={{ padding: 8, borderTop: '1px solid hsl(var(--ds-line-1))' }}>
+                        <button
+                          type="button"
+                          className="btn"
+                          style={{ width: '100%', justifyContent: 'flex-start' }}
+                          onClick={() => {
+                            setForm(prev => ({ ...prev, due_date: '' }));
+                            updateItem.mutate({ id: item.id, updates: { due_date: null } });
+                          }}
+                        >
+                          <X size={13} strokeWidth={1.5} /> Limpar
+                        </button>
                       </div>
                     )}
                   </PopoverContent>
@@ -361,30 +423,32 @@ export function PPVideoPage({ item, onBack }: Props) {
               </div>
 
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* PIPELINE CARD */}
-        <Card>
-          <div className="flex items-center px-6 py-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-1.5 rounded-md bg-muted">
-                <Clapperboard className="h-4 w-4 text-foreground/70" />
-              </div>
-              <CardTitle className="text-sm font-semibold tracking-tight">Pipeline de Produção</CardTitle>
+        {/* PIPELINE */}
+        <div style={sectionShellStyle}>
+          <div style={sectionHeaderStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Clapperboard size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+              <span style={sectionTitleStyle}>Pipeline de Produção</span>
             </div>
           </div>
 
-          <CardContent className="pt-5 pb-5 space-y-4">
+          <div style={{ padding: 18 }} className="space-y-4">
             {/* 1. Thin progress track */}
             <div className="flex items-center gap-1">
               {MACRO_STEPS.map((_, i) => (
                 <div
                   key={i}
-                  className={cn(
-                    'h-1.5 flex-1 rounded-full transition-all duration-500',
-                    i < currentStepIdx ? 'bg-primary' : i === currentStepIdx ? 'bg-primary/40' : 'bg-border'
-                  )}
+                  className="h-1.5 flex-1 rounded-full transition-all duration-500"
+                  style={{
+                    background: i < currentStepIdx
+                      ? 'hsl(var(--ds-accent))'
+                      : i === currentStepIdx
+                      ? 'hsl(var(--ds-accent) / 0.4)'
+                      : 'hsl(var(--ds-line-1))',
+                  }}
                 />
               ))}
             </div>
@@ -394,26 +458,45 @@ export function PPVideoPage({ item, onBack }: Props) {
               {MACRO_STEPS.map((step, i) => {
                 const isDone = i < currentStepIdx;
                 const isActive = i === currentStepIdx;
+                const phaseStyle: React.CSSProperties = isActive
+                  ? {
+                      background: 'hsl(var(--ds-accent) / 0.1)',
+                      border: '1px solid hsl(var(--ds-accent))',
+                    }
+                  : isDone
+                  ? {
+                      background: 'transparent',
+                      border: '1px solid transparent',
+                      opacity: 0.35,
+                    }
+                  : {
+                      background: 'transparent',
+                      border: '1px solid hsl(var(--ds-line-1) / 0.3)',
+                      opacity: 0.4,
+                    };
                 return (
                   <div
                     key={step.key}
-                    className={cn(
-                      'flex flex-col items-center gap-1 py-3 px-2 rounded-lg border transition-all duration-300 text-center cursor-default',
-                      isDone && 'bg-transparent border-transparent opacity-35',
-                      isActive && 'bg-primary/10 border-primary shadow-sm',
-                      !isDone && !isActive && 'bg-transparent border-border/30 opacity-40 cursor-default',
-                    )}
+                    className="flex flex-col items-center gap-1 py-3 px-2 transition-all duration-300 text-center cursor-default"
+                    style={phaseStyle}
                   >
-                    <span className={cn(
-                      'text-[11px] font-semibold',
-                      isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground'
-                    )}>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: isActive ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
                       {isDone ? '✓' : i + 1}
                     </span>
-                    <span className={cn(
-                      'text-xs leading-tight',
-                      isDone ? 'text-muted-foreground font-normal' : isActive ? 'text-primary font-semibold' : 'text-muted-foreground font-normal'
-                    )}>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        lineHeight: 1.2,
+                        fontWeight: isActive ? 600 : 400,
+                        color: isActive ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
                       {step.label}
                     </span>
                   </div>
@@ -423,7 +506,14 @@ export function PPVideoPage({ item, onBack }: Props) {
 
             {/* 3. Sub-steps row — only when current step has sub-steps */}
             {SUB_STEPS[normalizedStatus]?.length > 0 && (
-              <div className="bg-muted/40 rounded-lg px-4 py-3 border border-border/40 space-y-3">
+              <div
+                style={{
+                  background: 'hsl(var(--ds-line-2) / 0.3)',
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  padding: '12px 16px',
+                }}
+                className="space-y-3"
+              >
                 <div className="flex items-center gap-4 flex-wrap">
                   {SUB_STEPS[normalizedStatus].map((sub, i) => {
                     const isDone = i < subStepIndex;
@@ -433,26 +523,42 @@ export function PPVideoPage({ item, onBack }: Props) {
                         key={i}
                         onClick={() => handleSubStepClick(i)}
                         className={cn(
-                          'flex items-center gap-1.5 px-2 py-1 rounded-md transition-all duration-200',
+                          'flex items-center gap-1.5 px-2 py-1 transition-all duration-200',
                           isDone && 'opacity-40',
-                          isActive && 'bg-primary/10',
                           !isDone && !isActive && 'opacity-50 hover:opacity-80',
                         )}
+                        style={isActive ? { background: 'hsl(var(--ds-accent) / 0.1)' } : undefined}
                       >
-                        <div className={cn(
-                          'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all duration-200',
-                          isDone && 'bg-muted-foreground/30 text-muted-foreground',
-                          isActive && 'bg-primary text-primary-foreground ring-3 ring-primary/25 scale-110',
-                          !isDone && !isActive && 'bg-border/60 text-muted-foreground',
-                        )}>
+                        <div
+                          className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200"
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            background: isActive
+                              ? 'hsl(var(--ds-accent))'
+                              : isDone
+                              ? 'hsl(var(--ds-fg-3) / 0.3)'
+                              : 'hsl(var(--ds-line-1) / 0.6)',
+                            color: isActive ? 'hsl(var(--ds-surface))' : 'hsl(var(--ds-fg-3))',
+                            transform: isActive ? 'scale(1.1)' : undefined,
+                            boxShadow: isActive ? '0 0 0 3px hsl(var(--ds-accent) / 0.25)' : undefined,
+                          }}
+                        >
                           {isDone ? <Check className="h-2.5 w-2.5" /> : i + 1}
                         </div>
-                        <span className={cn(
-                          'text-xs whitespace-nowrap transition-colors duration-200',
-                          isDone && 'text-muted-foreground line-through',
-                          isActive && 'text-primary font-semibold',
-                          !isDone && !isActive && 'text-muted-foreground/60',
-                        )}>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            whiteSpace: 'nowrap',
+                            textDecoration: isDone ? 'line-through' : undefined,
+                            fontWeight: isActive ? 600 : 400,
+                            color: isActive
+                              ? 'hsl(var(--ds-accent))'
+                              : isDone
+                              ? 'hsl(var(--ds-fg-3))'
+                              : 'hsl(var(--ds-fg-3) / 0.6)',
+                          }}
+                        >
                           {sub}
                         </span>
                       </button>
@@ -461,31 +567,36 @@ export function PPVideoPage({ item, onBack }: Props) {
                 </div>
 
                 {/* Footer: counter + advance/back buttons */}
-                <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                  <span className="text-xs text-muted-foreground">
+                <div
+                  className="flex items-center justify-between pt-2"
+                  style={{ borderTop: '1px solid hsl(var(--ds-line-1))' }}
+                >
+                  <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
                     {subStepIndex} de {SUB_STEPS[normalizedStatus].length} concluídas
                   </span>
                   <div className="flex items-center gap-2">
                     {(currentStepIdx > 0 || subStepIndex > 0) && (
-                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={handleGoBack}>
+                      <button type="button" className="btn" onClick={handleGoBack}>
                         ← Voltar
-                      </Button>
+                      </button>
                     )}
                     {normalizedStatus === 'validacao_cliente' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs border-orange-500/40 text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                      <button
+                        type="button"
+                        className="btn"
+                        style={{
+                          color: 'hsl(var(--ds-warning))',
+                          borderColor: 'hsl(var(--ds-warning) / 0.4)',
+                        }}
                         onClick={() => setRequestingCorrection(v => !v)}
                       >
                         🔄 Solicitar correção
-                      </Button>
+                      </button>
                     )}
                     {subStepIndex < SUB_STEPS[normalizedStatus].length ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs"
+                      <button
+                        type="button"
+                        className="btn"
                         onClick={() => {
                           const newIndex = subStepIndex + 1;
                           setSubStepIndex(newIndex);
@@ -493,31 +604,38 @@ export function PPVideoPage({ item, onBack }: Props) {
                         }}
                       >
                         Próxima sub-etapa →
-                      </Button>
+                      </button>
                     ) : nextStep ? (
-                      <Button size="sm" className="h-7 text-xs" onClick={handleAdvanceStage}>
+                      <button type="button" className="btn primary" onClick={handleAdvanceStage}>
                         Avançar para {nextStep.label} →
-                      </Button>
+                      </button>
                     ) : null}
                   </div>
                 </div>
 
                 {/* Correction request inline panel */}
                 {normalizedStatus === 'validacao_cliente' && requestingCorrection && (
-                  <div className="pt-3 border-t border-border/40 space-y-2 animate-fade-in">
+                  <div
+                    className="pt-3 space-y-2 animate-fade-in"
+                    style={{ borderTop: '1px solid hsl(var(--ds-line-1))' }}
+                  >
                     <Textarea
                       value={correctionText}
                       onChange={e => setCorrectionText(e.target.value)}
                       placeholder="O que precisa ajustar? (opcional)"
-                      className="text-sm min-h-[70px]"
+                      style={{ minHeight: 70 }}
                     />
                     <div className="flex items-center justify-end gap-2">
-                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setRequestingCorrection(false); setCorrectionText(''); }}>
+                      <button
+                        type="button"
+                        className="btn"
+                        onClick={() => { setRequestingCorrection(false); setCorrectionText(''); }}
+                      >
                         Cancelar
-                      </Button>
-                      <Button size="sm" className="h-7 text-xs" onClick={handleRequestCorrection}>
+                      </button>
+                      <button type="button" className="btn primary" onClick={handleRequestCorrection}>
                         Confirmar correção
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 )}
@@ -528,89 +646,150 @@ export function PPVideoPage({ item, onBack }: Props) {
             {SUB_STEPS[normalizedStatus]?.length === 0 && (
               <div className="flex items-center justify-end gap-2 pt-1">
                 {currentStepIdx > 0 && (
-                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={handleGoBack}>
+                  <button type="button" className="btn" onClick={handleGoBack}>
                     ← Voltar
-                  </Button>
+                  </button>
                 )}
                 {nextStep && (
-                  <Button size="sm" className="h-7 text-xs" onClick={handleAdvanceStage}>
+                  <button type="button" className="btn primary" onClick={handleAdvanceStage}>
                     Avançar para {nextStep.label} →
-                  </Button>
+                  </button>
                 )}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* ATIVIDADE & VERSÕES */}
-        <Card>
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-1.5 rounded-md bg-muted">
-                <MessageSquare className="h-4 w-4 text-foreground/70" />
-              </div>
-              <CardTitle className="text-sm font-semibold tracking-tight">Atividade & Versões</CardTitle>
+        <div style={sectionShellStyle}>
+          <div style={sectionHeaderStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <MessageSquare size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+              <span style={sectionTitleStyle}>Atividade & Versões</span>
             </div>
-            <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setAddingVersion(true)}>
-              <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar versão
-            </Button>
+            <button type="button" className="btn" onClick={() => setAddingVersion(true)}>
+              <Plus size={13} strokeWidth={1.5} /> Adicionar versão
+            </button>
           </div>
 
-          <CardContent className="pt-5 space-y-4">
+          <div style={{ padding: 18 }} className="space-y-4">
             {addingVersion && (
-              <div className="flex gap-2 items-center p-3 rounded-lg bg-muted/50 border">
+              <div
+                className="flex gap-2 items-center"
+                style={{
+                  padding: 12,
+                  background: 'hsl(var(--ds-line-2) / 0.3)',
+                  border: '1px solid hsl(var(--ds-line-1))',
+                }}
+              >
                 <Input
                   placeholder="URL do Frame.io"
                   value={newVersionUrl}
                   onChange={e => setNewVersionUrl(e.target.value)}
-                  className="flex-1 h-8 text-sm"
+                  className="flex-1"
                   onKeyDown={e => e.key === 'Enter' && handleAddVersion()}
                 />
-                <Button size="sm" className="h-8 text-xs" onClick={handleAddVersion} disabled={!newVersionUrl.trim()}>
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={handleAddVersion}
+                  disabled={!newVersionUrl.trim()}
+                >
                   Adicionar
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { setAddingVersion(false); setNewVersionUrl(''); }}>
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => { setAddingVersion(false); setNewVersionUrl(''); }}
+                >
                   Cancelar
-                </Button>
+                </button>
               </div>
             )}
 
             <div className="space-y-3">
               {timelineItems.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-8">Nenhuma atividade ainda.</p>
+                <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', textAlign: 'center', padding: '32px 0' }}>
+                  Nenhuma atividade ainda.
+                </p>
               )}
               {timelineItems.map((ti, idx) => (
                 <div key={idx} className="flex gap-3 items-start">
                   {ti.type === 'version' ? (
                     <>
-                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                        style={{
+                          background: 'hsl(var(--ds-accent) / 0.1)',
+                          color: 'hsl(var(--ds-accent))',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
                         v{ti.data.version_number}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium">Versão {ti.data.version_number}</span>
-                          <span className="text-xs text-muted-foreground border rounded-full px-2 py-0.5">
+                          <span style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                            Versão {ti.data.version_number}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: 11,
+                              color: 'hsl(var(--ds-fg-3))',
+                              border: '1px solid hsl(var(--ds-line-1))',
+                              borderRadius: 999,
+                              padding: '2px 8px',
+                            }}
+                          >
                             {ti.data.status === 'em_revisao' ? 'Em revisão' : ti.data.status === 'aprovada' ? 'Aprovada' : 'Arquivada'}
                           </span>
-                          <a href={ti.data.frame_io_url} target="_blank" rel="noopener noreferrer"
-                            className="text-xs text-primary hover:underline flex items-center gap-0.5">
+                          <a
+                            href={ti.data.frame_io_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline flex items-center gap-0.5"
+                            style={{ fontSize: 11, color: 'hsl(var(--ds-accent))' }}
+                          >
                             Frame.io <ExternalLink className="h-3 w-3" />
                           </a>
                         </div>
-                        {ti.data.notes && <p className="text-xs text-muted-foreground mt-0.5">{ti.data.notes}</p>}
-                        <p className="text-[11px] text-muted-foreground mt-1">
+                        {ti.data.notes && (
+                          <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
+                            {ti.data.notes}
+                          </p>
+                        )}
+                        <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>
                           {formatDistanceToNow(parseISO(ti.date), { addSuffix: true, locale: ptBR })}
                         </p>
                       </div>
                     </>
                   ) : (
                     <>
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold shrink-0">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                        style={{
+                          background: 'hsl(var(--ds-line-2) / 0.5)',
+                          color: 'hsl(var(--ds-fg-2))',
+                          fontSize: 12,
+                          fontWeight: 700,
+                        }}
+                      >
                         {getInitials(ti.data.user_name)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm bg-muted/50 rounded-lg px-3 py-2">{ti.data.content}</p>
-                        <p className="text-[11px] text-muted-foreground mt-1">
+                        <p
+                          style={{
+                            fontSize: 13,
+                            color: 'hsl(var(--ds-fg-1))',
+                            background: 'hsl(var(--ds-line-2) / 0.5)',
+                            padding: '8px 12px',
+                          }}
+                        >
+                          {ti.data.content}
+                        </p>
+                        <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>
                           {ti.data.user_name} · {formatDistanceToNow(parseISO(ti.date), { addSuffix: true, locale: ptBR })}
                         </p>
                       </div>
@@ -622,30 +801,47 @@ export function PPVideoPage({ item, onBack }: Props) {
 
             <Separator />
             <div className="flex gap-3 items-center">
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold shrink-0">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                style={{
+                  background: 'hsl(var(--ds-line-2) / 0.5)',
+                  color: 'hsl(var(--ds-fg-2))',
+                  fontSize: 12,
+                  fontWeight: 700,
+                }}
+              >
                 {getInitials(user?.user_metadata?.full_name || user?.email?.split('@')[0])}
               </div>
-              <div className="flex flex-1 items-center gap-2 border rounded-lg px-3 h-10 bg-background focus-within:ring-1 focus-within:ring-ring">
+              <div
+                className="flex flex-1 items-center gap-2 px-3 h-10 focus-within:ring-1"
+                style={{
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  background: 'hsl(var(--ds-surface))',
+                }}
+              >
                 <input
                   placeholder="Adicionar comentário..."
                   value={comment}
                   onChange={e => setComment(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAddComment()}
-                  className="flex-1 text-sm bg-transparent outline-none"
+                  className="flex-1 bg-transparent outline-none"
+                  style={{ fontSize: 13, color: 'hsl(var(--ds-fg-1))' }}
                 />
                 <button
                   onClick={handleAddComment}
                   disabled={!comment.trim()}
-                  className="shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                  className="shrink-0 disabled:opacity-30 transition-colors"
+                  style={{ color: 'hsl(var(--ds-fg-3))' }}
                 >
-                  <Send className="h-4 w-4" />
+                  <Send size={14} strokeWidth={1.5} />
                 </button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
       </div>
-    </ResponsiveContainer>
+      </div>
+    </div>
   );
 }

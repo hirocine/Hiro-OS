@@ -1,13 +1,5 @@
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface EquipmentPaginationProps {
@@ -19,6 +11,33 @@ interface EquipmentPaginationProps {
   onItemsPerPageChange: (itemsPerPage: number) => void;
 }
 
+const PageBtn = ({ children, active, disabled, onClick }: { children: React.ReactNode; active?: boolean; disabled?: boolean; onClick?: () => void }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    style={{
+      minWidth: 30,
+      height: 30,
+      padding: '0 8px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: 12,
+      fontVariantNumeric: 'tabular-nums',
+      border: active ? '1px solid hsl(var(--ds-accent))' : '1px solid hsl(var(--ds-line-1))',
+      background: active ? 'hsl(var(--ds-accent) / 0.1)' : 'hsl(var(--ds-surface))',
+      color: active ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-1))',
+      fontWeight: active ? 600 : 400,
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      opacity: disabled ? 0.4 : 1,
+      transition: 'background 0.15s, border-color 0.15s',
+    }}
+  >
+    {children}
+  </button>
+);
+
 export function EquipmentPagination({
   currentPage,
   totalPages,
@@ -29,230 +48,156 @@ export function EquipmentPagination({
 }: EquipmentPaginationProps) {
   const isMobile = useIsMobile();
 
-  // Mobile: Design ultra-simplificado - evita overflow
   if (isMobile) {
     return (
-      <div className="bg-background border-t px-4 py-3">
-        <div className="flex items-center gap-2 min-w-0">
-          {/* Info da página atual - pode comprimir */}
-          <div className="text-sm text-muted-foreground whitespace-nowrap">
-            Página {currentPage} de {totalPages}
-          </div>
-          
-          {/* Navegação Previous/Next - flexível */}
-          <div className="flex items-center gap-2 flex-1 justify-center">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-2 text-xs"
-            >
-              Anterior
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-2 text-xs"
-            >
-              Próxima
-            </Button>
-          </div>
-          
-          {/* Info dos itens - compacta e pode esconder */}
-          <div className="text-xs text-muted-foreground whitespace-nowrap hidden xs:block">
-            {((currentPage - 1) * itemsPerPage + 1)}-{Math.min(currentPage * itemsPerPage, totalItems)}
-          </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '12px 16px',
+          borderTop: '1px solid hsl(var(--ds-line-1))',
+        }}
+      >
+        <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+          Página {currentPage} de {totalPages}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, justifyContent: 'center' }}>
+          <PageBtn onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}>
+            Anterior
+          </PageBtn>
+          <PageBtn onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+            Próxima
+          </PageBtn>
         </div>
       </div>
     );
   }
 
-  // Desktop: Layout horizontal limpo e espaçoso
+  const renderPages = () => {
+    const pages: React.ReactNode[] = [];
+    const showEllipsis = totalPages > 7;
+
+    const Ellipsis = ({ k }: { k: string }) => (
+      <span key={k} style={{ padding: '0 6px', color: 'hsl(var(--ds-fg-4))', fontSize: 12 }}>
+        …
+      </span>
+    );
+
+    if (!showEllipsis) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(
+          <PageBtn key={i} active={currentPage === i} onClick={() => onPageChange(i)}>
+            {i}
+          </PageBtn>
+        );
+      }
+    } else if (currentPage <= 4) {
+      for (let i = 1; i <= 5; i++) {
+        pages.push(
+          <PageBtn key={i} active={currentPage === i} onClick={() => onPageChange(i)}>
+            {i}
+          </PageBtn>
+        );
+      }
+      pages.push(<Ellipsis key="end-ell" k="end-ell" />);
+      pages.push(
+        <PageBtn key={totalPages} onClick={() => onPageChange(totalPages)}>
+          {totalPages}
+        </PageBtn>
+      );
+    } else if (currentPage >= totalPages - 3) {
+      pages.push(
+        <PageBtn key={1} onClick={() => onPageChange(1)}>
+          1
+        </PageBtn>
+      );
+      pages.push(<Ellipsis key="start-ell" k="start-ell" />);
+      for (let i = totalPages - 4; i <= totalPages; i++) {
+        pages.push(
+          <PageBtn key={i} active={currentPage === i} onClick={() => onPageChange(i)}>
+            {i}
+          </PageBtn>
+        );
+      }
+    } else {
+      pages.push(
+        <PageBtn key={1} onClick={() => onPageChange(1)}>
+          1
+        </PageBtn>
+      );
+      pages.push(<Ellipsis key="start-ell" k="start-ell" />);
+      for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+        pages.push(
+          <PageBtn key={i} active={currentPage === i} onClick={() => onPageChange(i)}>
+            {i}
+          </PageBtn>
+        );
+      }
+      pages.push(<Ellipsis key="end-ell" k="end-ell" />);
+      pages.push(
+        <PageBtn key={totalPages} onClick={() => onPageChange(totalPages)}>
+          {totalPages}
+        </PageBtn>
+      );
+    }
+    return pages;
+  };
+
   return (
-    <div className="bg-background border-t">
-      <div className="flex items-center justify-between px-6 py-4">
-        {/* Info e controles à esquerda */}
-        <div className="flex items-center gap-6">
-          <div className="text-sm text-muted-foreground">
-            Exibindo <span className="font-medium text-foreground">{((currentPage - 1) * itemsPerPage + 1)}</span> a{' '}
-            <span className="font-medium text-foreground">{Math.min(currentPage * itemsPerPage, totalItems)}</span> de{' '}
-            <span className="font-medium text-foreground">{totalItems}</span> itens
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Mostrar:</span>
-            <Select 
-              value={itemsPerPage.toString()} 
-              onValueChange={(value) => onItemsPerPageChange(Number(value))}
-            >
-              <SelectTrigger className="w-20 h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="25">25</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-                <SelectItem value="100">100</SelectItem>
-                <SelectItem value="200">200</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '14px 18px',
+        borderTop: '1px solid hsl(var(--ds-line-1))',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+        <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
+          Exibindo{' '}
+          <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+            {(currentPage - 1) * itemsPerPage + 1}
+          </span>
+          {' '}a{' '}
+          <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+            {Math.min(currentPage * itemsPerPage, totalItems)}
+          </span>
+          {' '}de{' '}
+          <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{totalItems}</span> itens
         </div>
 
-        {/* Navegação à direita */}
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious 
-                onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
-                className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-              />
-            </PaginationItem>
-            
-            {/* Páginas visíveis com lógica inteligente */}
-            {(() => {
-              const pages = [];
-              const showEllipsis = totalPages > 7;
-              
-              if (!showEllipsis) {
-                // Mostrar todas as páginas
-                for (let i = 1; i <= totalPages; i++) {
-                  pages.push(
-                    <PaginationItem key={i}>
-                      <PaginationLink
-                        onClick={() => onPageChange(i)}
-                        isActive={currentPage === i}
-                        className="cursor-pointer"
-                      >
-                        {i}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                }
-              } else {
-                // Lógica para muitas páginas
-                if (currentPage <= 4) {
-                  // Início: 1,2,3,4,5...n
-                  for (let i = 1; i <= 5; i++) {
-                    pages.push(
-                      <PaginationItem key={i}>
-                        <PaginationLink
-                          onClick={() => onPageChange(i)}
-                          isActive={currentPage === i}
-                          className="cursor-pointer"
-                        >
-                          {i}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  }
-                  pages.push(
-                    <PaginationItem key="end-ellipsis">
-                      <span className="px-2 text-muted-foreground">...</span>
-                    </PaginationItem>
-                  );
-                  pages.push(
-                    <PaginationItem key={totalPages}>
-                      <PaginationLink
-                        onClick={() => onPageChange(totalPages)}
-                        className="cursor-pointer"
-                      >
-                        {totalPages}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                } else if (currentPage >= totalPages - 3) {
-                  // Final: 1...n-4,n-3,n-2,n-1,n
-                  pages.push(
-                    <PaginationItem key={1}>
-                      <PaginationLink
-                        onClick={() => onPageChange(1)}
-                        className="cursor-pointer"
-                      >
-                        1
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                  pages.push(
-                    <PaginationItem key="start-ellipsis">
-                      <span className="px-2 text-muted-foreground">...</span>
-                    </PaginationItem>
-                  );
-                  for (let i = totalPages - 4; i <= totalPages; i++) {
-                    pages.push(
-                      <PaginationItem key={i}>
-                        <PaginationLink
-                          onClick={() => onPageChange(i)}
-                          isActive={currentPage === i}
-                          className="cursor-pointer"
-                        >
-                          {i}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  }
-                } else {
-                  // Meio: 1...current-1,current,current+1...n
-                  pages.push(
-                    <PaginationItem key={1}>
-                      <PaginationLink
-                        onClick={() => onPageChange(1)}
-                        className="cursor-pointer"
-                      >
-                        1
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                  pages.push(
-                    <PaginationItem key="start-ellipsis">
-                      <span className="px-2 text-muted-foreground">...</span>
-                    </PaginationItem>
-                  );
-                  for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-                    pages.push(
-                      <PaginationItem key={i}>
-                        <PaginationLink
-                          onClick={() => onPageChange(i)}
-                          isActive={currentPage === i}
-                          className="cursor-pointer"
-                        >
-                          {i}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  }
-                  pages.push(
-                    <PaginationItem key="end-ellipsis">
-                      <span className="px-2 text-muted-foreground">...</span>
-                    </PaginationItem>
-                  );
-                  pages.push(
-                    <PaginationItem key={totalPages}>
-                      <PaginationLink
-                        onClick={() => onPageChange(totalPages)}
-                        className="cursor-pointer"
-                      >
-                        {totalPages}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                }
-              }
-              
-              return pages;
-            })()}
-            
-            <PaginationItem>
-              <PaginationNext 
-                onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
-                className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>Mostrar:</span>
+          <Select
+            value={itemsPerPage.toString()}
+            onValueChange={(value) => onItemsPerPageChange(Number(value))}
+          >
+            <SelectTrigger style={{ width: 80, height: 30 }}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+              <SelectItem value="200">200</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        <PageBtn onClick={() => currentPage > 1 && onPageChange(currentPage - 1)} disabled={currentPage === 1}>
+          <ChevronLeft size={13} strokeWidth={1.5} />
+        </PageBtn>
+        {renderPages()}
+        <PageBtn
+          onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          <ChevronRight size={13} strokeWidth={1.5} />
+        </PageBtn>
       </div>
     </div>
   );

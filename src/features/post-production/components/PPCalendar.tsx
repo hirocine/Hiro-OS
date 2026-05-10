@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react';
 import { PostProductionItem, PP_STATUS_CONFIG } from '../types';
-import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface PPCalendarProps {
   items: PostProductionItem[];
@@ -11,46 +9,38 @@ interface PPCalendarProps {
 
 const WEEKDAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
+const statusChipBg: Record<string, { bg: string; fg: string }> = {
+  fila:              { bg: 'hsl(var(--ds-line-2))', fg: 'hsl(var(--ds-fg-3))' },
+  edicao:            { bg: 'hsl(var(--ds-info) / 0.15)', fg: 'hsl(var(--ds-info))' },
+  color_grading:     { bg: 'hsl(280 70% 60% / 0.15)', fg: 'hsl(280 70% 60%)' },
+  finalizacao:       { bg: 'hsl(var(--ds-warning) / 0.15)', fg: 'hsl(var(--ds-warning))' },
+  revisao:           { bg: 'hsl(var(--ds-warning) / 0.1)', fg: 'hsl(var(--ds-warning))' },
+  validacao_cliente: { bg: 'hsl(var(--ds-info) / 0.1)', fg: 'hsl(var(--ds-info))' },
+  entregue:          { bg: 'hsl(var(--ds-success) / 0.15)', fg: 'hsl(var(--ds-success))' },
+};
+
 function getMonthGrid(year: number, month: number) {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  
-  // Monday = 0, Sunday = 6
-  let startDow = (firstDay.getDay() + 6) % 7;
-  
+  const startDow = (firstDay.getDay() + 6) % 7;
   const days: Date[] = [];
-  
-  // Previous month padding
+
   for (let i = startDow - 1; i >= 0; i--) {
     days.push(new Date(year, month, -i));
   }
-  
-  // Current month
   for (let d = 1; d <= lastDay.getDate(); d++) {
     days.push(new Date(year, month, d));
   }
-  
-  // Next month padding to complete grid
   while (days.length % 7 !== 0) {
     const last = days[days.length - 1];
     days.push(new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1));
   }
-  
   return days;
 }
 
 function dateToKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
-
-const STATUS_CHIP_COLORS: Record<string, string> = {
-  fila: 'bg-muted text-muted-foreground',
-  edicao: 'bg-blue-500/15 text-blue-700 dark:text-blue-400',
-  color_grading: 'bg-purple-500/15 text-purple-700 dark:text-purple-400',
-  finalizacao: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
-  revisao: 'bg-orange-500/15 text-orange-700 dark:text-orange-400',
-  entregue: 'bg-green-500/15 text-green-700 dark:text-green-400',
-};
 
 export function PPCalendar({ items, onItemClick }: PPCalendarProps) {
   const today = new Date();
@@ -61,7 +51,7 @@ export function PPCalendar({ items, onItemClick }: PPCalendarProps) {
 
   const itemsByDate = useMemo(() => {
     const map: Record<string, PostProductionItem[]> = {};
-    items.forEach(item => {
+    items.forEach((item) => {
       if (item.due_date) {
         if (!map[item.due_date]) map[item.due_date] = [];
         map[item.due_date].push(item);
@@ -73,13 +63,17 @@ export function PPCalendar({ items, onItemClick }: PPCalendarProps) {
   const todayKey = dateToKey(today);
 
   const goToPrev = () => {
-    if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); }
-    else setCurrentMonth(m => m - 1);
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear((y) => y - 1);
+    } else setCurrentMonth((m) => m - 1);
   };
 
   const goToNext = () => {
-    if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); }
-    else setCurrentMonth(m => m + 1);
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear((y) => y + 1);
+    } else setCurrentMonth((m) => m + 1);
   };
 
   const goToToday = () => {
@@ -87,37 +81,86 @@ export function PPCalendar({ items, onItemClick }: PPCalendarProps) {
     setCurrentYear(today.getFullYear());
   };
 
-  const monthLabel = new Date(currentYear, currentMonth).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const monthLabel = new Date(currentYear, currentMonth).toLocaleDateString('pt-BR', {
+    month: 'long',
+    year: 'numeric',
+  });
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={goToPrev} className="h-8 w-8">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={goToNext} className="h-8 w-8">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <h2 className="text-lg font-semibold capitalize ml-2">{monthLabel}</h2>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <button
+            type="button"
+            onClick={goToPrev}
+            className="btn"
+            style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}
+            aria-label="Mês anterior"
+          >
+            <ChevronLeft size={14} strokeWidth={1.5} />
+          </button>
+          <button
+            type="button"
+            onClick={goToNext}
+            className="btn"
+            style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}
+            aria-label="Próximo mês"
+          >
+            <ChevronRight size={14} strokeWidth={1.5} />
+          </button>
+          <h2
+            style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontSize: 16,
+              fontWeight: 600,
+              color: 'hsl(var(--ds-fg-1))',
+              textTransform: 'capitalize',
+              marginLeft: 8,
+            }}
+          >
+            {monthLabel}
+          </h2>
         </div>
-        <Button variant="outline" size="sm" onClick={goToToday}>Hoje</Button>
+        <button type="button" onClick={goToToday} className="btn">
+          Hoje
+        </button>
       </div>
 
-      {/* Grid */}
-      <div className="border rounded-lg overflow-hidden">
-        {/* Weekday headers */}
-        <div className="grid grid-cols-7 bg-muted/50">
-          {WEEKDAYS.map(d => (
-            <div key={d} className="py-2 text-center text-xs font-medium text-muted-foreground border-b">
+      <div style={{ border: '1px solid hsl(var(--ds-line-1))', overflow: 'hidden' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(7, 1fr)',
+            background: 'hsl(var(--ds-line-2) / 0.4)',
+            borderBottom: '1px solid hsl(var(--ds-line-1))',
+          }}
+        >
+          {WEEKDAYS.map((d) => (
+            <div
+              key={d}
+              style={{
+                padding: '8px 0',
+                textAlign: 'center',
+                fontSize: 10,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                fontWeight: 500,
+                color: 'hsl(var(--ds-fg-3))',
+              }}
+            >
               {d}
             </div>
           ))}
         </div>
 
-        {/* Day cells */}
-        <div className="grid grid-cols-7">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(7, 1fr)',
+            gap: 1,
+            background: 'hsl(var(--ds-line-1))',
+          }}
+        >
           {days.map((day, i) => {
             const key = dateToKey(day);
             const isCurrentMonth = day.getMonth() === currentMonth;
@@ -127,38 +170,88 @@ export function PPCalendar({ items, onItemClick }: PPCalendarProps) {
             return (
               <div
                 key={i}
-                className={cn(
-                  'min-h-[110px] lg:min-h-[120px] border-b border-r p-1.5 flex flex-col',
-                  !isCurrentMonth && 'bg-muted/30',
-                  isToday && 'bg-primary/5'
-                )}
+                style={{
+                  minHeight: 110,
+                  padding: 6,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  background: isToday
+                    ? 'hsl(var(--ds-accent) / 0.05)'
+                    : isCurrentMonth
+                      ? 'hsl(var(--ds-surface))'
+                      : 'hsl(var(--ds-line-2) / 0.3)',
+                  borderTop: isToday ? '2px solid hsl(var(--ds-accent))' : undefined,
+                }}
               >
-                {/* Day number */}
-                <span className={cn(
-                  'text-xs font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full',
-                  !isCurrentMonth && 'text-muted-foreground/50',
-                  isToday && 'bg-primary text-primary-foreground font-bold'
-                )}>
-                  {day.getDate()}
-                </span>
+                {isToday ? (
+                  <span
+                    style={{
+                      display: 'inline-grid',
+                      placeItems: 'center',
+                      width: 22,
+                      height: 22,
+                      borderRadius: '50%',
+                      background: 'hsl(var(--ds-accent))',
+                      color: '#fff',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      fontVariantNumeric: 'tabular-nums',
+                      marginBottom: 4,
+                    }}
+                  >
+                    {day.getDate()}
+                  </span>
+                ) : (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 500,
+                      color: !isCurrentMonth ? 'hsl(var(--ds-fg-4) / 0.5)' : 'hsl(var(--ds-fg-3))',
+                      fontVariantNumeric: 'tabular-nums',
+                      marginBottom: 4,
+                    }}
+                  >
+                    {day.getDate()}
+                  </span>
+                )}
 
-                {/* Video chips */}
-                <div className="flex flex-col gap-0.5 overflow-hidden flex-1">
-                  {dayItems.slice(0, 3).map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => onItemClick?.(item)}
-                      className={cn(
-                        'text-[11px] leading-tight px-1.5 py-0.5 rounded truncate text-left font-medium transition-opacity hover:opacity-80',
-                        STATUS_CHIP_COLORS[item.status] || 'bg-muted text-muted-foreground'
-                      )}
-                      title={`${item.title} — ${PP_STATUS_CONFIG[item.status]?.label || item.status}`}
-                    >
-                      {item.title}
-                    </button>
-                  ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden', flex: 1, minWidth: 0 }}>
+                  {dayItems.slice(0, 3).map((item) => {
+                    const tone = statusChipBg[item.status] || statusChipBg.fila;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => onItemClick?.(item)}
+                        title={`${item.title} — ${PP_STATUS_CONFIG[item.status]?.label || item.status}`}
+                        style={{
+                          fontSize: 10,
+                          lineHeight: 1.2,
+                          padding: '2px 5px',
+                          fontWeight: 500,
+                          textAlign: 'left',
+                          background: tone.bg,
+                          color: tone.fg,
+                          border: 0,
+                          cursor: 'pointer',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          transition: 'opacity 0.15s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.opacity = '0.8';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = '1';
+                        }}
+                      >
+                        {item.title}
+                      </button>
+                    );
+                  })}
                   {dayItems.length > 3 && (
-                    <span className="text-[10px] text-muted-foreground pl-1">
+                    <span style={{ fontSize: 9, color: 'hsl(var(--ds-fg-4))', paddingLeft: 4, fontVariantNumeric: 'tabular-nums' }}>
                       +{dayItems.length - 3} mais
                     </span>
                   )}

@@ -1,9 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { PPPriorityBadge } from './PPPriorityBadge';
 import { usePostProductionMutations } from '../hooks/usePostProductionMutations';
 import { PostProductionItem, PPStatus, PP_STATUS_CONFIG, PP_STATUS_COLUMNS } from '../types';
-import { cn } from '@/lib/utils';
 import { Calendar, User } from 'lucide-react';
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
@@ -13,40 +11,93 @@ interface PPKanbanProps {
   onItemClick?: (item: PostProductionItem) => void;
 }
 
+const statusToneColor = (status: PPStatus): string => {
+  switch (status) {
+    case 'entregue': return 'hsl(var(--ds-success))';
+    case 'edicao': return 'hsl(var(--ds-info))';
+    case 'color_grading': return 'hsl(280 70% 60%)';
+    case 'finalizacao': return 'hsl(var(--ds-warning))';
+    case 'revisao': return 'hsl(var(--ds-warning))';
+    case 'validacao_cliente': return 'hsl(var(--ds-info))';
+    default: return 'hsl(var(--ds-fg-3))';
+  }
+};
+
 function KanbanCard({ item, onItemClick, isOverlay }: { item: PostProductionItem; onItemClick?: (item: PostProductionItem) => void; isOverlay?: boolean }) {
-  const isOverdue = item.due_date && item.status !== 'entregue' && new Date(item.due_date + 'T00:00:00') < new Date();
+  const isOverdue =
+    item.due_date && item.status !== 'entregue' && new Date(item.due_date + 'T00:00:00') < new Date();
 
   return (
-    <Card
-      className={cn(
-        "cursor-pointer hover:shadow-md transition-shadow",
-        isOverdue && "border-destructive/50",
-        isOverlay && "shadow-2xl rotate-2"
-      )}
+    <div
       onClick={() => onItemClick?.(item)}
+      style={{
+        background: 'hsl(var(--ds-surface))',
+        border: isOverdue ? '1px solid hsl(var(--ds-danger) / 0.5)' : '1px solid hsl(var(--ds-line-1))',
+        padding: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        cursor: 'pointer',
+        boxShadow: isOverlay ? '0 8px 24px hsl(0 0% 0% / 0.2)' : undefined,
+        transform: isOverlay ? 'rotate(2deg)' : undefined,
+        transition: 'background 0.15s, border-color 0.15s',
+      }}
     >
-      <CardContent className="p-3 space-y-2">
-        <p className="text-sm font-medium line-clamp-2">{item.title}</p>
-        {(item.project_name || item.client_name) && (
-          <p className="text-xs text-muted-foreground truncate">{item.project_name || item.client_name}</p>
+      <p
+        style={{
+          fontSize: 13,
+          fontWeight: 500,
+          color: 'hsl(var(--ds-fg-1))',
+          lineHeight: 1.3,
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}
+      >
+        {item.title}
+      </p>
+      {(item.project_name || item.client_name) && (
+        <p
+          style={{
+            fontSize: 11,
+            color: 'hsl(var(--ds-fg-3))',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {item.project_name || item.client_name}
+        </p>
+      )}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <PPPriorityBadge priority={item.priority} />
+        {item.due_date && (
+          <span
+            style={{
+              fontSize: 11,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              fontVariantNumeric: 'tabular-nums',
+              fontWeight: isOverdue ? 500 : 400,
+              color: isOverdue ? 'hsl(var(--ds-danger))' : 'hsl(var(--ds-fg-3))',
+            }}
+          >
+            <Calendar size={11} strokeWidth={1.5} />
+            {new Date(item.due_date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+          </span>
         )}
-        <div className="flex items-center justify-between gap-2">
-          <PPPriorityBadge priority={item.priority} />
-          {item.due_date && (
-            <span className={cn("text-xs flex items-center gap-1", isOverdue ? "text-destructive font-medium" : "text-muted-foreground")}>
-              <Calendar className="h-3 w-3" />
-              {new Date(item.due_date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-            </span>
-          )}
+      </div>
+      {item.editor_name && (
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+          <User size={11} strokeWidth={1.5} />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {item.editor_name}
+          </span>
         </div>
-        {item.editor_name && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <User className="h-3 w-3" />
-            <span className="truncate">{item.editor_name}</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }
 
@@ -61,38 +112,66 @@ function DraggableCard({ item, onItemClick }: { item: PostProductionItem; onItem
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={cn(
-        "transition-all duration-200",
-        isDragging ? "opacity-50 scale-95 cursor-grabbing" : "cursor-grab"
-      )}
+      style={{
+        cursor: isDragging ? 'grabbing' : 'grab',
+        opacity: isDragging ? 0.5 : 1,
+        transform: isDragging ? 'scale(0.95)' : undefined,
+        transition: 'opacity 0.15s, transform 0.15s',
+      }}
     >
       <KanbanCard item={item} onItemClick={isDragging ? undefined : onItemClick} />
     </div>
   );
 }
 
-function DroppableColumn({ status, children }: { status: PPStatus; children: React.ReactNode }) {
+function DroppableColumn({ status, count, children }: { status: PPStatus; count: number; children: React.ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
   const config = PP_STATUS_CONFIG[status];
+  const tone = statusToneColor(status);
 
   return (
-    <div className="flex-1 min-w-[260px]">
+    <div style={{ flex: 1, minWidth: 260 }}>
       <div
         ref={setNodeRef}
-        className={cn(
-          "bg-muted/50 rounded-lg p-4 transition-all duration-200",
-          isOver && "ring-2 ring-primary/30 bg-primary/5"
-        )}
+        style={{
+          background: 'hsl(var(--ds-surface))',
+          border: '1px solid hsl(var(--ds-line-1))',
+          padding: 14,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+          boxShadow: isOver ? 'inset 0 0 0 1px hsl(var(--ds-accent))' : undefined,
+          transition: 'box-shadow 0.15s',
+        }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={cn("font-semibold text-sm", config.color)}>{config.label}</h3>
-          <span className="text-xs text-muted-foreground bg-background px-2 py-1 rounded">
-            {(children as any)?.length ?? 0}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: tone }} />
+            <h3
+              style={{
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                fontWeight: 500,
+                color: 'hsl(var(--ds-fg-2))',
+              }}
+            >
+              {config.label}
+            </h3>
+          </div>
+          <span
+            style={{
+              fontSize: 11,
+              color: 'hsl(var(--ds-fg-3))',
+              background: 'hsl(var(--ds-line-2))',
+              padding: '0 6px',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {count}
           </span>
         </div>
-        <div className="space-y-2 min-h-[200px]">
-          {children}
-        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 200 }}>{children}</div>
       </div>
     </div>
   );
@@ -106,7 +185,7 @@ export function PPKanban({ items, onItemClick }: PPKanbanProps) {
     const map: Record<PPStatus, PostProductionItem[]> = {
       fila: [], edicao: [], color_grading: [], finalizacao: [], revisao: [], validacao_cliente: [], entregue: [],
     };
-    items.forEach(item => {
+    items.forEach((item) => {
       if (map[item.status]) map[item.status].push(item);
     });
     return map;
@@ -131,17 +210,26 @@ export function PPKanban({ items, onItemClick }: PPKanbanProps) {
 
   return (
     <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-4">
-        {PP_STATUS_COLUMNS.map(status => {
+      <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 16 }}>
+        {PP_STATUS_COLUMNS.map((status) => {
           const columnItems = itemsByStatus[status];
           return (
-            <DroppableColumn key={status} status={status}>
+            <DroppableColumn key={status} status={status} count={columnItems.length}>
               {columnItems.length === 0 ? (
-                <div className="h-full min-h-[200px] flex items-center justify-center text-muted-foreground/50 text-sm">
+                <div
+                  style={{
+                    height: '100%',
+                    minHeight: 200,
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: 'hsl(var(--ds-fg-4))',
+                    fontSize: 12,
+                  }}
+                >
                   Nenhum vídeo
                 </div>
               ) : (
-                columnItems.map(item => (
+                columnItems.map((item) => (
                   <DraggableCard key={item.id} item={item} onItemClick={onItemClick} />
                 ))
               )}
@@ -149,9 +237,7 @@ export function PPKanban({ items, onItemClick }: PPKanbanProps) {
           );
         })}
       </div>
-      <DragOverlay>
-        {activeItem ? <KanbanCard item={activeItem} isOverlay /> : null}
-      </DragOverlay>
+      <DragOverlay>{activeItem ? <KanbanCard item={activeItem} isOverlay /> : null}</DragOverlay>
     </DndContext>
   );
 }

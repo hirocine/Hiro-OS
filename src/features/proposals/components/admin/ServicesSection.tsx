@@ -1,8 +1,5 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
@@ -75,28 +72,65 @@ export function ServicesSection({
   // === Caso 2: sem services -> render legado read-only + CTA ===
   return (
     <>
-      <Card className="lg:col-span-2 border-dashed">
-        <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-border">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="p-1.5 rounded-md bg-muted">
-              <Package className="h-4 w-4 text-foreground/70" />
-            </div>
-            <CardTitle className="text-sm font-semibold tracking-tight truncate">
+      <div
+        className="lg:col-span-2"
+        style={{
+          border: '1px dashed hsl(var(--ds-line-1))',
+          background: 'hsl(var(--ds-surface))',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+            padding: '14px 18px',
+            borderBottom: '1px solid hsl(var(--ds-line-1))',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            <Package size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+            <span
+              style={{
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                fontWeight: 500,
+                color: 'hsl(var(--ds-fg-2))',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
               Serviços Inclusos
-            </CardTitle>
-            <Badge variant="outline" className="text-[10px] gap-1 font-normal">
-              <Lock className="h-3 w-3" /> Legado · somente leitura
-            </Badge>
+            </span>
+            <span
+              className="pill muted"
+              style={{
+                fontSize: 10,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              <Lock size={11} strokeWidth={1.5} /> Legado · somente leitura
+            </span>
           </div>
-          <Button size="sm" onClick={() => setShowMigrateDialog(true)} className="shrink-0">
-            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-            Migrar para o novo editor
-          </Button>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={() => setShowMigrateDialog(true)}
+            style={{ flexShrink: 0 }}
+          >
+            <Sparkles size={13} strokeWidth={1.5} />
+            <span>Migrar para o novo editor</span>
+          </button>
         </div>
 
-        <div className="p-6 opacity-70 pointer-events-none select-none">
+        <div style={{ padding: 18, opacity: 0.7, pointerEvents: 'none', userSelect: 'none' }}>
           {legacyInclusoCategories.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic">
+            <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', fontStyle: 'italic' }}>
               Esta proposta não tem o bloco antigo de Serviços. Clique em <strong>Migrar</strong>{' '}
               para criar do zero no novo formato.
             </p>
@@ -110,20 +144,58 @@ export function ServicesSection({
                     ? '🎬'
                     : '✂️';
                 return (
-                  <div key={catIdx} className="border rounded-xl bg-muted/30 p-5 space-y-3">
-                    <div className="flex items-center gap-2 border-b border-border/50 pb-3">
-                      <span className="text-base">{phaseEmoji}</span>
-                      <h4 className="text-sm font-semibold">{cat.categoria}</h4>
+                  <div
+                    key={catIdx}
+                    style={{
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      background: 'hsl(var(--ds-line-2) / 0.3)',
+                      padding: 18,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        borderBottom: '1px solid hsl(var(--ds-line-1))',
+                        paddingBottom: 12,
+                      }}
+                    >
+                      <span style={{ fontSize: 16 }}>{phaseEmoji}</span>
+                      <h4
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: 'hsl(var(--ds-fg-1))',
+                          fontFamily: '"HN Display", sans-serif',
+                        }}
+                      >
+                        {cat.categoria}
+                      </h4>
                     </div>
                     {cat.itens && (
-                      <div className="space-y-0.5">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {cat.itens.map((item, i) => (
                           <label
                             key={i}
-                            className="flex items-center gap-2.5 text-sm rounded-md px-2 py-1 -mx-2"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 10,
+                              fontSize: 13,
+                              padding: '4px 8px',
+                              margin: '0 -8px',
+                            }}
                           >
                             <Checkbox checked={item.ativo} disabled />
-                            <span className={item.ativo ? 'text-foreground' : 'text-muted-foreground'}>
+                            <span
+                              style={{
+                                color: item.ativo ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+                              }}
+                            >
                               {item.nome}
                             </span>
                           </label>
@@ -131,17 +203,37 @@ export function ServicesSection({
                       </div>
                     )}
                     {cat.subcategorias?.map((sub, subIdx) => (
-                      <div key={subIdx} className="space-y-0.5">
-                        <p className="uppercase tracking-wider text-[10px] text-muted-foreground font-semibold px-2 pt-1 pb-0.5">
+                      <div key={subIdx} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <p
+                          style={{
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.14em',
+                            fontSize: 10,
+                            color: 'hsl(var(--ds-fg-3))',
+                            fontWeight: 600,
+                            padding: '4px 8px 2px',
+                          }}
+                        >
                           {sub.nome}
                         </p>
                         {sub.itens.map((item, i) => (
                           <label
                             key={i}
-                            className="flex items-center gap-2.5 text-sm rounded-md px-2 py-1 -mx-2"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 10,
+                              fontSize: 13,
+                              padding: '4px 8px',
+                              margin: '0 -8px',
+                            }}
                           >
                             <Checkbox checked={item.ativo} disabled />
-                            <span className={item.ativo ? 'text-foreground' : 'text-muted-foreground'}>
+                            <span
+                              style={{
+                                color: item.ativo ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-3))',
+                              }}
+                            >
                               {item.nome}
                             </span>
                           </label>
@@ -154,12 +246,16 @@ export function ServicesSection({
             </div>
           )}
         </div>
-      </Card>
+      </div>
 
       <Dialog open={showMigrateDialog} onOpenChange={setShowMigrateDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Migrar para o novo editor de Serviços?</DialogTitle>
+            <DialogTitle>
+              <span style={{ fontFamily: '"HN Display", sans-serif' }}>
+                Migrar para o novo editor de Serviços?
+              </span>
+            </DialogTitle>
             <DialogDescription className="pt-2 space-y-2 text-sm leading-relaxed">
               <span className="block">
                 O card legado <strong>"Serviços Inclusos"</strong> ficará oculto e em seu lugar
@@ -173,13 +269,18 @@ export function ServicesSection({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowMigrateDialog(false)}>
+            <button type="button" className="btn" onClick={() => setShowMigrateDialog(false)}>
               Cancelar
-            </Button>
-            <Button onClick={() => migrate.mutate()} disabled={migrate.isPending}>
-              {migrate.isPending && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
-              Confirmar migração
-            </Button>
+            </button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={() => migrate.mutate()}
+              disabled={migrate.isPending}
+            >
+              {migrate.isPending && <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />}
+              <span>Confirmar migração</span>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

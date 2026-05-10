@@ -152,9 +152,9 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         disabled={loading}
         className={cn(
           "h-9 px-4 text-sm font-medium transition-all duration-200",
-          isCompleting 
-            ? "bg-foreground/90 text-background shadow-md" 
-            : "bg-foreground text-background hover:bg-foreground/90 shadow-card",
+          isCompleting
+            ? "bg-foreground/90 text-background shadow-md"
+            : "bg-foreground text-background hover:bg-foreground/90",
           className
         )}
       >
