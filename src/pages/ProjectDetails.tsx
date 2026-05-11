@@ -56,6 +56,7 @@ import { logger } from '@/lib/logger';
 import { generateProjectPDF, PDFProjectData } from '@/lib/pdfGenerator';
 import { Equipment } from '@/types/equipment';
 import { AdminOnly } from '@/components/RoleGuard';
+import { StatusPill as DSStatusPill } from '@/ds/components/StatusPill';
 
 const sectionWrap: React.CSSProperties = {
   border: '1px solid hsl(var(--ds-line-1))',
@@ -88,32 +89,23 @@ interface StatusPillProps {
   label: string;
 }
 
+const TONE_BY_PROJECT_STATUS: Record<string, 'accent' | 'success' | 'muted'> = {
+  active: 'accent',
+  completed: 'success',
+  archived: 'muted',
+};
+
+const ICON_BY_PROJECT_STATUS: Record<string, string | undefined> = {
+  completed: '✓',
+};
+
 function StatusPill({ status, label }: StatusPillProps) {
-  let color = 'hsl(var(--ds-fg-2))';
-  let bg = 'hsl(var(--ds-line-2) / 0.3)';
-  let border = 'hsl(var(--ds-line-1))';
-
-  if (status === 'active') {
-    color = 'hsl(var(--ds-accent))';
-    bg = 'hsl(var(--ds-accent) / 0.08)';
-    border = 'hsl(var(--ds-accent) / 0.3)';
-  } else if (status === 'completed') {
-    color = 'hsl(var(--ds-success))';
-    bg = 'hsl(var(--ds-success) / 0.08)';
-    border = 'hsl(var(--ds-success) / 0.3)';
-  } else if (status === 'archived') {
-    color = 'hsl(var(--ds-fg-3))';
-    bg = 'hsl(var(--ds-line-2) / 0.3)';
-    border = 'hsl(var(--ds-line-1))';
-  }
-
   return (
-    <span
-      className="pill"
-      style={{ color, background: bg, borderColor: border }}
-    >
-      {label}
-    </span>
+    <DSStatusPill
+      label={label}
+      tone={TONE_BY_PROJECT_STATUS[status] ?? 'muted'}
+      icon={ICON_BY_PROJECT_STATUS[status]}
+    />
   );
 }
 
@@ -633,18 +625,7 @@ export default function ProjectDetails() {
                     {project.name}
                   </h1>
                   <StatusPill status={project.status} label={getStatusLabel(project.status)} />
-                  {isOverdue && (
-                    <span
-                      className="pill"
-                      style={{
-                        color: 'hsl(var(--ds-danger))',
-                        background: 'hsl(var(--ds-danger) / 0.08)',
-                        borderColor: 'hsl(var(--ds-danger) / 0.3)',
-                      }}
-                    >
-                      Atrasado
-                    </span>
-                  )}
+                  {isOverdue && <DSStatusPill label="Atrasado" tone="danger" icon="⏰" />}
                 </div>
 
                 <div

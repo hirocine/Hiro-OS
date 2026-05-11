@@ -13,6 +13,7 @@ import { useSuppliers } from '@/features/suppliers/hooks/useSuppliers';
 import { useSupplierNotes } from '@/features/suppliers/hooks/useSupplierNotes';
 import { SupplierDialog } from '@/features/suppliers/components/SupplierDialog';
 import { ExpertiseBadge } from '@/features/suppliers/components/ExpertiseBadge';
+import { StatusPill } from '@/ds/components/StatusPill';
 import { StarRating } from '@/features/suppliers/components/StarRating';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -177,15 +178,9 @@ export default function SupplierDetails() {
           <div>
             <h1 style={{ ...HN_DISPLAY, fontSize: 28, fontWeight: 600, color: 'hsl(var(--ds-fg-1))' }}>{supplier.full_name}</h1>
             {!supplier.is_active && (
-              <span className="pill" style={{
-                marginTop: 8,
-                display: 'inline-flex',
-                color: 'hsl(var(--ds-fg-3))',
-                borderColor: 'hsl(var(--ds-line-1))',
-                background: 'hsl(var(--ds-line-2) / 0.3)',
-              }}>
-                Inativo
-              </span>
+              <div style={{ marginTop: 8 }}>
+                <StatusPill label="Inativo" tone="muted" />
+              </div>
             )}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>

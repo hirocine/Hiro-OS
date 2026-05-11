@@ -19,6 +19,7 @@ import { Project } from '@/types/project';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { useDebounce } from '@/hooks/useDebounce';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface AddEquipmentToProjectDialogProps {
   open: boolean;
@@ -464,24 +465,10 @@ export function AddEquipmentToProjectDialog({
                             }}>
                               {equipment.name}
                             </h4>
-                            <span
-                              className="pill"
-                              style={
-                                equipment.currentBorrower
-                                  ? {
-                                      color: 'hsl(var(--ds-warning))',
-                                      borderColor: 'hsl(var(--ds-warning) / 0.3)',
-                                      background: 'hsl(var(--ds-warning) / 0.08)',
-                                    }
-                                  : {
-                                      color: 'hsl(var(--ds-success))',
-                                      borderColor: 'hsl(var(--ds-success) / 0.3)',
-                                      background: 'hsl(var(--ds-success) / 0.08)',
-                                    }
-                              }
-                            >
-                              {equipment.currentBorrower ? "Em projetos" : "Disponível"}
-                            </span>
+                            <StatusPill
+                              label={equipment.currentBorrower ? 'Em projetos' : 'Disponível'}
+                              tone={equipment.currentBorrower ? 'warning' : 'success'}
+                            />
                           </div>
 
                           <div style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>

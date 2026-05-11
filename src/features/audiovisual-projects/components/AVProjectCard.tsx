@@ -3,10 +3,21 @@ import { ptBR } from 'date-fns/locale';
 import { Calendar, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AVProject, AV_STATUS_CONFIG } from '../types';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface AVProjectCardProps {
   project: AVProject;
 }
+
+const TONE_BY_STATUS = {
+  active: 'info',
+  completed: 'success',
+  archived: 'muted',
+} as const;
+
+const ICON_BY_STATUS: Record<string, string | undefined> = {
+  completed: '✓',
+};
 
 const getInitials = (name: string) =>
   name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
@@ -96,15 +107,12 @@ export function AVProjectCard({ project }: AVProjectCardProps) {
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-        <span className="pill">
-          <span className="dot" />
-          {statusConfig.label}
-        </span>
-        {isOverdue && (
-          <span className="pill" style={{ color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' }}>
-            Atrasado
-          </span>
-        )}
+        <StatusPill
+          label={statusConfig.label}
+          tone={TONE_BY_STATUS[project.status]}
+          icon={ICON_BY_STATUS[project.status]}
+        />
+        {isOverdue && <StatusPill label="Atrasado" tone="danger" icon="⏰" />}
       </div>
 
       {project.deadline && (

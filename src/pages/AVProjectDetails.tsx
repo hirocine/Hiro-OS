@@ -28,6 +28,17 @@ import {
   AVProjectDialog,
   AV_STATUS_CONFIG,
 } from '@/features/audiovisual-projects';
+import { StatusPill } from '@/ds/components/StatusPill';
+
+const AV_TONE_BY_STATUS = {
+  active: 'info',
+  completed: 'success',
+  archived: 'muted',
+} as const;
+
+const AV_ICON_BY_STATUS: Record<string, string | undefined> = {
+  completed: '✓',
+};
 import { useState } from 'react';
 
 export default function AVProjectDetails() {
@@ -202,28 +213,12 @@ export default function AVProjectDetails() {
               <h1 style={{ fontSize: 24, fontWeight: 700, color: 'hsl(var(--ds-fg-1))', fontFamily: '"HN Display", sans-serif' }}>
                 {project.name}
               </h1>
-              <span
-                className="pill"
-                style={{
-                  color: 'hsl(var(--ds-accent))',
-                  borderColor: 'hsl(var(--ds-accent) / 0.3)',
-                  background: 'hsl(var(--ds-accent) / 0.08)',
-                }}
-              >
-                {statusConfig.label}
-              </span>
-              {isOverdue && (
-                <span
-                  className="pill"
-                  style={{
-                    color: 'hsl(var(--ds-danger))',
-                    borderColor: 'hsl(var(--ds-danger) / 0.3)',
-                    background: 'hsl(var(--ds-danger) / 0.08)',
-                  }}
-                >
-                  Atrasado
-                </span>
-              )}
+              <StatusPill
+                label={statusConfig.label}
+                tone={AV_TONE_BY_STATUS[project.status]}
+                icon={AV_ICON_BY_STATUS[project.status]}
+              />
+              {isOverdue && <StatusPill label="Atrasado" tone="danger" icon="⏰" />}
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8, fontSize: 13, color: 'hsl(var(--ds-fg-3))', flexWrap: 'wrap' }}>

@@ -3,6 +3,7 @@ import { Project } from '@/types/project';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Package, User, Building2, FileText, MoreHorizontal, Archive } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { StatusPill } from '@/ds/components/StatusPill';
 // Status labels moved inline
 const statusLabels = {
   active: 'Ativo',
@@ -20,10 +21,14 @@ interface ProjectCardProps {
   onStepUpdate?: (projectId: string, step: import('@/types/project').ProjectStep, notes?: string) => void;
 }
 
-const statusToneStyle: Record<string, React.CSSProperties> = {
-  active:    { color: 'hsl(var(--ds-info))',    borderColor: 'hsl(var(--ds-info) / 0.3)',    background: 'hsl(var(--ds-info) / 0.08)' },
-  completed: { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)', background: 'hsl(var(--ds-success) / 0.08)' },
-  archived:  { color: 'hsl(var(--ds-fg-3))',    borderColor: 'hsl(var(--ds-line-1))',        background: 'hsl(var(--ds-line-2) / 0.3)' },
+const TONE_BY_STATUS: Record<string, 'info' | 'success' | 'muted'> = {
+  active: 'info',
+  completed: 'success',
+  archived: 'muted',
+};
+
+const ICON_BY_STATUS: Record<string, string | undefined> = {
+  completed: '✓',
 };
 
 export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpdate }: ProjectCardProps) {
@@ -55,7 +60,6 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
 
   const availableSteps = getAvailableSteps();
   const showStepSelector = availableSteps.length > 0;
-  const statusTone = statusToneStyle[project.status] || statusToneStyle.active;
 
   return (
     <div
@@ -91,25 +95,12 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
               {project.name}
             </h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
-              <span
-                className="pill"
-                style={{ ...statusTone, display: 'inline-flex', alignItems: 'center', gap: 4 }}
-              >
-                <span className="dot" style={{ background: 'currentColor' }} />
-                {statusLabels[project.status]}
-              </span>
-              {isOverdue && (
-                <span
-                  className="pill"
-                  style={{
-                    color: 'hsl(var(--ds-danger))',
-                    borderColor: 'hsl(var(--ds-danger) / 0.3)',
-                    background: 'hsl(var(--ds-danger) / 0.08)',
-                  }}
-                >
-                  Atrasado
-                </span>
-              )}
+              <StatusPill
+                label={statusLabels[project.status]}
+                tone={TONE_BY_STATUS[project.status] ?? 'info'}
+                icon={ICON_BY_STATUS[project.status]}
+              />
+              {isOverdue && <StatusPill label="Atrasado" tone="danger" icon="⏰" />}
               <span
                 className="pill muted"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}

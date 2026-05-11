@@ -13,6 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface EquipmentDetailsDialogProps {
   open: boolean;
@@ -91,18 +92,18 @@ const KV = ({ label, value }: { label: string; value: React.ReactNode }) => (
   </div>
 );
 
-const statusToneStyle: Record<string, React.CSSProperties> = {
-  available:   { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
-  on_loan:     { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
-  maintenance: { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
-  damaged:     { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
-  lost:        { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+const TONE_BY_STATUS: Record<string, 'success' | 'warning' | 'danger'> = {
+  available: 'success',
+  on_loan: 'warning',
+  maintenance: 'warning',
+  damaged: 'danger',
+  lost: 'danger',
 };
 
-const loanStatusStyle: Record<string, React.CSSProperties> = {
-  active:   { color: 'hsl(var(--ds-info))',    borderColor: 'hsl(var(--ds-info) / 0.3)' },
-  overdue:  { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
-  returned: { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
+const TONE_BY_LOAN_STATUS: Record<string, 'info' | 'danger' | 'success' | 'muted'> = {
+  active: 'info',
+  overdue: 'danger',
+  returned: 'success',
 };
 
 export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: EquipmentDetailsDialogProps) {
@@ -226,18 +227,10 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {getStatusIcon(equipment.status)}
-                      <span
-                        className="pill"
-                        style={{
-                          ...(statusToneStyle[equipment.status] || statusToneStyle.available),
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 4,
-                        }}
-                      >
-                        <span className="dot" style={{ background: 'currentColor' }} />
-                        {getStatusLabel(equipment.status)}
-                      </span>
+                      <StatusPill
+                        label={getStatusLabel(equipment.status)}
+                        tone={TONE_BY_STATUS[equipment.status] ?? 'success'}
+                      />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -370,14 +363,25 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
                               <span style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
                                 {loan.borrower_name}
                               </span>
-                              <span
-                                className="pill"
-                                style={loanStatusStyle[loan.status] || { color: 'hsl(var(--ds-fg-3))' }}
-                              >
-                                {loan.status === 'active' && 'Ativo'}
-                                {loan.status === 'overdue' && 'Atrasado'}
-                                {loan.status === 'returned' && 'Devolvido'}
-                              </span>
+                              <StatusPill
+                                label={
+                                  loan.status === 'active'
+                                    ? 'Ativo'
+                                    : loan.status === 'overdue'
+                                    ? 'Atrasado'
+                                    : loan.status === 'returned'
+                                    ? 'Devolvido'
+                                    : loan.status
+                                }
+                                tone={TONE_BY_LOAN_STATUS[loan.status] ?? 'muted'}
+                                icon={
+                                  loan.status === 'overdue'
+                                    ? '⏰'
+                                    : loan.status === 'returned'
+                                    ? '✓'
+                                    : undefined
+                                }
+                              />
                             </div>
                             <div style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
                               {formatDistanceToNow(new Date(loan.loan_date), { addSuffix: true, locale: ptBR })}

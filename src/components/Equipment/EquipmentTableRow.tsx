@@ -6,6 +6,7 @@ import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package, ArrowUpRight,
 import { AdminOnly } from '@/components/RoleGuard';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
 import { useCategories } from '@/hooks/useCategories';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface EquipmentTableRowProps {
   equipment: Equipment;
@@ -23,12 +24,12 @@ interface EquipmentTableRowProps {
 
 const COLS = '40px 40px 60px minmax(250px, 1fr) minmax(140px, 200px) minmax(120px, 160px) 100px 120px 120px';
 
-const statusToneStyle: Record<string, React.CSSProperties> = {
-  available:   { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
-  in_use:      { color: 'hsl(var(--ds-info))',    borderColor: 'hsl(var(--ds-info) / 0.3)' },
-  maintenance: { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
-  loaned:      { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
-  damaged:     { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+const TONE_BY_STATUS: Record<string, 'success' | 'info' | 'warning' | 'danger'> = {
+  available: 'success',
+  in_use: 'info',
+  maintenance: 'warning',
+  loaned: 'warning',
+  damaged: 'danger',
 };
 
 const iconBtnStyle: React.CSSProperties = {
@@ -82,7 +83,7 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
   const isMainItem = equipment.itemType === 'main';
   const hasAccessories = accessories.length > 0;
   const isExpanded = equipment.isExpanded;
-  const tone = statusToneStyle[equipment.status] || statusToneStyle.available;
+  const statusTone = TONE_BY_STATUS[equipment.status] ?? 'success';
 
   return (
     <>
@@ -250,13 +251,10 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <span
-            className="pill"
-            style={{ ...tone, display: 'inline-flex', alignItems: 'center', gap: 4 }}
-          >
-            <span className="dot" style={{ background: 'currentColor' }} />
-            {getStatusLabel(equipment.status)}
-          </span>
+          <StatusPill
+            label={getStatusLabel(equipment.status)}
+            tone={statusTone}
+          />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>

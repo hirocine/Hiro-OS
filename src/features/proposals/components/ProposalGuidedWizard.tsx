@@ -30,6 +30,7 @@ import { useTestimonials } from '../hooks/useTestimonials';
 import { PageHeader } from '@/components/ui/page-header';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { copyToClipboard } from '@/lib/clipboard';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 const extractVimeoId = (raw: string): string => {
   if (!raw) return '';
@@ -610,17 +611,8 @@ export function ProposalGuidedWizard() {
 
   const aiBadge = (field: string) =>
     aiFilledFields.has(field) ? (
-      <span
-        className="pill"
-        style={{
-          marginLeft: 8,
-          gap: 4,
-          color: 'hsl(var(--ds-accent))',
-          borderColor: 'hsl(var(--ds-accent) / 0.3)',
-          background: 'hsl(var(--ds-accent) / 0.08)',
-        }}
-      >
-        <Sparkles size={10} strokeWidth={1.5} /> IA
+      <span style={{ marginLeft: 8, display: 'inline-flex' }}>
+        <StatusPill label="IA" tone="accent" icon={<Sparkles size={10} strokeWidth={1.5} />} />
       </span>
     ) : null;
 
@@ -1374,18 +1366,13 @@ export function ProposalGuidedWizard() {
                     </button>
                   </div>
                   {aiFilledFields.has('dores') && (
-                    <span
-                      className="pill"
-                      style={{
-                        marginTop: 8,
-                        gap: 4,
-                        color: 'hsl(var(--ds-accent))',
-                        borderColor: 'hsl(var(--ds-accent) / 0.3)',
-                        background: 'hsl(var(--ds-accent) / 0.08)',
-                      }}
-                    >
-                      <Sparkles size={10} strokeWidth={1.5} /> Sugerido pela IA
-                    </span>
+                    <div style={{ marginTop: 8 }}>
+                      <StatusPill
+                        label="Sugerido pela IA"
+                        tone="accent"
+                        icon={<Sparkles size={10} strokeWidth={1.5} />}
+                      />
+                    </div>
                   )}
                 </div>
               ))}
@@ -1701,18 +1688,9 @@ export function ProposalGuidedWizard() {
                   className="mt-2 text-sm"
                 />
                 {aiFilledFields.has('entregaveis') && (
-                  <span
-                    className="pill"
-                    style={{
-                      marginTop: 8,
-                      gap: 4,
-                      color: 'hsl(var(--ds-accent))',
-                      borderColor: 'hsl(var(--ds-accent) / 0.3)',
-                      background: 'hsl(var(--ds-accent) / 0.08)',
-                    }}
-                  >
-                    <Sparkles size={10} strokeWidth={1.5} /> IA
-                  </span>
+                  <div style={{ marginTop: 8 }}>
+                    <StatusPill label="IA" tone="accent" icon={<Sparkles size={10} strokeWidth={1.5} />} />
+                  </div>
                 )}
               </div>
             ))}
@@ -2289,25 +2267,23 @@ export function ProposalGuidedWizard() {
                       {fmt(finalValue)}
                     </p>
                     <div className="flex gap-2 mt-1 flex-wrap">
-                      {paymentOptions.map((opt, i) => (
-                        <span
-                          key={i}
-                          className="pill"
-                          style={{
-                            fontSize: 11,
-                            fontVariantNumeric: 'tabular-nums',
-                            ...(opt.recomendado
-                              ? {
-                                  color: 'hsl(var(--ds-accent))',
-                                  borderColor: 'hsl(var(--ds-accent) / 0.3)',
-                                  background: 'hsl(var(--ds-accent) / 0.08)',
-                                }
-                              : {}),
-                          }}
-                        >
-                          {opt.titulo}: {opt.valor}
-                        </span>
-                      ))}
+                      {paymentOptions.map((opt, i) =>
+                        opt.recomendado ? (
+                          <StatusPill
+                            key={i}
+                            label={`${opt.titulo}: ${opt.valor}`}
+                            tone="accent"
+                          />
+                        ) : (
+                          <span
+                            key={i}
+                            className="pill"
+                            style={{ fontSize: 11, fontVariantNumeric: 'tabular-nums' }}
+                          >
+                            {opt.titulo}: {opt.valor}
+                          </span>
+                        )
+                      )}
                     </div>
                   </ReviewRow>
                 </>

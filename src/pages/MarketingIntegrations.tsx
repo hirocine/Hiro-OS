@@ -12,6 +12,7 @@ import { useMarketingIntegrations, type IntegrationStatus, type MarketingIntegra
 import { MarketingIntegrationDialog } from '@/components/Marketing/MarketingIntegrationDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { StatusPill as DSStatusPill } from '@/ds/components/StatusPill';
 
 const HN_DISPLAY: React.CSSProperties = { fontFamily: '"HN Display", sans-serif' };
 
@@ -25,54 +26,16 @@ const eyebrowLabel: React.CSSProperties = {
   marginBottom: 6,
 };
 
-type StatusTone = {
-  fg: string;
-  bg: string;
-  border: string;
-  label: string;
-};
-
-const STATUS_META: Record<IntegrationStatus, StatusTone> = {
-  connected: {
-    label: 'Conectado',
-    fg: 'hsl(var(--ds-success))',
-    bg: 'hsl(var(--ds-success) / 0.08)',
-    border: 'hsl(var(--ds-success) / 0.3)',
-  },
-  disconnected: {
-    label: 'Desconectado',
-    fg: 'hsl(var(--ds-fg-3))',
-    bg: 'hsl(var(--ds-line-2) / 0.3)',
-    border: 'hsl(var(--ds-line-1))',
-  },
-  expired: {
-    label: 'Expirado',
-    fg: 'hsl(var(--ds-warning))',
-    bg: 'hsl(var(--ds-warning) / 0.08)',
-    border: 'hsl(var(--ds-warning) / 0.3)',
-  },
-  error: {
-    label: 'Erro',
-    fg: 'hsl(var(--ds-danger))',
-    bg: 'hsl(var(--ds-danger) / 0.08)',
-    border: 'hsl(var(--ds-danger) / 0.3)',
-  },
+const STATUS_META: Record<IntegrationStatus, { label: string; tone: 'success' | 'muted' | 'warning' | 'danger' }> = {
+  connected: { label: 'Conectado', tone: 'success' },
+  disconnected: { label: 'Desconectado', tone: 'muted' },
+  expired: { label: 'Expirado', tone: 'warning' },
+  error: { label: 'Erro', tone: 'danger' },
 };
 
 function StatusPill({ status }: { status: IntegrationStatus }) {
   const meta = STATUS_META[status];
-  return (
-    <span
-      className="pill"
-      style={{
-        color: meta.fg,
-        background: meta.bg,
-        borderColor: meta.border,
-      }}
-    >
-      {meta.label}
-    </span>
-  );
+  return <DSStatusPill label={meta.label} tone={meta.tone} />;
 }
 
 function CardShell({

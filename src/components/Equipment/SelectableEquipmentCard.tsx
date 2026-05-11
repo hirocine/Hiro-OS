@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface SelectableEquipmentCardProps {
   equipment: Equipment;
@@ -21,12 +22,12 @@ interface SelectableEquipmentCardProps {
   accessoryCount?: number;
 }
 
-const statusToneStyle: Record<string, React.CSSProperties> = {
-  available:   { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
-  in_use:      { color: 'hsl(var(--ds-info))',    borderColor: 'hsl(var(--ds-info) / 0.3)' },
-  maintenance: { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
-  loaned:      { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
-  damaged:     { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+const TONE_BY_STATUS: Record<string, 'success' | 'info' | 'warning' | 'danger'> = {
+  available: 'success',
+  in_use: 'info',
+  maintenance: 'warning',
+  loaned: 'warning',
+  damaged: 'danger',
 };
 
 export function SelectableEquipmentCard({
@@ -45,7 +46,6 @@ export function SelectableEquipmentCard({
 
   const hierarchyInfo = getHierarchyIndicator(equipment, accessoryCount);
   const uploading = isUploading(equipment.id);
-  const statusTone = statusToneStyle[equipment.status] || statusToneStyle.available;
 
   const handleImageUploadWrapper = async (file: File) => {
     await handleImageUpload(equipment, file, onImageUpload);
@@ -226,13 +226,10 @@ export function SelectableEquipmentCard({
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ color: 'hsl(var(--ds-fg-3))' }}>Status</span>
-              <span
-                className="pill"
-                style={{ ...statusTone, fontSize: 10, display: 'inline-flex', alignItems: 'center', gap: 4 }}
-              >
-                <span className="dot" style={{ background: 'currentColor' }} />
-                {getStatusLabel(equipment.status)}
-              </span>
+              <StatusPill
+                label={getStatusLabel(equipment.status)}
+                tone={TONE_BY_STATUS[equipment.status] ?? 'success'}
+              />
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

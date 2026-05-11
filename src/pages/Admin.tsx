@@ -19,6 +19,7 @@ import { ptBR } from 'date-fns/locale';
 import { SettingsActions } from '@/components/Settings/SettingsActions';
 
 import { CategoryManagement } from '@/components/Settings/CategoryManagement';
+import { StatusPill } from '@/ds/components/StatusPill';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { useEquipment } from '@/features/equipment';
 import { exportEquipmentToCSV } from '@/lib/csvExporter';
@@ -584,30 +585,12 @@ export default function Admin() {
 
   const renderStatusPill = (isActive: boolean, emailConfirmed: boolean) => {
     if (!isActive) {
-      return (
-        <span className="pill" style={{
-          color: 'hsl(var(--ds-danger))',
-          borderColor: 'hsl(var(--ds-danger) / 0.3)',
-          background: 'hsl(var(--ds-danger) / 0.08)',
-        }}>
-          Desativado
-        </span>
-      );
+      return <StatusPill label="Desativado" tone="danger" icon="🚫" />;
     }
     if (!emailConfirmed) {
-      return (
-        <span className="pill muted">Email não confirmado</span>
-      );
+      return <span className="pill muted">Email não confirmado</span>;
     }
-    return (
-      <span className="pill" style={{
-        color: 'hsl(var(--ds-success))',
-        borderColor: 'hsl(var(--ds-success) / 0.3)',
-        background: 'hsl(var(--ds-success) / 0.08)',
-      }}>
-        Ativo
-      </span>
-    );
+    return <StatusPill label="Ativo" tone="success" />;
   };
 
   const formatLastAccess = (lastSignIn: string | null) => {
@@ -763,28 +746,11 @@ export default function Admin() {
                           const roleLabel: Record<string, string> = { admin: 'Admin', producao: 'Produção', marketing: 'Marketing', user: 'Usuário' };
                           const isAdminRole = tableUser.role === 'admin';
                           return (
-                            <span
-                              className="pill"
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 4,
-                                ...(isAdminRole
-                                  ? {
-                                      color: 'hsl(var(--ds-accent))',
-                                      borderColor: 'hsl(var(--ds-accent) / 0.3)',
-                                      background: 'hsl(var(--ds-accent) / 0.08)',
-                                    }
-                                  : {
-                                      color: 'hsl(var(--ds-fg-2))',
-                                      borderColor: 'hsl(var(--ds-line-1))',
-                                      background: 'hsl(var(--ds-line-2) / 0.3)',
-                                    }),
-                              }}
-                            >
-                              <Shield size={11} strokeWidth={1.5} />
-                              {roleLabel[tableUser.role] ?? 'Usuário'}
-                            </span>
+                            <StatusPill
+                              label={roleLabel[tableUser.role] ?? 'Usuário'}
+                              tone={isAdminRole ? 'accent' : 'muted'}
+                              icon={<Shield size={11} strokeWidth={1.5} />}
+                            />
                           );
                         })()}
                       </TableCell>
@@ -793,20 +759,10 @@ export default function Admin() {
                       </TableCell>
                       <TableCell>
                         {(tableUser as any).is_approved ? (
-                          <span className="pill muted" style={{ fontSize: 10 }}>Aprovado</span>
+                          <StatusPill label="Aprovado" tone="success" icon="✓" />
                         ) : (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span
-                              className="pill"
-                              style={{
-                                fontSize: 10,
-                                color: 'hsl(var(--ds-danger))',
-                                borderColor: 'hsl(var(--ds-danger) / 0.3)',
-                                background: 'hsl(var(--ds-danger) / 0.08)',
-                              }}
-                            >
-                              Pendente
-                            </span>
+                            <StatusPill label="Pendente" tone="danger" />
                             <button className="btn" style={{ height: 24, fontSize: 11, padding: '0 8px' }} onClick={() => handleApproveUser(tableUser.id)} type="button">
                               Aprovar
                             </button>

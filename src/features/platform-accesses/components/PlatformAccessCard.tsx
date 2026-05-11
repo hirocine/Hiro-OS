@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Star, ExternalLink, Copy, Pencil, Eye, EyeOff, Loader2 } from 'lucide-react';
 import type { PlatformAccess } from '../types';
 import { CATEGORY_LABELS } from '../types';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface PlatformAccessCardProps {
   access: PlatformAccess;
@@ -179,16 +180,10 @@ export function PlatformAccessCard({
           </button>
           <span className="pill muted">{CATEGORY_LABELS[access.category]}</span>
         </div>
-        <span
-          className="pill"
-          style={{
-            color: access.is_active ? 'hsl(var(--ds-success))' : 'hsl(var(--ds-danger))',
-            borderColor: access.is_active ? 'hsl(var(--ds-success) / 0.3)' : 'hsl(var(--ds-danger) / 0.3)',
-            background: access.is_active ? 'hsl(var(--ds-success) / 0.08)' : 'hsl(var(--ds-danger) / 0.08)',
-          }}
-        >
-          {access.is_active ? 'Ativo' : 'Inativo'}
-        </span>
+        <StatusPill
+          label={access.is_active ? 'Ativo' : 'Inativo'}
+          tone={access.is_active ? 'success' : 'danger'}
+        />
       </div>
 
       {/* Logo + Nome */}

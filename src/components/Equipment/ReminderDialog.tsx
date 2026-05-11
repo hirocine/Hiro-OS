@@ -14,6 +14,7 @@ import { logger } from '@/lib/logger';
 import { sendReminderNotification } from '@/lib/communication';
 import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface ReminderDialogProps {
   open: boolean;
@@ -170,12 +171,11 @@ Equipe de Inventário`,
               <h4 style={{ fontSize: 14, fontWeight: 600, color: 'hsl(var(--ds-fg-1))', fontFamily: '"HN Display", sans-serif' }}>
                 {loanData.equipmentName}
               </h4>
-              <span
-                className="pill"
-                style={{ color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' }}
-              >
-                {loanData.overdueDays} dias em atraso
-              </span>
+              <StatusPill
+                label={`${loanData.overdueDays} dias em atraso`}
+                tone="danger"
+                icon="⏰"
+              />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>
               <p>

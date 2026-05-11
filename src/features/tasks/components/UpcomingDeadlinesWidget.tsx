@@ -5,6 +5,7 @@ import { useTasks } from '../hooks/useTasks';
 import { differenceInDays, format, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useMemo } from 'react';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 const cardWrap: React.CSSProperties = {
   border: '1px solid hsl(var(--ds-line-1))',
@@ -32,10 +33,10 @@ const parseLocalDate = (dateStr: string): Date => {
   return new Date(year, month - 1, day);
 };
 
-const labelTone = (diffDays: number) => {
-  if (diffDays === 0) return { color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' };
-  if (diffDays === 1) return { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' };
-  return { color: 'hsl(var(--ds-fg-3))' };
+const labelTone = (diffDays: number): 'danger' | 'warning' | 'muted' => {
+  if (diffDays === 0) return 'danger';
+  if (diffDays === 1) return 'warning';
+  return 'muted';
 };
 
 export function UpcomingDeadlinesWidget() {
@@ -160,9 +161,11 @@ export function UpcomingDeadlinesWidget() {
                       {format(parseLocalDate(task.due_date!), "dd 'de' MMM", { locale: ptBR })}
                     </span>
                   </div>
-                  <span className="pill" style={tone}>
-                    {daysLabel.text}
-                  </span>
+                  <StatusPill
+                    label={daysLabel.text}
+                    tone={tone}
+                    icon={daysLabel.diff === 0 ? '⏰' : undefined}
+                  />
                 </div>
               );
             })}

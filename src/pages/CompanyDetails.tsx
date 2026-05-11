@@ -14,6 +14,7 @@ import { useCompanyNotes } from '@/features/supplier-companies/hooks/useCompanyN
 import { CompanyDialog } from '@/features/supplier-companies/components/CompanyDialog';
 import { StarRating } from '@/features/suppliers/components/StarRating';
 import { Skeleton } from '@/components/ui/skeleton';
+import { StatusPill } from '@/ds/components/StatusPill';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -170,15 +171,9 @@ export default function CompanyDetails() {
           <div>
             <h1 style={{ ...HN_DISPLAY, fontSize: 28, fontWeight: 600, color: 'hsl(var(--ds-fg-1))' }}>{company.company_name}</h1>
             {!company.is_active && (
-              <span className="pill" style={{
-                marginTop: 8,
-                display: 'inline-flex',
-                color: 'hsl(var(--ds-fg-3))',
-                borderColor: 'hsl(var(--ds-line-1))',
-                background: 'hsl(var(--ds-line-2) / 0.3)',
-              }}>
-                Inativa
-              </span>
+              <div style={{ marginTop: 8 }}>
+                <StatusPill label="Inativa" tone="muted" />
+              </div>
             )}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>

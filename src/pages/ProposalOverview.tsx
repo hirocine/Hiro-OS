@@ -10,43 +10,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useProposalDetailsBySlug } from '@/features/proposals/hooks/useProposalDetailsBySlug';
 import { useProposalViews } from '@/features/proposals/hooks/useProposalViews';
 import { supabase } from '@/integrations/supabase/client';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 const HN_DISPLAY: React.CSSProperties = { fontFamily: '"HN Display", sans-serif' };
 
-type StatusTone = 'neutral' | 'info' | 'warning' | 'success' | 'danger';
+type StatusTone = 'muted' | 'info' | 'warning' | 'success' | 'danger';
 
-const statusMap: Record<string, { label: string; tone: StatusTone }> = {
-  draft: { label: 'Rascunho', tone: 'neutral' },
+const statusMap: Record<string, { label: string; tone: StatusTone; icon?: string }> = {
+  draft: { label: 'Rascunho', tone: 'muted' },
   sent: { label: 'Enviada', tone: 'info' },
   opened: { label: 'Aberta', tone: 'warning' },
   new_version: { label: 'Nova Versão', tone: 'info' },
-  approved: { label: 'Aprovada', tone: 'success' },
+  approved: { label: 'Aprovada', tone: 'success', icon: '✓' },
   expired: { label: 'Arquivada', tone: 'danger' },
 };
-
-const toneColor: Record<StatusTone, string> = {
-  neutral: 'hsl(var(--ds-fg-3))',
-  info: 'hsl(var(--ds-info))',
-  warning: 'hsl(var(--ds-warning))',
-  success: 'hsl(var(--ds-success))',
-  danger: 'hsl(var(--ds-danger))',
-};
-
-function statusPillStyle(tone: StatusTone): React.CSSProperties {
-  if (tone === 'neutral') {
-    return {
-      color: 'hsl(var(--ds-fg-2))',
-      borderColor: 'hsl(var(--ds-line-1))',
-      background: 'hsl(var(--ds-line-2) / 0.3)',
-    };
-  }
-  const c = toneColor[tone];
-  return {
-    color: c,
-    borderColor: `${c.replace(')', ' / 0.3)')}`,
-    background: `${c.replace(')', ' / 0.08)')}`,
-  };
-}
 
 function SectionShell({
   icon: Icon,
@@ -247,7 +224,7 @@ export default function ProposalOverview() {
                   </span>
                 )}
                 <h1 style={{ ...HN_DISPLAY, fontSize: 18, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{proposal.project_name}</h1>
-                <span className="pill" style={statusPillStyle(status.tone)}>{status.label}</span>
+                <StatusPill label={status.label} tone={status.tone} icon={status.icon} />
                 {proposal.version > 1 && (
                   <span className="pill muted" style={{ fontVariantNumeric: 'tabular-nums' }}>v{proposal.version}</span>
                 )}
@@ -478,16 +455,8 @@ export default function ProposalOverview() {
                           <span style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
                             {isCurrent ? 'Versão atual' : `Versão ${v.version}`}
                           </span>
-                          <span className="pill" style={{ ...statusPillStyle(vStatus.tone), fontSize: 10, padding: '2px 6px' }}>{vStatus.label}</span>
-                          {!isCurrent && (
-                            <span className="pill" style={{
-                              ...statusPillStyle('danger'),
-                              fontSize: 10,
-                              padding: '2px 6px',
-                            }}>
-                              Desabilitada
-                            </span>
-                          )}
+                          <StatusPill label={vStatus.label} tone={vStatus.tone} icon={vStatus.icon} />
+                          {!isCurrent && <StatusPill label="Desabilitada" tone="danger" />}
                         </div>
                         <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>
                           Criada em {format(new Date(v.created_at), 'dd/MM/yyyy')}

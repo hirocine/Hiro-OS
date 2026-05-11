@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
 import type { Equipment } from '@/types/equipment';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface EquipmentMobileCardProps {
   equipment: Equipment;
@@ -21,12 +22,12 @@ interface EquipmentMobileCardProps {
   onToggleSelection?: (id: string) => void;
 }
 
-const statusToneStyle: Record<string, React.CSSProperties> = {
-  available:   { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
-  in_use:      { color: 'hsl(var(--ds-info))',    borderColor: 'hsl(var(--ds-info) / 0.3)' },
-  maintenance: { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
-  loaned:      { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
-  damaged:     { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+const TONE_BY_STATUS: Record<string, 'success' | 'info' | 'warning' | 'danger'> = {
+  available: 'success',
+  in_use: 'info',
+  maintenance: 'warning',
+  loaned: 'warning',
+  damaged: 'danger',
 };
 
 export const EquipmentMobileCard = memo(function EquipmentMobileCard({
@@ -184,13 +185,10 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-        <span
-          className="pill"
-          style={statusToneStyle[equipment?.status || 'available'] || statusToneStyle.available}
-        >
-          <span className="dot" style={{ background: 'currentColor' }} />
-          {getStatusLabel(equipment?.status || 'available')}
-        </span>
+        <StatusPill
+          label={getStatusLabel(equipment?.status || 'available')}
+          tone={TONE_BY_STATUS[equipment?.status || 'available'] ?? 'success'}
+        />
         <span className="pill muted">{equipment?.category || 'Sem categoria'}</span>
         <span className="pill muted" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
           {hierarchyInfo.icon === 'package' && <Package size={11} strokeWidth={1.5} />}

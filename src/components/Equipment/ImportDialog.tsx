@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface ImportSummary {
   totalParsed: number;
@@ -275,37 +276,17 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
               <FileText size={11} strokeWidth={1.5} />
               <span style={{ fontVariantNumeric: 'tabular-nums' }}>{importResult.totalRows} linhas</span>
             </span>
-            <span
-              className="pill"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                color: importResult.successRows > 0 ? 'hsl(var(--ds-success))' : 'hsl(var(--ds-danger))',
-                borderColor:
-                  importResult.successRows > 0 ? 'hsl(var(--ds-success) / 0.3)' : 'hsl(var(--ds-danger) / 0.3)',
-                background:
-                  importResult.successRows > 0 ? 'hsl(var(--ds-success) / 0.08)' : 'hsl(var(--ds-danger) / 0.08)',
-              }}
-            >
-              <CheckCircle size={11} strokeWidth={1.5} />
-              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{importResult.successRows} válidos</span>
-            </span>
+            <StatusPill
+              label={`${importResult.successRows} válidos`}
+              tone={importResult.successRows > 0 ? 'success' : 'danger'}
+              icon={<CheckCircle size={11} strokeWidth={1.5} />}
+            />
             {importResult.errors.length > 0 && (
-              <span
-                className="pill"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  color: 'hsl(var(--ds-danger))',
-                  borderColor: 'hsl(var(--ds-danger) / 0.3)',
-                  background: 'hsl(var(--ds-danger) / 0.08)',
-                }}
-              >
-                <AlertCircle size={11} strokeWidth={1.5} />
-                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{importResult.errors.length} erros</span>
-              </span>
+              <StatusPill
+                label={`${importResult.errors.length} erros`}
+                tone="danger"
+                icon={<AlertCircle size={11} strokeWidth={1.5} />}
+              />
             )}
           </div>
         </div>

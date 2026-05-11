@@ -4,22 +4,17 @@ import { Copy, CopyPlus, Trash2, Building2, MoreHorizontal, Eye, EyeOff, Pencil 
 import { differenceInDays, format } from 'date-fns';
 import { toast } from 'sonner';
 import type { Proposal } from '../types';
+import { StatusPill } from '@/ds/components/StatusPill';
 
-const statusMap: Record<string, { label: string; tone: 'neutral' | 'info' | 'warning' | 'success' | 'destructive' }> = {
-  draft:       { label: 'Rascunho',    tone: 'neutral' },
+type ProposalTone = 'muted' | 'info' | 'warning' | 'success' | 'danger';
+
+const statusMap: Record<string, { label: string; tone: ProposalTone; icon?: string }> = {
+  draft:       { label: 'Rascunho',    tone: 'muted' },
   sent:        { label: 'Enviada',     tone: 'info' },
   opened:      { label: 'Aberta',      tone: 'warning' },
   new_version: { label: 'Nova Versão', tone: 'info' },
-  approved:    { label: 'Aprovada',    tone: 'success' },
-  expired:     { label: 'Arquivada',   tone: 'destructive' },
-};
-
-const toneStyles: Record<string, React.CSSProperties> = {
-  neutral:     { color: 'hsl(var(--ds-fg-3))' },
-  info:        { color: 'hsl(var(--ds-info))', borderColor: 'hsl(var(--ds-info) / 0.3)' },
-  warning:     { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
-  success:     { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
-  destructive: { color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+  approved:    { label: 'Aprovada',    tone: 'success', icon: '✓' },
+  expired:     { label: 'Arquivada',   tone: 'danger' },
 };
 
 interface Props {
@@ -96,18 +91,15 @@ export function ProposalCard({ proposal, onDelete, onDuplicate }: Props) {
             >
               {proposal.project_name}
             </h3>
-            <span className="pill" style={toneStyles[status.tone]}>
-              <span className="dot" style={{ background: 'currentColor' }} />
-              {status.label}
-            </span>
+            <StatusPill label={status.label} tone={status.tone} icon={status.icon} />
             {proposal.version > 1 && (
               <span className="pill muted">v{proposal.version}</span>
             )}
             {daysLeft <= 3 && daysLeft > 0 && (
-              <span className="pill" style={toneStyles.warning}>Expira em {daysLeft}d</span>
+              <StatusPill label={`Expira em ${daysLeft}d`} tone="warning" icon="⏰" />
             )}
             {daysLeft <= 0 && proposal.status !== 'approved' && (
-              <span className="pill" style={toneStyles.destructive}>Expirada</span>
+              <StatusPill label="Expirada" tone="danger" icon="⏰" />
             )}
           </div>
 

@@ -1,15 +1,14 @@
 import { TaskStatus, STATUS_CONFIG } from '../types';
+import { StatusPill } from '@/ds/components/StatusPill';
 
-const toneFor = (status: TaskStatus): React.CSSProperties => {
-  switch (status) {
-    case 'concluida':
-      return { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' };
-    case 'em_progresso':
-      return { color: 'hsl(var(--ds-info))', borderColor: 'hsl(var(--ds-info) / 0.3)' };
-    case 'pendente':
-    default:
-      return { color: 'hsl(var(--ds-fg-3))' };
-  }
+const TONE_BY_STATUS = {
+  concluida: 'success',
+  em_progresso: 'info',
+  pendente: 'muted',
+} as const;
+
+const ICON_BY_STATUS: Partial<Record<TaskStatus, string>> = {
+  concluida: '✓',
 };
 
 interface StatusBadgeProps {
@@ -17,16 +16,12 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const config = STATUS_CONFIG[status];
   return (
-    <span
-      className="pill"
-      style={{
-        ...toneFor(status),
-        cursor: 'pointer',
-      }}
-    >
-      {config.label}
-    </span>
+    <StatusPill
+      label={STATUS_CONFIG[status].label}
+      tone={TONE_BY_STATUS[status]}
+      icon={ICON_BY_STATUS[status]}
+      interactive
+    />
   );
 }

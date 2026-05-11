@@ -15,6 +15,7 @@ import { ImageUploadArea } from '@/components/ui/image-upload-area';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { logger } from '@/lib/logger';
 import { generateEquipmentImageName } from '@/lib/imageNaming';
+import { StatusPill as DSStatusPill } from '@/ds/components/StatusPill';
 
 interface ImageUploadResult {
   filename: string;
@@ -49,21 +50,7 @@ const StatusPill = ({ status }: { status: ImageUploadResult['status'] }) => {
   const label = status === 'success' ? 'Sucesso' : status === 'error' ? 'Erro' : 'Pendente';
   const Icon = status === 'success' ? Check : status === 'error' ? X : AlertTriangle;
   return (
-    <span
-      className="pill"
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-        color: `hsl(var(--ds-${tone}))`,
-        borderColor: `hsl(var(--ds-${tone}) / 0.3)`,
-        background: `hsl(var(--ds-${tone}) / 0.08)`,
-        fontSize: 11,
-      }}
-    >
-      <Icon size={11} strokeWidth={1.5} />
-      <span>{label}</span>
-    </span>
+    <DSStatusPill label={label} tone={tone} icon={<Icon size={11} strokeWidth={1.5} />} />
   );
 };
 
@@ -304,48 +291,21 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
         {step === 'review' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 8 }}>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <span
-                className="pill"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  color: 'hsl(var(--ds-success))',
-                  borderColor: 'hsl(var(--ds-success) / 0.3)',
-                  background: 'hsl(var(--ds-success) / 0.08)',
-                }}
-              >
-                <Check size={11} strokeWidth={1.5} />
-                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{successCount} Sucessos</span>
-              </span>
-              <span
-                className="pill"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  color: 'hsl(var(--ds-warning))',
-                  borderColor: 'hsl(var(--ds-warning) / 0.3)',
-                  background: 'hsl(var(--ds-warning) / 0.08)',
-                }}
-              >
-                <AlertTriangle size={11} strokeWidth={1.5} />
-                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{pendingCount} Pendentes</span>
-              </span>
-              <span
-                className="pill"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  color: 'hsl(var(--ds-danger))',
-                  borderColor: 'hsl(var(--ds-danger) / 0.3)',
-                  background: 'hsl(var(--ds-danger) / 0.08)',
-                }}
-              >
-                <X size={11} strokeWidth={1.5} />
-                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{errorCount} Erros</span>
-              </span>
+              <DSStatusPill
+                label={`${successCount} Sucessos`}
+                tone="success"
+                icon={<Check size={11} strokeWidth={1.5} />}
+              />
+              <DSStatusPill
+                label={`${pendingCount} Pendentes`}
+                tone="warning"
+                icon={<AlertTriangle size={11} strokeWidth={1.5} />}
+              />
+              <DSStatusPill
+                label={`${errorCount} Erros`}
+                tone="danger"
+                icon={<X size={11} strokeWidth={1.5} />}
+              />
             </div>
 
             <ScrollArea className="h-80" style={{ border: '1px solid hsl(var(--ds-line-1))' }}>

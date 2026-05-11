@@ -1,6 +1,7 @@
 import { Equipment } from '@/types/equipment';
 import { Edit, Trash2, Camera } from 'lucide-react';
 import { useRef } from 'react';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface EquipmentRowProps {
   equipment: Equipment;
@@ -9,14 +10,11 @@ interface EquipmentRowProps {
   onImageUpload: (id: string, file: File) => void;
 }
 
-const statusToneStyle = (status: Equipment['status']): React.CSSProperties => {
+const toneFor = (status: Equipment['status']): 'success' | 'warning' | 'muted' => {
   switch (status) {
-    case 'available':
-      return { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' };
-    case 'maintenance':
-      return { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' };
-    default:
-      return { color: 'hsl(var(--ds-fg-3))' };
+    case 'available': return 'success';
+    case 'maintenance': return 'warning';
+    default: return 'muted';
   }
 };
 
@@ -150,13 +148,10 @@ export function EquipmentRow({ equipment, onEdit, onDelete, onImageUpload }: Equ
       </div>
 
       <div style={{ gridColumn: 'span 1' }}>
-        <span
-          className="pill"
-          style={{ ...statusToneStyle(equipment.status), display: 'inline-flex', alignItems: 'center', gap: 4 }}
-        >
-          <span className="dot" style={{ background: 'currentColor' }} />
-          {getStatusLabel(equipment.status)}
-        </span>
+        <StatusPill
+          label={getStatusLabel(equipment.status)}
+          tone={toneFor(equipment.status)}
+        />
       </div>
 
       <div style={{ gridColumn: 'span 2', display: 'flex', gap: 6, justifyContent: 'flex-end' }}>

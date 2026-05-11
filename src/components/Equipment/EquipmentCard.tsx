@@ -2,6 +2,7 @@ import { Equipment } from '@/types/equipment';
 import { Edit, Trash2, Calendar, UserCheck, Package, Link as LinkIcon } from 'lucide-react';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
 import { useCategories } from '@/hooks/useCategories';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface EquipmentCardProps {
   equipment: Equipment;
@@ -12,12 +13,12 @@ interface EquipmentCardProps {
   accessoryCount?: number;
 }
 
-const statusToneStyle: Record<string, React.CSSProperties> = {
-  available:   { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' },
-  in_use:      { color: 'hsl(var(--ds-info))',    borderColor: 'hsl(var(--ds-info) / 0.3)' },
-  maintenance: { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
-  loaned:      { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' },
-  damaged:     { color: 'hsl(var(--ds-danger))',  borderColor: 'hsl(var(--ds-danger) / 0.3)' },
+const TONE_BY_STATUS: Record<string, 'success' | 'info' | 'warning' | 'danger'> = {
+  available: 'success',
+  in_use: 'info',
+  maintenance: 'warning',
+  loaned: 'warning',
+  damaged: 'danger',
 };
 
 export function EquipmentCard({
@@ -30,7 +31,6 @@ export function EquipmentCard({
   const { getCategoryTitle } = useCategories();
   const { getStatusLabel, formatCurrency, getHierarchyIndicator } = useEquipmentCard();
   const hierarchyInfo = getHierarchyIndicator(equipment, accessoryCount);
-  const statusTone = statusToneStyle[equipment.status] || statusToneStyle.available;
 
   return (
     <div
@@ -68,13 +68,10 @@ export function EquipmentCard({
               {equipment.brand}
             </p>
           </div>
-          <span
-            className="pill"
-            style={{ ...statusTone, display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}
-          >
-            <span className="dot" style={{ background: 'currentColor' }} />
-            {getStatusLabel(equipment.status)}
-          </span>
+          <StatusPill
+            label={getStatusLabel(equipment.status)}
+            tone={TONE_BY_STATUS[equipment.status] ?? 'success'}
+          />
         </div>
         <div style={{ marginTop: 8 }}>
           <span className="pill muted" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>

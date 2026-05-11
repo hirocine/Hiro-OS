@@ -1,6 +1,7 @@
 import { Equipment } from '@/types/equipment';
 import { HardDrive } from 'lucide-react';
 import { SSDStatus } from '@/features/ssds';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface SSDCardProps {
   ssd: Equipment;
@@ -10,15 +11,10 @@ interface SSDCardProps {
   allocatedSpace?: number;
 }
 
-const statusToneStyle = (status: SSDStatus): React.CSSProperties => {
-  switch (status) {
-    case 'available':
-      return { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' };
-    case 'in_use':
-      return { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' };
-    case 'loaned':
-      return { color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' };
-  }
+const TONE_BY_STATUS: Record<SSDStatus, 'success' | 'warning' | 'danger'> = {
+  available: 'success',
+  in_use: 'warning',
+  loaned: 'danger',
 };
 
 const getKanbanStatusLabel = (status: SSDStatus) => {
@@ -104,19 +100,10 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick, allocatedSpace
               </span>
             )}
             {kanbanStatus && (
-              <span
-                className="pill"
-                style={{
-                  ...statusToneStyle(kanbanStatus),
-                  fontSize: 10,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
-              >
-                <span className="dot" style={{ background: 'currentColor' }} />
-                {getKanbanStatusLabel(kanbanStatus)}
-              </span>
+              <StatusPill
+                label={getKanbanStatusLabel(kanbanStatus)}
+                tone={TONE_BY_STATUS[kanbanStatus]}
+              />
             )}
           </div>
         </div>
