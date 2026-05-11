@@ -44,8 +44,8 @@ const defaultTaskState = {
   department: null as string | null,
 };
 
-const COLS_WITH_ASSIGNEE = '1.5fr 110px 110px 1fr 130px 1fr';
-const COLS_WITHOUT_ASSIGNEE = '2fr 120px 120px 130px 1fr';
+const COLS_WITH_ASSIGNEE = '1.5fr 130px 120px 1fr 140px 1fr';
+const COLS_WITHOUT_ASSIGNEE = '2fr 130px 120px 140px 1fr';
 
 export function TasksTable({
   tasks,

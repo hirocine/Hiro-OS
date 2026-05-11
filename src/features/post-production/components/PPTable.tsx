@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { AlertTriangle, ChevronDown, Film } from 'lucide-react';
+import { AlertTriangle, Film } from 'lucide-react';
+import { CollapsibleSection } from '@/ds/components/CollapsibleSection';
 import { EmptyState } from '@/ds/components/EmptyState';
 import { PPSortableHeader } from './PPSortableHeader';
 import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
@@ -300,130 +301,71 @@ export function PPTable({ items, isLoading }: PPTableProps) {
       </div>
 
       {deliveredItems.length > 0 && (
-        <div
-          style={{
-            marginTop: 12,
-            border: '1px solid hsl(var(--ds-line-1))',
-            background: 'hsl(var(--ds-surface))',
-            overflow: 'hidden',
-          }}
+        <CollapsibleSection
+          title="Entregues"
+          count={deliveredItems.length}
+          collapsible
+          open={deliveredOpen}
+          onOpenChange={setDeliveredOpen}
+          rightSlot="Ordenado por mais recente"
         >
-          <button
-            type="button"
-            onClick={() => setDeliveredOpen((o) => !o)}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 16px',
-              background: 'hsl(var(--ds-line-2) / 0.4)',
-              border: 0,
-              cursor: 'pointer',
-              transition: 'background 0.15s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.6)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
-            }}
-          >
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <ChevronDown
-                size={14}
-                strokeWidth={1.5}
-                style={{
-                  color: 'hsl(var(--ds-fg-3))',
-                  transition: 'transform 0.2s',
-                  transform: deliveredOpen ? 'rotate(180deg)' : 'none',
-                }}
-              />
-              <span
-                style={{
-                  fontSize: 11,
-                  letterSpacing: '0.14em',
-                  textTransform: 'uppercase',
-                  fontWeight: 500,
-                  color: 'hsl(var(--ds-fg-3))',
-                }}
-              >
-                Entregues
-              </span>
-              <span
-                className="pill"
-                style={{
-                  color: 'hsl(var(--ds-success))',
-                  borderColor: 'hsl(var(--ds-success) / 0.3)',
-                  fontSize: 10,
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {deliveredItems.length}
-              </span>
+          <div className="tbl" style={{ gridTemplateColumns: '1.6fr 130px minmax(160px, 1fr) 1fr', border: '1px solid hsl(var(--ds-line-1))' }}>
+            <div className="tbl-head">
+              <div>Título</div>
+              <div>Editor</div>
+              <div>Pipeline</div>
+              <div>Entregue em</div>
             </div>
-            <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))' }}>Ordenado por mais recente</span>
-          </button>
-
-          {deliveredOpen && (
-            <div className="tbl" style={{ gridTemplateColumns: '1.6fr 130px minmax(160px, 1fr) 1fr', borderTop: '1px solid hsl(var(--ds-line-1))' }}>
-              <div className="tbl-head">
-                <div>Título</div>
-                <div>Editor</div>
-                <div>Pipeline</div>
-                <div>Entregue em</div>
-              </div>
-              {deliveredItems.map((item, idx) => {
-                const isLast = idx === deliveredItems.length - 1;
-                return (
-                  <div
-                    key={item.id}
-                    className={'tbl-row' + (isLast ? ' last' : '')}
-                    onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
-                    style={{ opacity: 0.75 }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = '1';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = '0.75';
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <span className="t-title">{item.title}</span>
-                        <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
-                          {[item.client_name, item.project_name].filter(Boolean).join(' · ') || '—'}
-                        </span>
-                      </div>
-                    </div>
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <InlineAssigneeCell
-                        value={item.editor_id ? [item.editor_id] : []}
-                        users={users}
-                        onSave={(values) => {
-                          const newId = values[0] || null;
-                          const editorUser = users.find((u) => u.id === newId);
-                          updateItem.mutate({
-                            id: item.id,
-                            updates: { editor_id: newId, editor_name: editorUser?.display_name || null },
-                          });
-                        }}
-                      />
-                    </div>
-                    <div style={{ overflow: 'hidden' }}>
-                      <PipelineProgress status={item.status} />
-                    </div>
-                    <div style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
-                      {item.delivered_date
-                        ? format(new Date(item.delivered_date + 'T00:00:00'), 'dd/MM/yyyy')
-                        : '—'}
+            {deliveredItems.map((item, idx) => {
+              const isLast = idx === deliveredItems.length - 1;
+              return (
+                <div
+                  key={item.id}
+                  className={'tbl-row' + (isLast ? ' last' : '')}
+                  onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
+                  style={{ opacity: 0.75 }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '1';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '0.75';
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <span className="t-title">{item.title}</span>
+                      <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                        {[item.client_name, item.project_name].filter(Boolean).join(' · ') || '—'}
+                      </span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <InlineAssigneeCell
+                      value={item.editor_id ? [item.editor_id] : []}
+                      users={users}
+                      onSave={(values) => {
+                        const newId = values[0] || null;
+                        const editorUser = users.find((u) => u.id === newId);
+                        updateItem.mutate({
+                          id: item.id,
+                          updates: { editor_id: newId, editor_name: editorUser?.display_name || null },
+                        });
+                      }}
+                    />
+                  </div>
+                  <div style={{ overflow: 'hidden' }}>
+                    <PipelineProgress status={item.status} />
+                  </div>
+                  <div style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
+                    {item.delivered_date
+                      ? format(new Date(item.delivered_date + 'T00:00:00'), 'dd/MM/yyyy')
+                      : '—'}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CollapsibleSection>
       )}
     </>
   );

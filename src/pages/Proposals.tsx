@@ -1,24 +1,24 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Plus, ChevronDown, ChevronRight, Receipt, CheckCircle, Archive } from 'lucide-react';
+import { Plus, Receipt, CheckCircle, Archive } from 'lucide-react';
 import { useProposals, ProposalCard } from '@/features/proposals';
 import { EmptyState } from '@/ds/components/EmptyState';
+import { CollapsibleSection } from '@/ds/components/CollapsibleSection';
+import { PageHeader } from '@/ds/components/toolbar';
 import type { Proposal } from '@/features/proposals';
 
 export default function Proposals() {
   const navigate = useNavigate();
   const { data: proposals, deleteProposal, duplicateProposal } = useProposals();
-  const [showApproved, setShowApproved] = useState(false);
-  const [showArchived, setShowArchived] = useState(false);
 
-  const activeProposals = (proposals || []).filter(p => p.status === 'draft' || p.status === 'sent' || p.status === 'opened' || p.status === 'new_version');
+  const activeProposals = (proposals || []).filter(p =>
+    p.status === 'draft' || p.status === 'sent' || p.status === 'opened' || p.status === 'new_version'
+  );
   const approvedProposals = (proposals || []).filter(p => p.status === 'approved');
   const archivedProposals = (proposals || []).filter(p => p.status === 'expired');
 
   const renderList = (items: Proposal[]) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {items.map(p => (
+      {items.map((p) => (
         <ProposalCard
           key={p.id}
           proposal={p}
@@ -29,35 +29,21 @@ export default function Proposals() {
     </div>
   );
 
-  const sectionHeader = (eyebrow: string, title: string, count: number) => (
-    <div className="section-head">
-      <div className="section-head-l">
-        <span className="section-eyebrow">{eyebrow}</span>
-        <span className="section-title">{title}</span>
-      </div>
-      <span className="section-meta">{count} {count === 1 ? 'item' : 'itens'}</span>
-    </div>
-  );
-
   return (
     <div className="ds-shell ds-page">
       <div className="ds-page-inner">
-        <div className="ph">
-          <div>
-            <h1 className="ph-title">Orçamentos.</h1>
-            <p className="ph-sub">Gerencie suas propostas comerciais.</p>
-          </div>
-          <div className="ph-actions">
+        <PageHeader
+          title="Orçamentos."
+          subtitle="Gerencie suas propostas comerciais."
+          action={
             <button className="btn primary" onClick={() => navigate('/orcamentos/novo')} type="button">
               <Plus size={14} strokeWidth={1.5} />
               <span>Nova Proposta</span>
             </button>
-          </div>
-        </div>
+          }
+        />
 
-        {/* Ativos */}
-        <section className="section">
-          {sectionHeader('01', 'Orçamentos ativos', activeProposals.length)}
+        <CollapsibleSection number="01" title="Orçamentos ativos" count={activeProposals.length}>
           {activeProposals.length > 0 ? (
             renderList(activeProposals)
           ) : (
@@ -74,67 +60,33 @@ export default function Proposals() {
               }
             />
           )}
-        </section>
+        </CollapsibleSection>
 
-        {/* Aprovados */}
-        <Collapsible open={showApproved} onOpenChange={setShowApproved}>
-          <section className="section">
-            <CollapsibleTrigger asChild>
-              <div style={{ cursor: 'pointer' }} className="section-head">
-                <div className="section-head-l">
-                  <span className="section-eyebrow">02</span>
-                  <span className="section-title">Aprovados</span>
-                </div>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                  <span className="section-meta">{approvedProposals.length} {approvedProposals.length === 1 ? 'item' : 'itens'}</span>
-                  {showApproved ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
-                </span>
-              </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              {approvedProposals.length > 0 ? (
-                renderList(approvedProposals)
-              ) : (
-                <EmptyState
-                  icon={CheckCircle}
-                  title="Nenhum orçamento aprovado"
-                  description="Orçamentos aprovados pelo cliente aparecerão aqui."
-                  variant="bare"
-                />
-              )}
-            </CollapsibleContent>
-          </section>
-        </Collapsible>
+        <CollapsibleSection number="02" title="Aprovados" count={approvedProposals.length} collapsible>
+          {approvedProposals.length > 0 ? (
+            renderList(approvedProposals)
+          ) : (
+            <EmptyState
+              icon={CheckCircle}
+              title="Nenhum orçamento aprovado"
+              description="Orçamentos aprovados pelo cliente aparecerão aqui."
+              variant="bare"
+            />
+          )}
+        </CollapsibleSection>
 
-        {/* Arquivados */}
-        <Collapsible open={showArchived} onOpenChange={setShowArchived}>
-          <section className="section">
-            <CollapsibleTrigger asChild>
-              <div style={{ cursor: 'pointer' }} className="section-head">
-                <div className="section-head-l">
-                  <span className="section-eyebrow">03</span>
-                  <span className="section-title">Arquivados</span>
-                </div>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                  <span className="section-meta">{archivedProposals.length} {archivedProposals.length === 1 ? 'item' : 'itens'}</span>
-                  {showArchived ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
-                </span>
-              </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              {archivedProposals.length > 0 ? (
-                renderList(archivedProposals)
-              ) : (
-                <EmptyState
-                  icon={Archive}
-                  title="Nenhum orçamento arquivado"
-                  description="Orçamentos expirados serão movidos para cá."
-                  variant="bare"
-                />
-              )}
-            </CollapsibleContent>
-          </section>
-        </Collapsible>
+        <CollapsibleSection number="03" title="Arquivados" count={archivedProposals.length} collapsible>
+          {archivedProposals.length > 0 ? (
+            renderList(archivedProposals)
+          ) : (
+            <EmptyState
+              icon={Archive}
+              title="Nenhum orçamento arquivado"
+              description="Orçamentos expirados serão movidos para cá."
+              variant="bare"
+            />
+          )}
+        </CollapsibleSection>
       </div>
     </div>
   );

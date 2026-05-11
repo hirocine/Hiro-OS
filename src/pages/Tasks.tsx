@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, List, Columns3, CalendarDays, ChevronDown } from 'lucide-react';
+import { Plus, List, Columns3, CalendarDays } from 'lucide-react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { TasksTable } from '@/features/tasks/components/TasksTable';
 import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { TaskKanbanView } from '@/features/tasks/components/TaskKanbanView';
@@ -20,6 +19,7 @@ import {
   FilterIndicator,
   type ViewToggleItem,
 } from '@/ds/components/toolbar';
+import { CollapsibleSection } from '@/ds/components/CollapsibleSection';
 
 type ViewType = 'lista' | 'kanban' | 'calendario';
 
@@ -39,10 +39,6 @@ export default function Tasks() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterDepartment, setFilterDepartment] = useState('all');
   const [filterAssignee, setFilterAssignee] = useState('all');
-
-  // Section collapse states (only used when view = lista)
-  const [completedOpen, setCompletedOpen] = useState(false);
-  const [archivedOpen, setArchivedOpen] = useState(false);
 
   // Reset status filter when switching to lista view (sections handle status there)
   useEffect(() => {
@@ -199,17 +195,7 @@ export default function Tasks() {
         {/* 07 — Content */}
         {currentView === 'lista' && (
           <>
-            {/* Section 01 — Ativas (sempre aberta) */}
-            <section className="section" style={{ marginTop: 24 }}>
-              <div className="section-head">
-                <div className="section-head-l">
-                  <span className="section-eyebrow">01</span>
-                  <span className="section-title">Ativas</span>
-                </div>
-                <span className="section-eyebrow" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                  {activeTasks.length} {activeTasks.length === 1 ? 'ITEM' : 'ITENS'}
-                </span>
-              </div>
+            <CollapsibleSection number="01" title="Ativas" count={activeTasks.length}>
               <div className="ds-page-table-host">
                 <Tabs value="active">
                   <TabsContent value="active">
@@ -217,81 +203,27 @@ export default function Tasks() {
                   </TabsContent>
                 </Tabs>
               </div>
-            </section>
+            </CollapsibleSection>
 
-            {/* Section 02 — Concluídas (colapsável) */}
-            <Collapsible open={completedOpen} onOpenChange={setCompletedOpen}>
-              <section className="section" style={{ marginTop: 24 }}>
-                <CollapsibleTrigger asChild>
-                  <div style={{ cursor: 'pointer' }} className="section-head">
-                    <div className="section-head-l">
-                      <span className="section-eyebrow">02</span>
-                      <span className="section-title">Concluídas</span>
-                    </div>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-                      <span className="section-eyebrow" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                        {completedTasks.length} {completedTasks.length === 1 ? 'ITEM' : 'ITENS'}
-                      </span>
-                      <ChevronDown
-                        size={14}
-                        strokeWidth={1.5}
-                        style={{
-                          color: 'hsl(var(--ds-fg-3))',
-                          transition: 'transform 0.2s',
-                          transform: completedOpen ? 'rotate(180deg)' : 'none',
-                        }}
-                      />
-                    </span>
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="ds-page-table-host">
-                    <Tabs value="completed">
-                      <TabsContent value="completed">
-                        <TasksTable tasks={completedTasks} isLoading={isLoading} showAssignee={true} />
-                      </TabsContent>
-                    </Tabs>
-                  </div>
-                </CollapsibleContent>
-              </section>
-            </Collapsible>
+            <CollapsibleSection number="02" title="Concluídas" count={completedTasks.length} collapsible>
+              <div className="ds-page-table-host">
+                <Tabs value="completed">
+                  <TabsContent value="completed">
+                    <TasksTable tasks={completedTasks} isLoading={isLoading} showAssignee={true} />
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </CollapsibleSection>
 
-            {/* Section 03 — Arquivadas (colapsável) */}
-            <Collapsible open={archivedOpen} onOpenChange={setArchivedOpen}>
-              <section className="section" style={{ marginTop: 24 }}>
-                <CollapsibleTrigger asChild>
-                  <div style={{ cursor: 'pointer' }} className="section-head">
-                    <div className="section-head-l">
-                      <span className="section-eyebrow">03</span>
-                      <span className="section-title">Arquivadas</span>
-                    </div>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-                      <span className="section-eyebrow" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                        {archivedTasks.length} {archivedTasks.length === 1 ? 'ITEM' : 'ITENS'}
-                      </span>
-                      <ChevronDown
-                        size={14}
-                        strokeWidth={1.5}
-                        style={{
-                          color: 'hsl(var(--ds-fg-3))',
-                          transition: 'transform 0.2s',
-                          transform: archivedOpen ? 'rotate(180deg)' : 'none',
-                        }}
-                      />
-                    </span>
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="ds-page-table-host">
-                    <Tabs value="archived">
-                      <TabsContent value="archived">
-                        <TasksTable tasks={archivedTasks} isLoading={isLoading} showAssignee={true} />
-                      </TabsContent>
-                    </Tabs>
-                  </div>
-                </CollapsibleContent>
-              </section>
-            </Collapsible>
+            <CollapsibleSection number="03" title="Arquivadas" count={archivedTasks.length} collapsible>
+              <div className="ds-page-table-host">
+                <Tabs value="archived">
+                  <TabsContent value="archived">
+                    <TasksTable tasks={archivedTasks} isLoading={isLoading} showAssignee={true} />
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </CollapsibleSection>
           </>
         )}
 

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Film, Plus, ChevronDown, ChevronRight } from 'lucide-react';
+import { Film, Plus } from 'lucide-react';
 import { EmptyState } from '@/ds/components/EmptyState';
+import { CollapsibleSection } from '@/ds/components/CollapsibleSection';
+import { PageHeader } from '@/ds/components/toolbar';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   useAVProjects,
   useAVProjectStats,
@@ -16,8 +17,6 @@ export default function AVProjects() {
   const { canAccessSuppliers } = useAuthContext();
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [completedOpen, setCompletedOpen] = useState(false);
-  const [archivedOpen, setArchivedOpen] = useState(false);
 
   const { data: stats, isLoading: statsLoading } = useAVProjectStats();
   const { data: activeProjects, isLoading: activeLoading } = useAVProjects('active');
@@ -72,89 +71,47 @@ export default function AVProjects() {
     );
   };
 
-  const sectionHeader = (eyebrow: string, title: string, count: number, Icon = Film) => (
-    <div className="section-head">
-      <div className="section-head-l">
-        <span className="section-eyebrow">{eyebrow}</span>
-        <span className="section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <Icon size={14} strokeWidth={1.5} />
-          {title}
-        </span>
-      </div>
-      <span className="section-meta">{count} {count === 1 ? 'item' : 'itens'}</span>
-    </div>
-  );
-
   return (
     <div className="ds-shell ds-page">
       <div className="ds-page-inner">
-        <div className="ph">
-          <div>
-            <h1 className="ph-title">Projetos.</h1>
-            <p className="ph-sub">Gerencie projetos audiovisuais do início ao fim.</p>
-          </div>
-          <div className="ph-actions">
+        <PageHeader
+          title="Projetos."
+          subtitle="Gerencie projetos audiovisuais do início ao fim."
+          action={
             <button className="btn primary" onClick={() => setDialogOpen(true)} type="button">
               <Plus size={14} strokeWidth={1.5} />
               <span>Novo Projeto</span>
             </button>
-          </div>
-        </div>
+          }
+        />
 
         <div style={{ marginTop: 24 }}>
           <AVProjectStatsCards stats={stats} isLoading={statsLoading} />
         </div>
 
-        <section className="section">
-          {sectionHeader('01', 'Projetos Ativos', activeProjects?.length ?? 0)}
+        <CollapsibleSection number="01" title="Projetos Ativos" icon={Film} count={activeProjects?.length ?? 0}>
           {renderProjectsGrid(activeProjects, activeLoading)}
-        </section>
+        </CollapsibleSection>
 
-        <Collapsible open={completedOpen} onOpenChange={setCompletedOpen}>
-          <section className="section">
-            <CollapsibleTrigger asChild>
-              <div style={{ cursor: 'pointer' }} className="section-head">
-                <div className="section-head-l">
-                  <span className="section-eyebrow">02</span>
-                  <span className="section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <Film size={14} strokeWidth={1.5} />
-                    Projetos Finalizados
-                  </span>
-                </div>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                  <span className="section-meta">{completedProjects?.length ?? 0} {(completedProjects?.length ?? 0) === 1 ? 'item' : 'itens'}</span>
-                  {completedOpen ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
-                </span>
-              </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              {renderProjectsGrid(completedProjects, completedLoading)}
-            </CollapsibleContent>
-          </section>
-        </Collapsible>
+        <CollapsibleSection
+          number="02"
+          title="Projetos Finalizados"
+          icon={Film}
+          count={completedProjects?.length ?? 0}
+          collapsible
+        >
+          {renderProjectsGrid(completedProjects, completedLoading)}
+        </CollapsibleSection>
 
-        <Collapsible open={archivedOpen} onOpenChange={setArchivedOpen}>
-          <section className="section">
-            <CollapsibleTrigger asChild>
-              <div style={{ cursor: 'pointer' }} className="section-head">
-                <div className="section-head-l">
-                  <span className="section-eyebrow">03</span>
-                  <span className="section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <Film size={14} strokeWidth={1.5} />
-                    Projetos Arquivados
-                  </span>
-                </div>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                  <span className="section-meta">{archivedProjects?.length ?? 0} {(archivedProjects?.length ?? 0) === 1 ? 'item' : 'itens'}</span>
-                  {archivedOpen ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
-                </span>
-              </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              {renderProjectsGrid(archivedProjects, archivedLoading)}
-            </CollapsibleContent>
-          </section>
-        </Collapsible>
+        <CollapsibleSection
+          number="03"
+          title="Projetos Arquivados"
+          icon={Film}
+          count={archivedProjects?.length ?? 0}
+          collapsible
+        >
+          {renderProjectsGrid(archivedProjects, archivedLoading)}
+        </CollapsibleSection>
 
         <AVProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       </div>
