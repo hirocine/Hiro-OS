@@ -65,6 +65,7 @@ const MarketingSite = lazy(() => import("./pages/MarketingSite"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const DsPreview = lazy(() => import("./ds/preview"));
 const PlaygroundToolbar = lazy(() => import("./pages/_ds/PlaygroundToolbar"));
+const AdminPermissions = lazy(() => import("./pages/AdminPermissions"));
 
 const App = () => (
   <AuthProvider>
@@ -168,6 +169,7 @@ const App = () => (
                 <Route path="perfil" element={<Profile />} />
                 <Route path="administracao" element={<Navigate to="/administracao/usuarios" replace />} />
                 <Route path="administracao/usuarios" element={<Admin />} />
+                <Route path="administracao/permissoes" element={<AdminPermissions />} />
                 <Route path="administracao/logs" element={<Admin />} />
                 <Route path="administracao/categorias" element={<Admin />} />
                 <Route path="administracao/notificacoes" element={<Admin />} />

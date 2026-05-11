@@ -129,6 +129,7 @@ export const NAV: NavSection[] = [
         requires: "admin",
         children: [
           { name: "Usuários",          href: "/administracao/usuarios" },
+          { name: "Permissões",        href: "/administracao/permissoes" },
           { name: "Logs de Auditoria", href: "/administracao/logs" },
           { name: "Categorias",        href: "/administracao/categorias" },
           { name: "Notificações",      href: "/administracao/notificacoes" },

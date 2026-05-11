@@ -165,9 +165,13 @@ export function EditUserDialog({ open, onOpenChange, user, onSuccess }: EditUser
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="convidado">Convidado</SelectItem>
                 <SelectItem value="user">Usuário</SelectItem>
                 <SelectItem value="marketing">Marketing</SelectItem>
+                <SelectItem value="comercial">Comercial</SelectItem>
+                <SelectItem value="edicao">Edição</SelectItem>
                 <SelectItem value="producao">Produção</SelectItem>
+                <SelectItem value="financeiro">Financeiro</SelectItem>
                 <SelectItem value="admin">Administrador</SelectItem>
               </SelectContent>
             </Select>

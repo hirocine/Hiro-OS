@@ -211,6 +211,10 @@ const getActionDescription = (log: { action: string; new_values: any; old_values
         admin: 'Administrador',
         producao: 'Produção',
         marketing: 'Marketing',
+        comercial: 'Comercial',
+        edicao: 'Edição',
+        financeiro: 'Financeiro',
+        convidado: 'Convidado',
         user: 'Usuário',
       };
       return `Permissão alterada para: ${roleLabels[values.role as string] ?? 'Usuário'}`;
@@ -690,6 +694,10 @@ export default function Admin() {
                 <SelectItem value="admin">Administradores</SelectItem>
                 <SelectItem value="producao">Produção</SelectItem>
                 <SelectItem value="marketing">Marketing</SelectItem>
+                <SelectItem value="comercial">Comercial</SelectItem>
+                <SelectItem value="edicao">Edição</SelectItem>
+                <SelectItem value="financeiro">Financeiro</SelectItem>
+                <SelectItem value="convidado">Convidado</SelectItem>
                 <SelectItem value="user">Usuários</SelectItem>
               </SelectContent>
             </Select>
@@ -743,7 +751,16 @@ export default function Admin() {
                       </TableCell>
                       <TableCell>
                         {(() => {
-                          const roleLabel: Record<string, string> = { admin: 'Admin', producao: 'Produção', marketing: 'Marketing', user: 'Usuário' };
+                          const roleLabel: Record<string, string> = {
+                            admin: 'Admin',
+                            producao: 'Produção',
+                            marketing: 'Marketing',
+                            comercial: 'Comercial',
+                            edicao: 'Edição',
+                            financeiro: 'Financeiro',
+                            convidado: 'Convidado',
+                            user: 'Usuário',
+                          };
                           const isAdminRole = tableUser.role === 'admin';
                           return (
                             <StatusPill
