@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -163,20 +162,22 @@ export function WithdrawalDialog({ open, onOpenChange, onConfirm, loading }: Wit
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
+          <button
+            type="button"
+            className="btn"
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
+            className="btn primary"
             onClick={handleSubmit}
             disabled={!isFormValid() || loading}
-            className="bg-foreground hover:bg-foreground/90 text-background"
           >
             {loading ? 'Registrando...' : 'Registrar Retirada'}
-          </Button>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

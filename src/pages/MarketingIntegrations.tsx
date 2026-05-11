@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import {
   BarChart3, Instagram, Linkedin, Loader2, RefreshCw, Settings, Unlink,
-  ExternalLink, CheckCircle2, type LucideIcon,
+  ExternalLink, CheckCircle2, Lock, type LucideIcon,
 } from 'lucide-react';
+import { EmptyState } from '@/ds/components/EmptyState';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useMarketingIntegrations, type IntegrationStatus, type MarketingIntegration } from '@/hooks/useMarketingIntegrations';
 import { MarketingIntegrationDialog } from '@/components/Marketing/MarketingIntegrationDialog';
@@ -427,10 +428,12 @@ export default function MarketingIntegrations() {
               <p className="ph-sub">Apenas administradores.</p>
             </div>
           </div>
-          <div className="empties" style={{ marginTop: 24 }}>
-            <div className="empty" style={{ borderRight: 0 }}>
-              <p>Você precisa ser administrador para acessar esta página.</p>
-            </div>
+          <div style={{ marginTop: 24 }}>
+            <EmptyState
+              icon={Lock}
+              title="Acesso restrito"
+              description="Você precisa ser administrador para acessar esta página."
+            />
           </div>
         </div>
       </div>

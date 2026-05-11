@@ -64,6 +64,7 @@ const MarketingInstagram = lazy(() => import("./pages/MarketingInstagram"));
 const MarketingSite = lazy(() => import("./pages/MarketingSite"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const DsPreview = lazy(() => import("./ds/preview"));
+const PlaygroundToolbar = lazy(() => import("./pages/_ds/PlaygroundToolbar"));
 
 const App = () => (
   <AuthProvider>
@@ -103,6 +104,7 @@ const App = () => (
                 <Route path="inventario/novo" element={<AddEquipment />} />
                 <Route path="inventario/editar/:id" element={<AddEquipment />} />
                 <Route path="ssds" element={<SSDs />} />
+                <Route path="_ds/playground/toolbar" element={<PlaygroundToolbar />} />
                 <Route path="retiradas" element={<Projects />} />
                 <Route path="retiradas/nova" element={<ProjectWithdrawal />} />
                 <Route path="retiradas/:id" element={<ProjectDetails />} />

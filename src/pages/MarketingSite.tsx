@@ -18,6 +18,7 @@ import { resolvePeriod } from '@/lib/marketing-dashboard-utils';
 import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
 import { useMarketingGA4 } from '@/hooks/useMarketingGA4';
 import { AccountKpiCard } from '@/components/Marketing/dashboard/AccountKpiCard';
+import { EmptyState } from '@/ds/components/EmptyState';
 import { Ga4TrafficSection } from '@/components/Marketing/dashboard/Ga4TrafficSection';
 import { SiteIdentityBanner } from '@/components/Marketing/dashboard/SiteIdentityBanner';
 
@@ -139,17 +140,17 @@ export default function MarketingSite() {
               <p className="ph-sub">Métricas detalhadas do tráfego do site.</p>
             </div>
           </div>
-          <div className="empties" style={{ marginTop: 24 }}>
-            <div className="empty" style={{ borderRight: 0 }}>
-              <div className="glyph"><Plug strokeWidth={1.25} /></div>
-              <h5>Conecte o Google Analytics para ver dados do site</h5>
-              <p>Configure a integração em Admin → Integrações de Marketing.</p>
-              <div className="actions">
+          <div style={{ marginTop: 24 }}>
+            <EmptyState
+              icon={Plug}
+              title="Conecte o Google Analytics para ver dados do site"
+              description="Configure a integração em Admin → Integrações de Marketing."
+              action={
                 <button className="btn primary" onClick={() => navigate('/administracao/integracoes')} type="button">
                   <span>Ir para Integrações</span>
                 </button>
-              </div>
-            </div>
+              }
+            />
           </div>
         </div>
       </div>

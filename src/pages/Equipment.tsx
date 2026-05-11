@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Monitor, Tablet, Smartphone, Clock } from 'lucide-react';
+import { Plus, Monitor, Tablet, Smartphone, Clock, Package } from 'lucide-react';
+import { EmptyState } from '@/ds/components/EmptyState';
 import { formatRelativeTime } from '@/lib/utils';
 import { useEquipment } from '@/features/equipment';
 import { ConvertToAccessoryDialog } from '@/components/Equipment/ConvertToAccessoryDialog';
@@ -221,19 +222,17 @@ export default function EquipmentPage() {
 
     if (filteredEquipment.length === 0) {
       return (
-        <div className="empties">
-          <div className="empty" style={{ borderRight: 0 }}>
-            <div className="glyph"><Plus strokeWidth={1.25} /></div>
-            <h5>Nenhum equipamento encontrado</h5>
-            <p>Adicione equipamentos para começar a gerenciar seu inventário.</p>
-            <div className="actions">
-              <button className="btn primary" onClick={() => navigate('/inventario/novo')} type="button">
-                <Plus size={14} strokeWidth={1.5} />
-                <span>Adicionar equipamento</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <EmptyState
+          icon={Package}
+          title="Nenhum equipamento encontrado"
+          description="Adicione equipamentos para começar a gerenciar seu inventário."
+          action={
+            <button className="btn primary" onClick={() => navigate('/inventario/novo')} type="button">
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Adicionar equipamento</span>
+            </button>
+          }
+        />
       );
     }
 

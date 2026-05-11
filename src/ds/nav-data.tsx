@@ -116,6 +116,12 @@ export const NAV: NavSection[] = [
     ],
   },
   {
+    title: "RH",
+    items: [
+      { name: "Políticas", href: "/politicas", icon: I.scroll },
+    ],
+  },
+  {
     title: "Admin",
     locked: true,
     items: [
@@ -129,7 +135,6 @@ export const NAV: NavSection[] = [
           { name: "Sistema",           href: "/administracao/sistema" },
         ],
       },
-      { name: "Políticas", href: "/politicas", icon: I.scroll, admin: true },
     ],
   },
 ];

@@ -1,6 +1,7 @@
 import { Equipment } from '@/types/equipment';
 import { EquipmentMobileCard } from './EquipmentMobileCard';
 import { Plus, Package } from 'lucide-react';
+import { EmptyState } from '@/ds/components/EmptyState';
 
 interface EquipmentMobileViewProps {
   equipment: Equipment[];
@@ -48,21 +49,17 @@ export function EquipmentMobileView({
 
   if (equipment.length === 0) {
     return (
-      <div className="empties">
-        <div className="empty" style={{ borderRight: 0 }}>
-          <div className="glyph">
-            <Package strokeWidth={1.25} />
-          </div>
-          <h5>Nenhum equipamento encontrado</h5>
-          <p>Adicione equipamentos para começar a gerenciar seu inventário.</p>
-          <div className="actions">
-            <button className="btn primary" onClick={onAddEquipment} type="button">
-              <Plus size={14} strokeWidth={1.5} />
-              <span>Adicionar Equipamento</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <EmptyState
+        icon={Package}
+        title="Nenhum equipamento encontrado"
+        description="Adicione equipamentos para começar a gerenciar seu inventário."
+        action={
+          <button className="btn primary" onClick={onAddEquipment} type="button">
+            <Plus size={14} strokeWidth={1.5} />
+            <span>Adicionar equipamento</span>
+          </button>
+        }
+      />
     );
   }
 

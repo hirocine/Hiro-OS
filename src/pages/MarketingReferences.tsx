@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Bookmark, Plus, Search, Pencil, Trash2, ExternalLink, Image as ImageIcon, Instagram, Youtube, Linkedin, Globe } from 'lucide-react';
+import { EmptyState } from '@/ds/components/EmptyState';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
@@ -142,25 +143,23 @@ export default function MarketingReferences() {
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="empties">
-              <div className="empty" style={{ borderRight: 0 }}>
-                <div className="glyph"><Bookmark strokeWidth={1.25} /></div>
-                <h5>{references.length === 0 ? 'Nenhuma referência ainda' : 'Nada encontrado'}</h5>
-                <p>
-                  {references.length === 0
-                    ? 'Comece adicionando inspirações de marketing — links, imagens, posts.'
-                    : 'Tente ajustar os filtros ou a busca.'}
-                </p>
-                {references.length === 0 && (
-                  <div className="actions">
-                    <button className="btn primary" onClick={handleNew} type="button">
-                      <Plus size={14} strokeWidth={1.5} />
-                      <span>Nova referência</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+            <EmptyState
+              icon={Bookmark}
+              title={references.length === 0 ? 'Nenhuma referência cadastrada' : 'Nenhuma referência encontrada'}
+              description={
+                references.length === 0
+                  ? 'Comece adicionando inspirações de marketing — links, imagens, posts.'
+                  : 'Tente ajustar os filtros ou a busca para encontrar o que procura.'
+              }
+              action={
+                references.length === 0 ? (
+                  <button className="btn primary" onClick={handleNew} type="button">
+                    <Plus size={14} strokeWidth={1.5} />
+                    <span>Nova referência</span>
+                  </button>
+                ) : undefined
+              }
+            />
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
               {filtered.map((ref) => {

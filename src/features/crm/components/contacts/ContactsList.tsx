@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Plus, Search, Users, Trash2, Pencil } from 'lucide-react';
+import { EmptyState } from '@/ds/components/EmptyState';
 import { CONTACT_TYPES, LEAD_SOURCES, type Contact } from '../../types/crm.types';
 import { useDebounce } from '@/hooks/useDebounce';
 
@@ -121,20 +122,19 @@ export function ContactsList() {
             </div>
           ))
         ) : !contacts?.length ? (
-          <div style={{ gridColumn: '1 / -1', padding: 0 }}>
-            <div className="empties" style={{ borderTop: 0, borderLeft: 0, borderRight: 0 }}>
-              <div className="empty" style={{ borderRight: 0 }}>
-                <div className="glyph"><Users strokeWidth={1.25} /></div>
-                <h5>Nenhum contato</h5>
-                <p>Adicione seu primeiro contato para começar.</p>
-                <div className="actions">
-                  <button className="btn primary" onClick={() => { setEditingContact(null); setFormOpen(true); }} type="button">
-                    <Plus size={14} strokeWidth={1.5} />
-                    <span>Novo contato</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <EmptyState
+              icon={Users}
+              title="Nenhum contato encontrado"
+              description="Adicione seu primeiro contato para começar."
+              variant="bare"
+              action={
+                <button className="btn primary" onClick={() => { setEditingContact(null); setFormOpen(true); }} type="button">
+                  <Plus size={14} strokeWidth={1.5} />
+                  <span>Novo contato</span>
+                </button>
+              }
+            />
           </div>
         ) : (
           contacts.map((c, idx) => {

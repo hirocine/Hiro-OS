@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChevronDown, CheckSquare } from 'lucide-react';
+import { Plus, ChevronDown, Inbox } from 'lucide-react';
+import { EmptyState } from '@/ds/components/EmptyState';
 import { Input } from '@/components/ui/input';
 import { TaskSortableHeader } from './TaskSortableHeader';
 import { InlineEditCell } from './InlineEditCell';
@@ -363,16 +364,13 @@ export function TasksTable({
       })}
 
       {totalRows === 0 && (
-        <div style={{ gridColumn: '1 / -1', padding: 0 }}>
-          <div className="empties" style={{ borderTop: 0, borderLeft: 0, borderRight: 0 }}>
-            <div className="empty" style={{ borderRight: 0 }}>
-              <div className="glyph">
-                <CheckSquare strokeWidth={1.25} />
-              </div>
-              <h5>Nenhuma tarefa encontrada</h5>
-              <p>Crie sua primeira tarefa para começar.</p>
-            </div>
-          </div>
+        <div style={{ gridColumn: '1 / -1' }}>
+          <EmptyState
+            icon={Inbox}
+            title="Nenhuma tarefa encontrada"
+            description="Crie sua primeira tarefa para começar."
+            variant="bare"
+          />
         </div>
       )}
     </div>

@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
-import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Loader2, RotateCcw } from 'lucide-react';
@@ -210,18 +209,18 @@ export function TeamPhotoCropperDialog({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" size="sm" onClick={resetCrop}>
-            <RotateCcw className="h-4 w-4 mr-2" />
+          <button type="button" className="btn" onClick={resetCrop}>
+            <RotateCcw size={13} strokeWidth={1.5} />
             Resetar
-          </Button>
+          </button>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <button type="button" className="btn" onClick={() => onOpenChange(false)}>
               Cancelar
-            </Button>
-            <Button onClick={handleSave} disabled={loading}>
-              {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            </button>
+            <button type="button" className="btn primary" onClick={handleSave} disabled={loading}>
+              {loading && <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />}
               Salvar
-            </Button>
+            </button>
           </div>
         </DialogFooter>
       </DialogContent>

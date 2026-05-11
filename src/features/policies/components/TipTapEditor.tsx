@@ -3,7 +3,6 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
   Bold,
@@ -29,6 +28,22 @@ interface TipTapEditorProps {
   onChange: (html: string) => void;
   placeholder?: string;
 }
+
+const toolbarBtnStyle: React.CSSProperties = {
+  width: 28,
+  height: 28,
+  padding: 0,
+  justifyContent: 'center',
+};
+
+const activeStyle = (active: boolean): React.CSSProperties =>
+  active
+    ? {
+        ...toolbarBtnStyle,
+        background: 'hsl(var(--ds-accent) / 0.1)',
+        color: 'hsl(var(--ds-accent))',
+      }
+    : toolbarBtnStyle;
 
 export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorProps) {
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -88,7 +103,7 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
       handlePaste: (view, event) => {
         const text = event.clipboardData?.getData('text/plain') || '';
         const html = event.clipboardData?.getData('text/html') || '';
-        
+
         if (text.length > 100000) {
           event.preventDefault();
           toast.error('Texto muito grande', {
@@ -96,7 +111,7 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
           });
           return true;
         }
-        
+
         // Sanitize Office HTML (remove MS Office artifacts)
         if (html) {
           const sanitized = html
@@ -105,7 +120,7 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
             .replace(/style="[^"]*mso-[^"]*"/gi, '') // Remove MS Office styles
             .replace(/<o:p>[\s\S]*?<\/o:p>/gi, '') // Remove Office paragraph tags
             .replace(/<\/?span[^>]*>/gi, ''); // Remove span tags
-          
+
           if (sanitized !== html) {
             // Insert sanitized HTML
             event.preventDefault();
@@ -113,7 +128,7 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
             return true;
           }
         }
-        
+
         return false; // Allow default paste behavior
       },
     },
@@ -155,169 +170,164 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
   };
 
   return (
-    <div className="border rounded-md overflow-hidden">
+    <div style={{ border: '1px solid hsl(var(--ds-line-1))', overflow: 'hidden' }}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/30">
-        <Button
+      <div
+        className="flex flex-wrap items-center gap-1 p-2"
+        style={{
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+          background: 'hsl(var(--ds-line-2) / 0.3)',
+        }}
+      >
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={editor.isActive('bold') ? 'bg-muted' : ''}
+          style={activeStyle(editor.isActive('bold'))}
           title="Negrito (Ctrl+B)"
         >
-          <Bold className="h-4 w-4" />
-        </Button>
+          <Bold size={14} strokeWidth={1.5} />
+        </button>
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={editor.isActive('italic') ? 'bg-muted' : ''}
+          style={activeStyle(editor.isActive('italic'))}
           title="Itálico (Ctrl+I)"
         >
-          <Italic className="h-4 w-4" />
-        </Button>
+          <Italic size={14} strokeWidth={1.5} />
+        </button>
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={editor.isActive('strike') ? 'bg-muted' : ''}
+          style={activeStyle(editor.isActive('strike'))}
           title="Tachado"
         >
-          <Strikethrough className="h-4 w-4" />
-        </Button>
+          <Strikethrough size={14} strokeWidth={1.5} />
+        </button>
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={() => editor.chain().focus().toggleCode().run()}
-          className={editor.isActive('code') ? 'bg-muted' : ''}
+          style={activeStyle(editor.isActive('code'))}
           title="Código"
         >
-          <Code className="h-4 w-4" />
-        </Button>
+          <Code size={14} strokeWidth={1.5} />
+        </button>
 
         <Separator orientation="vertical" className="h-6 mx-1" />
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={editor.isActive('heading', { level: 1 }) ? 'bg-muted' : ''}
+          style={activeStyle(editor.isActive('heading', { level: 1 }))}
           title="Título 1"
         >
-          <Heading1 className="h-4 w-4" />
-        </Button>
+          <Heading1 size={14} strokeWidth={1.5} />
+        </button>
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={editor.isActive('heading', { level: 2 }) ? 'bg-muted' : ''}
+          style={activeStyle(editor.isActive('heading', { level: 2 }))}
           title="Título 2"
         >
-          <Heading2 className="h-4 w-4" />
-        </Button>
+          <Heading2 size={14} strokeWidth={1.5} />
+        </button>
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={editor.isActive('heading', { level: 3 }) ? 'bg-muted' : ''}
+          style={activeStyle(editor.isActive('heading', { level: 3 }))}
           title="Título 3"
         >
-          <Heading3 className="h-4 w-4" />
-        </Button>
+          <Heading3 size={14} strokeWidth={1.5} />
+        </button>
 
         <Separator orientation="vertical" className="h-6 mx-1" />
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={editor.isActive('bulletList') ? 'bg-muted' : ''}
+          style={activeStyle(editor.isActive('bulletList'))}
           title="Lista com marcadores"
         >
-          <List className="h-4 w-4" />
-        </Button>
+          <List size={14} strokeWidth={1.5} />
+        </button>
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={editor.isActive('orderedList') ? 'bg-muted' : ''}
+          style={activeStyle(editor.isActive('orderedList'))}
           title="Lista numerada"
         >
-          <ListOrdered className="h-4 w-4" />
-        </Button>
+          <ListOrdered size={14} strokeWidth={1.5} />
+        </button>
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={editor.isActive('blockquote') ? 'bg-muted' : ''}
+          style={activeStyle(editor.isActive('blockquote'))}
           title="Citação"
         >
-          <Quote className="h-4 w-4" />
-        </Button>
+          <Quote size={14} strokeWidth={1.5} />
+        </button>
 
         <Separator orientation="vertical" className="h-6 mx-1" />
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={addLink}
-          className={editor.isActive('link') ? 'bg-muted' : ''}
+          style={activeStyle(editor.isActive('link'))}
           title="Adicionar link"
         >
-          <Link2 className="h-4 w-4" />
-        </Button>
+          <Link2 size={14} strokeWidth={1.5} />
+        </button>
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={addImage}
+          style={toolbarBtnStyle}
           title="Adicionar imagem"
         >
-          <ImageIcon className="h-4 w-4" />
-        </Button>
+          <ImageIcon size={14} strokeWidth={1.5} />
+        </button>
 
         <Separator orientation="vertical" className="h-6 mx-1" />
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
+          style={toolbarBtnStyle}
           title="Desfazer (Ctrl+Z)"
         >
-          <Undo className="h-4 w-4" />
-        </Button>
+          <Undo size={14} strokeWidth={1.5} />
+        </button>
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
+          style={toolbarBtnStyle}
           title="Refazer (Ctrl+Y)"
         >
-          <Redo className="h-4 w-4" />
-        </Button>
+          <Redo size={14} strokeWidth={1.5} />
+        </button>
       </div>
 
       {/* Editor */}

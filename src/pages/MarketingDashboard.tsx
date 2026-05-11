@@ -35,6 +35,7 @@ import { AccountChartsSection } from '@/components/Marketing/dashboard/AccountCh
 import { AudienceSection } from '@/components/Marketing/dashboard/AudienceSection';
 import { Ga4TrafficSection } from '@/components/Marketing/dashboard/Ga4TrafficSection';
 import { ContentPerformanceSection } from '@/components/Marketing/dashboard/ContentPerformanceSection';
+import { EmptyState } from '@/ds/components/EmptyState';
 
 export default function MarketingDashboard() {
   const navigate = useNavigate();
@@ -428,17 +429,17 @@ export default function MarketingDashboard() {
               <p className="ph-sub">Visão consolidada da conta Instagram e dos seus conteúdos.</p>
             </div>
           </div>
-          <div className="empties" style={{ marginTop: 24 }}>
-            <div className="empty" style={{ borderRight: 0 }}>
-              <div className="glyph"><Plug strokeWidth={1.25} /></div>
-              <h5>Conecte o Instagram para ver dados em tempo real</h5>
-              <p>Configure a integração em Admin → Integrações de Marketing para ver seguidores, alcance, demografia e métricas dos seus posts atualizadas automaticamente todos os dias.</p>
-              <div className="actions">
+          <div style={{ marginTop: 24 }}>
+            <EmptyState
+              icon={Plug}
+              title="Conecte o Instagram para ver dados em tempo real"
+              description="Configure a integração em Admin → Integrações de Marketing para ver seguidores, alcance, demografia e métricas dos seus posts."
+              action={
                 <button className="btn primary" onClick={() => navigate('/administracao/integracoes')} type="button">
                   <span>Ir para Integrações</span>
                 </button>
-              </div>
-            </div>
+              }
+            />
           </div>
         </div>
       </div>

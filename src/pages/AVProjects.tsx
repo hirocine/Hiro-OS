@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Film, Plus, ChevronDown, ChevronRight } from 'lucide-react';
+import { EmptyState } from '@/ds/components/EmptyState';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -53,13 +54,12 @@ export default function AVProjects() {
 
     if (!projects?.length) {
       return (
-        <div className="empties">
-          <div className="empty" style={{ borderRight: 0 }}>
-            <div className="glyph"><Film strokeWidth={1.25} /></div>
-            <h5>Nenhum projeto encontrado</h5>
-            <p>Projetos audiovisuais aparecerão aqui.</p>
-          </div>
-        </div>
+        <EmptyState
+          icon={Film}
+          title="Nenhum projeto encontrado"
+          description="Projetos audiovisuais aparecerão aqui."
+          variant="bare"
+        />
       );
     }
 

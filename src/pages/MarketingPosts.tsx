@@ -437,20 +437,21 @@ export default function MarketingPosts() {
 
                 {selectedPost.pillar_id && pillarMap.get(selectedPost.pillar_id) && (
                   <div>
-                    <Badge
+                    <span
+                      className="pill"
                       style={{
                         backgroundColor: (pillarMap.get(selectedPost.pillar_id)?.color
                           ?? getPillarColor(pillarMap.get(selectedPost.pillar_id)?.name ?? '')) as string,
                         color: 'white',
+                        borderColor: 'transparent',
                       }}
-                      className="border-transparent"
                     >
                       {pillarMap.get(selectedPost.pillar_id)?.name}
-                    </Badge>
+                    </span>
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3 rounded-lg border border-border bg-muted/30 p-3">
+                <div className="grid grid-cols-2 gap-3 border border-[hsl(var(--ds-line-1))] bg-[hsl(var(--ds-line-2)/0.3)] p-3">
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Curtidas</p>
                     <p className="text-lg font-bold font-numeric">{compactNumber(selectedPost.likes ?? 0)}</p>
@@ -485,7 +486,7 @@ export default function MarketingPosts() {
                 {selectedPost.hashtags && selectedPost.hashtags.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {selectedPost.hashtags.slice(0, 12).map((h) => (
-                      <span key={h} className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                      <span key={h} className="pill muted" style={{ fontSize: 10, padding: '2px 6px' }}>
                         #{h}
                       </span>
                     ))}
@@ -497,12 +498,15 @@ export default function MarketingPosts() {
                     {selectedPost.source === 'auto_discovered' ? 'Auto-descoberto' : 'Criado manualmente'}
                   </span>
                   {selectedPost.published_url && (
-                    <Button asChild variant="outline" size="sm">
-                      <a href={selectedPost.published_url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="mr-2 h-3.5 w-3.5" />
-                        Ver no Instagram
-                      </a>
-                    </Button>
+                    <a
+                      href={selectedPost.published_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn"
+                    >
+                      <ExternalLink size={13} strokeWidth={1.5} />
+                      <span>Ver no Instagram</span>
+                    </a>
                   )}
                 </div>
               </div>

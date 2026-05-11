@@ -10,6 +10,7 @@ import { useMarketingAccountSnapshots } from '@/hooks/useMarketingAccountSnapsho
 import { useMarketingPostMetrics, type PostWithMetrics } from '@/hooks/useMarketingPostMetrics';
 import { InstagramIdentityBanner } from '@/components/Marketing/dashboard/InstagramIdentityBanner';
 import { AccountKpisSection } from '@/components/Marketing/dashboard/AccountKpisSection';
+import { EmptyState } from '@/ds/components/EmptyState';
 
 export default function MarketingInstagram() {
   const navigate = useNavigate();
@@ -95,17 +96,17 @@ export default function MarketingInstagram() {
               <p className="ph-sub">Métricas detalhadas da conta @hirofilm.</p>
             </div>
           </div>
-          <div className="empties" style={{ marginTop: 24 }}>
-            <div className="empty" style={{ borderRight: 0 }}>
-              <div className="glyph"><Plug strokeWidth={1.25} /></div>
-              <h5>Conecte o Instagram para ver dados em tempo real</h5>
-              <p>Configure a integração em Admin → Integrações de Marketing.</p>
-              <div className="actions">
+          <div style={{ marginTop: 24 }}>
+            <EmptyState
+              icon={Plug}
+              title="Conecte o Instagram para ver dados em tempo real"
+              description="Configure a integração em Admin → Integrações de Marketing."
+              action={
                 <button className="btn primary" onClick={() => navigate('/administracao/integracoes')} type="button">
                   <span>Ir para Integrações</span>
                 </button>
-              </div>
-            </div>
+              }
+            />
           </div>
         </div>
       </div>
@@ -184,22 +185,21 @@ export default function MarketingInstagram() {
             </div>
 
             {recentPosts.length === 0 ? (
-              <div className="empties">
-                <div className="empty" style={{ borderRight: 0 }}>
-                  <div className="glyph"><Images strokeWidth={1.25} /></div>
-                  <h5>Nenhum post publicado ainda</h5>
-                  <p>Quando você publicar posts no Instagram eles aparecerão aqui.</p>
-                  <div className="actions">
-                    <button
-                      className="btn primary"
-                      onClick={() => navigate('/marketing/social-media/instagram/posts')}
-                      type="button"
-                    >
-                      <span>Ir para Posts</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <EmptyState
+                icon={Images}
+                title="Nenhum post publicado ainda"
+                description="Quando você publicar posts no Instagram eles aparecerão aqui."
+                variant="bare"
+                action={
+                  <button
+                    className="btn primary"
+                    onClick={() => navigate('/marketing/social-media/instagram/posts')}
+                    type="button"
+                  >
+                    <span>Ir para Posts</span>
+                  </button>
+                }
+              />
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
                 {recentPosts.slice(0, 10).map((p) => (

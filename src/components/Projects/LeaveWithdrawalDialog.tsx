@@ -1,5 +1,4 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Save, LogOut, X } from 'lucide-react';
 
 interface LeaveWithdrawalDialogProps {
@@ -29,36 +28,45 @@ export function LeaveWithdrawalDialog({
             Você tem dados não salvos nesta retirada. O que deseja fazer?
           </DialogDescription>
         </DialogHeader>
-        
+
         <DialogFooter className="flex-col gap-2 sm:flex-col sm:space-x-0">
-          <Button 
-            onClick={onSaveAndLeave} 
-            className="w-full flex items-center justify-center gap-2"
+          <button
+            type="button"
+            className="btn primary"
+            onClick={onSaveAndLeave}
+            style={{ width: '100%', justifyContent: 'center' }}
             disabled={isSaving}
           >
-            <Save className="h-4 w-4" />
+            <Save size={13} strokeWidth={1.5} />
             {isSaving ? 'Salvando...' : 'Salvar e Sair'}
-          </Button>
-          
-          <Button 
-            variant="outline" 
+          </button>
+
+          <button
+            type="button"
+            className="btn"
             onClick={onLeaveWithoutSaving}
-            className="w-full flex items-center justify-center gap-2 bg-destructive/10 text-destructive border-destructive/30 hover:bg-destructive/20 hover:border-destructive/50"
+            style={{
+              width: '100%',
+              justifyContent: 'center',
+              color: 'hsl(var(--ds-danger))',
+              borderColor: 'hsl(var(--ds-danger) / 0.3)',
+            }}
             disabled={isSaving}
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut size={13} strokeWidth={1.5} />
             Sair sem Salvar
-          </Button>
-          
-          <Button 
-            variant="outline" 
+          </button>
+
+          <button
+            type="button"
+            className="btn"
             onClick={onCancel}
-            className="w-full flex items-center justify-center gap-2"
+            style={{ width: '100%', justifyContent: 'center' }}
             disabled={isSaving}
           >
-            <X className="h-4 w-4" />
+            <X size={13} strokeWidth={1.5} />
             Cancelar
-          </Button>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -349,6 +349,10 @@ html body[data-scroll-locked="true"] {
     --ds-info:                209 71% 42%;
     --ds-success:             150 100% 36%;
 
+    /* Aliases — DS migration uses --ds-danger / --ds-warning as canonical names */
+    --ds-danger:               0 60% 47%;       /* same as --ds-destructive */
+    --ds-warning:             43 89% 38%;       /* same as --ds-warn */
+
     --ds-accent-ink:          110 53% 11%;        /* text on bright accent */
 
     --ds-radius:                0px;
@@ -410,6 +414,11 @@ html body[data-scroll-locked="true"] {
     --ds-warn:                 43 70% 56%;
     --ds-info:                209 65% 65%;
     --ds-success:             150 100% 44%;
+
+    /* Aliases — keep parity with light mode */
+    --ds-danger:               0 70% 60%;
+    --ds-warning:             43 70% 56%;
+
     --ds-accent-ink:          138 100% 84%;
   }
 }

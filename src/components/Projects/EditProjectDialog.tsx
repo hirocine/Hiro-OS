@@ -6,7 +6,6 @@ import {
   ResponsiveDialogHeader, 
   ResponsiveDialogTitle 
 } from '@/components/ui/responsive-dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -102,16 +101,17 @@ export function EditProjectDialog({ project, open, onOpenChange, onSave }: EditP
             <Label>Data de Devolução *</Label>
             <Popover open={showCalendar} onOpenChange={setShowCalendar}>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', fontWeight: 400 }}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.expectedEndDate ? 
-                    format(new Date(formData.expectedEndDate), 'dd/MM/yyyy') : 
+                  <CalendarIcon size={13} strokeWidth={1.5} />
+                  {formData.expectedEndDate ?
+                    format(new Date(formData.expectedEndDate), 'dd/MM/yyyy') :
                     'Selecione a data'
                   }
-                </Button>
+                </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
@@ -138,12 +138,23 @@ export function EditProjectDialog({ project, open, onOpenChange, onSave }: EditP
         </div>
 
         <div className="flex gap-2 mt-6">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+          <button
+            type="button"
+            className="btn"
+            onClick={() => onOpenChange(false)}
+            style={{ flex: 1, justifyContent: 'center' }}
+          >
             Cancelar
-          </Button>
-          <Button onClick={handleSave} disabled={!isFormValid} className="flex-1">
+          </button>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={handleSave}
+            disabled={!isFormValid}
+            style={{ flex: 1, justifyContent: 'center' }}
+          >
             Salvar Alterações
-          </Button>
+          </button>
         </div>
       </ResponsiveDialogContent>
     </ResponsiveDialog>

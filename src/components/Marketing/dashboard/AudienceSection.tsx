@@ -3,6 +3,7 @@ import { GenderAgeHero } from './GenderAgeHero';
 import { CityRanking } from './CityRanking';
 import { LocaleList } from './LocaleList';
 import { formatTimeAgo, topEntries } from '@/lib/marketing-dashboard-utils';
+import { EmptyState } from '@/ds/components/EmptyState';
 
 interface Audience {
   captured_at: string;
@@ -93,20 +94,17 @@ export function AudienceSection({ audience, syncingAudience, onSyncAudience }: P
 
       <div style={{ padding: 18 }}>
         {!audience ? (
-          <div className="empties" style={{ borderTop: 0, borderLeft: 0, borderRight: 0 }}>
-            <div className="empty" style={{ borderRight: 0 }}>
-              <div className="glyph">
-                <Users strokeWidth={1.25} />
-              </div>
-              <h5>Sem dados de audiência ainda</h5>
-              <p>A demografia é atualizada semanalmente. Você pode forçar a primeira sincronização agora.</p>
-              <div className="actions">
-                <button className="btn primary" onClick={onSyncAudience} type="button" disabled={syncingAudience}>
-                  <span>{syncingAudience ? 'Sincronizando…' : 'Sincronizar audiência agora'}</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <EmptyState
+            icon={Users}
+            title="Sem dados de audiência ainda"
+            description="A demografia é atualizada semanalmente. Você pode forçar a primeira sincronização agora."
+            variant="bare"
+            action={
+              <button className="btn primary" onClick={onSyncAudience} type="button" disabled={syncingAudience}>
+                <span>{syncingAudience ? 'Sincronizando…' : 'Sincronizar audiência agora'}</span>
+              </button>
+            }
+          />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <GenderAgeHero audience={audience} />

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -154,12 +153,12 @@ export function VerificationDialog({ open, onOpenChange, onConfirm, loading = fa
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+            <button type="button" className="btn" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancelar
-            </Button>
-            <Button onClick={handleConfirm} disabled={!canConfirm}>
+            </button>
+            <button type="button" className="btn primary" onClick={handleConfirm} disabled={!canConfirm}>
               {loading ? 'Processando...' : 'Confirmar Verificação'}
-            </Button>
+            </button>
           </div>
         </div>
       </DialogContent>

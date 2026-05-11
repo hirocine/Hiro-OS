@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Plus, Pencil, UserCheck } from 'lucide-react';
+import { EmptyState } from '@/ds/components/EmptyState';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { WhatsAppIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { formatCurrency } from '@/lib/utils';
@@ -111,22 +112,19 @@ export default function Suppliers() {
               </div>
             ))
           ) : suppliers.length === 0 ? (
-            <div style={{ gridColumn: `1 / -1`, padding: 0 }}>
-              <div className="empties" style={{ borderTop: 0, borderLeft: 0, borderRight: 0 }}>
-                <div className="empty" style={{ borderRight: 0 }}>
-                  <div className="glyph">
-                    <UserCheck strokeWidth={1.25} />
-                  </div>
-                  <h5>Nenhum fornecedor encontrado</h5>
-                  <p>Cadastre freelancers e prestadores de serviço para acompanhar sua rede.</p>
-                  <div className="actions">
-                    <button className="btn primary" onClick={() => setDialogOpen(true)} type="button">
-                      <Plus size={14} strokeWidth={1.5} />
-                      <span>Cadastrar primeiro</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+            <div style={{ gridColumn: `1 / -1` }}>
+              <EmptyState
+                icon={UserCheck}
+                title="Nenhum fornecedor encontrado"
+                description="Cadastre freelancers e prestadores de serviço para acompanhar sua rede."
+                variant="bare"
+                action={
+                  <button className="btn primary" onClick={() => setDialogOpen(true)} type="button">
+                    <Plus size={14} strokeWidth={1.5} />
+                    <span>Cadastrar primeiro</span>
+                  </button>
+                }
+              />
             </div>
           ) : (
             suppliers.map((supplier, idx) => {

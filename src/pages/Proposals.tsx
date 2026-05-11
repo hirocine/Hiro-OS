@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Plus, ChevronDown, ChevronRight, Receipt, CheckCircle, Archive } from 'lucide-react';
 import { useProposals, ProposalCard } from '@/features/proposals';
+import { EmptyState } from '@/ds/components/EmptyState';
 import type { Proposal } from '@/features/proposals';
 
 export default function Proposals() {
@@ -60,19 +61,18 @@ export default function Proposals() {
           {activeProposals.length > 0 ? (
             renderList(activeProposals)
           ) : (
-            <div className="empties">
-              <div className="empty" style={{ borderRight: 0 }}>
-                <div className="glyph"><Receipt strokeWidth={1.25} /></div>
-                <h5>Nenhum orçamento ativo</h5>
-                <p>Crie sua primeira proposta comercial.</p>
-                <div className="actions">
-                  <button className="btn primary" onClick={() => navigate('/orcamentos/novo')} type="button">
-                    <Plus size={14} strokeWidth={1.5} />
-                    <span>Nova proposta</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+            <EmptyState
+              icon={Receipt}
+              title="Nenhum orçamento ativo"
+              description="Crie sua primeira proposta comercial."
+              variant="bare"
+              action={
+                <button className="btn primary" onClick={() => navigate('/orcamentos/novo')} type="button">
+                  <Plus size={14} strokeWidth={1.5} />
+                  <span>Nova proposta</span>
+                </button>
+              }
+            />
           )}
         </section>
 
@@ -95,13 +95,12 @@ export default function Proposals() {
               {approvedProposals.length > 0 ? (
                 renderList(approvedProposals)
               ) : (
-                <div className="empties">
-                  <div className="empty" style={{ borderRight: 0, padding: '40px 48px', minHeight: 220 }}>
-                    <div className="glyph"><CheckCircle strokeWidth={1.25} /></div>
-                    <h5>Nenhum orçamento aprovado</h5>
-                    <p>Orçamentos aprovados pelo cliente aparecerão aqui.</p>
-                  </div>
-                </div>
+                <EmptyState
+                  icon={CheckCircle}
+                  title="Nenhum orçamento aprovado"
+                  description="Orçamentos aprovados pelo cliente aparecerão aqui."
+                  variant="bare"
+                />
               )}
             </CollapsibleContent>
           </section>
@@ -126,13 +125,12 @@ export default function Proposals() {
               {archivedProposals.length > 0 ? (
                 renderList(archivedProposals)
               ) : (
-                <div className="empties">
-                  <div className="empty" style={{ borderRight: 0, padding: '40px 48px', minHeight: 220 }}>
-                    <div className="glyph"><Archive strokeWidth={1.25} /></div>
-                    <h5>Nenhum orçamento arquivado</h5>
-                    <p>Orçamentos expirados serão movidos para cá.</p>
-                  </div>
-                </div>
+                <EmptyState
+                  icon={Archive}
+                  title="Nenhum orçamento arquivado"
+                  description="Orçamentos expirados serão movidos para cá."
+                  variant="bare"
+                />
               )}
             </CollapsibleContent>
           </section>

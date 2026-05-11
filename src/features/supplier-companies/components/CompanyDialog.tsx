@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { StarRating } from '@/features/suppliers/components/StarRating';
 import type { Company } from '../types';
@@ -196,16 +195,16 @@ export function CompanyDialog({
             />
 
             <div className="flex justify-end gap-2">
-              <Button
+              <button
                 type="button"
-                variant="outline"
+                className="btn"
                 onClick={() => onOpenChange(false)}
               >
                 Cancelar
-              </Button>
-              <Button type="submit" disabled={submitting}>
+              </button>
+              <button type="submit" className="btn primary" disabled={submitting}>
                 {submitting ? 'Salvando...' : 'Salvar'}
-              </Button>
+              </button>
             </div>
           </form>
         </Form>

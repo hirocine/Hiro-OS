@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { AlertTriangle, ChevronDown, Film } from 'lucide-react';
+import { EmptyState } from '@/ds/components/EmptyState';
 import { PPSortableHeader } from './PPSortableHeader';
 import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
 import { InlineAssigneeCell } from '@/features/tasks/components/InlineAssigneeCell';
@@ -205,14 +206,13 @@ export function PPTable({ items, isLoading }: PPTableProps) {
         </div>
 
         {activeItems.length === 0 ? (
-          <div style={{ gridColumn: '1 / -1', padding: 0 }}>
-            <div className="empties" style={{ borderTop: 0, borderLeft: 0, borderRight: 0 }}>
-              <div className="empty" style={{ borderRight: 0 }}>
-                <div className="glyph"><Film strokeWidth={1.25} /></div>
-                <h5>Nenhum vídeo em produção</h5>
-                <p>Adicione um novo vídeo à esteira para começar.</p>
-              </div>
-            </div>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <EmptyState
+              icon={Film}
+              title="Nenhum vídeo em produção"
+              description="Adicione um novo vídeo à esteira para começar."
+              variant="bare"
+            />
           </div>
         ) : (
           activeItems.map((item, idx) => {

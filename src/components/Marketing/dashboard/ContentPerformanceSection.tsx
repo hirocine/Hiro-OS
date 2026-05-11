@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { KpiCard } from './KpiCard';
 import { ChartTooltip } from './ChartTooltip';
+import { EmptyState } from '@/ds/components/EmptyState';
 import {
   AreaChart,
   Area,
@@ -173,20 +174,16 @@ export function ContentPerformanceSection({
       </div>
 
       {!loading && publishedPostsLength === 0 ? (
-        <div className="empties">
-          <div className="empty" style={{ borderRight: 0 }}>
-            <div className="glyph">
-              <BarChart3 strokeWidth={1.25} />
-            </div>
-            <h5>Publique seu primeiro post para ver métricas aqui</h5>
-            <p>Quando você marcar posts como "Publicado" e adicionar métricas, esta seção vai consolidar a performance.</p>
-            <div className="actions">
-              <button className="btn primary" onClick={() => onNavigate('/marketing')} type="button">
-                <span>Ir ao Calendário</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <EmptyState
+          icon={BarChart3}
+          title="Publique seu primeiro post para ver métricas aqui"
+          description='Quando você marcar posts como "Publicado" e adicionar métricas, esta seção vai consolidar a performance.'
+          action={
+            <button className="btn primary" onClick={() => onNavigate('/marketing')} type="button">
+              <span>Ir ao Calendário</span>
+            </button>
+          }
+        />
       ) : (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>

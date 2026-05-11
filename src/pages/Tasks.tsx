@@ -1,28 +1,37 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, User, CheckCircle, Archive, List, Columns3, CalendarDays, Search } from 'lucide-react';
+import { Plus, List, Columns3, CalendarDays, ChevronDown } from 'lucide-react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { TaskSummaryBar } from '@/features/tasks/components/TaskSummaryBar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { TasksTable } from '@/features/tasks/components/TasksTable';
 import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { TaskKanbanView } from '@/features/tasks/components/TaskKanbanView';
 import { TaskCalendarView } from '@/features/tasks/components/TaskCalendarView';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { useFilteredTaskStats } from '@/features/tasks/hooks/useFilteredTaskStats';
-import { useAuthContext } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useDepartments } from '@/features/tasks/hooks/useDepartments';
 import { PRIORITY_CONFIG, STATUS_CONFIG } from '@/features/tasks/types';
+import {
+  PageHeader,
+  PageToolbar,
+  SearchField,
+  FilterDropdown,
+  ViewToggle,
+  FilterIndicator,
+  type ViewToggleItem,
+} from '@/ds/components/toolbar';
 
 type ViewType = 'lista' | 'kanban' | 'calendario';
-type ListaTab = 'active' | 'mine' | 'completed' | 'archived';
+
+const TASKS_VIEWS: ViewToggleItem<ViewType>[] = [
+  { value: 'lista', label: 'Lista', icon: List },
+  { value: 'kanban', label: 'Kanban', icon: Columns3 },
+  { value: 'calendario', label: 'Calendário', icon: CalendarDays },
+];
 
 export default function Tasks() {
-  const { user } = useAuthContext();
   const [dialogOpen, setDialogOpen] = useState(false);
-
   const [currentView, setCurrentView] = useState<ViewType>('lista');
-  const [listaTab, setListaTab] = useState<ListaTab>('active');
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,75 +40,79 @@ export default function Tasks() {
   const [filterDepartment, setFilterDepartment] = useState('all');
   const [filterAssignee, setFilterAssignee] = useState('all');
 
-  // Reset status filter when switching to lista view (tabs handle status there)
+  // Section collapse states (only used when view = lista)
+  const [completedOpen, setCompletedOpen] = useState(false);
+  const [archivedOpen, setArchivedOpen] = useState(false);
+
+  // Reset status filter when switching to lista view (sections handle status there)
   useEffect(() => {
     if (currentView === 'lista') {
       setFilterStatus('all');
     }
   }, [currentView]);
 
-  // Data
   const { tasks, isLoading } = useTasks();
   const { users } = useUsers();
   const { departments } = useDepartments();
 
-  // Filters
+  // Filter pipeline
   const filteredTasks = useMemo(() => {
-    return tasks.filter(task => {
+    return tasks.filter((task) => {
       if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       if (filterPriority !== 'all' && task.priority !== filterPriority) return false;
       if (filterStatus !== 'all' && task.status !== filterStatus) return false;
       if (filterDepartment !== 'all' && task.department !== filterDepartment) return false;
-      if (filterAssignee !== 'all' && !task.assignees?.some(a => a.user_id === filterAssignee)) return false;
+      if (filterAssignee !== 'all' && !task.assignees?.some((a) => a.user_id === filterAssignee)) return false;
       return true;
     });
   }, [tasks, searchQuery, filterPriority, filterStatus, filterDepartment, filterAssignee]);
 
   const stats = useFilteredTaskStats(filteredTasks);
 
-  const activeTasks = useMemo(() =>
-    filteredTasks.filter(t => t.status !== 'concluida' && t.status !== 'arquivada'),
-    [filteredTasks]
+  const activeTasks = useMemo(
+    () => filteredTasks.filter((t) => t.status !== 'concluida' && t.status !== 'arquivada'),
+    [filteredTasks],
   );
-  const myTasks = useMemo(() =>
-    activeTasks.filter(t => t.assignees?.some(a => a.user_id === user?.id)),
-    [activeTasks, user?.id]
+  const completedTasks = useMemo(
+    () => filteredTasks.filter((t) => t.status === 'concluida'),
+    [filteredTasks],
   );
-  const completedTasks = useMemo(() =>
-    filteredTasks.filter(t => t.status === 'concluida'),
-    [filteredTasks]
-  );
-  const archivedTasks = useMemo(() =>
-    filteredTasks.filter(t => t.status === 'arquivada'),
-    [filteredTasks]
+  const archivedTasks = useMemo(
+    () => filteredTasks.filter((t) => t.status === 'arquivada'),
+    [filteredTasks],
   );
 
-  const hasActiveFilter = searchQuery || filterPriority !== 'all' || filterStatus !== 'all' ||
-    filterDepartment !== 'all' || filterAssignee !== 'all';
+  const hasActiveFilter =
+    !!searchQuery ||
+    filterPriority !== 'all' ||
+    filterStatus !== 'all' ||
+    filterDepartment !== 'all' ||
+    filterAssignee !== 'all';
 
-  const tasksForActiveTab =
-    listaTab === 'active' ? activeTasks :
-    listaTab === 'mine' ? myTasks :
-    listaTab === 'completed' ? completedTasks : archivedTasks;
+  const clearAllFilters = () => {
+    setSearchQuery('');
+    setFilterPriority('all');
+    setFilterStatus('all');
+    setFilterDepartment('all');
+    setFilterAssignee('all');
+  };
 
   return (
     <div className="ds-shell ds-page">
       <div className="ds-page-inner">
-        {/* Page header */}
-        <div className="ph">
-          <div>
-            <h1 className="ph-title">Tarefas.</h1>
-            <p className="ph-sub">Gerencie suas tarefas e acompanhe o progresso.</p>
-          </div>
-          <div className="ph-actions">
+        {/* 01 — Header */}
+        <PageHeader
+          title="Tarefas."
+          subtitle="Gerencie suas tarefas e acompanhe o progresso."
+          action={
             <button className="btn primary" onClick={() => setDialogOpen(true)} type="button">
               <Plus size={14} strokeWidth={1.5} />
               <span>Nova Tarefa</span>
             </button>
-          </div>
-        </div>
+          }
+        />
 
-        {/* Summary stats */}
+        {/* 02 — Stats */}
         <div className="summary" style={{ marginTop: 24 }}>
           <div className="stat">
             <span className="stat-lbl">Ativas</span>
@@ -119,144 +132,180 @@ export default function Tasks() {
           </div>
         </div>
 
-        {/* Toolbar */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 20 }}>
-          {/* View toggle (segmented) */}
-          <div className="tabs-seg">
-            <button className={'s' + (currentView === 'lista' ? ' on' : '')} onClick={() => setCurrentView('lista')} type="button">
-              <List />Lista
-            </button>
-            <button className={'s' + (currentView === 'kanban' ? ' on' : '')} onClick={() => setCurrentView('kanban')} type="button">
-              <Columns3 />Kanban
-            </button>
-            <button className={'s' + (currentView === 'calendario' ? ' on' : '')} onClick={() => setCurrentView('calendario')} type="button">
-              <CalendarDays />Calendário
-            </button>
-          </div>
-
-          {/* Search */}
-          <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-            <Search
-              size={14}
-              strokeWidth={1.5}
-              style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'hsl(var(--ds-fg-4))', pointerEvents: 'none' }}
-            />
-            <input
-              className="field-input"
-              placeholder="Buscar tarefas…"
+        {/* 03 — Toolbar */}
+        <PageToolbar
+          search={
+            <SearchField
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              style={{ width: '100%', paddingLeft: 34 }}
+              onChange={setSearchQuery}
+              placeholder="Buscar tarefas…"
             />
-          </div>
+          }
+          filters={[
+            <FilterDropdown
+              key="priority"
+              label="Prioridade"
+              value={filterPriority}
+              onChange={setFilterPriority}
+              options={Object.entries(PRIORITY_CONFIG).map(([key, cfg]) => ({ value: key, label: cfg.label }))}
+              allOptionLabel="Todas"
+              width="md"
+            />,
+            currentView !== 'lista' ? (
+              <FilterDropdown
+                key="status"
+                label="Status"
+                value={filterStatus}
+                onChange={setFilterStatus}
+                options={Object.entries(STATUS_CONFIG).map(([key, cfg]) => ({ value: key, label: cfg.label }))}
+                width="md"
+              />
+            ) : null,
+            <FilterDropdown
+              key="dept"
+              label="Departamento"
+              value={filterDepartment}
+              onChange={setFilterDepartment}
+              options={departments.map((d) => ({ value: d.name, label: d.name }))}
+              width="md"
+            />,
+            <FilterDropdown
+              key="assignee"
+              label="Responsável"
+              value={filterAssignee}
+              onChange={setFilterAssignee}
+              options={users.map((u) => ({ value: u.id, label: u.display_name || u.email || u.id }))}
+              width="md"
+            />,
+          ].filter(Boolean) as React.ReactNode[]}
+          viewToggle={
+            <ViewToggle
+              items={TASKS_VIEWS}
+              value={currentView}
+              onChange={(v) => setCurrentView(v as ViewType)}
+            />
+          }
+        />
 
-          {/* Priority filter */}
-          <Select value={filterPriority} onValueChange={setFilterPriority}>
-            <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Prioridade" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              {Object.entries(PRIORITY_CONFIG).map(([key, cfg]) => (
-                <SelectItem key={key} value={key}>{cfg.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* 05 — Filter indicator (auto-rendered when any filter is active) */}
+        <FilterIndicator
+          active={hasActiveFilter}
+          count={filteredTasks.length}
+          total={tasks.length}
+          noun="tarefas"
+          onClear={clearAllFilters}
+        />
 
-          {currentView !== 'lista' && (
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
-                  <SelectItem key={key} value={key}>{cfg.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-
-          <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-            <SelectTrigger className="w-[160px] h-9"><SelectValue placeholder="Departamento" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {departments.map(d => (<SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>))}
-            </SelectContent>
-          </Select>
-
-          <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-            <SelectTrigger className="w-[160px] h-9"><SelectValue placeholder="Responsável" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {users.map(u => (<SelectItem key={u.id} value={u.id}>{u.display_name || u.email}</SelectItem>))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Active filters indicator */}
-        {hasActiveFilter && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>
-            <span>Filtros ativos · mostrando <strong style={{ color: 'hsl(var(--ds-fg-1))' }}>{filteredTasks.length}</strong> de {tasks.length} tarefas</span>
-            <button
-              type="button"
-              style={{ fontFamily: '"HN Display"', fontSize: 10, fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'hsl(var(--ds-fg-3))', cursor: 'pointer' }}
-              onClick={() => {
-                setSearchQuery('');
-                setFilterPriority('all');
-                setFilterStatus('all');
-                setFilterDepartment('all');
-                setFilterAssignee('all');
-              }}
-            >
-              Limpar filtros
-            </button>
-          </div>
-        )}
-
-        {/* Content */}
-        <div style={{ marginTop: 24 }}>
-          {currentView === 'lista' && (
-            <>
-              <div className="tabs-bar">
-                <button className={'tab' + (listaTab === 'active' ? ' on' : '')} onClick={() => setListaTab('active')} type="button">
-                  Ativas <span className="ct">{activeTasks.length}</span>
-                </button>
-                <button className={'tab' + (listaTab === 'mine' ? ' on' : '')} onClick={() => setListaTab('mine')} type="button">
-                  <User />Minhas <span className="ct">{myTasks.length}</span>
-                </button>
-                <button className={'tab' + (listaTab === 'completed' ? ' on' : '')} onClick={() => setListaTab('completed')} type="button">
-                  <CheckCircle />Concluídas <span className="ct">{completedTasks.length}</span>
-                </button>
-                <button className={'tab' + (listaTab === 'archived' ? ' on' : '')} onClick={() => setListaTab('archived')} type="button">
-                  <Archive />Arquivadas <span className="ct">{archivedTasks.length}</span>
-                </button>
+        {/* 07 — Content */}
+        {currentView === 'lista' && (
+          <>
+            {/* Section 01 — Ativas (sempre aberta) */}
+            <section className="section" style={{ marginTop: 24 }}>
+              <div className="section-head">
+                <div className="section-head-l">
+                  <span className="section-eyebrow">01</span>
+                  <span className="section-title">Ativas</span>
+                </div>
+                <span className="section-eyebrow" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  {activeTasks.length} {activeTasks.length === 1 ? 'ITEM' : 'ITENS'}
+                </span>
               </div>
-
-              {/* Wrap TasksTable outside ds-shell so its own shadcn Table styles apply normally */}
-              <div style={{ marginTop: 16 }} className="ds-page-table-host">
-                <Tabs value={listaTab}>
+              <div className="ds-page-table-host">
+                <Tabs value="active">
                   <TabsContent value="active">
                     <TasksTable tasks={activeTasks} isLoading={isLoading} showCreationRow={true} showAssignee={true} />
                   </TabsContent>
-                  <TabsContent value="mine">
-                    <TasksTable tasks={myTasks} isLoading={isLoading} showAssignee={true} />
-                  </TabsContent>
-                  <TabsContent value="completed">
-                    <TasksTable tasks={completedTasks} isLoading={isLoading} showAssignee={true} />
-                  </TabsContent>
-                  <TabsContent value="archived">
-                    <TasksTable tasks={archivedTasks} isLoading={isLoading} showAssignee={true} />
-                  </TabsContent>
                 </Tabs>
               </div>
-            </>
-          )}
+            </section>
 
-          {currentView === 'kanban' && (
+            {/* Section 02 — Concluídas (colapsável) */}
+            <Collapsible open={completedOpen} onOpenChange={setCompletedOpen}>
+              <section className="section" style={{ marginTop: 24 }}>
+                <CollapsibleTrigger asChild>
+                  <div style={{ cursor: 'pointer' }} className="section-head">
+                    <div className="section-head-l">
+                      <span className="section-eyebrow">02</span>
+                      <span className="section-title">Concluídas</span>
+                    </div>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+                      <span className="section-eyebrow" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        {completedTasks.length} {completedTasks.length === 1 ? 'ITEM' : 'ITENS'}
+                      </span>
+                      <ChevronDown
+                        size={14}
+                        strokeWidth={1.5}
+                        style={{
+                          color: 'hsl(var(--ds-fg-3))',
+                          transition: 'transform 0.2s',
+                          transform: completedOpen ? 'rotate(180deg)' : 'none',
+                        }}
+                      />
+                    </span>
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="ds-page-table-host">
+                    <Tabs value="completed">
+                      <TabsContent value="completed">
+                        <TasksTable tasks={completedTasks} isLoading={isLoading} showAssignee={true} />
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                </CollapsibleContent>
+              </section>
+            </Collapsible>
+
+            {/* Section 03 — Arquivadas (colapsável) */}
+            <Collapsible open={archivedOpen} onOpenChange={setArchivedOpen}>
+              <section className="section" style={{ marginTop: 24 }}>
+                <CollapsibleTrigger asChild>
+                  <div style={{ cursor: 'pointer' }} className="section-head">
+                    <div className="section-head-l">
+                      <span className="section-eyebrow">03</span>
+                      <span className="section-title">Arquivadas</span>
+                    </div>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+                      <span className="section-eyebrow" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        {archivedTasks.length} {archivedTasks.length === 1 ? 'ITEM' : 'ITENS'}
+                      </span>
+                      <ChevronDown
+                        size={14}
+                        strokeWidth={1.5}
+                        style={{
+                          color: 'hsl(var(--ds-fg-3))',
+                          transition: 'transform 0.2s',
+                          transform: archivedOpen ? 'rotate(180deg)' : 'none',
+                        }}
+                      />
+                    </span>
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="ds-page-table-host">
+                    <Tabs value="archived">
+                      <TabsContent value="archived">
+                        <TasksTable tasks={archivedTasks} isLoading={isLoading} showAssignee={true} />
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                </CollapsibleContent>
+              </section>
+            </Collapsible>
+          </>
+        )}
+
+        {currentView === 'kanban' && (
+          <div style={{ marginTop: 24 }}>
             <TaskKanbanView tasks={filteredTasks} isLoading={isLoading} />
-          )}
+          </div>
+        )}
 
-          {currentView === 'calendario' && (
+        {currentView === 'calendario' && (
+          <div style={{ marginTop: 24 }}>
             <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} />
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <TaskDialog open={dialogOpen} onOpenChange={setDialogOpen} />

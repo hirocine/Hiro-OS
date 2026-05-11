@@ -1,5 +1,6 @@
 import { BarChart3, Users, Eye, FileText, Globe, Trophy, Sparkles, Smartphone } from 'lucide-react';
 import { AccountKpiCard } from './AccountKpiCard';
+import { EmptyState } from '@/ds/components/EmptyState';
 import {
   AreaChart,
   Area,
@@ -84,15 +85,11 @@ export function Ga4TrafficSection({ ga4, periodLabel }: Props) {
 
   if (ga4.snapshots.length === 0) {
     return (
-      <div className="empties">
-        <div className="empty" style={{ borderRight: 0 }}>
-          <div className="glyph">
-            <BarChart3 strokeWidth={1.25} />
-          </div>
-          <h5>Aguardando primeiros dados do GA4</h5>
-          <p>A sincronização roda diariamente às 8h UTC. Você também pode sincronizar manualmente no topo da página.</p>
-        </div>
-      </div>
+      <EmptyState
+        icon={BarChart3}
+        title="Aguardando primeiros dados do GA4"
+        description="A sincronização roda diariamente às 8h UTC. Você também pode sincronizar manualmente no topo da página."
+      />
     );
   }
 

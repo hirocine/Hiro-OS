@@ -168,9 +168,9 @@ function IdeaCard({ idea, profile, pillar, postLink, onEdit, onDelete, onDuplica
       {idea.tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">
           {idea.tags.slice(0, 3).map((t) => (
-            <Badge key={t} variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+            <span key={t} className="pill muted" style={{ fontSize: 10, padding: '0 6px', height: 16, lineHeight: '16px' }}>
               {t}
-            </Badge>
+            </span>
           ))}
           {idea.tags.length > 3 && (
             <span className="text-[10px] text-muted-foreground">+{idea.tags.length - 3}</span>
@@ -269,18 +269,19 @@ function KanbanColumn({
         <div className="flex items-center gap-2">
           <span className="text-base">{emoji}</span>
           <span className="text-sm font-medium">{label}</span>
-          <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
+          <span className="pill muted" style={{ fontSize: 10, height: 16, padding: '0 6px', lineHeight: '16px', fontVariantNumeric: 'tabular-nums' }}>
             {ideas.length}
-          </Badge>
+          </span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6"
+        <button
+          type="button"
+          className="btn"
+          style={{ width: 24, height: 24, padding: 0, justifyContent: 'center' }}
           onClick={() => onAdd(status)}
+          aria-label="Adicionar ideia"
         >
-          <Plus className="h-3.5 w-3.5" />
-        </Button>
+          <Plus size={13} strokeWidth={1.5} />
+        </button>
       </div>
       <div className="flex flex-col gap-2 p-2 min-h-32 max-h-[calc(100vh-280px)] overflow-y-auto">
         {ideas.map((idea) => (

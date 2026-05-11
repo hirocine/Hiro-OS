@@ -24,7 +24,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useSupplierRoles } from '../hooks/useSupplierRoles';
 import { StarRating } from './StarRating';
@@ -179,15 +178,14 @@ export function SupplierDialog({
                             {role.name}
                           </SelectItem>
                         ))}
-                        <Button
+                        <button
                           type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="w-full mt-2"
+                          className="btn"
+                          style={{ width: '100%', marginTop: 8, justifyContent: 'center' }}
                           onClick={() => setIsCreatingRole(true)}
                         >
                           + Adicionar Nova Função
-                        </Button>
+                        </button>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -231,19 +229,19 @@ export function SupplierDialog({
                   onChange={(e) => setNewRoleName(e.target.value)}
                   placeholder="Nome da nova função"
                 />
-                <Button type="button" onClick={handleCreateRole}>
+                <button type="button" className="btn primary" onClick={handleCreateRole}>
                   Criar
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
-                  variant="ghost"
+                  className="btn"
                   onClick={() => {
                     setIsCreatingRole(false);
                     setNewRoleName('');
                   }}
                 >
                   Cancelar
-                </Button>
+                </button>
               </div>
             )}
 
@@ -359,16 +357,16 @@ export function SupplierDialog({
             />
 
             <div className="flex justify-end gap-2">
-              <Button
+              <button
                 type="button"
-                variant="outline"
+                className="btn"
                 onClick={() => onOpenChange(false)}
               >
                 Cancelar
-              </Button>
-              <Button type="submit" disabled={submitting}>
+              </button>
+              <button type="submit" className="btn primary" disabled={submitting}>
                 {submitting ? 'Salvando...' : 'Salvar'}
-              </Button>
+              </button>
             </div>
           </form>
         </Form>

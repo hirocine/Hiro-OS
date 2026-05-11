@@ -92,10 +92,54 @@
 :is(.ds-preview, .ds-shell) .summary .stat.success .stat-num { color: var(--accent); }
 :is(.ds-preview, .ds-shell) .summary .stat.muted  .stat-num { color: var(--fg-4); }
 
-/* Lightweight resets for chrome elements */
-:is(.ds-preview, .ds-shell) button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
-:is(.ds-preview, .ds-shell) a { color: inherit; text-decoration: none; }
-:is(.ds-preview, .ds-shell) h1, :is(.ds-preview, .ds-shell) h2, :is(.ds-preview, .ds-shell) h3, :is(.ds-preview, .ds-shell) p { margin: 0; }
+/* Lightweight resets for chrome elements.
+ * Using `:where()` for 0 specificity AND `border-width: 0` instead of `border: 0`
+ * so that:
+ *   - shadcn primitives (Select/Input/Button) keep their Tailwind border-* utilities
+ *     (Tailwind preflight sets border-style: solid; we only zero the width here)
+ *   - intentional DS classes like .btn, .tab, .pill still win normally
+ * Old `:is(.ds-shell)` reset had specificity 0,1,1 AND set border-style: none, which
+ * silently clobbered every radix combobox trigger in the app. */
+:where(.ds-preview, .ds-shell) button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border-width: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* DS squared overrides — shadcn primitives ship with rounded-md/lg by default.
+ * Inside the DS shell, every interactive surface must be squared (DS principle).
+ * Checkboxes and radios are exempted (they have their own shapes). */
+:is(.ds-preview, .ds-shell) [role="combobox"],
+:is(.ds-preview, .ds-shell) input:not([type="checkbox"]):not([type="radio"]),
+:is(.ds-preview, .ds-shell) textarea {
+  border-radius: 0 !important;
+}
+
+/* Radix popovers (Select / DropdownMenu / etc.) render via a PORTAL outside
+ * the .ds-shell wrapper, so we need to target them at the document root.
+ * Squared + DS surface + hairline border + no fancy shadow. */
+[data-radix-popper-content-wrapper] > *,
+[role="menu"][data-radix-menu-content],
+[role="listbox"],
+body > [role="dialog"][data-state],
+[data-radix-select-content],
+[data-radix-popover-content],
+[data-radix-dropdown-menu-content] {
+  border-radius: 0 !important;
+}
+
+/* Menu / select items inside popovers — also squared */
+[role="option"],
+[role="menuitem"],
+[role="menuitemcheckbox"],
+[role="menuitemradio"] {
+  border-radius: 0 !important;
+}
+:where(.ds-preview, .ds-shell) a { color: inherit; text-decoration: none; }
+:where(.ds-preview, .ds-shell) h1, :where(.ds-preview, .ds-shell) h2, :where(.ds-preview, .ds-shell) h3, :where(.ds-preview, .ds-shell) p { margin: 0; }
 .ds-preview *, .ds-preview *::before, .ds-preview *::after { box-sizing: border-box; }
 
 :is(.ds-preview, .ds-shell) .scroll-quiet { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }

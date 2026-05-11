@@ -1,5 +1,4 @@
-import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { PageToolbar, SearchField, FilterChip, FilterChipRow } from '@/ds/components/toolbar';
 import type { PlatformAccessFilters, PlatformCategory } from '../types';
 import { CATEGORY_LABELS } from '../types';
 
@@ -36,78 +35,39 @@ export function PlatformFilters({ filters, onFiltersChange, stats }: PlatformFil
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ position: 'relative' }}>
-        <Search
-          size={14}
-          strokeWidth={1.5}
-          style={{
-            position: 'absolute',
-            left: 12,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'hsl(var(--ds-fg-4))',
-            pointerEvents: 'none',
-          }}
-        />
-        <Input
-          placeholder="Buscar plataformas, usuários ou categorias…"
-          value={filters.search || ''}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          style={{ paddingLeft: 34 }}
-        />
-      </div>
+      <PageToolbar
+        search={
+          <SearchField
+            value={filters.search || ''}
+            onChange={handleSearchChange}
+            placeholder="Buscar plataformas, usuários ou categorias…"
+          />
+        }
+      />
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-        <button
-          type="button"
+      <FilterChipRow>
+        <FilterChip
+          label="Favoritas"
+          count={stats?.favorites}
+          active={!!filters.favorites}
           onClick={handleFavoritesToggle}
-          className={'pill' + (filters.favorites ? ' acc' : '')}
-          style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
-        >
-          Favoritas
-          {stats && stats.favorites > 0 && (
-            <span
-              style={{
-                fontVariantNumeric: 'tabular-nums',
-                color: 'hsl(var(--ds-fg-4))',
-                fontSize: 11,
-              }}
-            >
-              {stats.favorites}
-            </span>
-          )}
-        </button>
-
+        />
         {categories.map((category) => {
           const isActive = filters.category === category.value;
           const count =
             category.value === 'all' ? stats?.total : stats?.byCategory[category.value];
 
           return (
-            <button
+            <FilterChip
               key={category.value}
-              type="button"
+              label={category.label}
+              count={count}
+              active={isActive}
               onClick={() => handleCategoryChange(category.value)}
-              className={'pill' + (isActive ? ' acc' : '')}
-              style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
-            >
-              {category.label}
-              {count !== undefined && count > 0 && (
-                <span
-                  style={{
-                    fontVariantNumeric: 'tabular-nums',
-                    color: isActive ? 'currentColor' : 'hsl(var(--ds-fg-4))',
-                    opacity: isActive ? 0.7 : 1,
-                    fontSize: 11,
-                  }}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
+            />
           );
         })}
-      </div>
+      </FilterChipRow>
     </div>
   );
 }

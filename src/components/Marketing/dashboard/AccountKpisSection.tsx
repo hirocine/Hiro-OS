@@ -1,5 +1,6 @@
 import { Users, BarChart3, FileText, RefreshCw } from 'lucide-react';
 import { AccountKpiCard } from './AccountKpiCard';
+import { EmptyState } from '@/ds/components/EmptyState';
 
 interface LatestAccount {
   followers_count?: number | null;
@@ -55,21 +56,17 @@ export function AccountKpisSection({
 
   if (accountSnapshotsLength === 0 && !accountLoading) {
     return (
-      <div className="empties">
-        <div className="empty" style={{ borderRight: 0 }}>
-          <div className="glyph">
-            <RefreshCw strokeWidth={1.25} />
-          </div>
-          <h5>Aguardando primeira sincronização</h5>
-          <p>Clique em 'Sincronizar agora' para puxar os dados atuais da conta Instagram.</p>
-          <div className="actions">
-            <button className="btn primary" onClick={onSync} type="button">
-              <RefreshCw size={14} strokeWidth={1.5} />
-              <span>Sincronizar agora</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <EmptyState
+        icon={RefreshCw}
+        title="Aguardando primeira sincronização"
+        description="Clique em 'Sincronizar agora' para puxar os dados atuais da conta Instagram."
+        action={
+          <button className="btn primary" onClick={onSync} type="button">
+            <RefreshCw size={14} strokeWidth={1.5} />
+            <span>Sincronizar agora</span>
+          </button>
+        }
+      />
     );
   }
 
