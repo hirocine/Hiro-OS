@@ -136,12 +136,12 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
     if (!equipmentId) return;
     try {
       const { data, error } = await supabase
-        .from('loan_history')
-        .select('*')
+        .from('loans')
+        .select('id, borrower_name, loan_date, expected_return_date, actual_return_date, status, project')
         .eq('equipment_id', equipmentId)
         .order('loan_date', { ascending: false });
       if (error) throw error;
-      setLoanHistory(data || []);
+      setLoanHistory((data as LoanHistory[]) || []);
     } catch (error) {
       logger.error('Error fetching loan history', { module: 'equipment', error });
     }
