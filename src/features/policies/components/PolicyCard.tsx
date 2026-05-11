@@ -33,15 +33,6 @@ export function PolicyCard({ policy }: PolicyCardProps) {
         flexDirection: 'column',
         border: '1px solid hsl(var(--ds-line-1))',
         background: 'hsl(var(--ds-surface))',
-        transition: 'border-color 0.2s, background 0.2s',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'hsl(var(--ds-accent) / 0.4)';
-        e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.2)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
-        e.currentTarget.style.background = 'hsl(var(--ds-surface))';
       }}
     >
       {policy.category && (
