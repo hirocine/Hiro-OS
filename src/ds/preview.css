@@ -1716,6 +1716,88 @@ body > [role="dialog"][data-state],
 }
 :is(.ds-preview, .ds-shell) .empty .actions .btn:last-child { border-right: 0; }
 
+/* ════════════════════════════════════════════════════════════
+   MOTION — keyframes, transitions, helper classes
+   ════════════════════════════════════════════════════════════ */
+
+@keyframes ds-page-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ds-row-enter {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ds-pulse-confirm {
+  0%   { background-color: hsl(var(--ds-accent) / 0); }
+  30%  { background-color: hsl(var(--ds-accent) / 0.12); }
+  100% { background-color: hsl(var(--ds-accent) / 0); }
+}
+
+/* Page wrapper — animate on mount (consumer keys on pathname to re-trigger) */
+:is(.ds-preview, .ds-shell) .ds-page-inner {
+  animation: ds-page-enter var(--ds-duration-base) var(--ds-ease-standard);
+}
+
+/* Card hover lift — apply to .ds-hover-lift wrapper */
+:is(.ds-preview, .ds-shell) .ds-hover-lift {
+  transition:
+    transform var(--ds-duration-fast) var(--ds-ease-standard),
+    border-color var(--ds-duration-fast) var(--ds-ease-standard),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-standard);
+}
+:is(.ds-preview, .ds-shell) .ds-hover-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px hsl(0 0% 0% / 0.04);
+}
+
+/* Click feedback — scale down on press */
+:is(.ds-preview, .ds-shell) .btn,
+:is(.ds-preview, .ds-shell) .pill,
+:is(.ds-preview, .ds-shell) .tabs-seg .s,
+:is(.ds-preview, .ds-shell) .nav-row {
+  transition:
+    background-color var(--ds-duration-fast) var(--ds-ease-standard),
+    color var(--ds-duration-fast) var(--ds-ease-standard),
+    border-color var(--ds-duration-fast) var(--ds-ease-standard),
+    transform var(--ds-duration-instant) var(--ds-ease-standard);
+}
+:is(.ds-preview, .ds-shell) .btn:active,
+:is(.ds-preview, .ds-shell) .pill:active,
+:is(.ds-preview, .ds-shell) .tabs-seg .s:active {
+  transform: scale(0.98);
+}
+
+/* List/grid stagger — apply .ds-row-enter to children of an enter list.
+ * Pre-compute up to 10 indices via inline --i CSS var on each child:
+ *   <div class="ds-row-enter" style={{ '--i': index }}>
+ */
+:is(.ds-preview, .ds-shell) .ds-row-enter {
+  animation: ds-row-enter var(--ds-duration-base) var(--ds-ease-standard) both;
+  animation-delay: calc(var(--i, 0) * 20ms);
+}
+
+/* Save pulse — triggered by toggling .ds-pulse on the element */
+:is(.ds-preview, .ds-shell) .ds-pulse {
+  animation: ds-pulse-confirm 700ms var(--ds-ease-out);
+}
+
+/* Respect prefers-reduced-motion — kill enter animations + transforms,
+ * keep color transitions (still useful for feedback). */
+@media (prefers-reduced-motion: reduce) {
+  :is(.ds-preview, .ds-shell) .ds-page-inner,
+  :is(.ds-preview, .ds-shell) .ds-row-enter,
+  :is(.ds-preview, .ds-shell) .ds-pulse {
+    animation: none !important;
+  }
+  :is(.ds-preview, .ds-shell) .ds-hover-lift:hover { transform: none; }
+  :is(.ds-preview, .ds-shell) .btn:active,
+  :is(.ds-preview, .ds-shell) .pill:active,
+  :is(.ds-preview, .ds-shell) .tabs-seg .s:active { transform: none; }
+}
+
 /* ── 08 · SKELETONS ───────────────────────────────────────── */
 @keyframes ds-skeleton-shimmer {
   0%   { background-position: -200% 0; }

@@ -355,6 +355,19 @@ html body[data-scroll-locked="true"] {
 
     --ds-accent-ink:          110 53% 11%;        /* text on bright accent */
 
+    /* ════════════════════════════════════════════════════════════
+       MOTION TOKENS
+       Use these everywhere instead of arbitrary timing.
+       ════════════════════════════════════════════════════════════ */
+    --ds-duration-instant:  80ms;    /* click feedback */
+    --ds-duration-fast:    140ms;    /* hover, toggle, color */
+    --ds-duration-base:    220ms;    /* page transitions, dialogs */
+    --ds-duration-slow:    320ms;    /* complex enter/exit */
+
+    --ds-ease-standard:    cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ds-ease-out:         cubic-bezier(0, 0, 0.2, 1);
+    --ds-ease-in-out:      cubic-bezier(0.4, 0, 0.2, 1);
+
     --ds-radius:                0px;
     --ds-radius-pill:         999px;
 

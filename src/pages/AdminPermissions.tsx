@@ -196,6 +196,7 @@ export default function AdminPermissions() {
   const [permissions, setPermissions] = useState<Record<Role, Record<string, boolean>>>(
     DEFAULT_PERMISSIONS,
   );
+  const [pulsingKey, setPulsingKey] = useState<string | null>(null);
 
   if (roleLoading) return null;
   if (!isAdmin) return <Navigate to="/" replace />;
@@ -208,6 +209,9 @@ export default function AdminPermissions() {
       ...prev,
       [selectedRole]: { ...prev[selectedRole], [key]: next },
     }));
+    // Pulse the row to confirm save
+    setPulsingKey(key);
+    setTimeout(() => setPulsingKey(null), 700);
     // Auto-save: in Etapa 2 this calls Supabase.
     toast.success(`Permissão atualizada`, {
       description: `${ROLES.find((r) => r.value === selectedRole)?.label} · ${key} → ${next ? 'permitido' : 'bloqueado'}`,
@@ -320,9 +324,11 @@ export default function AdminPermissions() {
                       )}
                       {group.items.map((item, idx) => {
                         const enabled = isAdminRole ? true : rolePerms[item.key] ?? false;
+                        const pulsing = pulsingKey === item.key;
                         return (
                           <div
                             key={item.key}
+                            className={pulsing ? 'ds-pulse' : undefined}
                             style={{
                               display: 'flex',
                               alignItems: 'center',

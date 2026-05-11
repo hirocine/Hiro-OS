@@ -149,6 +149,7 @@ export function PlatformAccessCard({
 
   return (
     <div
+      className="ds-hover-lift"
       style={{
         padding: 22,
         display: 'flex',
@@ -156,7 +157,6 @@ export function PlatformAccessCard({
         minHeight: 380,
         border: `1px solid ${borderColor}`,
         background: cardBg,
-        transition: 'border-color 0.2s',
       }}
     >
       {/* Header */}

@@ -34,12 +34,12 @@ export function EquipmentCard({
 
   return (
     <div
+      className="ds-hover-lift"
       style={{
         border: '1px solid hsl(var(--ds-line-1))',
         background: 'hsl(var(--ds-surface))',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'border-color 0.15s, box-shadow 0.15s',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = 'hsl(var(--ds-line-3))';

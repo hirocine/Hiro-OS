@@ -23,7 +23,7 @@ export function PolicyCard({ policy }: PolicyCardProps) {
   return (
     <div
       onClick={handleClick}
-      className="animate-fade-in"
+      className="animate-fade-in ds-hover-lift"
       style={{
         position: 'relative',
         cursor: 'pointer',

@@ -20,6 +20,7 @@ import {
   type ViewToggleItem,
 } from '@/ds/components/toolbar';
 import { CollapsibleSection } from '@/ds/components/CollapsibleSection';
+import { CountUp } from '@/ds/components/CountUp';
 
 type ViewType = 'lista' | 'kanban' | 'calendario';
 
@@ -112,19 +113,19 @@ export default function Tasks() {
         <div className="summary" style={{ marginTop: 24 }}>
           <div className="stat">
             <span className="stat-lbl">Ativas</span>
-            <span className="stat-num">{isLoading ? '—' : stats.active}</span>
+            <span className="stat-num">{isLoading ? '—' : <CountUp value={stats.active} />}</span>
           </div>
           <div className={'stat' + (stats.overdue > 0 ? ' danger' : ' muted')}>
             <span className="stat-lbl">Atrasadas</span>
-            <span className="stat-num">{isLoading ? '—' : stats.overdue}</span>
+            <span className="stat-num">{isLoading ? '—' : <CountUp value={stats.overdue} />}</span>
           </div>
           <div className={'stat' + (stats.urgent > 0 ? ' warn' : ' muted')}>
             <span className="stat-lbl">Urgentes</span>
-            <span className="stat-num">{isLoading ? '—' : stats.urgent}</span>
+            <span className="stat-num">{isLoading ? '—' : <CountUp value={stats.urgent} />}</span>
           </div>
           <div className="stat success">
             <span className="stat-lbl">Concluídas</span>
-            <span className="stat-num">{isLoading ? '—' : stats.completed}</span>
+            <span className="stat-num">{isLoading ? '—' : <CountUp value={stats.completed} />}</span>
           </div>
         </div>
 

@@ -39,6 +39,7 @@ export function ProposalCard({ proposal, onDelete, onDuplicate }: Props) {
 
   return (
     <div
+      className="ds-hover-lift"
       style={{
         border: '1px solid hsl(var(--ds-line-1))',
         background: 'hsl(var(--ds-surface))',

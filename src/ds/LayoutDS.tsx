@@ -129,7 +129,11 @@ export function LayoutDS() {
             )}
             <main className="ds-layout-content bg-background">
               <Suspense fallback={<LoadingScreenSkeleton />}>
-                <Outlet />
+                {/* `key` on route remounts the subtree on navigation, which
+                    re-triggers the .ds-page-inner enter animation. */}
+                <div key={location.pathname} style={{ height: '100%' }}>
+                  <Outlet />
+                </div>
               </Suspense>
             </main>
           </div>
