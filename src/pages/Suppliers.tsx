@@ -12,7 +12,7 @@ import { ExpertiseBadge } from '@/features/suppliers/components/ExpertiseBadge';
 import { StarRating } from '@/features/suppliers/components/StarRating';
 import type { SupplierFilters as Filters, Supplier } from '@/features/suppliers/types';
 
-const FORN_COLS = '1.5fr 1fr 110px 130px 130px 100px 44px';
+const FORN_COLS = '1.5fr 1fr 130px 130px 130px 100px 44px';
 
 export default function Suppliers() {
   const navigate = useNavigate();
