@@ -142,6 +142,7 @@ export const NAV: NavSection[] = [
           { name: "Categorias",        href: "/administracao/categorias",    permission: "admin" },
           { name: "Notificações",      href: "/administracao/notificacoes",  permission: "admin" },
           { name: "Sistema",           href: "/administracao/sistema",       permission: "admin" },
+          { name: "Integrações",       href: "/administracao/integracoes",   permission: "admin" },
         ],
       },
     ],
