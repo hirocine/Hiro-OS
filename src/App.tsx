@@ -22,6 +22,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminLogs = lazy(() => import("./pages/admin/AdminLogs"));
 const SSDs = lazy(() => import("./pages/SSDs"));
 const PlatformAccesses = lazy(() => import("./pages/PlatformAccesses"));
 const Policies = lazy(() => import("./pages/Policies"));
@@ -166,7 +167,7 @@ const App = () => (
                 <Route path="administracao" element={<Navigate to="/administracao/usuarios" replace />} />
                 <Route path="administracao/usuarios" element={<RequirePermission permission="admin"><AdminUsers /></RequirePermission>} />
                 <Route path="administracao/permissoes" element={<RequirePermission permission="admin"><AdminPermissions /></RequirePermission>} />
-                <Route path="administracao/logs" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
+                <Route path="administracao/logs" element={<RequirePermission permission="admin"><AdminLogs /></RequirePermission>} />
                 <Route path="administracao/categorias" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
                 <Route path="administracao/notificacoes" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
                 <Route path="administracao/sistema" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
