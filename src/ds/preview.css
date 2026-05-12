@@ -2319,6 +2319,47 @@ body > [role="dialog"][data-state],
 }
 
 /* ============================================================
+   FOCUS-VISIBLE — keyboard focus indication
+   ============================================================
+   Single source of truth for keyboard focus rings inside the
+   design system. `:focus-visible` (not `:focus`) keeps mouse
+   clicks from triggering the ring while still showing it for
+   Tab navigation. Uses the DS accent as the ring color and a
+   2px offset so the indicator sits OUTSIDE bordered controls
+   (.btn already has a 1px border).
+
+   We intentionally don't use a global `*:focus-visible` rule —
+   too aggressive and fights with component-specific styles. We
+   target the elements that actually need it. */
+:is(.ds-preview, .ds-shell) .btn:focus-visible,
+:is(.ds-preview, .ds-shell) a:focus-visible,
+:is(.ds-preview, .ds-shell) button:focus-visible,
+:is(.ds-preview, .ds-shell) [role="button"]:focus-visible,
+:is(.ds-preview, .ds-shell) [tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Form controls: use a soft inner ring rather than offset outline so
+   the focus indicator doesn't push against adjacent fields. */
+:is(.ds-preview, .ds-shell) input:focus-visible,
+:is(.ds-preview, .ds-shell) textarea:focus-visible,
+:is(.ds-preview, .ds-shell) select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: var(--accent);
+}
+
+/* Sidebar nav rows — they're <a> already covered above, but the
+   default outline gets clipped by parent overflow. Use box-shadow
+   so the ring renders on top instead. */
+:is(.ds-preview, .ds-shell) .nav-row:focus-visible,
+:is(.ds-preview, .ds-shell) .sub-nav-row:focus-visible {
+  outline: 0;
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+/* ============================================================
    GRID HELPERS
    ============================================================ */
 :is(.ds-preview, .ds-shell) .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
