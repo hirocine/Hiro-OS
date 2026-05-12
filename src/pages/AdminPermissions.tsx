@@ -7,6 +7,7 @@ import { Lock } from 'lucide-react';
 import { PageHeader } from '@/ds/components/toolbar';
 import { CollapsibleSection } from '@/ds/components/CollapsibleSection';
 import { StatusPill } from '@/ds/components/StatusPill';
+import { DEFAULT_PERMISSIONS as SHARED_DEFAULT_PERMISSIONS } from '@/lib/permissions';
 
 /**
  * ============================================================
@@ -107,88 +108,16 @@ const ROLES = [
 type Role = typeof ROLES[number]['value'];
 
 /**
- * MOCK initial state — sensible defaults per role.
- * In Etapa 2 this becomes the seed for the `role_permissions` table and
- * the state syncs with Supabase. Admin always has everything (gated in UI).
+ * Initial state pulled from `src/lib/permissions.ts` — single source of truth.
+ * In Etapa 2 this becomes the seed for the Supabase `role_permissions` table
+ * and the state syncs from there. Admin always has everything (gated in UI).
  */
-const ALL_TRUE = Object.fromEntries(
-  PERMISSIONS.flatMap((s) => s.items.map((i) => [i.key, true])),
-);
-
-const DEFAULT_PERMISSIONS: Record<Role, Record<string, boolean>> = {
-  admin: ALL_TRUE,
-  producao: {
-    home: true,
-    tarefas: true,
-    esteira_de_pos: true,
-    projetos: true,
-    'equipamentos.retiradas': true,
-    'equipamentos.inventario': true,
-    'fornecedores.freelancers': true,
-    'fornecedores.empresas': true,
-    'marketing.dashboard': true,
-    'marketing.calendario': true,
-    'marketing.instagram': true,
-    'marketing.ideias': true,
-    'marketing.referencias': true,
-    'marketing.site': true,
-    'crm.pipeline': true,
-    'crm.contatos': true,
-    'crm.atividades': true,
-    'crm.dashboard': true,
-    orcamentos: true,
-    plataformas: true,
-    armazenamento: true,
-    politicas: true,
-  },
-  marketing: {
-    home: true,
-    'marketing.dashboard': true,
-    'marketing.calendario': true,
-    'marketing.instagram': true,
-    'marketing.ideias': true,
-    'marketing.referencias': true,
-    'marketing.site': true,
-    politicas: true,
-  },
-  comercial: {
-    home: true,
-    tarefas: true,
-    'crm.pipeline': true,
-    'crm.contatos': true,
-    'crm.atividades': true,
-    'crm.dashboard': true,
-    orcamentos: true,
-    politicas: true,
-  },
-  edicao: {
-    home: true,
-    tarefas: true,
-    esteira_de_pos: true,
-    projetos: true,
-    'equipamentos.retiradas': true,
-    'equipamentos.inventario': true,
-    armazenamento: true,
-    politicas: true,
-  },
-  financeiro: {
-    home: true,
-    tarefas: true,
-    'financeiro.dashboard': true,
-    'financeiro.capex': true,
-    orcamentos: true,
-    'equipamentos.inventario': true,
-    politicas: true,
-  },
-  user: {
-    home: true,
-    tarefas: true,
-    politicas: true,
-  },
-  convidado: {
-    home: true,
-  },
-};
+const DEFAULT_PERMISSIONS: Record<Role, Record<string, boolean>> = Object.fromEntries(
+  Object.entries(SHARED_DEFAULT_PERMISSIONS).map(([role, map]) => [
+    role,
+    Object.fromEntries(Object.entries(map).filter(([, v]) => v === true)) as Record<string, boolean>,
+  ]),
+) as Record<Role, Record<string, boolean>>;
 
 export default function AdminPermissions() {
   const { isAdmin, roleLoading } = useAuthContext();

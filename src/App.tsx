@@ -1,4 +1,4 @@
-import { Suspense, lazy, ReactNode } from "react";
+import { Suspense, lazy } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -6,15 +6,8 @@ import { LayoutDS } from "./ds/LayoutDS";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LoadingScreenSkeleton } from "./components/ui/loading-screen";
-import { AuthProvider, useAuthContext } from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { NavigationBlockerProvider } from "./contexts/NavigationBlockerContext";
-
-function MarketingGuard({ children }: { children: ReactNode }) {
-  const { canAccessMarketing, roleLoading } = useAuthContext();
-  if (roleLoading) return null;
-  if (!canAccessMarketing) return <Navigate to="/" replace />;
-  return <>{children}</>;
-}
 // Lazy load pages for better performance
 const Home = lazy(() => import("./pages/Home"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -67,6 +60,8 @@ const DsPreview = lazy(() => import("./ds/preview"));
 const PlaygroundToolbar = lazy(() => import("./pages/_ds/PlaygroundToolbar"));
 const AdminPermissions = lazy(() => import("./pages/AdminPermissions"));
 
+import { RequirePermission } from "./components/RequirePermission";
+
 const App = () => (
   <AuthProvider>
     <TooltipProvider delayDuration={300} skipDelayDuration={100}>
@@ -96,66 +91,66 @@ const App = () => (
                 </ErrorBoundary>
               </ProtectedRoute>
             }>
-              <Route index element={<Home />} />
+              <Route index element={<RequirePermission permission="home"><Home /></RequirePermission>} />
                 <Route path="dashboard" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro" element={<Navigate to="/financeiro/dashboard" replace />} />
-                <Route path="financeiro/dashboard" element={<Dashboard />} />
-                <Route path="financeiro/capex" element={<Capex />} />
-                <Route path="inventario" element={<Equipment />} />
-                <Route path="inventario/novo" element={<AddEquipment />} />
-                <Route path="inventario/editar/:id" element={<AddEquipment />} />
-                <Route path="ssds" element={<SSDs />} />
+                <Route path="financeiro/dashboard" element={<RequirePermission permission="financeiro.dashboard"><Dashboard /></RequirePermission>} />
+                <Route path="financeiro/capex" element={<RequirePermission permission="financeiro.capex"><Capex /></RequirePermission>} />
+                <Route path="inventario" element={<RequirePermission permission="equipamentos.inventario"><Equipment /></RequirePermission>} />
+                <Route path="inventario/novo" element={<RequirePermission permission="equipamentos.inventario"><AddEquipment /></RequirePermission>} />
+                <Route path="inventario/editar/:id" element={<RequirePermission permission="equipamentos.inventario"><AddEquipment /></RequirePermission>} />
+                <Route path="ssds" element={<RequirePermission permission="armazenamento"><SSDs /></RequirePermission>} />
                 <Route path="_ds/playground/toolbar" element={<PlaygroundToolbar />} />
-                <Route path="retiradas" element={<Projects />} />
-                <Route path="retiradas/nova" element={<ProjectWithdrawal />} />
-                <Route path="retiradas/:id" element={<ProjectDetails />} />
-                <Route path="retiradas/:id/separacao" element={<ProjectSeparation />} />
-                <Route path="retiradas/:id/verificacao" element={<ProjectVerification />} />
-                <Route path="retiradas/:id/retirada" element={<ProjectWithdrawal />} />
-                <Route path="plataformas" element={<PlatformAccesses />} />
-                <Route path="politicas" element={<Policies />} />
-                <Route path="politicas/:id" element={<PolicyView />} />
-                <Route path="tarefas" element={<Tasks />} />
-                <Route path="tarefas/:id" element={<TaskDetails />} />
+                <Route path="retiradas" element={<RequirePermission permission="equipamentos.retiradas"><Projects /></RequirePermission>} />
+                <Route path="retiradas/nova" element={<RequirePermission permission="equipamentos.retiradas"><ProjectWithdrawal /></RequirePermission>} />
+                <Route path="retiradas/:id" element={<RequirePermission permission="equipamentos.retiradas"><ProjectDetails /></RequirePermission>} />
+                <Route path="retiradas/:id/separacao" element={<RequirePermission permission="equipamentos.retiradas"><ProjectSeparation /></RequirePermission>} />
+                <Route path="retiradas/:id/verificacao" element={<RequirePermission permission="equipamentos.retiradas"><ProjectVerification /></RequirePermission>} />
+                <Route path="retiradas/:id/retirada" element={<RequirePermission permission="equipamentos.retiradas"><ProjectWithdrawal /></RequirePermission>} />
+                <Route path="plataformas" element={<RequirePermission permission="plataformas"><PlatformAccesses /></RequirePermission>} />
+                <Route path="politicas" element={<RequirePermission permission="politicas"><Policies /></RequirePermission>} />
+                <Route path="politicas/:id" element={<RequirePermission permission="politicas"><PolicyView /></RequirePermission>} />
+                <Route path="tarefas" element={<RequirePermission permission="tarefas"><Tasks /></RequirePermission>} />
+                <Route path="tarefas/:id" element={<RequirePermission permission="tarefas"><TaskDetails /></RequirePermission>} />
                 <Route path="fornecedores" element={<Navigate to="/fornecedores/freelancers" replace />} />
-                <Route path="fornecedores/freelancers" element={<Suppliers />} />
-                <Route path="fornecedores/freelancers/:id" element={<SupplierDetails />} />
-                <Route path="fornecedores/empresas" element={<Companies />} />
-                <Route path="fornecedores/empresas/:id" element={<CompanyDetails />} />
-                <Route path="projetos-av" element={<AVProjects />} />
-                <Route path="projetos-av/:id" element={<AVProjectDetails />} />
-                <Route path="orcamentos" element={<Proposals />} />
-                <Route path="orcamentos/novo" element={<Suspense fallback={<LoadingScreenSkeleton />}><NewProposal /></Suspense>} />
-                <Route path="orcamentos/:slug/overview" element={<ProposalOverview />} />
-                <Route path="orcamentos/:slug" element={<ProposalDetails />} />
+                <Route path="fornecedores/freelancers" element={<RequirePermission permission="fornecedores.freelancers"><Suppliers /></RequirePermission>} />
+                <Route path="fornecedores/freelancers/:id" element={<RequirePermission permission="fornecedores.freelancers"><SupplierDetails /></RequirePermission>} />
+                <Route path="fornecedores/empresas" element={<RequirePermission permission="fornecedores.empresas"><Companies /></RequirePermission>} />
+                <Route path="fornecedores/empresas/:id" element={<RequirePermission permission="fornecedores.empresas"><CompanyDetails /></RequirePermission>} />
+                <Route path="projetos-av" element={<RequirePermission permission="projetos"><AVProjects /></RequirePermission>} />
+                <Route path="projetos-av/:id" element={<RequirePermission permission="projetos"><AVProjectDetails /></RequirePermission>} />
+                <Route path="orcamentos" element={<RequirePermission permission="orcamentos"><Proposals /></RequirePermission>} />
+                <Route path="orcamentos/novo" element={<RequirePermission permission="orcamentos"><Suspense fallback={<LoadingScreenSkeleton />}><NewProposal /></Suspense></RequirePermission>} />
+                <Route path="orcamentos/:slug/overview" element={<RequirePermission permission="orcamentos"><ProposalOverview /></RequirePermission>} />
+                <Route path="orcamentos/:slug" element={<RequirePermission permission="orcamentos"><ProposalDetails /></RequirePermission>} />
                 <Route path="crm" element={<Navigate to="/crm/pipeline" replace />} />
-                <Route path="crm/pipeline" element={<CRM />} />
-                <Route path="crm/contatos" element={<CRM />} />
-                <Route path="crm/atividades" element={<CRM />} />
-                <Route path="crm/dashboard" element={<CRM />} />
-                <Route path="crm/contatos/:id" element={<CRMContactDetail />} />
-                <Route path="crm/deals/:id" element={<CRMDealDetail />} />
+                <Route path="crm/pipeline" element={<RequirePermission permission="crm.pipeline"><CRM /></RequirePermission>} />
+                <Route path="crm/contatos" element={<RequirePermission permission="crm.contatos"><CRM /></RequirePermission>} />
+                <Route path="crm/atividades" element={<RequirePermission permission="crm.atividades"><CRM /></RequirePermission>} />
+                <Route path="crm/dashboard" element={<RequirePermission permission="crm.dashboard"><CRM /></RequirePermission>} />
+                <Route path="crm/contatos/:id" element={<RequirePermission permission="crm.contatos"><CRMContactDetail /></RequirePermission>} />
+                <Route path="crm/deals/:id" element={<RequirePermission permission="crm.pipeline"><CRMDealDetail /></RequirePermission>} />
                 {/* Marketing — entrada principal redireciona pro Dashboard */}
                 <Route path="marketing" element={<Navigate to="/marketing/dashboard" replace />} />
                 <Route path="marketing/home" element={<Navigate to="/marketing/dashboard" replace />} />
 
                 {/* Métricas */}
-                <Route path="marketing/dashboard" element={<MarketingGuard><MarketingDashboard /></MarketingGuard>} />
+                <Route path="marketing/dashboard" element={<RequirePermission permission="marketing.dashboard"><MarketingDashboard /></RequirePermission>} />
 
                 {/* Social Media — Calendário multi-plataforma */}
-                <Route path="marketing/social-media/calendario" element={<MarketingGuard><MarketingPosts /></MarketingGuard>} />
+                <Route path="marketing/social-media/calendario" element={<RequirePermission permission="marketing.calendario"><MarketingPosts /></RequirePermission>} />
 
                 {/* Social Media — Instagram (mini-dashboard + posts) */}
-                <Route path="marketing/social-media/instagram" element={<MarketingGuard><MarketingInstagram /></MarketingGuard>} />
-                <Route path="marketing/social-media/instagram/posts" element={<MarketingGuard><MarketingPosts /></MarketingGuard>} />
+                <Route path="marketing/social-media/instagram" element={<RequirePermission permission="marketing.instagram"><MarketingInstagram /></RequirePermission>} />
+                <Route path="marketing/social-media/instagram/posts" element={<RequirePermission permission="marketing.instagram"><MarketingPosts /></RequirePermission>} />
 
                 {/* Social Media — Site (GA4 detalhado) */}
-                <Route path="marketing/social-media/site" element={<MarketingGuard><MarketingSite /></MarketingGuard>} />
+                <Route path="marketing/social-media/site" element={<RequirePermission permission="marketing.site"><MarketingSite /></RequirePermission>} />
 
                 {/* Estratégia */}
-                <Route path="marketing/estrategia" element={<MarketingGuard><MarketingStrategy /></MarketingGuard>} />
-                <Route path="marketing/ideias" element={<MarketingGuard><MarketingIdeas /></MarketingGuard>} />
-                <Route path="marketing/referencias" element={<MarketingGuard><MarketingReferences /></MarketingGuard>} />
+                <Route path="marketing/estrategia" element={<RequirePermission permission="marketing.ideias"><MarketingStrategy /></RequirePermission>} />
+                <Route path="marketing/ideias" element={<RequirePermission permission="marketing.ideias"><MarketingIdeas /></RequirePermission>} />
+                <Route path="marketing/referencias" element={<RequirePermission permission="marketing.referencias"><MarketingReferences /></RequirePermission>} />
 
                 {/* Redirects de URLs antigas (compatibilidade) */}
                 <Route path="marketing/posts" element={<Navigate to="/marketing/social-media/calendario" replace />} />
@@ -163,18 +158,18 @@ const App = () => (
                 <Route path="marketing/ranking" element={<Navigate to="/marketing/social-media/calendario?view=ranking" replace />} />
                 <Route path="marketing/persona" element={<Navigate to="/marketing/estrategia?aba=persona" replace />} />
                 <Route path="marketing/pilares" element={<Navigate to="/marketing/estrategia?aba=pilares" replace />} />
-                <Route path="esteira-de-pos" element={<PostProduction />} />
-                <Route path="esteira-de-pos/:id" element={<PPVideoDetail />} />
-                <Route path="esteira-de-pos/:id/editar" element={<PPVideoEditDetail />} />
+                <Route path="esteira-de-pos" element={<RequirePermission permission="esteira_de_pos"><PostProduction /></RequirePermission>} />
+                <Route path="esteira-de-pos/:id" element={<RequirePermission permission="esteira_de_pos"><PPVideoDetail /></RequirePermission>} />
+                <Route path="esteira-de-pos/:id/editar" element={<RequirePermission permission="esteira_de_pos"><PPVideoEditDetail /></RequirePermission>} />
                 <Route path="perfil" element={<Profile />} />
                 <Route path="administracao" element={<Navigate to="/administracao/usuarios" replace />} />
-                <Route path="administracao/usuarios" element={<Admin />} />
-                <Route path="administracao/permissoes" element={<AdminPermissions />} />
-                <Route path="administracao/logs" element={<Admin />} />
-                <Route path="administracao/categorias" element={<Admin />} />
-                <Route path="administracao/notificacoes" element={<Admin />} />
-                <Route path="administracao/sistema" element={<Admin />} />
-                <Route path="administracao/integracoes" element={<MarketingIntegrations />} />
+                <Route path="administracao/usuarios" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
+                <Route path="administracao/permissoes" element={<RequirePermission permission="admin"><AdminPermissions /></RequirePermission>} />
+                <Route path="administracao/logs" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
+                <Route path="administracao/categorias" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
+                <Route path="administracao/notificacoes" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
+                <Route path="administracao/sistema" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
+                <Route path="administracao/integracoes" element={<RequirePermission permission="admin"><MarketingIntegrations /></RequirePermission>} />
               </Route>
               <Route path="*" element={
                 <Suspense fallback={<LoadingScreenSkeleton />}>

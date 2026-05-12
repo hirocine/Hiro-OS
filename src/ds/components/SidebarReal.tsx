@@ -2,8 +2,9 @@ import { useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useNavigationBlocker } from "@/contexts/NavigationBlockerContext";
+import { canAccess, type PermissionKey } from "@/lib/permissions";
 import { I } from "../icons";
-import { NAV, type NavSection } from "../nav-data";
+import { NAV, type NavChild, type NavItem, type NavSection } from "../nav-data";
 import { TopbarSearch } from "./TopbarSearch";
 
 type Props = {
@@ -13,10 +14,11 @@ type Props = {
 
 export function SidebarReal({ collapsed, onToggle }: Props) {
   const location = useLocation();
-  const { isAdmin, canAccessSuppliers, canAccessMarketing } = useAuthContext();
+  const { role, isAdmin, canAccessSuppliers, canAccessMarketing } = useAuthContext();
   const { requestNavigation } = useNavigationBlocker();
 
-  const canSee = (req?: "admin" | "suppliers" | "marketing") => {
+  /** Legacy gate — `requires` field. Drops once nav-data finishes migrating to `permission`. */
+  const canSeeLegacy = (req?: "admin" | "suppliers" | "marketing") => {
     if (!req) return true;
     if (req === "admin") return isAdmin;
     if (req === "suppliers") return canAccessSuppliers;
@@ -24,12 +26,35 @@ export function SidebarReal({ collapsed, onToggle }: Props) {
     return true;
   };
 
+  /** New gate — `permission` field. Returns true if granted (admin short-circuits). */
+  const hasPermission = (key?: PermissionKey) => (key ? canAccess(role, key) : true);
+
+  /** A child link is visible iff it passes its permission gate (sections are always visible). */
+  const childVisible = (c: NavChild): boolean => {
+    if ("section" in c && c.section) return true;
+    return hasPermission(c.permission);
+  };
+
+  /**
+   * An item is visible if:
+   * - Its legacy `requires` gate passes (kept for back-compat), AND
+   * - If it declares `permission`: that permission is granted, OR
+   * - If it has children: at least one non-section child is visible.
+   */
+  const itemVisible = (it: NavItem): boolean => {
+    if (!canSeeLegacy(it.requires)) return false;
+    if (it.children && it.children.length > 0) {
+      return it.children.some((c) => !("section" in c) && childVisible(c));
+    }
+    return hasPermission(it.permission);
+  };
+
   const visibleSections: NavSection[] = useMemo(() => {
     return NAV
-      .map((sec) => ({ ...sec, items: sec.items.filter((it) => canSee(it.requires)) }))
+      .map((sec) => ({ ...sec, items: sec.items.filter(itemVisible) }))
       .filter((sec) => sec.items.length > 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin, canAccessSuppliers, canAccessMarketing]);
+  }, [role, isAdmin, canAccessSuppliers, canAccessMarketing]);
 
   const isActivePath = (href: string) =>
     location.pathname === href || location.pathname.startsWith(href + "/");

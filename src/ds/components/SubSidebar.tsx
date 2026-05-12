@@ -1,6 +1,8 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useNavigationBlocker } from "@/contexts/NavigationBlockerContext";
-import type { NavItem } from "../nav-data";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { canAccess } from "@/lib/permissions";
+import type { NavItem, NavChild } from "../nav-data";
 
 type Props = {
   parent: NavItem;
@@ -8,6 +10,7 @@ type Props = {
 
 export function SubSidebar({ parent }: Props) {
   const location = useLocation();
+  const { role } = useAuthContext();
   const { requestNavigation } = useNavigationBlocker();
 
   const isActivePath = (href: string) =>
@@ -18,9 +21,26 @@ export function SubSidebar({ parent }: Props) {
     if (!requestNavigation(href)) e.preventDefault();
   };
 
-  const hasSectionDividers = parent.children?.some(
-    (c) => "section" in c && c.section,
-  );
+  /** Children visible to the current role. Sections are always kept. */
+  const visibleChildren: NavChild[] = (parent.children ?? []).filter((c) => {
+    if ("section" in c && c.section) return true;
+    return c.permission ? canAccess(role, c.permission) : true;
+  });
+
+  // If a section divider becomes orphan (no visible children after it), drop it.
+  // Walk through and only keep section dividers that precede at least one visible item.
+  const cleaned: NavChild[] = [];
+  for (let i = 0; i < visibleChildren.length; i++) {
+    const c = visibleChildren[i];
+    if ("section" in c && c.section) {
+      const next = visibleChildren.slice(i + 1).find((n) => !("section" in n));
+      if (next) cleaned.push(c);
+    } else {
+      cleaned.push(c);
+    }
+  }
+
+  const hasSectionDividers = cleaned.some((c) => "section" in c && c.section);
 
   return (
     <aside className="sub-sidebar">
@@ -28,7 +48,7 @@ export function SubSidebar({ parent }: Props) {
         {!hasSectionDividers && (
           <div className="sub-section-label">{parent.name}</div>
         )}
-        {parent.children?.map((c, idx) => {
+        {cleaned.map((c, idx) => {
           if ("section" in c && c.section) {
             return (
               <div key={"s" + idx} className="sub-section-label">{c.section}</div>
