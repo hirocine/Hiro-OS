@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Project } from '@/types/project';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -176,12 +175,12 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit }: NewProjectDia
           </MobileFriendlyFormSection>
           
           <MobileFriendlyFormActions>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <button type="button" className="btn" onClick={() => onOpenChange(false)}>
               Cancelar
-            </Button>
-            <Button type="submit">
+            </button>
+            <button type="submit" className="btn primary">
               Criar Projeto
-            </Button>
+            </button>
           </MobileFriendlyFormActions>
         </MobileFriendlyForm>
       </ResponsiveDialogContent>

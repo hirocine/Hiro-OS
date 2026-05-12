@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -465,16 +464,16 @@ export function PlatformAccessDialog({
 
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-4">
-              <Button
+              <button
                 type="button"
-                variant="outline"
+                className="btn"
                 onClick={() => onOpenChange(false)}
               >
                 Cancelar
-              </Button>
-              <Button type="submit">
+              </button>
+              <button type="submit" className="btn primary">
                 {editingAccess ? 'Salvar Alterações' : 'Adicionar Acesso'}
-              </Button>
+              </button>
             </div>
           </form>
         </Form>

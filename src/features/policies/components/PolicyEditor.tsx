@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -119,19 +118,22 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
         </div>
 
         <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
+          <button
+            type="button"
+            className="btn"
             onClick={() => onOpenChange(false)}
             disabled={saving}
           >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
+            className="btn primary"
             onClick={handleSave}
             disabled={!title.trim() || !content.trim() || saving}
           >
             {saving ? 'Salvando...' : 'Salvar Política'}
-          </Button>
+          </button>
         </div>
       </DialogContent>
     </Dialog>

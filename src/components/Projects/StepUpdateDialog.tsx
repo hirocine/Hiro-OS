@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Project, ProjectStep } from '@/types/project';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -100,16 +99,17 @@ export function StepUpdateDialog({ project, open, onOpenChange, onUpdate }: Step
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <button type="button" className="btn" onClick={() => onOpenChange(false)}>
             Cancelar
-          </Button>
-          <Button 
-            type="button" 
+          </button>
+          <button
+            type="button"
+            className="btn primary"
             onClick={handleSubmit}
             disabled={!selectedStep}
           >
             Atualizar Status
-          </Button>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

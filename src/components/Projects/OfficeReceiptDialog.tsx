@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -175,20 +174,22 @@ export function OfficeReceiptDialog({
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button
-              variant="outline"
+            <button
+              type="button"
+              className="btn"
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
               Cancelar
-            </Button>
-            <Button
+            </button>
+            <button
+              type="button"
+              className="btn primary"
               onClick={handleConfirm}
               disabled={!canConfirm}
-              className="bg-foreground hover:bg-foreground/90 text-background"
             >
               {loading ? 'Processando...' : 'Confirmar Recebimento'}
-            </Button>
+            </button>
           </div>
         </div>
       </DialogContent>

@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -183,24 +182,24 @@ export function EditUserDialog({ open, onOpenChange, user, onSuccess }: EditUser
           </div>
 
           <DialogFooter>
-            <Button
+            <button
               type="button"
-              variant="outline"
+              className="btn"
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
               Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
+            </button>
+            <button type="submit" className="btn primary" disabled={loading}>
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Salvando...
                 </>
               ) : (
                 'Salvar'
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Package, AlertTriangle, HardDrive, ChevronDown, ChevronUp } from "lucide-react";
 import { useProjectEquipment } from "@/features/projects";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -73,14 +72,16 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
       <div className="text-center py-8">
         <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-muted-foreground mb-4">Nenhum equipamento encontrado para este projeto</p>
-        <Button 
+        <button
+          type="button"
+          className="btn primary"
           onClick={() => {
             // Emit event to parent to open add equipment dialog
             window.dispatchEvent(new CustomEvent('openAddEquipmentDialog'));
           }}
         >
           Adicionar Equipamentos
-        </Button>
+        </button>
       </div>
     );
   }
@@ -206,13 +207,13 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                       
                       <div className="flex flex-col gap-2">
                         {item.loanInfo.status === 'overdue' && (
-                          <Button 
-                            variant="destructive" 
-                            size="sm"
+                          <button
+                            type="button"
+                            className="btn danger primary sm"
                             onClick={() => handleSendReminder(item)}
                           >
                             Cobrar Retorno
-                          </Button>
+                          </button>
                         )}
                       </div>
                     </div>

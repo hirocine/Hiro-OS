@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { ProjectStep, Project } from '@/types/project';
 import { stepLabels, stepOrder, stepIcons } from '@/lib/projectSteps';
 import { ArrowRight, CheckCircle } from 'lucide-react';
@@ -146,28 +145,22 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
 
   return (
     <>
-      <Button
+      <button
+        type="button"
         onClick={handleClick}
-        size="sm"
         disabled={loading}
-        className={cn(
-          "h-9 px-4 text-sm font-medium transition-all duration-200",
-          isCompleting
-            ? "bg-foreground/90 text-background shadow-md"
-            : "bg-foreground text-background hover:bg-foreground/90",
-          className
-        )}
+        className={cn("btn primary", className)}
       >
-        <NextStepIcon className="mr-2 h-4 w-4" />
-        {loading ? 'Processando...' : 
+        <NextStepIcon className="h-4 w-4" />
+        {loading ? 'Processando...' :
          isSeparating ? 'Separar' :
-         isWithdrawing ? 'Registrar Retirada' : 
+         isWithdrawing ? 'Registrar Retirada' :
          isOfficeReceipt ? 'Confirmar Retorno' :
-         isCompleting ? 'Finalizar' : 
+         isCompleting ? 'Finalizar' :
          `${stepLabels[nextStep]}`}
-        {!isCompleting && !loading && <ArrowRight className="ml-2 h-3 w-3" />}
-        {isCompleting && <CheckCircle className="ml-2 h-3 w-3" />}
-      </Button>
+        {!isCompleting && !loading && <ArrowRight className="h-3 w-3" />}
+        {isCompleting && <CheckCircle className="h-3 w-3" />}
+      </button>
 
       <WithdrawalDialog
         open={withdrawalDialogOpen}

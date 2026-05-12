@@ -8,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -215,27 +214,27 @@ export function AddUserDialog({ open, onOpenChange, onUserAdded }: AddUserDialog
           </div>
 
           <DialogFooter>
-            <Button
+            <button
               type="button"
-              variant="outline"
+              className="btn"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
               Cancelar
-            </Button>
-            <Button type="submit" disabled={isLoading}>
+            </button>
+            <button type="submit" className="btn primary" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Enviando...
                 </>
               ) : (
                 <>
-                  <Mail className="mr-2 h-4 w-4" />
+                  <Mail className="h-4 w-4" />
                   Enviar Convite
                 </>
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </form>
       </DialogContent>

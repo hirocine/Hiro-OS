@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Equipment } from '@/types/equipment';
 import { Loan } from '@/types/loan';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -221,12 +220,12 @@ export function LoanDialog({ open, onOpenChange, equipment, mode, currentLoan, o
           )}
           
           <ResponsiveDialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <button type="button" className="btn" onClick={() => onOpenChange(false)}>
               Cancelar
-            </Button>
-            <Button type="submit">
+            </button>
+            <button type="submit" className="btn primary">
               {mode === 'loan' ? 'Confirmar Retirada' : 'Confirmar Devolução'}
-            </Button>
+            </button>
           </ResponsiveDialogFooter>
         </form>
       </ResponsiveDialogContent>
