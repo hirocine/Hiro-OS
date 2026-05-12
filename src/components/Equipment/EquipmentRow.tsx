@@ -2,6 +2,7 @@ import { Equipment } from '@/types/equipment';
 import { Edit, Trash2, Camera } from 'lucide-react';
 import { useRef } from 'react';
 import { StatusPill } from '@/ds/components/StatusPill';
+import { formatMoney } from '@/ds/lib/money';
 
 interface EquipmentRowProps {
   equipment: Equipment;
@@ -26,13 +27,8 @@ const getStatusLabel = (status: Equipment['status']) => {
   }
 };
 
-const formatCurrency = (value?: number) => {
-  if (!value) return '—';
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value);
-};
+const formatCurrency = (value?: number) =>
+  value ? formatMoney(value) : '—';
 
 export function EquipmentRow({ equipment, onEdit, onDelete, onImageUpload }: EquipmentRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);

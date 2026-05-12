@@ -30,6 +30,7 @@ import { useProposals } from '../hooks/useProposals';
 import { usePainPoints } from '../hooks/usePainPoints';
 import { useProposalCases } from '../hooks/useProposalCases';
 import { useProposalAI } from '../hooks/useProposalAI';
+import { formatMoney } from '@/ds/lib/money';
 import {
   Dialog,
   DialogContent,
@@ -160,7 +161,7 @@ export function ProposalWizard() {
 
   const listPrice = form.list_price || 0;
   const finalValue = listPrice * (1 - (form.discount_pct || 0) / 100);
-  const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+  const fmt = (v: number) => formatMoney(v);
 
   // Pain point selection helpers
   const selectedDores = form.diagnostico_dores;

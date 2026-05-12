@@ -1,4 +1,5 @@
 import type { PaymentOption } from '../types';
+import { formatMoney } from '@/ds/lib/money';
 
 export type PaymentPreset =
   | 'faturamento'
@@ -30,10 +31,7 @@ export const DEFAULT_PRESET_PARAMS: Record<PaymentPreset, Record<string, any>> =
   custom: {},
 };
 
-const fmt = (v: number) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-    Number.isFinite(v) ? v : 0,
-  );
+const fmt = (v: number) => formatMoney(Number.isFinite(v) ? v : 0);
 
 export function buildPaymentOption(
   preset: PaymentPreset,

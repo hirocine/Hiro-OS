@@ -26,6 +26,7 @@ import { Loader2, Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { formatMoney } from '@/ds/lib/money';
 
 interface AddEquipmentDialogProps {
   open: boolean;
@@ -214,11 +215,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
 
   const formatCurrency = (value: number | string): string => {
     const num = typeof value === 'string' ? parseFloat(value) : value;
-    if (isNaN(num)) return '';
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(num);
+    return Number.isNaN(num) ? '' : formatMoney(num);
   };
 
   const parseCurrencyInput = (value: string): number => {

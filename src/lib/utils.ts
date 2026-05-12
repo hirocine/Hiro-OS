@@ -1,15 +1,18 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { formatMoney } from "@/ds/lib/money"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * @deprecated Prefer `formatMoney` from `@/ds/lib/money` directly, or
+ * the `<Money>` component for JSX. This thin wrapper exists for
+ * backward compatibility with existing call sites.
+ */
 export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value);
+  return formatMoney(value);
 }
 
 export function formatCapacity(capacityInGB?: number): string {

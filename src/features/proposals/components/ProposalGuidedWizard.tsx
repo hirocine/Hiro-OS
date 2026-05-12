@@ -31,6 +31,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { copyToClipboard } from '@/lib/clipboard';
 import { StatusPill } from '@/ds/components/StatusPill';
+import { formatMoney } from '@/ds/lib/money';
 
 const extractVimeoId = (raw: string): string => {
   if (!raw) return '';
@@ -246,7 +247,7 @@ export function ProposalGuidedWizard() {
   const [generatedProposalId, setGeneratedProposalId] = useState<string | null>(null);
 
   const finalValue = listPrice * (1 - discountPct / 100);
-  const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+  const fmt = (v: number) => formatMoney(v);
 
   // Payment option recalculation now lives inside <PaymentOptionsEditor />.
 

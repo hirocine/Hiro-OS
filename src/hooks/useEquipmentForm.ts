@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { generateEquipmentImageName } from '@/lib/imageNaming';
 import { compressImage } from '@/lib/imageUtils';
+import { formatMoney } from '@/ds/lib/money';
 
 interface UseEquipmentFormProps {
   equipmentId?: string;
@@ -202,11 +203,7 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
 
   const formatCurrency = (value: number | string): string => {
     const num = typeof value === 'string' ? parseFloat(value) : value;
-    if (isNaN(num)) return '';
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(num);
+    return Number.isNaN(num) ? '' : formatMoney(num);
   };
 
   const parseCurrencyInput = (value: string): number => {

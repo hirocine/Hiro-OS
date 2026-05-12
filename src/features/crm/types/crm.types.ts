@@ -1,4 +1,5 @@
 import type { Database } from '@/integrations/supabase/types';
+import { formatMoney } from '@/ds/lib/money';
 
 // DB row types
 export type Contact = Database['public']['Tables']['crm_contacts']['Row'];
@@ -73,7 +74,10 @@ export const SERVICE_TYPES = [
   { value: 'outro', label: 'Outro' },
 ] as const;
 
-export const formatBRL = (value: number | null | undefined): string => {
-  if (value == null) return 'R$ 0';
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-};
+/**
+ * @deprecated Prefer `formatMoney` from `@/ds/lib/money` directly, or
+ * the `<Money>` component for JSX. This thin wrapper exists for
+ * backward compatibility with existing CRM call sites.
+ */
+export const formatBRL = (value: number | null | undefined): string =>
+  formatMoney(value);

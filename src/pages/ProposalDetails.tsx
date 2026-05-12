@@ -32,6 +32,7 @@ import { useTestimonials } from '@/features/proposals/hooks/useTestimonials';
 import { useProposalCases } from '@/features/proposals/hooks/useProposalCases';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { StatusPill } from '@/ds/components/StatusPill';
+import { formatMoney } from '@/ds/lib/money';
 
 import { DOR_EMOJI_OPTIONS } from '@/features/proposals/types';
 import { PaymentOptionsEditor } from '@/features/proposals/components/PaymentOptionsEditor';
@@ -630,8 +631,7 @@ export default function ProposalDetails() {
     [investForm.list_price, investForm.discount_pct],
   );
 
-  const formatCurrencyBR = (v: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+  const formatCurrencyBR = (v: number) => formatMoney(v);
 
   // Dores helpers
   const removeDor = (i: number) => setDoresForm(prev => prev.filter((_, idx) => idx !== i));

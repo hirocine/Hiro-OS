@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Proposal, ProposalFormData, ProposalCase } from '../types';
+import { formatMoney } from '@/ds/lib/money';
 
 export function generateSlug(clientName: string, projectName: string, projectNumber?: string | null, version?: number): string {
   const v = version || 1;
@@ -135,14 +136,14 @@ export function useProposals() {
         : [
             {
               titulo: 'À Vista',
-              valor: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(finalValue * 0.95),
+              valor: formatMoney(finalValue * 0.95),
               descricao: '5% de desconto para pagamento único',
               destaque: 'Melhor custo',
               recomendado: false,
             },
             {
               titulo: '2x sem juros',
-              valor: `2x ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(finalValue / 2)}`,
+              valor: `2x ${formatMoney(finalValue / 2)}`,
               descricao: '50% no fechamento + 50% na entrega',
               destaque: '',
               recomendado: true,

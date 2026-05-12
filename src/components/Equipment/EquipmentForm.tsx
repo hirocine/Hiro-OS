@@ -12,6 +12,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Loader2, X, Package, Check, Link2, DollarSign, Calendar, Camera, Mic, Lightbulb, Wrench, HardDrive, CalendarIcon, Plus, type LucideIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StatusPill } from '@/ds/components/StatusPill';
+import { formatMoney } from '@/ds/lib/money';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -343,23 +344,10 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
 
   // Função para formatar moeda durante digitação (em tempo real)
   const formatCurrencyInput = (value: string): string => {
-    // Remove tudo que não seja dígito
     const digits = value.replace(/\D/g, '');
-
     if (!digits) return '';
-
-    // Converte para número (centavos)
-    const number = parseInt(digits, 10);
-
-    // Formata para reais (divide por 100 para ter os centavos)
-    const formatted = new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(number / 100);
-
-    return formatted;
+    // Treat digits as centavos so '12345' becomes R$ 123,45.
+    return formatMoney(parseInt(digits, 10) / 100);
   };
 
   // Handlers para campos monetários - Valor de Compra
