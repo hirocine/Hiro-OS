@@ -3,6 +3,7 @@ import { Clock } from 'lucide-react';
 import { SSDKanbanBoard } from '@/components/SSD/SSDKanbanBoard';
 import { useSSDs } from '@/features/ssds';
 import { formatRelativeTime } from '@/lib/utils';
+import { CountUp } from '@/ds/components/CountUp';
 
 const SSDs = () => {
   const { ssds, ssdsByStatus, ssdAllocations, loading, updateSSDStatus, updateSSDOrder, refetch } = useSSDs();
@@ -44,24 +45,24 @@ const SSDs = () => {
         <div className="summary" style={{ marginTop: 24 }}>
           <div className="stat">
             <span className="stat-lbl">Total</span>
-            <span className="stat-num">{loading ? '—' : stats.total}</span>
+            <span className="stat-num">{loading ? '—' : <CountUp value={stats.total} />}</span>
             <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>
               {loading ? '' : `${stats.totalCapacity.toFixed(0)} GB capacidade`}
             </span>
           </div>
           <div className="stat success">
             <span className="stat-lbl">Disponíveis</span>
-            <span className="stat-num">{loading ? '—' : stats.available}</span>
+            <span className="stat-num">{loading ? '—' : <CountUp value={stats.available} />}</span>
             <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', marginTop: 2 }}>Prontos para uso</span>
           </div>
           <div className="stat">
             <span className="stat-lbl">Em projetos</span>
-            <span className="stat-num" style={{ color: 'hsl(var(--ds-info))' }}>{loading ? '—' : stats.inUse}</span>
+            <span className="stat-num" style={{ color: 'hsl(var(--ds-info))' }}>{loading ? '—' : <CountUp value={stats.inUse} />}</span>
             <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', marginTop: 2 }}>Alocados</span>
           </div>
           <div className={'stat' + (stats.loaned > 0 ? ' warn' : ' muted')}>
             <span className="stat-lbl">Emprestados</span>
-            <span className="stat-num">{loading ? '—' : stats.loaned}</span>
+            <span className="stat-num">{loading ? '—' : <CountUp value={stats.loaned} />}</span>
             <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', marginTop: 2 }}>Fora do estoque</span>
           </div>
         </div>

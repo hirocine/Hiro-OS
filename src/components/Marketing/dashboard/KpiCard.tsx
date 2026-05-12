@@ -1,4 +1,5 @@
 import { ChangeBadge } from './ChangeBadge';
+import { CountUp } from '@/ds/components/CountUp';
 
 interface Props {
   label: string;
@@ -46,7 +47,7 @@ export function KpiCard({ label, value, change, emoji }: Props) {
           marginTop: 4,
         }}
       >
-        {value}
+        {typeof value === 'number' ? <CountUp value={value} /> : value}
       </div>
       <div style={{ marginTop: 2 }}>
         <ChangeBadge value={change} />

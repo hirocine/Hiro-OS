@@ -6,6 +6,7 @@ import { PP_PRIORITY_ORDER, PP_PRIORITY_CONFIG } from '@/features/post-productio
 import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { useRecordingsToday, getEventTitle } from '@/hooks/useRecordingsCalendar';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { CountUp } from '@/ds/components/CountUp';
 
 const today = new Date().toLocaleDateString('en-CA');
 
@@ -88,7 +89,7 @@ function WidgetCard({ Icon, label, count, countSuffix, emptyText, dotColor, onCl
               lineHeight: 1,
             }}
           >
-            {count}
+            <CountUp value={count} />
           </span>
           <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>{countSuffix}</p>
         </div>

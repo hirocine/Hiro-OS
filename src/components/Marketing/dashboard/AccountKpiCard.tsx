@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import { CountUp } from '@/ds/components/CountUp';
 
 interface Props {
   icon: LucideIcon;
@@ -57,7 +58,7 @@ export function AccountKpiCard({ icon: Icon, label, value, subtitle, subtone = '
           lineHeight: 1.05,
         }}
       >
-        {value}
+        {typeof value === 'number' ? <CountUp value={value} /> : value}
       </div>
       {subtitle && (
         <p
