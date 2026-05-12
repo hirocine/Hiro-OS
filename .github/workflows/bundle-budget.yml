@@ -1,0 +1,35 @@
+name: Bundle budget
+
+# Defensive check that runs the production build and asserts the
+# always-loaded chunks (entry + vendor splits) stay under set sizes.
+# Lazy page chunks aren't checked — those only load on navigation
+# and we accept the existing per-page weight.
+#
+# To re-baseline after an intentional increase: bump the numbers
+# in scripts/bundle-budget.mjs in the same PR.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  budget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci --legacy-peer-deps
+
+      - name: Build
+        run: npm run build
+
+      - name: Check bundle budget
+        run: npm run check:budget
