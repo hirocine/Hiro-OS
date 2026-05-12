@@ -69,22 +69,29 @@ const AdminPermissions = lazy(() => import("./pages/AdminPermissions"));
 
 import { RequirePermission } from "./components/RequirePermission";
 import { useRolePermissions } from "./hooks/useRolePermissions";
+import { useInboxRealtime } from "./features/inbox/useInbox";
 
 /**
- * Side-effect-only component that fires `useRolePermissions()` once
- * inside the AuthProvider tree, populating the runtime cache that
- * `canAccess()` reads from. Rendered as a sibling of the routes so
- * it doesn't block first paint — `placeholderData: DEFAULT_PERMISSIONS`
- * keeps the cache warm until the query lands.
+ * Side-effect-only component that fires hooks that need to live for
+ * the lifetime of an authenticated session:
+ *
+ *   - useRolePermissions() — keeps the role × permission map in the
+ *     runtime cache that canAccess() reads from.
+ *   - useInboxRealtime()   — subscribes to inbox_items changes for
+ *     the current user; sidebar badge + page list refresh live.
+ *
+ * Rendered as a sibling of the routes (no children) so they don't
+ * block first paint.
  */
-function RolePermissionsBootstrap() {
+function SessionBootstrap() {
   useRolePermissions();
+  useInboxRealtime();
   return null;
 }
 
 const App = () => (
   <AuthProvider>
-    <RolePermissionsBootstrap />
+    <SessionBootstrap />
     <TooltipProvider delayDuration={300} skipDelayDuration={100}>
       <Sonner position="top-center" />
       <BrowserRouter>
@@ -113,10 +120,9 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<RequirePermission permission="home"><Home /></RequirePermission>} />
-                {/* Caixa de Entrada e Jurídico/Contratos ficam escondidos
-                 *  até backend Supabase + integração ZapSign ficarem prontos.
-                 *  Lazy imports preservados; basta restaurar as três rotas
-                 *  abaixo (mais entradas no nav-data + AdminPermissions). */}
+                <Route path="caixa-de-entrada" element={<RequirePermission permission="inbox"><Inbox /></RequirePermission>} />
+                {/* Jurídico/Contratos ainda escondido até backend Supabase
+                 *  + integração ZapSign ficarem prontos. */}
                 <Route path="dashboard" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro/dashboard" element={<RequirePermission permission="financeiro.dashboard"><Dashboard /></RequirePermission>} />

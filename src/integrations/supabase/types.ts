@@ -912,6 +912,66 @@ export type Database = {
         }
         Relationships: []
       }
+      inbox_items: {
+        Row: {
+          actor_avatar_url: string | null
+          actor_id: string | null
+          actor_name: string | null
+          created_at: string
+          deep_link: string
+          done_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json | null
+          preview: string | null
+          read_at: string | null
+          reason: string
+          snooze_until: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          actor_avatar_url?: string | null
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          deep_link: string
+          done_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          preview?: string | null
+          read_at?: string | null
+          reason: string
+          snooze_until?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          actor_avatar_url?: string | null
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          deep_link?: string
+          done_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          preview?: string | null
+          read_at?: string | null
+          reason?: string
+          snooze_until?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       loans: {
         Row: {
           actual_return_date: string | null

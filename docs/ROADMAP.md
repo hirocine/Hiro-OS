@@ -12,13 +12,12 @@ quando inicia, conclui, ou quando uma ideia muda de tier.
 
 | ferramenta | status | notas |
 |---|---|---|
-| Caixa de Entrada | 🟡 UI pronta · **escondida em produção** | Aguarda backend Supabase + triggers |
+| Caixa de Entrada | 🟢 **em produção** · backend Supabase + realtime · 1 trigger ativo (`task_assigned`) | Mais triggers virão: loan overdue, proposal viewed, pp new_version, deal status_change, etc. |
 | Jurídico/Contratos | 🟡 UI pronta · **escondida em produção** | Aguarda backend Supabase + integração ZapSign webhook (modelo shadow) |
 
-> **Re-habilitar essas features em prod:** descomentar entradas em
-> `src/ds/nav-data.tsx`, rotas em `src/App.tsx` e toggles em
-> `src/pages/AdminPermissions.tsx`. Todos marcados com `// hidden until ... ships`.
-> Código das pages + mocks + hooks já tá no codebase, só dormente.
+> **Re-habilitar Jurídico em prod (quando backend ficar pronto):** descomentar a
+> seção em `src/ds/nav-data.tsx`, rotas em `src/App.tsx` e o toggle em
+> `src/pages/AdminPermissions.tsx`. Marcadores `// hidden until ... ships`.
 
 ---
 

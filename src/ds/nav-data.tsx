@@ -50,10 +50,9 @@ export const NAV: NavSection[] = [
   {
     title: "Dia a Dia",
     items: [
-      { name: "Home",    href: "/",        icon: I.home, permission: "home" },
-      // Caixa de Entrada escondida até backend Supabase ficar pronto.
-      // { name: "Caixa de Entrada", href: "/caixa-de-entrada", icon: I.inbox, permission: "inbox" },
-      { name: "Tarefas", href: "/tarefas", icon: I.task, permission: "tarefas" },
+      { name: "Home",             href: "/",                 icon: I.home,  permission: "home" },
+      { name: "Caixa de Entrada", href: "/caixa-de-entrada", icon: I.inbox, permission: "inbox" },
+      { name: "Tarefas",          href: "/tarefas",          icon: I.task,  permission: "tarefas" },
     ],
   },
   {
