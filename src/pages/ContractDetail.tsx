@@ -6,17 +6,25 @@ import {
   ArrowLeft,
   ExternalLink,
   Download,
-  FileSignature,
   Check,
-  Clock,
   X,
   Link2,
   Save,
+  Repeat,
+  RefreshCcw,
+  AlertCircle,
+  Clock,
 } from 'lucide-react';
 import {
   useContracts,
   STATUS_LABEL,
   STATUS_TONE,
+  VIGENCIA_LABEL,
+  VIGENCIA_TONE,
+  FREQUENCY_LABEL,
+  recurringVigencia,
+  daysUntil,
+  noticeDeadline,
 } from '@/features/contracts/useContracts';
 import type { Contract, ContractSigner } from '@/features/contracts/types';
 import { StatusPill } from '@/ds/components/StatusPill';
@@ -80,6 +88,16 @@ export default function ContractDetail() {
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
               <StatusPill label={STATUS_LABEL[contract.status]} tone={STATUS_TONE[contract.status]} />
+              {contract.contract_class === 'recurring' && (() => {
+                const v = recurringVigencia(contract);
+                return v ? (
+                  <StatusPill
+                    label={VIGENCIA_LABEL[v]}
+                    tone={VIGENCIA_TONE[v]}
+                    icon={<Repeat size={11} strokeWidth={1.5} />}
+                  />
+                ) : null;
+              })()}
               {!contract.linked_at && (
                 <StatusPill label="Sem vinculação" tone="warning" icon={<Link2 size={11} strokeWidth={1.5} />} />
               )}
@@ -129,6 +147,10 @@ export default function ContractDetail() {
 
           {/* Coluna direita: meta + vinculações */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            {contract.contract_class === 'recurring' && contract.recurrence && (
+              <RecurrenceCard contract={contract} />
+            )}
+
             <Card title="Vinculação">
               {contract.linked_client_name || contract.linked_project_name || contract.linked_supplier_name ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -517,4 +539,145 @@ function partyLabel(p: Contract['party_type']) {
     other: 'Outro',
   };
   return labels[p];
+}
+
+/**
+ * Card-rich view of a recurring contract's vigência state. Only renders
+ * when `contract.recurrence` is set. Surfaces the four things that
+ * legally matter: vigência window, próxima renovação, aviso prévio,
+ * reajuste.
+ */
+function RecurrenceCard({ contract }: { contract: Contract }) {
+  const r = contract.recurrence!;
+  const vig = recurringVigencia(contract);
+  const daysToEnd = daysUntil(r.end_date);
+  const notice = noticeDeadline(contract);
+
+  const adjustmentLabel: Record<typeof r.adjustment_index, string> = {
+    IPCA: 'IPCA',
+    IGPM: 'IGP-M',
+    fixed_percent: r.adjustment_percent != null ? `${r.adjustment_percent}% fixo` : 'Percentual fixo',
+    none: 'Sem reajuste',
+  };
+
+  // Cor do destaque do "próximo evento" — alinhado com a vigência
+  const vigColor =
+    vig === 'expiring_critical' || vig === 'expired'
+      ? 'hsl(var(--ds-danger))'
+      : vig === 'expiring_soon'
+        ? 'hsl(var(--ds-warning))'
+        : 'hsl(var(--ds-fg-2))';
+
+  return (
+    <Card title="Recorrência">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* Destaque: próximo evento */}
+        {daysToEnd !== null && (
+          <div
+            style={{
+              padding: '12px 14px',
+              border: `1px solid ${vigColor.replace(')', ' / 0.3)')}`,
+              background: vigColor.replace(')', ' / 0.06)'),
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <RefreshCcw size={14} strokeWidth={1.5} style={{ color: vigColor }} />
+              <span style={{ fontSize: 12, color: vigColor, fontWeight: 600 }}>
+                {daysToEnd >= 0
+                  ? `Renova em ${daysToEnd} dia${daysToEnd !== 1 ? 's' : ''}`
+                  : `Venceu há ${Math.abs(daysToEnd)} dia${Math.abs(daysToEnd) !== 1 ? 's' : ''}`}
+              </span>
+            </div>
+            <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-2))', marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>
+              {format(new Date(r.end_date), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+            </p>
+            {r.auto_renew ? (
+              <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
+                Auto-renova por mais um período de {FREQUENCY_LABEL[r.frequency].toLowerCase()}.
+              </p>
+            ) : (
+              <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
+                Não renova automaticamente — precisa renegociar.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Aviso prévio crítico */}
+        {notice && !r.auto_renew && (
+          <NoticeBlock notice={notice} />
+        )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <KV label="Periodicidade" value={FREQUENCY_LABEL[r.frequency]} />
+          <KV
+            label="Vigência atual"
+            value={`${format(new Date(r.start_date), 'dd/MM/yyyy', { locale: ptBR })} → ${format(
+              new Date(r.end_date),
+              'dd/MM/yyyy',
+              { locale: ptBR },
+            )}`}
+          />
+          <KV
+            label="Auto-renovação"
+            value={r.auto_renew ? 'Sim — renova sozinho' : 'Não — precisa nova assinatura'}
+          />
+          <KV
+            label="Aviso prévio"
+            value={`${r.notice_period_days} dia${r.notice_period_days !== 1 ? 's' : ''} antes do fim`}
+          />
+          <KV
+            label="Reajuste"
+            value={
+              r.adjustment_index === 'none'
+                ? 'Sem reajuste contratado'
+                : `${adjustmentLabel[r.adjustment_index]}${
+                    r.next_adjustment_at
+                      ? ` · próximo em ${format(new Date(r.next_adjustment_at), 'dd/MM/yyyy', { locale: ptBR })}`
+                      : ''
+                  }`
+            }
+          />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+/** Inline callout sobre o último momento pra dar aviso de rescisão. */
+function NoticeBlock({ notice }: { notice: { date: string; days_left: number } }) {
+  const passed = notice.days_left < 0;
+  const critical = !passed && notice.days_left <= 14;
+  const color = passed
+    ? 'hsl(var(--ds-danger))'
+    : critical
+      ? 'hsl(var(--ds-warning))'
+      : 'hsl(var(--ds-fg-3))';
+
+  return (
+    <div
+      style={{
+        padding: '10px 12px',
+        border: `1px solid ${color.replace(')', ' / 0.25)')}`,
+        background: color.replace(')', ' / 0.05)'),
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 8,
+      }}
+    >
+      <AlertCircle size={13} strokeWidth={1.5} style={{ color, flexShrink: 0, marginTop: 2 }} />
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: 12, fontWeight: 600, color, margin: 0 }}>
+          {passed
+            ? 'Janela de aviso prévio expirou'
+            : critical
+              ? `Aviso prévio expira em ${notice.days_left} dia${notice.days_left !== 1 ? 's' : ''}`
+              : `Última data pra rescisão sem ônus: em ${notice.days_left}d`}
+        </p>
+        <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>
+          {format(new Date(notice.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+        </p>
+      </div>
+    </div>
+  );
 }

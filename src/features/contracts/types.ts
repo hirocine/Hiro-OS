@@ -31,6 +31,49 @@ export type ContractStatus =
   | 'expired'            // ZapSign expired the doc
   | 'cancelled';         // doc cancelled in ZapSign
 
+/**
+ * What *kind* of contract this is, regardless of signature state:
+ *
+ *   project   — one-shot, tied to a specific AV project (default)
+ *   recurring — a continuing legal arrangement: retainer, contract for
+ *               continued services, image cession with renewable
+ *               window, etc. Comercial/MRR side lives in the CRM —
+ *               here we only care about the *juridical* axis: está
+ *               vigente? quando vence? auto-renova? aviso prévio?
+ *               reajuste?
+ */
+export type ContractClass = 'project' | 'recurring';
+
+/** Índice de reajuste aplicado no aniversário do contrato. */
+export type AdjustmentIndex = 'IPCA' | 'IGPM' | 'fixed_percent' | 'none';
+
+/**
+ * Campos só de contratos recorrentes. Para `project`, vem `null`.
+ * Tudo aqui é visão jurídica — vigência, aviso prévio, reajuste.
+ */
+export interface ContractRecurrence {
+  /** Vigência atual: quando começou. */
+  start_date: string;
+  /** Vigência atual: quando termina (próximo aniversário/renovação). */
+  end_date: string;
+  /** Renova automaticamente sem precisar nova assinatura? */
+  auto_renew: boolean;
+  /** Dias de aviso prévio que cada parte tem que dar pra rescindir. */
+  notice_period_days: number;
+  /** Periodicidade do ciclo. */
+  frequency: 'monthly' | 'quarterly' | 'semestral' | 'annual';
+
+  /** Índice aplicado no aniversário. */
+  adjustment_index: AdjustmentIndex;
+  /** Percentual usado quando o índice é `fixed_percent`. */
+  adjustment_percent: number | null;
+  /** Próxima data de aplicação do reajuste (geralmente = end_date). */
+  next_adjustment_at: string | null;
+
+  /** Valor por ciclo (informativo). Lado comercial real fica no CRM. */
+  amount_brl: number | null;
+}
+
 /** Who the other party is. Drives where in Hiro it gets linked. */
 export type ContractPartyType =
   | 'client'      // B2B service contract — links to CRM contact + project
@@ -63,6 +106,17 @@ export interface Contract {
   status: ContractStatus;
   party_type: ContractPartyType;
   signers: ContractSigner[];
+
+  /**
+   * Juridical classification — orthogonal to signature status.
+   * Lets us filter "project" contracts (one-shot, tied to an AV
+   * project) from "recurring" ones (continuing relationships) on the
+   * same page without forcing one into the other's mental model.
+   */
+  contract_class: ContractClass;
+
+  /** Filled when `contract_class === 'recurring'`; null otherwise. */
+  recurrence: ContractRecurrence | null;
 
   /** Free-text from ZapSign (extra context / sometimes used for tags). */
   zapsign_description: string | null;
@@ -106,12 +160,37 @@ export interface Contract {
   imported_at: string;
 }
 
-export type ContractTab =
-  | 'unlinked'  // needs to be linked to project/client (highlighted bucket)
-  | 'in_progress' // anything still awaiting signature (draft / awaiting_internal / awaiting_client)
+/** Top-level toggle in the Contratos page — switches the whole lens. */
+export type ContractView = 'project' | 'recurring';
+
+/** Sub-tabs available when in "Por projeto" view. */
+export type ProjectTab =
+  | 'unlinked'    // needs to be linked to project/client (highlighted bucket)
+  | 'in_progress' // anything still awaiting signature
   | 'signed'
-  | 'archived'  // refused / expired / cancelled
+  | 'archived'    // refused / expired / cancelled
   | 'all';
+
+/** Sub-tabs available when in "Recorrentes" view — focused on vigência. */
+export type RecurringTab =
+  | 'active'     // vigente (signed + dentro da vigência)
+  | 'expiring'   // vence nos próximos 90 dias
+  | 'expired'    // venceu e não foi renovado
+  | 'terminated' // encerrado/cancelado/recusado
+  | 'pending'    // recurring contract still being signed
+  | 'all';
+
+/** Derived state for a recurring contract, computed off `recurrence`. */
+export type RecurringVigencia =
+  | 'pending'             // contract not yet fully signed
+  | 'active'              // signed + dentro da vigência
+  | 'expiring_soon'       // vence em ≤ 90 dias
+  | 'expiring_critical'   // vence em ≤ 30 dias
+  | 'expired'             // passou da end_date e não renovou
+  | 'terminated';         // status terminal (cancelled / refused / expired status)
+
+/** Back-compat alias — the old name was `ContractTab` (project sub-tabs). */
+export type ContractTab = ProjectTab;
 
 export type ContractStatusFilter = ContractStatus | 'all';
 export type ContractPartyFilter = ContractPartyType | 'all';

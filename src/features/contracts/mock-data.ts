@@ -9,16 +9,24 @@ const iso = (msAgo: number) => new Date(now - msAgo).toISOString();
 const future = (msAhead: number) => new Date(now + msAhead).toISOString();
 
 /**
- * Realistic-ish dataset covering every state we want the UI to handle:
+ * Realistic-ish dataset covering every state we want the UI to handle.
  *
+ * Por projeto (contract_class = 'project') — 12 itens:
  *   2 × Aguardando vinculação  (just landed via webhook, not linked yet)
  *   1 × Rascunho                (created in ZapSign, not sent)
  *   1 × Aguardando interno     (sent, internal hasn't signed)
  *   2 × Pendente cliente       (internal signed, waiting on client)
- *   3 × Assinado               (all signed — varied recency)
+ *   3 × Assinado
  *   1 × Recusado
  *   1 × Expirado
  *   1 × Cancelado
+ *
+ * Recorrentes (contract_class = 'recurring') — 5 itens:
+ *   1 × Vigente folgado (vence em ~5 meses, auto-renew)
+ *   1 × Vencendo logo (próximos 30 dias — janela de aviso prévio passou)
+ *   1 × Vencido sem renovação
+ *   1 × Vigente longa (cessão de imagem continuada, perpétua)
+ *   1 × Em assinatura (recurring ainda no fluxo do ZapSign)
  */
 export const MOCK_CONTRACTS: Contract[] = [
   // ─── Aguardando vinculação ──────────────────────────────────────
@@ -49,6 +57,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     linked_at: null,
     notes: null,
     imported_at: iso(2 * hour),
+    contract_class: 'project',
+    recurrence: null,
   },
   {
     id: 'c-102',
@@ -77,6 +87,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     linked_at: null,
     notes: null,
     imported_at: iso(1 * day + 4 * hour),
+    contract_class: 'project',
+    recurrence: null,
   },
 
   // ─── Rascunho ────────────────────────────────────────────────────
@@ -107,6 +119,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     linked_at: iso(2 * hour),
     notes: null,
     imported_at: iso(3 * hour),
+    contract_class: 'project',
+    recurrence: null,
   },
 
   // ─── Aguardando interno ─────────────────────────────────────────
@@ -137,6 +151,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     linked_at: iso(7 * hour),
     notes: 'Cessão perpétua, qualquer mídia.',
     imported_at: iso(8 * hour),
+    contract_class: 'project',
+    recurrence: null,
   },
 
   // ─── Pendente cliente ───────────────────────────────────────────
@@ -167,6 +183,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     linked_at: iso(2 * day + 4 * hour),
     notes: null,
     imported_at: iso(2 * day + 5 * hour),
+    contract_class: 'project',
+    recurrence: null,
   },
   {
     id: 'c-106',
@@ -195,6 +213,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     linked_at: iso(3 * day + 2 * hour),
     notes: null,
     imported_at: iso(3 * day + 2 * hour),
+    contract_class: 'project',
+    recurrence: null,
   },
 
   // ─── Assinado ────────────────────────────────────────────────────
@@ -225,6 +245,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     linked_at: iso(5 * day + 23 * hour),
     notes: null,
     imported_at: iso(6 * day),
+    contract_class: 'project',
+    recurrence: null,
   },
   {
     id: 'c-108',
@@ -253,6 +275,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     linked_at: iso(10 * day + 23 * hour),
     notes: 'Vigência perpétua. Qualquer mídia.',
     imported_at: iso(11 * day),
+    contract_class: 'project',
+    recurrence: null,
   },
   {
     id: 'c-109',
@@ -281,6 +305,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     linked_at: iso(20 * day + 4 * hour),
     notes: null,
     imported_at: iso(20 * day + 4 * hour),
+    contract_class: 'project',
+    recurrence: null,
   },
 
   // ─── Recusado ────────────────────────────────────────────────────
@@ -311,6 +337,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     linked_at: iso(8 * day),
     notes: 'Pediu pra renegociar valor.',
     imported_at: iso(8 * day),
+    contract_class: 'project',
+    recurrence: null,
   },
 
   // ─── Expirado ────────────────────────────────────────────────────
@@ -341,6 +369,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     linked_at: iso(40 * day),
     notes: null,
     imported_at: iso(40 * day),
+    contract_class: 'project',
+    recurrence: null,
   },
 
   // ─── Cancelado ───────────────────────────────────────────────────
@@ -371,5 +401,221 @@ export const MOCK_CONTRACTS: Contract[] = [
     linked_at: iso(15 * day),
     notes: 'Substituído por v2.',
     imported_at: iso(15 * day),
+    contract_class: 'project',
+    recurrence: null,
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // RECORRENTES
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── Vigente folgado (vence em ~5 meses, auto-renew) ───────────
+  {
+    id: 'c-201',
+    zapsign_doc_token: 'zs-rec-201',
+    title: 'Contrato de Prestação Continuada — Cliente XPTO',
+    status: 'signed',
+    party_type: 'client',
+    zapsign_description: 'Anual com auto-renovação',
+    signers: [
+      { zapsign_token: 'sg-201-1', name: 'Gabriel Soares', email: 'gabriel@hiro.film', role: 'internal', position: 1, signed_at: iso(210 * day), refused_at: null },
+      { zapsign_token: 'sg-201-2', name: 'Diretor XPTO', email: 'diretor@xpto.com.br', role: 'external', position: 2, signed_at: iso(209 * day), refused_at: null },
+    ],
+    created_at: iso(212 * day),
+    sent_at: iso(211 * day),
+    completed_at: iso(209 * day),
+    expires_at: null,
+    zapsign_doc_url: 'https://app.zapsign.com.br/verificar/zs-rec-201',
+    signed_pdf_url: 'https://zapsign-pdf.s3.amazonaws.com/signed/zs-rec-201-final.pdf',
+    linked_client_id: 'crm-cliente-xpto',
+    linked_client_name: 'Cliente XPTO',
+    linked_project_id: null,
+    linked_project_name: null,
+    linked_supplier_id: null,
+    linked_supplier_name: null,
+    value_brl: null,
+    linked_at: iso(209 * day),
+    notes: null,
+    imported_at: iso(212 * day),
+    contract_class: 'recurring',
+    recurrence: {
+      start_date: iso(209 * day),
+      end_date: future(155 * day),   // ~5 meses pra frente
+      auto_renew: true,
+      notice_period_days: 60,
+      frequency: 'annual',
+      adjustment_index: 'IPCA',
+      adjustment_percent: null,
+      next_adjustment_at: future(155 * day),
+      amount_brl: null,
+    },
+  },
+
+  // ─── Vencendo crítico (próximos 25 dias — aviso prévio passou) ─
+  {
+    id: 'c-202',
+    zapsign_doc_token: 'zs-rec-202',
+    title: 'Contrato de Prestação Continuada — Cliente JKL',
+    status: 'signed',
+    party_type: 'client',
+    zapsign_description: null,
+    signers: [
+      { zapsign_token: 'sg-202-1', name: 'Gabriel Soares', email: 'gabriel@hiro.film', role: 'internal', position: 1, signed_at: iso(340 * day), refused_at: null },
+      { zapsign_token: 'sg-202-2', name: 'Ana Cliente JKL', email: 'ana@clientejkl.com', role: 'external', position: 2, signed_at: iso(339 * day), refused_at: null },
+    ],
+    created_at: iso(342 * day),
+    sent_at: iso(341 * day),
+    completed_at: iso(339 * day),
+    expires_at: null,
+    zapsign_doc_url: 'https://app.zapsign.com.br/verificar/zs-rec-202',
+    signed_pdf_url: 'https://zapsign-pdf.s3.amazonaws.com/signed/zs-rec-202-final.pdf',
+    linked_client_id: 'crm-cliente-jkl',
+    linked_client_name: 'Cliente JKL',
+    linked_project_id: null,
+    linked_project_name: null,
+    linked_supplier_id: null,
+    linked_supplier_name: null,
+    value_brl: null,
+    linked_at: iso(339 * day),
+    notes: 'Cliente sinalizou que vai renegociar valores na renovação.',
+    imported_at: iso(342 * day),
+    contract_class: 'recurring',
+    recurrence: {
+      start_date: iso(339 * day),
+      end_date: future(25 * day),    // crítico: vence em 25 dias
+      auto_renew: false,             // SEM auto-renovação
+      notice_period_days: 30,        // aviso prévio de 30 dias já estourou
+      frequency: 'annual',
+      adjustment_index: 'IGPM',
+      adjustment_percent: null,
+      next_adjustment_at: future(25 * day),
+      amount_brl: null,
+    },
+  },
+
+  // ─── Vencido sem renovação ──────────────────────────────────────
+  {
+    id: 'c-203',
+    zapsign_doc_token: 'zs-rec-203',
+    title: 'Contrato Continuado — Cliente Mídia ABC (ano anterior)',
+    status: 'signed',
+    party_type: 'client',
+    zapsign_description: null,
+    signers: [
+      { zapsign_token: 'sg-203-1', name: 'Gabriel Soares', email: 'gabriel@hiro.film', role: 'internal', position: 1, signed_at: iso(420 * day), refused_at: null },
+      { zapsign_token: 'sg-203-2', name: 'Coord Mídia ABC', email: 'coord@midiaabc.com', role: 'external', position: 2, signed_at: iso(419 * day), refused_at: null },
+    ],
+    created_at: iso(422 * day),
+    sent_at: iso(421 * day),
+    completed_at: iso(419 * day),
+    expires_at: null,
+    zapsign_doc_url: 'https://app.zapsign.com.br/verificar/zs-rec-203',
+    signed_pdf_url: 'https://zapsign-pdf.s3.amazonaws.com/signed/zs-rec-203-final.pdf',
+    linked_client_id: 'crm-midia-abc',
+    linked_client_name: 'Cliente Mídia ABC',
+    linked_project_id: null,
+    linked_project_name: null,
+    linked_supplier_id: null,
+    linked_supplier_name: null,
+    value_brl: null,
+    linked_at: iso(419 * day),
+    notes: 'Não foi renovado. Aguardando definição comercial.',
+    imported_at: iso(422 * day),
+    contract_class: 'recurring',
+    recurrence: {
+      start_date: iso(419 * day),
+      end_date: iso(54 * day),        // venceu há ~54 dias
+      auto_renew: false,
+      notice_period_days: 30,
+      frequency: 'annual',
+      adjustment_index: 'IPCA',
+      adjustment_percent: null,
+      next_adjustment_at: null,
+      amount_brl: null,
+    },
+  },
+
+  // ─── Vigente longa (cessão de imagem perpétua) ─────────────────
+  {
+    id: 'c-204',
+    zapsign_doc_token: 'zs-rec-204',
+    title: 'Termo de Cessão Continuada de Imagem — Talent Beatriz Souza',
+    status: 'signed',
+    party_type: 'talent',
+    zapsign_description: 'Cessão renovável anualmente',
+    signers: [
+      { zapsign_token: 'sg-204-1', name: 'Gabriel Soares', email: 'gabriel@hiro.film', role: 'internal', position: 1, signed_at: iso(60 * day), refused_at: null },
+      { zapsign_token: 'sg-204-2', name: 'Beatriz Souza', email: 'beatriz.souza@gmail.com', role: 'external', position: 2, signed_at: iso(59 * day), refused_at: null },
+    ],
+    created_at: iso(62 * day),
+    sent_at: iso(61 * day),
+    completed_at: iso(59 * day),
+    expires_at: null,
+    zapsign_doc_url: 'https://app.zapsign.com.br/verificar/zs-rec-204',
+    signed_pdf_url: 'https://zapsign-pdf.s3.amazonaws.com/signed/zs-rec-204-final.pdf',
+    linked_client_id: null,
+    linked_client_name: null,
+    linked_project_id: 'proj-banco-xyz',
+    linked_project_name: 'Vídeo Banco XYZ',
+    linked_supplier_id: null,
+    linked_supplier_name: null,
+    value_brl: null,
+    linked_at: iso(59 * day),
+    notes: 'Cessão de imagem continuada, qualquer mídia.',
+    imported_at: iso(62 * day),
+    contract_class: 'recurring',
+    recurrence: {
+      start_date: iso(59 * day),
+      end_date: future(305 * day),
+      auto_renew: true,
+      notice_period_days: 30,
+      frequency: 'annual',
+      adjustment_index: 'none',
+      adjustment_percent: null,
+      next_adjustment_at: null,
+      amount_brl: null,
+    },
+  },
+
+  // ─── Em assinatura (recurring ainda não assinado) ──────────────
+  {
+    id: 'c-205',
+    zapsign_doc_token: 'zs-rec-205',
+    title: 'Contrato de Prestação Continuada — Cliente NewBrand',
+    status: 'awaiting_client',
+    party_type: 'client',
+    zapsign_description: null,
+    signers: [
+      { zapsign_token: 'sg-205-1', name: 'Gabriel Soares', email: 'gabriel@hiro.film', role: 'internal', position: 1, signed_at: iso(2 * day), refused_at: null },
+      { zapsign_token: 'sg-205-2', name: 'Diretor NewBrand', email: 'diretor@newbrand.com.br', role: 'external', position: 2, signed_at: null, refused_at: null },
+    ],
+    created_at: iso(3 * day),
+    sent_at: iso(2 * day + 12 * hour),
+    completed_at: null,
+    expires_at: null,
+    zapsign_doc_url: 'https://app.zapsign.com.br/verificar/zs-rec-205',
+    signed_pdf_url: null,
+    linked_client_id: 'crm-cliente-newbrand',
+    linked_client_name: 'Cliente NewBrand',
+    linked_project_id: null,
+    linked_project_name: null,
+    linked_supplier_id: null,
+    linked_supplier_name: null,
+    value_brl: null,
+    linked_at: iso(2 * day),
+    notes: null,
+    imported_at: iso(3 * day),
+    contract_class: 'recurring',
+    recurrence: {
+      start_date: future(0),
+      end_date: future(365 * day),
+      auto_renew: true,
+      notice_period_days: 60,
+      frequency: 'annual',
+      adjustment_index: 'IPCA',
+      adjustment_percent: null,
+      next_adjustment_at: future(365 * day),
+      amount_brl: null,
+    },
   },
 ];
