@@ -2533,6 +2533,36 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          created_at: string
+          granted: boolean
+          id: string
+          permission_key: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          granted?: boolean
+          id?: string
+          permission_key: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          granted?: boolean
+          id?: string
+          permission_key?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       saved_filters: {
         Row: {
           created_at: string
@@ -3610,7 +3640,15 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user" | "producao" | "marketing"
+      app_role:
+        | "admin"
+        | "user"
+        | "producao"
+        | "marketing"
+        | "comercial"
+        | "edicao"
+        | "financeiro"
+        | "convidado"
       platform_category:
         | "cloud"
         | "ai"
@@ -3748,7 +3786,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user", "producao", "marketing"],
+      app_role: [
+        "admin",
+        "user",
+        "producao",
+        "marketing",
+        "comercial",
+        "edicao",
+        "financeiro",
+        "convidado",
+      ],
       platform_category: [
         "cloud",
         "ai",
@@ -3763,3 +3810,4 @@ export const Constants = {
     },
   },
 } as const
+

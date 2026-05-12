@@ -6,7 +6,15 @@ import { AuthenticationError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
 import type { Json } from '@/integrations/supabase/types';
 
-export type UserRole = 'admin' | 'user' | 'producao' | 'marketing';
+export type UserRole =
+  | 'admin'
+  | 'user'
+  | 'producao'
+  | 'marketing'
+  | 'comercial'
+  | 'edicao'
+  | 'financeiro'
+  | 'convidado';
 
 interface AuthContextType {
   user: User | null;

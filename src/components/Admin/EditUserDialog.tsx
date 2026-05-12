@@ -27,7 +27,7 @@ interface User {
   display_name: string | null;
   position: string | null;
   department: string | null;
-  role: 'admin' | 'user' | 'producao' | 'marketing';
+  role: 'admin' | 'user' | 'producao' | 'marketing' | 'comercial' | 'edicao' | 'financeiro' | 'convidado';
   is_active: boolean;
 }
 
@@ -45,7 +45,7 @@ export function EditUserDialog({ open, onOpenChange, user, onSuccess }: EditUser
     displayName: '',
     position: '',
     department: '',
-    role: 'user' as 'admin' | 'user' | 'producao' | 'marketing',
+    role: 'user' as 'admin' | 'user' | 'producao' | 'marketing' | 'comercial' | 'edicao' | 'financeiro' | 'convidado',
   });
 
   // Update form when user changes
@@ -157,7 +157,7 @@ export function EditUserDialog({ open, onOpenChange, user, onSuccess }: EditUser
             <Label htmlFor="role">Permissão</Label>
             <Select
               value={formData.role}
-              onValueChange={(value: 'admin' | 'user' | 'producao' | 'marketing') => setFormData({ ...formData, role: value })}
+              onValueChange={(value: 'admin' | 'user' | 'producao' | 'marketing' | 'comercial' | 'edicao' | 'financeiro' | 'convidado') => setFormData({ ...formData, role: value })}
               disabled={isCurrentUser}
             >
               <SelectTrigger id="role">

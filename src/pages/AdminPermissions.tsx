@@ -7,7 +7,13 @@ import { Lock } from 'lucide-react';
 import { PageHeader } from '@/ds/components/toolbar';
 import { CollapsibleSection } from '@/ds/components/CollapsibleSection';
 import { StatusPill } from '@/ds/components/StatusPill';
-import { DEFAULT_PERMISSIONS as SHARED_DEFAULT_PERMISSIONS } from '@/lib/permissions';
+import type { PermissionKey } from '@/lib/permissions';
+import {
+  useRolePermissions,
+  useRolePermissionsFor,
+  useUpdateRolePermission,
+} from '@/hooks/useRolePermissions';
+import type { UserRole } from '@/hooks/useUserRole';
 
 /**
  * ============================================================
@@ -115,45 +121,48 @@ const ROLES = [
 
 type Role = typeof ROLES[number]['value'];
 
-/**
- * Initial state pulled from `src/lib/permissions.ts` — single source of truth.
- * In Etapa 2 this becomes the seed for the Supabase `role_permissions` table
- * and the state syncs from there. Admin always has everything (gated in UI).
- */
-const DEFAULT_PERMISSIONS: Record<Role, Record<string, boolean>> = Object.fromEntries(
-  Object.entries(SHARED_DEFAULT_PERMISSIONS).map(([role, map]) => [
-    role,
-    Object.fromEntries(Object.entries(map).filter(([, v]) => v === true)) as Record<string, boolean>,
-  ]),
-) as Record<Role, Record<string, boolean>>;
-
 export default function AdminPermissions() {
   const { isAdmin, roleLoading } = useAuthContext();
   const [selectedRole, setSelectedRole] = useState<Role>('user');
-  const [permissions, setPermissions] = useState<Record<Role, Record<string, boolean>>>(
-    DEFAULT_PERMISSIONS,
-  );
   const [pulsingKey, setPulsingKey] = useState<string | null>(null);
+
+  // Fetch persisted permissions; placeholderData garante que `rolePerms`
+  // já tem fallback na primeira renderização.
+  useRolePermissions();
+  const rolePerms = useRolePermissionsFor(selectedRole as UserRole);
+  const updatePermission = useUpdateRolePermission();
 
   if (roleLoading) return null;
   if (!isAdmin) return <Navigate to="/" replace />;
 
   const isAdminRole = selectedRole === 'admin';
-  const rolePerms = permissions[selectedRole] ?? {};
 
   const toggle = (key: string, next: boolean) => {
-    setPermissions((prev) => ({
-      ...prev,
-      [selectedRole]: { ...prev[selectedRole], [key]: next },
-    }));
-    // Pulse the row to confirm save
     setPulsingKey(key);
     setTimeout(() => setPulsingKey(null), 700);
-    // Auto-save: in Etapa 2 this calls Supabase.
-    toast.success(`Permissão atualizada`, {
-      description: `${ROLES.find((r) => r.value === selectedRole)?.label} · ${key} → ${next ? 'permitido' : 'bloqueado'}`,
-      duration: 2000,
-    });
+
+    updatePermission.mutate(
+      {
+        role: selectedRole as UserRole,
+        permission_key: key as PermissionKey,
+        granted: next,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Permissão atualizada', {
+            description: `${ROLES.find((r) => r.value === selectedRole)?.label} · ${key} → ${
+              next ? 'permitido' : 'bloqueado'
+            }`,
+            duration: 2000,
+          });
+        },
+        onError: (err) => {
+          toast.error('Não foi possível salvar', {
+            description: err instanceof Error ? err.message : 'Erro desconhecido',
+          });
+        },
+      },
+    );
   };
 
   return (

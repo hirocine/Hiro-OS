@@ -6,9 +6,16 @@
  * Each `PermissionKey` corresponds to one navigable area in the app.
  * Roles get a mapping of `key → boolean`. Admin always has everything.
  *
- * Today this data is hardcoded here (Etapa 1 — static defaults).
- * Etapa 2 will move it to a Supabase `role_permissions` table, but
- * everything that reads from `useCanAccess()` keeps working.
+ * Runtime model:
+ *   - Backend: Supabase `public.role_permissions` table (one row per
+ *     role × key with `granted boolean`).
+ *   - Frontend: `useRolePermissions()` (in src/hooks) fetches the
+ *     whole table once and calls `setRuntimePermissions()` below,
+ *     populating an in-memory map. `canAccess()` reads from that map.
+ *   - Fallback: if the cache hasn't loaded yet (or fails), we fall
+ *     back to `DEFAULT_PERMISSIONS` so the app keeps rendering
+ *     sensibly. Keep that map in sync with the seed in the
+ *     `create_role_permissions` migration.
  */
 
 import type { UserRole } from '@/hooks/useUserRole';
@@ -170,15 +177,38 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
 };
 
 /**
+ * Module-level runtime cache populated by `useRolePermissions()` when
+ * the Supabase query lands. `canAccess()` reads from this when set,
+ * else falls back to `DEFAULT_PERMISSIONS`.
+ *
+ * Module-level (instead of React context) so `canAccess()` stays a
+ * stateless function callable from anywhere — utilities, route
+ * guards, even outside React.
+ */
+let RUNTIME_PERMISSIONS: Record<UserRole, RoleMap> | null = null;
+
+/** Called by `useRolePermissions()` after fetching the Supabase table. */
+export function setRuntimePermissions(map: Record<UserRole, RoleMap>): void {
+  RUNTIME_PERMISSIONS = map;
+}
+
+/** Test/escape hatch: reset the runtime cache back to defaults. */
+export function resetRuntimePermissions(): void {
+  RUNTIME_PERMISSIONS = null;
+}
+
+/**
  * Stateless permission check — given a role and a key, returns whether
  * the role is allowed. Admin always passes. Null/unknown role denies.
  *
- * In Etapa 2, swap this to read from a Supabase-cached map instead of
- * DEFAULT_PERMISSIONS, keeping the same signature so call sites don't
- * need to change.
+ * Source order:
+ *   1. Runtime cache from Supabase (populated by `useRolePermissions`)
+ *   2. Hardcoded `DEFAULT_PERMISSIONS` fallback (first paint, query
+ *      not landed yet, or fetch failed)
  */
 export function canAccess(role: UserRole | null | undefined, key: PermissionKey): boolean {
   if (!role) return false;
   if (role === 'admin') return true;
-  return DEFAULT_PERMISSIONS[role]?.[key] === true;
+  const map = RUNTIME_PERMISSIONS ?? DEFAULT_PERMISSIONS;
+  return map[role]?.[key] === true;
 }

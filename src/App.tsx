@@ -68,9 +68,23 @@ const PlaygroundToolbar = lazy(() => import("./pages/_ds/PlaygroundToolbar"));
 const AdminPermissions = lazy(() => import("./pages/AdminPermissions"));
 
 import { RequirePermission } from "./components/RequirePermission";
+import { useRolePermissions } from "./hooks/useRolePermissions";
+
+/**
+ * Side-effect-only component that fires `useRolePermissions()` once
+ * inside the AuthProvider tree, populating the runtime cache that
+ * `canAccess()` reads from. Rendered as a sibling of the routes so
+ * it doesn't block first paint — `placeholderData: DEFAULT_PERMISSIONS`
+ * keeps the cache warm until the query lands.
+ */
+function RolePermissionsBootstrap() {
+  useRolePermissions();
+  return null;
+}
 
 const App = () => (
   <AuthProvider>
+    <RolePermissionsBootstrap />
     <TooltipProvider delayDuration={300} skipDelayDuration={100}>
       <Sonner position="top-center" />
       <BrowserRouter>

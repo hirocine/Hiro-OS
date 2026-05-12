@@ -35,7 +35,15 @@ export function AddUserDialog({ open, onOpenChange, onUserAdded }: AddUserDialog
     displayName: '',
     position: '',
     department: '',
-    role: 'user' as 'admin' | 'user',
+    role: 'user' as
+      | 'admin'
+      | 'user'
+      | 'producao'
+      | 'marketing'
+      | 'comercial'
+      | 'edicao'
+      | 'financeiro'
+      | 'convidado',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -186,20 +194,21 @@ export function AddUserDialog({ open, onOpenChange, onUserAdded }: AddUserDialog
             <Label htmlFor="role">Permissão</Label>
             <Select
               value={formData.role}
-              onValueChange={(value: 'admin' | 'user') => 
-                setFormData({ ...formData, role: value })
+              onValueChange={(value) =>
+                setFormData({ ...formData, role: value as typeof formData.role })
               }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a permissão" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="user">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-muted-foreground" />
-                    Usuário
-                  </div>
-                </SelectItem>
+                <SelectItem value="convidado">Convidado</SelectItem>
+                <SelectItem value="user">Usuário</SelectItem>
+                <SelectItem value="marketing">Marketing</SelectItem>
+                <SelectItem value="comercial">Comercial</SelectItem>
+                <SelectItem value="edicao">Edição</SelectItem>
+                <SelectItem value="producao">Produção</SelectItem>
+                <SelectItem value="financeiro">Financeiro</SelectItem>
                 <SelectItem value="admin">
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-primary" />
