@@ -352,6 +352,99 @@ export type Database = {
         }
         Relationships: []
       }
+      contracts: {
+        Row: {
+          completed_at: string | null
+          contract_class: string
+          expires_at: string | null
+          id: string
+          imported_at: string
+          linked_at: string | null
+          linked_by: string | null
+          linked_client_id: string | null
+          linked_client_name: string | null
+          linked_project_id: string | null
+          linked_project_name: string | null
+          linked_supplier_id: string | null
+          linked_supplier_name: string | null
+          notes: string | null
+          party_type: string
+          recurrence: Json | null
+          sent_at: string | null
+          signed_pdf_url: string | null
+          signers: Json
+          status: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          value_brl: number | null
+          zapsign_created_at: string
+          zapsign_description: string | null
+          zapsign_doc_token: string
+          zapsign_doc_url: string
+        }
+        Insert: {
+          completed_at?: string | null
+          contract_class?: string
+          expires_at?: string | null
+          id?: string
+          imported_at?: string
+          linked_at?: string | null
+          linked_by?: string | null
+          linked_client_id?: string | null
+          linked_client_name?: string | null
+          linked_project_id?: string | null
+          linked_project_name?: string | null
+          linked_supplier_id?: string | null
+          linked_supplier_name?: string | null
+          notes?: string | null
+          party_type?: string
+          recurrence?: Json | null
+          sent_at?: string | null
+          signed_pdf_url?: string | null
+          signers?: Json
+          status: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          value_brl?: number | null
+          zapsign_created_at: string
+          zapsign_description?: string | null
+          zapsign_doc_token: string
+          zapsign_doc_url: string
+        }
+        Update: {
+          completed_at?: string | null
+          contract_class?: string
+          expires_at?: string | null
+          id?: string
+          imported_at?: string
+          linked_at?: string | null
+          linked_by?: string | null
+          linked_client_id?: string | null
+          linked_client_name?: string | null
+          linked_project_id?: string | null
+          linked_project_name?: string | null
+          linked_supplier_id?: string | null
+          linked_supplier_name?: string | null
+          notes?: string | null
+          party_type?: string
+          recurrence?: Json | null
+          sent_at?: string | null
+          signed_pdf_url?: string | null
+          signers?: Json
+          status?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          value_brl?: number | null
+          zapsign_created_at?: string
+          zapsign_description?: string | null
+          zapsign_doc_token?: string
+          zapsign_doc_url?: string
+        }
+        Relationships: []
+      }
       crm_activities: {
         Row: {
           activity_type: string
@@ -3622,6 +3715,10 @@ export type Database = {
         }[]
       }
       has_marketing_access: { Args: { _user_id: string }; Returns: boolean }
+      has_permission: {
+        Args: { _permission: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

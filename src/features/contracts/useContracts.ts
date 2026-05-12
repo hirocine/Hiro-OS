@@ -1,4 +1,21 @@
-import { useCallback, useMemo, useState } from 'react';
+/**
+ * ════════════════════════════════════════════════════════════════
+ * useContracts — Supabase-backed (substitui o mock)
+ * ════════════════════════════════════════════════════════════════
+ *
+ * Lê de `public.contracts` (toda a tabela — RLS filtra por
+ * `juridico.contratos` permission no banco). Mutations cobrem
+ * apenas os campos de enriquecimento (linkagem, notas, classe,
+ * recurrence) — o mirror do ZapSign vem só via webhook na Edge
+ * Function.
+ *
+ * A página continua igual: a API pública (items + linkContract +
+ * setNotes + selectors STATUS_LABEL/STATUS_TONE/etc) é a mesma.
+ */
+
+import { useEffect, useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import type {
   Contract,
   ContractStatus,
@@ -7,79 +24,189 @@ import type {
   RecurringTab,
   RecurringVigencia,
 } from './types';
-import { MOCK_CONTRACTS } from './mock-data';
+
+const QUERY_KEY = ['contracts', 'list'] as const;
+
+interface DbContractRow {
+  id: string;
+  zapsign_doc_token: string;
+  title: string;
+  status: string;
+  party_type: string;
+  zapsign_description: string | null;
+  zapsign_doc_url: string;
+  signed_pdf_url: string | null;
+  zapsign_created_at: string;
+  sent_at: string | null;
+  completed_at: string | null;
+  expires_at: string | null;
+  signers: unknown;
+  contract_class: string;
+  recurrence: unknown;
+  linked_client_id: string | null;
+  linked_client_name: string | null;
+  linked_project_id: string | null;
+  linked_project_name: string | null;
+  linked_supplier_id: string | null;
+  linked_supplier_name: string | null;
+  value_brl: number | null;
+  linked_at: string | null;
+  linked_by: string | null;
+  notes: string | null;
+  imported_at: string;
+  updated_at: string;
+}
+
+function rowToContract(row: DbContractRow): Contract {
+  return {
+    id: row.id,
+    zapsign_doc_token: row.zapsign_doc_token,
+    title: row.title,
+    status: row.status as Contract['status'],
+    party_type: row.party_type as Contract['party_type'],
+    signers: (row.signers as Contract['signers']) ?? [],
+    zapsign_description: row.zapsign_description,
+    zapsign_doc_url: row.zapsign_doc_url,
+    signed_pdf_url: row.signed_pdf_url,
+    created_at: row.zapsign_created_at,
+    sent_at: row.sent_at,
+    completed_at: row.completed_at,
+    expires_at: row.expires_at,
+    contract_class: row.contract_class as Contract['contract_class'],
+    recurrence: (row.recurrence as Contract['recurrence']) ?? null,
+    linked_client_id: row.linked_client_id,
+    linked_client_name: row.linked_client_name,
+    linked_project_id: row.linked_project_id,
+    linked_project_name: row.linked_project_name,
+    linked_supplier_id: row.linked_supplier_id,
+    linked_supplier_name: row.linked_supplier_name,
+    value_brl: row.value_brl,
+    linked_at: row.linked_at,
+    notes: row.notes,
+    imported_at: row.imported_at,
+  };
+}
+
+async function fetchContracts(): Promise<Contract[]> {
+  const { data, error } = await supabase
+    .from('contracts')
+    .select('*')
+    .order('zapsign_created_at', { ascending: false })
+    .limit(500);
+  if (error) throw error;
+  return (data as DbContractRow[]).map(rowToContract);
+}
 
 /**
- * Mock-backed state hook. Public surface matches what the real
- * Supabase-backed version will expose, so swapping later doesn't
- * touch the page.
+ * Public hook used by the Contracts pages. API matches the previous
+ * mock implementation so the page UI is untouched.
  */
 export function useContracts() {
-  const [items, setItems] = useState<Contract[]>(MOCK_CONTRACTS);
+  const queryClient = useQueryClient();
 
-  const update = useCallback((id: string, patch: Partial<Contract>) => {
-    setItems((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
-  }, []);
+  const query = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: fetchContracts,
+    staleTime: 30_000,
+  });
 
-  /**
-   * Manually attach a contract to a project / client / supplier.
-   * Sets `linked_at` so the row leaves the "Aguardando vinculação"
-   * bucket.
-   */
-  const linkContract = useCallback(
-    (
-      id: string,
-      links: {
-        project_id?: string | null;
-        project_name?: string | null;
-        client_id?: string | null;
-        client_name?: string | null;
-        supplier_id?: string | null;
-        supplier_name?: string | null;
-      },
-    ) => {
-      update(id, {
-        linked_project_id: links.project_id ?? null,
-        linked_project_name: links.project_name ?? null,
-        linked_client_id: links.client_id ?? null,
-        linked_client_name: links.client_name ?? null,
-        linked_supplier_id: links.supplier_id ?? null,
-        linked_supplier_name: links.supplier_name ?? null,
-        linked_at: new Date().toISOString(),
-      });
+  const items: Contract[] = query.data ?? [];
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+
+  const linkMut = useMutation({
+    mutationFn: async (input: {
+      id: string;
+      project_id?: string | null;
+      project_name?: string | null;
+      client_id?: string | null;
+      client_name?: string | null;
+      supplier_id?: string | null;
+      supplier_name?: string | null;
+    }) => {
+      const { error } = await supabase
+        .from('contracts')
+        .update({
+          linked_project_id: input.project_id ?? null,
+          linked_project_name: input.project_name ?? null,
+          linked_client_id: input.client_id ?? null,
+          linked_client_name: input.client_name ?? null,
+          linked_supplier_id: input.supplier_id ?? null,
+          linked_supplier_name: input.supplier_name ?? null,
+          linked_at: new Date().toISOString(),
+        })
+        .eq('id', input.id);
+      if (error) throw error;
     },
-    [update],
-  );
+    onSuccess: refresh,
+  });
 
-  /** Update the free-form notes. */
-  const setNotes = useCallback(
-    (id: string, notes: string) => update(id, { notes: notes.trim() || null }),
-    [update],
-  );
+  const notesMut = useMutation({
+    mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
+      const { error } = await supabase
+        .from('contracts')
+        .update({ notes: notes.trim() || null })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: refresh,
+  });
+
+  const linkContract = (
+    id: string,
+    links: Parameters<typeof linkMut.mutate>[0] extends infer T
+      ? Omit<Extract<T, { id: string }>, 'id'>
+      : never,
+  ) => linkMut.mutate({ id, ...links });
+
+  const setNotes = (id: string, notes: string) => notesMut.mutate({ id, notes });
 
   return { items, linkContract, setNotes };
 }
 
+/**
+ * Realtime subscription pra invalidar o cache quando algo muda
+ * (webhook do ZapSign escreve, outra aba edita, etc.). Mount uma
+ * vez na raiz da app, próximo ao session bootstrap.
+ */
+export function useContractsRealtime() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('contracts')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'contracts' },
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+}
+
 /** Sidebar-level count of contracts that need attention. */
 export function useContractsNeedingAttention(): number {
+  const { items } = useContracts();
   return useMemo(() => {
-    return MOCK_CONTRACTS.filter((c) => {
-      // Needs linking (just landed via webhook)
+    return items.filter((c) => {
       if (!c.linked_at) return true;
-      // Stuck — internal hasn't signed for a while
       if (c.status === 'awaiting_internal') return true;
-      // Recorrente vencendo em ≤ 30 dias OU já vencido sem renovação
       if (c.contract_class === 'recurring') {
         const v = recurringVigencia(c);
         if (v === 'expiring_critical' || v === 'expired') return true;
       }
       return false;
     }).length;
-  }, []);
+  }, [items]);
 }
 
 // ─────────────────────────────────────────────────────────────────
 // Selectors + tab filtering — kept here so the page stays simple.
+// Idênticos à versão mock anterior.
 // ─────────────────────────────────────────────────────────────────
 
 export const STATUS_LABEL: Record<ContractStatus, string> = {
@@ -127,26 +254,13 @@ export function countSignedSigners(c: Contract): { signed: number; total: number
 // Recorrentes — derived state focused on vigência (juridical view)
 // ─────────────────────────────────────────────────────────────────
 
-/** ms / day, for date math throughout. */
 const MS_DAY = 24 * 60 * 60 * 1000;
 
-/** Whole number of days from now until `iso`. Negative means in the past. */
 export function daysUntil(iso: string | null): number | null {
   if (!iso) return null;
   return Math.floor((new Date(iso).getTime() - Date.now()) / MS_DAY);
 }
 
-/**
- * Compute the juridical lifecycle bucket for a recurring contract.
- * Returns `null` for project-class contracts (callers should ignore).
- *
- *   pending             — recurring contract not yet fully signed
- *   active              — signed and dentro da vigência (mais de 90 dias até o fim)
- *   expiring_soon       — vence em 31..90 dias
- *   expiring_critical   — vence em ≤ 30 dias (atenção, aviso prévio pode ter passado)
- *   expired             — passou da end_date e não renovou
- *   terminated          — cancelled / refused / expired (status terminal)
- */
 export function recurringVigencia(c: Contract): RecurringVigencia | null {
   if (c.contract_class !== 'recurring' || !c.recurrence) return null;
   if (['cancelled', 'refused', 'expired'].includes(c.status)) return 'terminated';
@@ -192,11 +306,6 @@ export function isVisibleInRecurringTab(c: Contract, tab: RecurringTab): boolean
   }
 }
 
-/**
- * Computes when the latest moment to send a rescision notice is —
- * i.e. `end_date - notice_period_days`. Used by the detail UI to show
- * "última chance de rescindir sem ônus" type messaging.
- */
 export function noticeDeadline(c: Contract): { date: string; days_left: number } | null {
   if (c.contract_class !== 'recurring' || !c.recurrence) return null;
   const end = new Date(c.recurrence.end_date).getTime();
@@ -207,7 +316,6 @@ export function noticeDeadline(c: Contract): { date: string; days_left: number }
   };
 }
 
-/** Lookup for the label of a recurrence frequency. */
 export const FREQUENCY_LABEL: Record<NonNullable<Contract['recurrence']>['frequency'], string> = {
   monthly:   'Mensal',
   quarterly: 'Trimestral',

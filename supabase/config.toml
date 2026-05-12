@@ -1,1 +1,8 @@
 project_id = "oddxoicvreymmeynfxxj"
+
+# ─── Edge Functions ────────────────────────────────────────────────
+# ZapSign chama esse webhook de fora do Supabase, sem JWT do Supabase.
+# Autenticação é feita dentro da função via header
+# `Authorization: Bearer <ZAPSIGN_WEBHOOK_SECRET>` — ver index.ts.
+[functions.zapsign-webhook]
+verify_jwt = false

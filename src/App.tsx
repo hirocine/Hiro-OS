@@ -70,15 +70,18 @@ const AdminPermissions = lazy(() => import("./pages/AdminPermissions"));
 import { RequirePermission } from "./components/RequirePermission";
 import { useRolePermissions } from "./hooks/useRolePermissions";
 import { useInboxRealtime } from "./features/inbox/useInbox";
+import { useContractsRealtime } from "./features/contracts/useContracts";
 
 /**
  * Side-effect-only component that fires hooks that need to live for
  * the lifetime of an authenticated session:
  *
- *   - useRolePermissions() — keeps the role × permission map in the
+ *   - useRolePermissions()    — keeps the role × permission map in the
  *     runtime cache that canAccess() reads from.
- *   - useInboxRealtime()   — subscribes to inbox_items changes for
+ *   - useInboxRealtime()      — subscribes to inbox_items changes for
  *     the current user; sidebar badge + page list refresh live.
+ *   - useContractsRealtime()  — subscribes to contracts changes (ZapSign
+ *     webhook writes, edits from other tabs). Cheap no-op until UI mounts.
  *
  * Rendered as a sibling of the routes (no children) so they don't
  * block first paint.
@@ -86,6 +89,7 @@ import { useInboxRealtime } from "./features/inbox/useInbox";
 function SessionBootstrap() {
   useRolePermissions();
   useInboxRealtime();
+  useContractsRealtime();
   return null;
 }
 
