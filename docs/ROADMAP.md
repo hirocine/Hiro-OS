@@ -12,8 +12,13 @@ quando inicia, conclui, ou quando uma ideia muda de tier.
 
 | ferramenta | status | notas |
 |---|---|---|
-| Caixa de Entrada | ✅ MVP UI-first com mock data | Próximo: trocar mock por Supabase real |
-| Jurídico | 🟡 em design | Próxima ferramenta a entrar |
+| Caixa de Entrada | 🟡 UI pronta · **escondida em produção** | Aguarda backend Supabase + triggers |
+| Jurídico/Contratos | 🟡 UI pronta · **escondida em produção** | Aguarda backend Supabase + integração ZapSign webhook (modelo shadow) |
+
+> **Re-habilitar essas features em prod:** descomentar entradas em
+> `src/ds/nav-data.tsx`, rotas em `src/App.tsx` e toggles em
+> `src/pages/AdminPermissions.tsx`. Todos marcados com `// hidden until ... ships`.
+> Código das pages + mocks + hooks já tá no codebase, só dormente.
 
 ---
 

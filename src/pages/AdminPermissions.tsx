@@ -37,7 +37,7 @@ const PERMISSIONS: PermissionSection[] = [
     title: 'Dia a Dia',
     items: [
       { key: 'home', label: 'Home' },
-      { key: 'inbox', label: 'Caixa de Entrada' },
+      // { key: 'inbox', label: 'Caixa de Entrada' }, // hidden until Inbox backend ships
       { key: 'tarefas', label: 'Tarefas' },
     ],
   },
@@ -87,12 +87,13 @@ const PERMISSIONS: PermissionSection[] = [
       { key: 'armazenamento', label: 'Armazenamento' },
     ],
   },
-  {
-    title: 'Jurídico',
-    items: [
-      { key: 'juridico.contratos', label: 'Contratos', parent: 'Jurídico' },
-    ],
-  },
+  // Jurídico section hidden until backend + ZapSign integration are wired.
+  // {
+  //   title: 'Jurídico',
+  //   items: [
+  //     { key: 'juridico.contratos', label: 'Contratos', parent: 'Jurídico' },
+  //   ],
+  // },
   {
     title: 'RH',
     items: [

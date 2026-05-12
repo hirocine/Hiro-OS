@@ -99,10 +99,10 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<RequirePermission permission="home"><Home /></RequirePermission>} />
-                <Route path="caixa-de-entrada" element={<RequirePermission permission="inbox"><Inbox /></RequirePermission>} />
-                <Route path="juridico" element={<Navigate to="/juridico/contratos" replace />} />
-                <Route path="juridico/contratos" element={<RequirePermission permission="juridico.contratos"><Contracts /></RequirePermission>} />
-                <Route path="juridico/contratos/:id" element={<RequirePermission permission="juridico.contratos"><ContractDetail /></RequirePermission>} />
+                {/* Caixa de Entrada e Jurídico/Contratos ficam escondidos
+                 *  até backend Supabase + integração ZapSign ficarem prontos.
+                 *  Lazy imports preservados; basta restaurar as três rotas
+                 *  abaixo (mais entradas no nav-data + AdminPermissions). */}
                 <Route path="dashboard" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro/dashboard" element={<RequirePermission permission="financeiro.dashboard"><Dashboard /></RequirePermission>} />
