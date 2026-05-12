@@ -11,6 +11,8 @@ import { NavigationBlockerProvider } from "./contexts/NavigationBlockerContext";
 // Lazy load pages for better performance
 const Home = lazy(() => import("./pages/Home"));
 const Inbox = lazy(() => import("./pages/Inbox"));
+const Contracts = lazy(() => import("./pages/Contracts"));
+const ContractDetail = lazy(() => import("./pages/ContractDetail"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Equipment = lazy(() => import("./pages/Equipment"));
 const AddEquipment = lazy(() => import("./pages/AddEquipment"));
@@ -98,6 +100,9 @@ const App = () => (
             }>
               <Route index element={<RequirePermission permission="home"><Home /></RequirePermission>} />
                 <Route path="caixa-de-entrada" element={<RequirePermission permission="inbox"><Inbox /></RequirePermission>} />
+                <Route path="juridico" element={<Navigate to="/juridico/contratos" replace />} />
+                <Route path="juridico/contratos" element={<RequirePermission permission="juridico.contratos"><Contracts /></RequirePermission>} />
+                <Route path="juridico/contratos/:id" element={<RequirePermission permission="juridico.contratos"><ContractDetail /></RequirePermission>} />
                 <Route path="dashboard" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro/dashboard" element={<RequirePermission permission="financeiro.dashboard"><Dashboard /></RequirePermission>} />

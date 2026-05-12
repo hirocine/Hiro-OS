@@ -119,6 +119,16 @@ export const NAV: NavSection[] = [
     ],
   },
   {
+    title: "Jurídico",
+    items: [
+      { name: "Jurídico", href: "/juridico", icon: I.scale,
+        children: [
+          { name: "Contratos", href: "/juridico/contratos", permission: "juridico.contratos" },
+        ],
+      },
+    ],
+  },
+  {
     title: "Tecnologia",
     items: [
       { name: "Plataformas",   href: "/plataformas", icon: I.key,   permission: "plataformas" },

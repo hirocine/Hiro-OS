@@ -39,6 +39,7 @@ export type PermissionKey =
   | 'plataformas'
   | 'armazenamento'
   | 'politicas'
+  | 'juridico.contratos'
   | 'admin';
 
 /** All known permission keys (handy for iteration / seed). */
@@ -68,6 +69,7 @@ export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'plataformas',
   'armazenamento',
   'politicas',
+  'juridico.contratos',
   'admin',
 ];
 
@@ -105,6 +107,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     'crm.atividades': true,
     'crm.dashboard': true,
     orcamentos: true,
+    'juridico.contratos': true,
     plataformas: true,
     armazenamento: true,
     politicas: true,
@@ -129,6 +132,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     'crm.atividades': true,
     'crm.dashboard': true,
     orcamentos: true,
+    'juridico.contratos': true,
     politicas: true,
   },
   edicao: {
@@ -150,6 +154,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     'financeiro.capex': true,
     orcamentos: true,
     'equipamentos.inventario': true,
+    'juridico.contratos': true,
     politicas: true,
   },
   user: {

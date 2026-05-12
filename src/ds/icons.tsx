@@ -38,6 +38,8 @@ import {
   Lock,
   Filter,
   Download,
+  Scale,
+  FileSignature,
   type LucideProps,
 } from "lucide-react";
 
@@ -85,6 +87,8 @@ export const I = {
   instagram:i(Instagram),
   image:    i(ImageIcon),
   lock:     i(Lock),
+  scale:    i(Scale),          // Jurídico section
+  contract: i(FileSignature),  // Contratos
 
   // Topbar / chrome
   search:   i(Search),

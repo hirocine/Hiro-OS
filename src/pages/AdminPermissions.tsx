@@ -88,6 +88,12 @@ const PERMISSIONS: PermissionSection[] = [
     ],
   },
   {
+    title: 'Jurídico',
+    items: [
+      { key: 'juridico.contratos', label: 'Contratos', parent: 'Jurídico' },
+    ],
+  },
+  {
     title: 'RH',
     items: [
       { key: 'politicas', label: 'Políticas' },
