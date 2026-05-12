@@ -102,4 +102,46 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Bump the warning threshold a bit — the lazy ImportDialog chunk
+    // (xlsx + papaparse) is intentionally large and won't shrink.
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        // Split node_modules into logical vendor chunks. The main
+        // benefit isn't smaller total JS but rather (a) the initial
+        // app chunk getting much lighter and (b) vendor code being
+        // cached separately from app code — so a typical deploy only
+        // invalidates a small chunk instead of the whole monolith.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          // Extract only the well-known shared vendors. Everything
+          // else (jspdf, html2canvas, xlsx, papaparse, @tiptap, …)
+          // is left alone so Rollup can fold it into whichever lazy
+          // page actually needs it — that's what kept the original
+          // graph healthy before this manualChunks block existed.
+          //
+          // Patterns use `/node_modules/<pkg>/` instead of bare
+          // `/<pkg>/` so we don't accidentally swallow look-alike
+          // packages (e.g. `react-day-picker` is NOT React core).
+          if (
+            id.includes('/node_modules/react/') ||
+            id.includes('/node_modules/react-dom/') ||
+            id.includes('/node_modules/react-router/') ||
+            id.includes('/node_modules/react-router-dom/') ||
+            id.includes('/node_modules/scheduler/')
+          ) return 'react-vendor';
+          if (id.includes('/node_modules/@radix-ui/')) return 'radix-vendor';
+          if (id.includes('/node_modules/@supabase/')) return 'supabase-vendor';
+          if (id.includes('/node_modules/@tanstack/')) return 'query-vendor';
+          if (id.includes('/node_modules/date-fns/')) return 'date-vendor';
+          if (id.includes('/node_modules/lucide-react/')) return 'icons-vendor';
+          // Recharts is intentionally NOT extracted — letting Rollup
+          // fold it into the pages that use it keeps initial JS lean
+          // for the (majority) of routes that don't show charts.
+          return undefined;
+        },
+      },
+    },
+  },
 }));
