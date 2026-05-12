@@ -1,4 +1,5 @@
 import { LucideIcon } from 'lucide-react';
+import { CountUp } from '@/ds/components/CountUp';
 
 interface StatsCardProps {
   title: string;
@@ -9,6 +10,12 @@ interface StatsCardProps {
   /** Legacy bg class — ignored, DS uses hairline */
   bgColor?: string;
   description?: string;
+  /**
+   * Disable the count-up animation for the big number. Useful when the
+   * card flips frequently (e.g. real-time data) or when you want a
+   * static read. Strings always render as-is.
+   */
+  noAnimate?: boolean;
 }
 
 const toneFor = (color?: string): string => {
@@ -22,7 +29,14 @@ const toneFor = (color?: string): string => {
   return 'hsl(var(--ds-fg-1))';
 };
 
-export function StatsCard({ title, value, icon: Icon, color, description }: StatsCardProps) {
+export function StatsCard({
+  title,
+  value,
+  icon: Icon,
+  color,
+  description,
+  noAnimate,
+}: StatsCardProps) {
   const tone = toneFor(color);
   return (
     <div
@@ -71,7 +85,7 @@ export function StatsCard({ title, value, icon: Icon, color, description }: Stat
             color: tone,
           }}
         >
-          {typeof value === 'number' ? value.toLocaleString('pt-BR') : value}
+          {typeof value === 'number' ? <CountUp value={value} disabled={noAnimate} /> : value}
         </span>
         {description && (
           <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', marginTop: 2, lineHeight: 1.3 }}>
