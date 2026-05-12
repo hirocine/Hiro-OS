@@ -20,9 +20,11 @@ const ProjectVerification = lazy(() => import("./pages/ProjectVerification"));
 const ProjectWithdrawal = lazy(() => import("./pages/ProjectWithdrawal"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Auth = lazy(() => import("./pages/Auth"));
-const Admin = lazy(() => import("./pages/Admin"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminLogs = lazy(() => import("./pages/admin/AdminLogs"));
+const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
+const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
+const AdminSystem = lazy(() => import("./pages/admin/AdminSystem"));
 const SSDs = lazy(() => import("./pages/SSDs"));
 const PlatformAccesses = lazy(() => import("./pages/PlatformAccesses"));
 const Policies = lazy(() => import("./pages/Policies"));
@@ -168,9 +170,9 @@ const App = () => (
                 <Route path="administracao/usuarios" element={<RequirePermission permission="admin"><AdminUsers /></RequirePermission>} />
                 <Route path="administracao/permissoes" element={<RequirePermission permission="admin"><AdminPermissions /></RequirePermission>} />
                 <Route path="administracao/logs" element={<RequirePermission permission="admin"><AdminLogs /></RequirePermission>} />
-                <Route path="administracao/categorias" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
-                <Route path="administracao/notificacoes" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
-                <Route path="administracao/sistema" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
+                <Route path="administracao/categorias" element={<RequirePermission permission="admin"><AdminCategories /></RequirePermission>} />
+                <Route path="administracao/notificacoes" element={<RequirePermission permission="admin"><AdminNotifications /></RequirePermission>} />
+                <Route path="administracao/sistema" element={<RequirePermission permission="admin"><AdminSystem /></RequirePermission>} />
                 <Route path="administracao/integracoes" element={<RequirePermission permission="admin"><MarketingIntegrations /></RequirePermission>} />
               </Route>
               <Route path="*" element={
