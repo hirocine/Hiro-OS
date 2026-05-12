@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -16,6 +17,15 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
+    // Generates `dist/stats.html` after every prod build — open it
+    // to inspect what's inside each chunk. Set ANALYZE=1 to also
+    // pop the report open automatically.
+    mode === 'production' && visualizer({
+      filename: 'dist/stats.html',
+      gzipSize: true,
+      brotliSize: true,
+      open: process.env.ANALYZE === '1',
+    }),
     mode === 'production' && VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
