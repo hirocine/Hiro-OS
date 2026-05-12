@@ -38,6 +38,7 @@ import type {
 } from '@/features/contracts/types';
 import { StatusPill } from '@/ds/components/StatusPill';
 import { Money } from '@/ds/components/Money';
+import { StatsCard, StatsCardGrid } from '@/components/ui/stats-card';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -205,6 +206,11 @@ function ProjectView({
   const inProgressCount = items.filter((c) => isVisibleInTab(c, 'in_progress')).length;
   const signedCount = items.filter((c) => isVisibleInTab(c, 'signed')).length;
   const archivedCount = items.filter((c) => isVisibleInTab(c, 'archived')).length;
+  const signedRecentCount = items.filter((c) => {
+    if (c.status !== 'signed' || !c.completed_at) return false;
+    const days = (Date.now() - new Date(c.completed_at).getTime()) / (24 * 3600 * 1000);
+    return days <= 30;
+  }).length;
 
   const visible = useMemo(() => {
     const q = search.toLowerCase();
@@ -227,6 +233,40 @@ function ProjectView({
 
   return (
     <>
+      {/* Resumo numérico — visão de "onde está cada coisa" */}
+      <div style={{ marginBottom: 16 }}>
+        <StatsCardGrid columns={4}>
+          <StatsCard
+            title="Em andamento"
+            value={inProgressCount}
+            icon={Clock}
+            color="info"
+            description="Rascunho ou aguardando assinatura"
+          />
+          <StatsCard
+            title="Sem vinculação"
+            value={unlinkedCount}
+            icon={Link2}
+            color={unlinkedCount > 0 ? 'warning' : 'muted'}
+            description={unlinkedCount > 0 ? 'Vincule a um projeto ou cliente' : 'Tudo vinculado'}
+          />
+          <StatsCard
+            title="Assinados (30d)"
+            value={signedRecentCount}
+            icon={Check}
+            color="success"
+            description={`${signedCount} no total`}
+          />
+          <StatsCard
+            title="Arquivados"
+            value={archivedCount}
+            icon={X}
+            color="muted"
+            description="Recusados, expirados, cancelados"
+          />
+        </StatsCardGrid>
+      </div>
+
       {unlinkedCount > 0 && tab !== 'unlinked' && (
         <UnlinkedBanner count={unlinkedCount} onShow={() => setTab('unlinked')} />
       )}
@@ -360,6 +400,12 @@ function RecurringView({
     return v === 'expiring_critical' || v === 'expired';
   }).length;
 
+  // Auto-renove e reajuste — métricas úteis pro RH/jurídico
+  const autoRenewCount = items.filter((c) => {
+    const v = recurringVigencia(c);
+    return c.recurrence?.auto_renew && (v === 'active' || v === 'expiring_soon' || v === 'expiring_critical');
+  }).length;
+
   const visible = useMemo(() => {
     const q = search.toLowerCase();
     return items
@@ -390,6 +436,44 @@ function RecurringView({
 
   return (
     <>
+      {/* Resumo numérico — foco em vigência (visão jurídica) */}
+      <div style={{ marginBottom: 16 }}>
+        <StatsCardGrid columns={4}>
+          <StatsCard
+            title="Vigentes"
+            value={activeCount}
+            icon={Check}
+            color="success"
+            description={
+              autoRenewCount > 0
+                ? `${autoRenewCount} com auto-renovação`
+                : 'Contratos dentro da vigência'
+            }
+          />
+          <StatsCard
+            title="Vencendo (≤ 90d)"
+            value={expiringCount}
+            icon={Clock}
+            color={expiringCount > 0 ? 'warning' : 'muted'}
+            description={expiringCount > 0 ? 'Janela de renegociação aberta' : 'Sem renovações no horizonte'}
+          />
+          <StatsCard
+            title="Vencidos"
+            value={expiredCount}
+            icon={AlertCircle}
+            color={expiredCount > 0 ? 'destructive' : 'muted'}
+            description={expiredCount > 0 ? 'Passaram da validade sem renovar' : 'Tudo em ordem'}
+          />
+          <StatsCard
+            title="Em assinatura"
+            value={pendingCount}
+            icon={FileSignature}
+            color="info"
+            description="No fluxo do ZapSign"
+          />
+        </StatsCardGrid>
+      </div>
+
       {criticalCount > 0 && tab !== 'expiring' && tab !== 'expired' && (
         <CriticalBanner count={criticalCount} onShow={() => setTab('expiring')} />
       )}
