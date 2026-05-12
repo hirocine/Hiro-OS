@@ -58,7 +58,15 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { userId, displayName, position, department, role } = await req.json();
+    const {
+      userId,
+      displayName,
+      position,
+      department,
+      role,
+      birthDate,   // YYYY-MM-DD or null
+      hiredAt,     // YYYY-MM-DD or null
+    } = await req.json();
 
     if (!userId) {
       return new Response(
@@ -67,7 +75,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Managing user:', { userId, displayName, position, department, role });
+    console.log('Managing user:', { userId, displayName, position, department, role, birthDate, hiredAt });
 
     // Prevent admin from changing their own role
     if (role && userId === callingUser.id) {
@@ -84,6 +92,8 @@ serve(async (req) => {
         display_name: displayName,
         position: position,
         department: department,
+        birth_date: birthDate ?? null,
+        hired_at: hiredAt ?? null,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', userId);
@@ -121,7 +131,7 @@ serve(async (req) => {
       _table_name: 'profiles',
       _record_id: userId,
       _old_values: null,
-      _new_values: { displayName, position, department, role }
+      _new_values: { displayName, position, department, role, birthDate, hiredAt }
     });
 
     console.log('User updated successfully:', userId);

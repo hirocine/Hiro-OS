@@ -103,6 +103,8 @@ const PERMISSIONS: PermissionSection[] = [
   {
     title: 'RH',
     items: [
+      { key: 'rh.datas',  label: 'Datas' },
+      { key: 'rh.wiki',   label: 'Wiki' },
       { key: 'politicas', label: 'Políticas' },
     ],
   },

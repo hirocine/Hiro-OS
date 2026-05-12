@@ -35,6 +35,8 @@ interface User {
   last_sign_in_at: string | null;
   email_confirmed_at: string | null;
   is_active: boolean;
+  birth_date: string | null;
+  hired_at: string | null;
 }
 
 const ROLE_LABEL: Record<string, string> = {
@@ -77,18 +79,26 @@ export default function AdminUsers() {
         last_sign_in_at: u.last_sign_in_at || null,
         email_confirmed_at: u.email_confirmed_at || null,
         is_active: u.is_active ?? true,
+        birth_date: null,
+        hired_at: null,
       }));
 
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, is_approved');
-      const approvalMap: Record<string, boolean> = {};
+        .select('user_id, is_approved, birth_date, hired_at');
+      const profileMap: Record<string, { is_approved: boolean; birth_date: string | null; hired_at: string | null }> = {};
       (profiles || []).forEach((p: any) => {
-        approvalMap[p.user_id] = p.is_approved ?? false;
+        profileMap[p.user_id] = {
+          is_approved: p.is_approved ?? false,
+          birth_date: p.birth_date ?? null,
+          hired_at: p.hired_at ?? null,
+        };
       });
       const usersWithApproval = usersData.map((u) => ({
         ...u,
-        is_approved: approvalMap[u.id] ?? true,
+        is_approved: profileMap[u.id]?.is_approved ?? true,
+        birth_date: profileMap[u.id]?.birth_date ?? null,
+        hired_at: profileMap[u.id]?.hired_at ?? null,
       }));
 
       setUsers(usersWithApproval);

@@ -29,6 +29,8 @@ interface User {
   department: string | null;
   role: 'admin' | 'user' | 'producao' | 'marketing' | 'comercial' | 'edicao' | 'financeiro' | 'convidado';
   is_active: boolean;
+  birth_date?: string | null;
+  hired_at?: string | null;
 }
 
 interface EditUserDialogProps {
@@ -46,6 +48,8 @@ export function EditUserDialog({ open, onOpenChange, user, onSuccess }: EditUser
     position: '',
     department: '',
     role: 'user' as 'admin' | 'user' | 'producao' | 'marketing' | 'comercial' | 'edicao' | 'financeiro' | 'convidado',
+    birthDate: '',
+    hiredAt: '',
   });
 
   // Update form when user changes
@@ -56,6 +60,8 @@ export function EditUserDialog({ open, onOpenChange, user, onSuccess }: EditUser
         position: user.position || '',
         department: user.department || '',
         role: user.role || 'user',
+        birthDate: user.birth_date || '',
+        hiredAt: user.hired_at || '',
       });
     }
   }, [user]);
@@ -81,6 +87,8 @@ export function EditUserDialog({ open, onOpenChange, user, onSuccess }: EditUser
           position: formData.position || null,
           department: formData.department || null,
           role: formData.role,
+          birthDate: formData.birthDate || null,
+          hiredAt: formData.hiredAt || null,
         },
       });
 
@@ -151,6 +159,27 @@ export function EditUserDialog({ open, onOpenChange, user, onSuccess }: EditUser
               onChange={(e) => setFormData({ ...formData, department: e.target.value })}
               placeholder="Ex: Produção"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2">
+              <Label htmlFor="birthDate">Aniversário</Label>
+              <Input
+                id="birthDate"
+                type="date"
+                value={formData.birthDate}
+                onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="hiredAt">Admissão</Label>
+              <Input
+                id="hiredAt"
+                type="date"
+                value={formData.hiredAt}
+                onChange={(e) => setFormData({ ...formData, hiredAt: e.target.value })}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

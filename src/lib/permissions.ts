@@ -47,6 +47,8 @@ export type PermissionKey =
   | 'armazenamento'
   | 'politicas'
   | 'juridico.contratos'
+  | 'rh.datas'
+  | 'rh.wiki'
   | 'admin';
 
 /** All known permission keys (handy for iteration / seed). */
@@ -77,6 +79,8 @@ export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'armazenamento',
   'politicas',
   'juridico.contratos',
+  'rh.datas',
+  'rh.wiki',
   'admin',
 ];
 
@@ -118,6 +122,8 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     plataformas: true,
     armazenamento: true,
     politicas: true,
+    'rh.datas': true,
+    'rh.wiki': true,
   },
   marketing: {
     home: true,
@@ -129,6 +135,8 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     'marketing.referencias': true,
     'marketing.site': true,
     politicas: true,
+    'rh.datas': true,
+    'rh.wiki': true,
   },
   comercial: {
     home: true,
@@ -141,6 +149,8 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     orcamentos: true,
     'juridico.contratos': true,
     politicas: true,
+    'rh.datas': true,
+    'rh.wiki': true,
   },
   edicao: {
     home: true,
@@ -152,6 +162,8 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     'equipamentos.inventario': true,
     armazenamento: true,
     politicas: true,
+    'rh.datas': true,
+    'rh.wiki': true,
   },
   financeiro: {
     home: true,
@@ -163,16 +175,22 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     'equipamentos.inventario': true,
     'juridico.contratos': true,
     politicas: true,
+    'rh.datas': true,
+    'rh.wiki': true,
   },
   user: {
     home: true,
     inbox: true,
     tarefas: true,
     politicas: true,
+    'rh.datas': true,
+    'rh.wiki': true,
   },
   convidado: {
     home: true,
     inbox: true,
+    'rh.datas': true,
+    'rh.wiki': true,
   },
 };
 

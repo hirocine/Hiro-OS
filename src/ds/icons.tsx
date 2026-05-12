@@ -40,6 +40,8 @@ import {
   Download,
   Scale,
   FileSignature,
+  Gift,
+  BookOpen,
   type LucideProps,
 } from "lucide-react";
 
@@ -89,6 +91,8 @@ export const I = {
   lock:     i(Lock),
   scale:    i(Scale),          // Jurídico section
   contract: i(FileSignature),  // Contratos
+  gift:     i(Gift),           // RH > Datas
+  book:     i(BookOpen),       // RH > Wiki
 
   // Topbar / chrome
   search:   i(Search),

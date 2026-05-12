@@ -66,11 +66,16 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const DsPreview = lazy(() => import("./ds/preview"));
 const PlaygroundToolbar = lazy(() => import("./pages/_ds/PlaygroundToolbar"));
 const AdminPermissions = lazy(() => import("./pages/AdminPermissions"));
+const RHDates = lazy(() => import("./pages/RHDates"));
+const RHWiki = lazy(() => import("./pages/RHWiki"));
+const RHWikiArticle = lazy(() => import("./pages/RHWikiArticle"));
+const RHWikiEditor = lazy(() => import("./pages/RHWikiEditor"));
 
 import { RequirePermission } from "./components/RequirePermission";
 import { useRolePermissions } from "./hooks/useRolePermissions";
 import { useInboxRealtime } from "./features/inbox/useInbox";
 import { useContractsRealtime } from "./features/contracts/useContracts";
+import { useTeamDatesRealtime, useWikiRealtime } from "./features/rh";
 
 /**
  * Side-effect-only component that fires hooks that need to live for
@@ -82,6 +87,8 @@ import { useContractsRealtime } from "./features/contracts/useContracts";
  *     the current user; sidebar badge + page list refresh live.
  *   - useContractsRealtime()  — subscribes to contracts changes (ZapSign
  *     webhook writes, edits from other tabs). Cheap no-op until UI mounts.
+ *   - useTeamDatesRealtime()  — important_dates realtime (admin edits).
+ *   - useWikiRealtime()       — wiki_articles realtime (admin edits).
  *
  * Rendered as a sibling of the routes (no children) so they don't
  * block first paint.
@@ -90,6 +97,8 @@ function SessionBootstrap() {
   useRolePermissions();
   useInboxRealtime();
   useContractsRealtime();
+  useTeamDatesRealtime();
+  useWikiRealtime();
   return null;
 }
 
@@ -145,6 +154,11 @@ const App = () => (
                 <Route path="plataformas" element={<RequirePermission permission="plataformas"><PlatformAccesses /></RequirePermission>} />
                 <Route path="politicas" element={<RequirePermission permission="politicas"><Policies /></RequirePermission>} />
                 <Route path="politicas/:id" element={<RequirePermission permission="politicas"><PolicyView /></RequirePermission>} />
+                <Route path="rh/datas" element={<RequirePermission permission="rh.datas"><RHDates /></RequirePermission>} />
+                <Route path="rh/wiki" element={<RequirePermission permission="rh.wiki"><RHWiki /></RequirePermission>} />
+                <Route path="rh/wiki/novo" element={<RequirePermission permission="rh.wiki"><RHWikiEditor /></RequirePermission>} />
+                <Route path="rh/wiki/:slug" element={<RequirePermission permission="rh.wiki"><RHWikiArticle /></RequirePermission>} />
+                <Route path="rh/wiki/:slug/editar" element={<RequirePermission permission="rh.wiki"><RHWikiEditor /></RequirePermission>} />
                 <Route path="tarefas" element={<RequirePermission permission="tarefas"><Tasks /></RequirePermission>} />
                 <Route path="tarefas/:id" element={<RequirePermission permission="tarefas"><TaskDetails /></RequirePermission>} />
                 <Route path="fornecedores" element={<Navigate to="/fornecedores/freelancers" replace />} />

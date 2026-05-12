@@ -1005,6 +1005,42 @@ export type Database = {
         }
         Relationships: []
       }
+      important_dates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date: string
+          id: string
+          notes: string | null
+          recurring: boolean
+          title: string
+          type: Database["public"]["Enums"]["important_date_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          recurring?: boolean
+          title: string
+          type?: Database["public"]["Enums"]["important_date_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          recurring?: boolean
+          title?: string
+          type?: Database["public"]["Enums"]["important_date_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inbox_items: {
         Row: {
           actor_avatar_url: string | null
@@ -2369,9 +2405,11 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          birth_date: string | null
           created_at: string
           department: string | null
           display_name: string | null
+          hired_at: string | null
           id: string
           is_approved: boolean
           last_seen_at: string | null
@@ -2381,9 +2419,11 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          birth_date?: string | null
           created_at?: string
           department?: string | null
           display_name?: string | null
+          hired_at?: string | null
           id?: string
           is_approved?: boolean
           last_seen_at?: string | null
@@ -2393,9 +2433,11 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          birth_date?: string | null
           created_at?: string
           department?: string | null
           display_name?: string | null
+          hired_at?: string | null
           id?: string
           is_approved?: boolean
           last_seen_at?: string | null
@@ -3477,6 +3519,54 @@ export type Database = {
         }
         Relationships: []
       }
+      wiki_articles: {
+        Row: {
+          author_id: string | null
+          body: string
+          category: Database["public"]["Enums"]["wiki_category"]
+          created_at: string
+          excerpt: string | null
+          id: string
+          last_edited_by: string | null
+          published: boolean
+          published_at: string | null
+          slug: string
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          body?: string
+          category?: Database["public"]["Enums"]["wiki_category"]
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          last_edited_by?: string | null
+          published?: boolean
+          published_at?: string | null
+          slug: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          category?: Database["public"]["Enums"]["wiki_category"]
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          last_edited_by?: string | null
+          published?: boolean
+          published_at?: string | null
+          slug?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       withdrawal_drafts: {
         Row: {
           created_at: string
@@ -3604,6 +3694,7 @@ export type Database = {
       deactivate_user: { Args: { _user_id: string }; Returns: boolean }
       detect_suspicious_activity: { Args: never; Returns: undefined }
       finalize_security_improvements: { Args: never; Returns: Json }
+      fire_birthday_inbox_items: { Args: never; Returns: undefined }
       get_current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
@@ -3806,6 +3897,11 @@ export type Database = {
         | "edicao"
         | "financeiro"
         | "convidado"
+      important_date_type:
+        | "company_milestone"
+        | "commemorative"
+        | "client_anniversary"
+        | "custom"
       platform_category:
         | "cloud"
         | "ai"
@@ -3816,6 +3912,14 @@ export type Database = {
         | "music"
         | "stock"
         | "other"
+      wiki_category:
+        | "faq"
+        | "onboarding"
+        | "processos"
+        | "ferramentas"
+        | "beneficios"
+        | "cultura"
+        | "outros"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3953,6 +4057,12 @@ export const Constants = {
         "financeiro",
         "convidado",
       ],
+      important_date_type: [
+        "company_milestone",
+        "commemorative",
+        "client_anniversary",
+        "custom",
+      ],
       platform_category: [
         "cloud",
         "ai",
@@ -3963,6 +4073,15 @@ export const Constants = {
         "music",
         "stock",
         "other",
+      ],
+      wiki_category: [
+        "faq",
+        "onboarding",
+        "processos",
+        "ferramentas",
+        "beneficios",
+        "cultura",
+        "outros",
       ],
     },
   },

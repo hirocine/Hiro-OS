@@ -12,8 +12,10 @@ quando inicia, conclui, ou quando uma ideia muda de tier.
 
 | ferramenta | status | notas |
 |---|---|---|
-| Caixa de Entrada | 🟢 **em produção** · backend Supabase + realtime · 1 trigger ativo (`task_assigned`) | Mais triggers virão: loan overdue, proposal viewed, pp new_version, deal status_change, etc. |
-| Jurídico/Contratos | 🟡 UI pronta · **escondida em produção** | Aguarda backend Supabase + integração ZapSign webhook (modelo shadow) |
+| Caixa de Entrada | 🟢 **em produção** · backend Supabase + realtime · 2 triggers ativos (`task_assigned`, `rh.birthday/work_anniversary`) | Mais triggers virão: loan overdue, proposal viewed, pp new_version, deal status_change, etc. |
+| RH > Datas (aniversários) | 🟢 **em produção** · `profiles.birth_date/hired_at` + `important_dates` + cron diário pro Inbox | Admin edita aniversário/admissão no EditUserDialog. |
+| RH > Wiki | 🟢 **em produção** · `wiki_articles` com markdown via TipTap, categorias incl. FAQ | Admin escreve; todos leem published. |
+| Jurídico/Contratos | 🟡 UI pronta · backend pronto · **escondida em produção** | Aguarda secret + deploy edge ZapSign + backfill (Commit B). |
 
 > **Re-habilitar Jurídico em prod (quando backend ficar pronto):** descomentar a
 > seção em `src/ds/nav-data.tsx`, rotas em `src/App.tsx` e o toggle em
@@ -69,10 +71,10 @@ quando inicia, conclui, ou quando uma ideia muda de tier.
 ## 🥉 Tier 3 — qualidade de vida
 
 ### Wiki / Documentação interna
-🔵 idea · processos do dia a dia, onboarding, FAQ. Hoje tem só Políticas formais.
+✅ **entregue** · em RH > Wiki. Categorias incl. FAQ. Admin escreve, todos leem.
 
 ### Aniversários + datas importantes
-🔵 idea · aniversário do time, do cliente, contrato anual. Vira item na Caixa de Entrada.
+✅ **entregue** · em RH > Datas. Aniversário de nascimento, anos de Hiro, datas livres administradas. Cron diário escreve no Inbox de todo time aos aniversariantes do dia.
 
 ### DRE expandido
 🔵 idea · receita real vs custos, margem operacional, projeção. Vai além do Capex atual.

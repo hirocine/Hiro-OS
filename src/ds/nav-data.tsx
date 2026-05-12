@@ -141,6 +141,8 @@ export const NAV: NavSection[] = [
   {
     title: "RH",
     items: [
+      { name: "Datas",     href: "/rh/datas",  icon: I.gift,   permission: "rh.datas" },
+      { name: "Wiki",      href: "/rh/wiki",   icon: I.book,   permission: "rh.wiki" },
       { name: "Políticas", href: "/politicas", icon: I.scroll, permission: "politicas" },
     ],
   },
