@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -9,7 +9,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { SettingsActions } from '@/components/Settings/SettingsActions';
-import { ImportDialog } from '@/components/Equipment/ImportDialog';
+import { LazyImportDialog } from '@/components/ui/lazy-components';
 import { useEquipment } from '@/features/equipment';
 import { exportEquipmentToCSV } from '@/lib/csvExporter';
 import { AdminPageHeader, SectionShell, eyebrowLabelStyle } from './_shared';
@@ -18,7 +18,12 @@ export default function AdminSystem() {
   const { isAdmin, roleLoading } = useAuthContext();
   const { toast } = useToast();
   const { allEquipment, importEquipment } = useEquipment();
+  // `primed` tracks whether the heavy ImportDialog (which pulls in
+  // xlsx + papaparse, ~350 kB) has been requested at least once. We
+  // mount it lazily only after the user clicks Import; staying
+  // mounted after that preserves the dialog's close animation.
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importPrimed, setImportPrimed] = useState(false);
   const [userCount, setUserCount] = useState<number | null>(null);
 
   // Lightweight head-count query — we only need the number here.
@@ -170,7 +175,14 @@ export default function AdminSystem() {
                     Exportar CSV ({allEquipment.length} itens)
                   </span>
                 </button>
-                <button className="btn" onClick={() => setIsImportDialogOpen(true)} type="button">
+                <button
+                  className="btn"
+                  onClick={() => {
+                    setImportPrimed(true);
+                    setIsImportDialogOpen(true);
+                  }}
+                  type="button"
+                >
                   <Upload size={14} strokeWidth={1.5} />
                   <span>Importar CSV/Excel</span>
                 </button>
@@ -179,24 +191,28 @@ export default function AdminSystem() {
           </SectionShell>
         </div>
 
-        <ImportDialog
-          open={isImportDialogOpen}
-          onOpenChange={setIsImportDialogOpen}
-          onImport={async (data) => {
-            const result = await importEquipment(data);
-            if (result.success && result.data) {
-              const { summary } = result.data;
-              setIsImportDialogOpen(false);
-              const totalNew = summary.mainsNew + summary.accessoriesNew;
-              toast({
-                title: 'Importação concluída',
-                description: `${totalNew} equipamento(s) importado(s) com sucesso.`,
-              });
-              return summary;
-            }
-            throw new Error('Falha na importação');
-          }}
-        />
+        {importPrimed && (
+          <Suspense fallback={null}>
+            <LazyImportDialog
+              open={isImportDialogOpen}
+              onOpenChange={setIsImportDialogOpen}
+              onImport={async (data) => {
+                const result = await importEquipment(data);
+                if (result.success && result.data) {
+                  const { summary } = result.data;
+                  setIsImportDialogOpen(false);
+                  const totalNew = summary.mainsNew + summary.accessoriesNew;
+                  toast({
+                    title: 'Importação concluída',
+                    description: `${totalNew} equipamento(s) importado(s) com sucesso.`,
+                  });
+                  return summary;
+                }
+                throw new Error('Falha na importação');
+              }}
+            />
+          </Suspense>
+        )}
       </div>
     </div>
   );
