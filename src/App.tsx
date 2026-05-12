@@ -21,6 +21,7 @@ const ProjectWithdrawal = lazy(() => import("./pages/ProjectWithdrawal"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const SSDs = lazy(() => import("./pages/SSDs"));
 const PlatformAccesses = lazy(() => import("./pages/PlatformAccesses"));
 const Policies = lazy(() => import("./pages/Policies"));
@@ -163,7 +164,7 @@ const App = () => (
                 <Route path="esteira-de-pos/:id/editar" element={<RequirePermission permission="esteira_de_pos"><PPVideoEditDetail /></RequirePermission>} />
                 <Route path="perfil" element={<Profile />} />
                 <Route path="administracao" element={<Navigate to="/administracao/usuarios" replace />} />
-                <Route path="administracao/usuarios" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
+                <Route path="administracao/usuarios" element={<RequirePermission permission="admin"><AdminUsers /></RequirePermission>} />
                 <Route path="administracao/permissoes" element={<RequirePermission permission="admin"><AdminPermissions /></RequirePermission>} />
                 <Route path="administracao/logs" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
                 <Route path="administracao/categorias" element={<RequirePermission permission="admin"><Admin /></RequirePermission>} />
