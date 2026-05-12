@@ -204,6 +204,8 @@ export function PlatformAccessCard({
             <img
               src={access.platform_icon_url}
               alt={access.platform_name}
+              loading="lazy"
+              decoding="async"
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';

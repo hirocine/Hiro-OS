@@ -62,6 +62,8 @@ export function AVProjectCard({ project }: AVProjectCardProps) {
             <img
               src={project.logo_url}
               alt={project.name}
+              loading="lazy"
+              decoding="async"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (

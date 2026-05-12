@@ -327,6 +327,8 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
                         <img
                           src={result.imageData}
                           alt={result.filename}
+                          loading="lazy"
+                          decoding="async"
                           style={{
                             width: 48,
                             height: 48,

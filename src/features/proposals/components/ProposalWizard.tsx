@@ -809,6 +809,8 @@ export function ProposalWizard() {
                           <img
                             src={`https://vumbnail.com/${extractVimeoId(c.vimeo_id)}.jpg`}
                             alt={c.campaign_name}
+                            loading="lazy"
+                            decoding="async"
                             style={{
                               width: 96,
                               height: 56,

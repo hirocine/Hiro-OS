@@ -551,6 +551,8 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                     <img
                       src={imageUrl}
                       alt="Equipment preview"
+                      loading="lazy"
+                      decoding="async"
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                     <button

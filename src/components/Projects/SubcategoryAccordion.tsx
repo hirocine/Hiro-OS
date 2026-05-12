@@ -306,6 +306,8 @@ export function SubcategoryAccordion({
                                 <img
                                   src={equipment.image}
                                   alt={equipment.name}
+                                  loading="lazy"
+                                  decoding="async"
                                   style={{
                                     width: 48,
                                     height: 48,
@@ -489,6 +491,8 @@ export function SubcategoryAccordion({
                                           <img
                                             src={accessory.image}
                                             alt={accessory.name}
+                                            loading="lazy"
+                                            decoding="async"
                                             style={{
                                               width: 32,
                                               height: 32,

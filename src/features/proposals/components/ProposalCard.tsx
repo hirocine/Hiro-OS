@@ -63,6 +63,8 @@ export function ProposalCard({ proposal, onDelete, onDuplicate }: Props) {
             <img
               src={proposal.client_logo}
               alt={proposal.client_name}
+              loading="lazy"
+              decoding="async"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (

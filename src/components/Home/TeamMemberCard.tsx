@@ -40,6 +40,8 @@ export function TeamMemberCard({ member, onEdit, onDelete }: TeamMemberCardProps
           <img
             src={member.photo_url}
             alt={member.name}
+            loading="lazy"
+            decoding="async"
             style={{
               width: '100%',
               height: '100%',

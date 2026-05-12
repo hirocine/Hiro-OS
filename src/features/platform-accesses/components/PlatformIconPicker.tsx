@@ -175,6 +175,8 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
               <img
                 src={selectedIconUrl}
                 alt="Selected icon"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover object-center"
               />
             </div>
