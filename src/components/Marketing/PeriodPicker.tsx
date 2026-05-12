@@ -7,7 +7,6 @@ import {
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -137,9 +136,9 @@ export function PeriodPicker({
             className={cn('p-3 pointer-events-auto')}
           />
           <div className="flex items-center justify-end gap-2 p-3 border-t border-[hsl(var(--ds-line-1))]">
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
+              type="button"
+              className="btn ghost sm"
               onClick={() => {
                 onCustomPickerOpenChange(false);
                 setDraftRange(
@@ -148,9 +147,10 @@ export function PeriodPicker({
               }}
             >
               Cancelar
-            </Button>
-            <Button
-              size="sm"
+            </button>
+            <button
+              type="button"
+              className="btn primary sm"
               disabled={!draftRange?.from || !draftRange?.to}
               onClick={() => {
                 if (draftRange?.from && draftRange?.to) {
@@ -162,7 +162,7 @@ export function PeriodPicker({
               }}
             >
               Aplicar
-            </Button>
+            </button>
           </div>
         </PopoverContent>
       </Popover>

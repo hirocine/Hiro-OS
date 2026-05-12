@@ -1,5 +1,4 @@
 import { Menu } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useIsPWA } from '@/hooks/useIsPWA';
 import { cn } from '@/lib/utils';
 import { Z_INDEX } from '@/lib/z-index';
@@ -20,15 +19,14 @@ export function TopBar() {
       )}
       style={{ zIndex: Z_INDEX.header }}
     >
-      <Button 
-        size="icon" 
-        variant="ghost"
+      <button
+        type="button"
+        className="btn ghost icon"
         onClick={openSidebar}
-        className="h-9 w-9"
         aria-label="Abrir menu"
       >
         <Menu className="h-5 w-5" />
-      </Button>
+      </button>
 
       <div className="flex items-center gap-2">
         <div className="h-9 w-9 flex items-center justify-center">

@@ -16,7 +16,6 @@ import { useIdeasWithPosts, type IdeaPostLink } from '@/hooks/useIdeasWithPosts'
 import { EmptyState } from '@/components/ui/empty-state';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -127,15 +126,16 @@ function IdeaCard({ idea, profile, pillar, postLink, onEdit, onDelete, onDuplica
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition shrink-0"
+            <button
+              type="button"
+              className="btn ghost icon sm opacity-0 group-hover:opacity-100 transition shrink-0"
+              style={{ height: 24, width: 24 }}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
+              aria-label="Mais ações"
             >
               <MoreVertical className="h-3.5 w-3.5" />
-            </Button>
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
             {!postLink && (

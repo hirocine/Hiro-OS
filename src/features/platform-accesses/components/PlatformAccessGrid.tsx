@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Plus, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { PlatformAccessCard } from './PlatformAccessCard';
 import { PlatformAccessDialog } from './PlatformAccessDialog';
 import { PlatformFilters } from './PlatformFilters';
@@ -126,10 +125,10 @@ export function PlatformAccessGrid({
               </p>
             </div>
             {!filters.search && filters.category === 'all' && !filters.favorites && (
-              <Button onClick={handleAdd}>
-                <Plus className="h-4 w-4 mr-2" />
+              <button type="button" className="btn primary" onClick={handleAdd}>
+                <Plus className="h-4 w-4" />
                 Adicionar Primeiro Acesso
-              </Button>
+              </button>
             )}
           </div>
         </div>

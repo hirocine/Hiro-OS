@@ -3,7 +3,6 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { PostsCalendar } from '@/components/Marketing/PostsCalendar';
 import { useMarketingPosts, type MarketingPost } from '@/hooks/useMarketingPosts';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {

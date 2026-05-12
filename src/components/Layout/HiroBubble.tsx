@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, X, Send, Trash2, Loader2, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useAIAssistant } from "@/hooks/useAIAssistant";
 import { useAuthContext } from "@/contexts/AuthContext";
 import ReactMarkdown from "react-markdown";
@@ -139,13 +138,13 @@ export function HiroBubble() {
             </div>
             <div className="flex items-center gap-1">
               {hasMessages && (
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={clearMessages}>
+                <button type="button" className="btn ghost icon sm" onClick={clearMessages} aria-label="Limpar conversa">
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
+                </button>
               )}
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleClose}>
+              <button type="button" className="btn ghost icon sm" onClick={handleClose} aria-label="Fechar">
                 <X className="h-4 w-4 text-muted-foreground" />
-              </Button>
+              </button>
             </div>
           </div>
 

@@ -8,7 +8,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -386,37 +385,21 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
                 </div>
 
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRotateLeft}
-                  >
-                    <RotateCcw className="h-4 w-4 mr-2" />
+                  <button type="button" className="btn sm" onClick={handleRotateLeft}>
+                    <RotateCcw className="h-4 w-4" />
                     -90°
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRotateRight}
-                  >
-                    <RotateCw className="h-4 w-4 mr-2" />
+                  </button>
+                  <button type="button" className="btn sm" onClick={handleRotateRight}>
+                    <RotateCw className="h-4 w-4" />
                     +90°
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleReset}
-                  >
+                  </button>
+                  <button type="button" className="btn sm" onClick={handleReset}>
                     Resetar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
+                  </button>
+                  <button type="button" className="btn sm" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="h-4 w-4" />
                     Trocar
-                  </Button>
+                  </button>
                 </div>
               </div>
             </>
@@ -424,15 +407,17 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
+          <button type="button" className="btn" onClick={handleClose}>
             Cancelar
-          </Button>
-          <Button 
-            onClick={handleSave} 
+          </button>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={handleSave}
             disabled={!imageSrc || isProcessing || isUpdating}
           >
             {isProcessing ? "Processando..." : "Salvar Banner"}
-          </Button>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

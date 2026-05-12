@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -136,16 +135,16 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
       <div>
         <Label className="text-sm text-muted-foreground mb-2 block">Carregar Ícone da Plataforma</Label>
         <div className="flex items-center gap-2">
-          <Button
+          <button
             type="button"
-            variant="outline"
-            className="w-full"
+            className="btn"
+            style={{ width: '100%' }}
             disabled={uploading}
             onClick={() => document.getElementById('icon-upload')?.click()}
           >
-            <Upload className="h-4 w-4 mr-2" />
+            <Upload className="h-4 w-4" />
             {uploading ? 'Enviando...' : 'Carregar Ícone'}
-          </Button>
+          </button>
           <input
             id="icon-upload"
             type="file"

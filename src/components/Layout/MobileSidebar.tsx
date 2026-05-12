@@ -10,7 +10,6 @@ import { cn } from '@/lib/utils';
 import { useIsPWA } from '@/hooks/useIsPWA';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import hiroLogo from '@/assets/hiro-logo.png';
@@ -308,9 +307,14 @@ export function MobileSidebar() {
             <img src={hiroLogo} alt="HIRO Logo" className="h-8 w-8 rounded-lg object-cover" />
             <span className="text-base font-bold text-foreground">Hiro OS®</span>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="h-8 w-8">
+          <button
+            type="button"
+            className="btn ghost icon"
+            onClick={() => setOpen(false)}
+            aria-label="Fechar menu"
+          >
             <X className="h-5 w-5" />
-          </Button>
+          </button>
         </SheetHeader>
 
         {/* Search */}

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -194,15 +193,14 @@ export function HeroBanner() {
 
         {/* Edit button for admins - hidden on mobile */}
         {isAdmin && !isMobile && (
-          <Button
-            variant="secondary"
-            size="sm"
-            className="absolute top-4 right-4 opacity-80 hover:opacity-100 transition-opacity"
+          <button
+            type="button"
+            className="btn sm absolute top-4 right-4 opacity-80 hover:opacity-100 transition-opacity"
             onClick={() => setShowCropper(true)}
           >
-            <Settings className="h-4 w-4 mr-2" />
+            <Settings className="h-4 w-4" />
             Editar Banner
-          </Button>
+          </button>
         )}
       </div>
 
