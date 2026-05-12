@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { StatusPill } from '@/ds/components/StatusPill';
 import { cn } from '@/lib/utils';
 
 interface Equipment {
@@ -38,12 +39,6 @@ interface SubcategoryAccordionProps {
   onEquipmentChange: (equipmentId: string) => void;
   className?: string;
 }
-
-const successPill: React.CSSProperties = {
-  color: 'hsl(var(--ds-success))',
-  borderColor: 'hsl(var(--ds-success) / 0.3)',
-  background: 'hsl(var(--ds-success) / 0.08)',
-};
 
 export function SubcategoryAccordion({
   subcategories,
@@ -169,12 +164,10 @@ export function SubcategoryAccordion({
           >
             Total selecionado nesta categoria
           </span>
-          <span
-            className="pill"
-            style={{ ...successPill, fontVariantNumeric: 'tabular-nums' }}
-          >
-            {totalSelected} {totalSelected === 1 ? 'item' : 'itens'}
-          </span>
+          <StatusPill
+            label={`${totalSelected} ${totalSelected === 1 ? 'item' : 'itens'}`}
+            tone="success"
+          />
         </div>
       )}
 
@@ -231,11 +224,11 @@ export function SubcategoryAccordion({
                     </span>
                   </div>
                   {selectedCount > 0 && (
-                    <span
-                      className="pill"
-                      style={{ ...successPill, marginLeft: 8, fontVariantNumeric: 'tabular-nums' }}
-                    >
-                      {selectedCount} selecionado{selectedCount > 1 ? 's' : ''}
+                    <span style={{ marginLeft: 8 }}>
+                      <StatusPill
+                        label={`${selectedCount} selecionado${selectedCount > 1 ? 's' : ''}`}
+                        tone="success"
+                      />
                     </span>
                   )}
                 </div>
@@ -369,18 +362,14 @@ export function SubcategoryAccordion({
                                     </span>
                                   )}
                                   {equipment.hasAccessories && (
-                                    <span
-                                      className="pill"
-                                      style={
+                                    <StatusPill
+                                      label={
                                         selectedAccessoriesCount > 0
-                                          ? { ...successPill, fontVariantNumeric: 'tabular-nums' }
-                                          : { fontVariantNumeric: 'tabular-nums' }
+                                          ? `${selectedAccessoriesCount}/${equipment.accessoryCount} acessórios`
+                                          : `${equipment.accessoryCount} acessórios`
                                       }
-                                    >
-                                      {selectedAccessoriesCount > 0
-                                        ? `${selectedAccessoriesCount}/${equipment.accessoryCount} acessórios`
-                                        : `${equipment.accessoryCount} acessórios`}
-                                    </span>
+                                      tone={selectedAccessoriesCount > 0 ? 'success' : 'muted'}
+                                    />
                                   )}
                                 </div>
                               </div>

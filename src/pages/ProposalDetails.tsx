@@ -31,46 +31,23 @@ import { usePainPoints } from '@/features/proposals/hooks/usePainPoints';
 import { useTestimonials } from '@/features/proposals/hooks/useTestimonials';
 import { useProposalCases } from '@/features/proposals/hooks/useProposalCases';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 import { DOR_EMOJI_OPTIONS } from '@/features/proposals/types';
 import { PaymentOptionsEditor } from '@/features/proposals/components/PaymentOptionsEditor';
 import { buildPaymentOption, DEFAULT_PRESET_PARAMS } from '@/features/proposals/lib/paymentPresets';
 import { ServicesSection } from '@/features/proposals/components/admin/ServicesSection';
 
-type StatusTone = 'neutral' | 'info' | 'warning' | 'success' | 'danger';
+type StatusTone = 'muted' | 'info' | 'warning' | 'success' | 'danger';
 
 const statusMap: Record<string, { label: string; tone: StatusTone }> = {
-  draft: { label: 'Rascunho', tone: 'neutral' },
+  draft: { label: 'Rascunho', tone: 'muted' },
   sent: { label: 'Enviada', tone: 'info' },
   opened: { label: 'Aberta', tone: 'warning' },
   new_version: { label: 'Nova Versão', tone: 'info' },
   approved: { label: 'Aprovada', tone: 'success' },
   expired: { label: 'Arquivada', tone: 'danger' },
 };
-
-const toneColor: Record<StatusTone, string> = {
-  neutral: 'hsl(var(--ds-fg-3))',
-  info: 'hsl(var(--ds-info))',
-  warning: 'hsl(var(--ds-warning))',
-  success: 'hsl(var(--ds-success))',
-  danger: 'hsl(var(--ds-danger))',
-};
-
-function statusPillStyle(tone: StatusTone): React.CSSProperties {
-  if (tone === 'neutral') {
-    return {
-      color: 'hsl(var(--ds-fg-2))',
-      borderColor: 'hsl(var(--ds-line-1))',
-      background: 'hsl(var(--ds-line-2) / 0.3)',
-    };
-  }
-  const c = toneColor[tone];
-  return {
-    color: c,
-    borderColor: `${c.replace(')', ' / 0.3)')}`,
-    background: `${c.replace(')', ' / 0.08)')}`,
-  };
-}
 
 async function compressImage(file: File): Promise<Blob> {
   return new Promise((resolve) => {
@@ -853,14 +830,12 @@ export default function ProposalDetails() {
                   </span>
                   <Select value={proposal.status} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-[140px] h-8 border-0 bg-transparent p-0 shadow-none focus:ring-0 [&>svg]:ml-1">
-                      <span className="pill" style={statusPillStyle(currentStatus.tone)}>
-                        {currentStatus.label}
-                      </span>
+                      <StatusPill label={currentStatus.label} tone={currentStatus.tone} />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(statusMap).map(([value, { label, tone }]) => (
                         <SelectItem key={value} value={value}>
-                          <span className="pill" style={statusPillStyle(tone)}>{label}</span>
+                          <StatusPill label={label} tone={tone} />
                         </SelectItem>
                       ))}
                     </SelectContent>

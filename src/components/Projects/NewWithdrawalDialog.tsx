@@ -17,6 +17,7 @@ import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
 import { useEquipment } from '@/features/equipment';
 import { Equipment } from '@/types/equipment';
+import { StatusPill } from '@/ds/components/StatusPill';
 import { logger } from '@/lib/logger';
 import { EquipmentSelectionStep } from './EquipmentSelectionStep';
 import { type LucideIcon } from 'lucide-react';
@@ -721,17 +722,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 }}>
                   {title}
                 </h4>
-                <span
-                  className="pill"
-                  style={{
-                    color: 'hsl(var(--ds-accent))',
-                    borderColor: 'hsl(var(--ds-accent) / 0.3)',
-                    background: 'hsl(var(--ds-accent) / 0.08)',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  {count} {count === 1 ? 'item' : 'itens'}
-                </span>
+                <StatusPill
+                  label={`${count} ${count === 1 ? 'item' : 'itens'}`}
+                  tone="accent"
+                />
               </div>
             </div>
 
@@ -1289,17 +1283,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     <h4 style={{ fontFamily: '"HN Display", sans-serif', fontSize: 14, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
                       Câmeras Selecionadas
                     </h4>
-                    <span
-                      className="pill"
-                      style={{
-                        color: 'hsl(var(--ds-accent))',
-                        borderColor: 'hsl(var(--ds-accent) / 0.3)',
-                        background: 'hsl(var(--ds-accent) / 0.08)',
-                        fontVariantNumeric: 'tabular-nums',
-                      }}
-                    >
-                      {data.selectedEquipment.cameras.length}
-                    </span>
+                    <StatusPill label={String(data.selectedEquipment.cameras.length)} tone="accent" />
                   </div>
 
                   {data.selectedEquipment.cameras.length === 0 ? (
@@ -1462,19 +1446,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24, flex: 1, overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h3 style={{ fontFamily: '"HN Display", sans-serif', fontSize: 18, fontWeight: 600, color: 'hsl(var(--ds-fg-1))' }}>Resumo da Retirada</h3>
-              <span
-                className="pill"
-                style={{
-                  color: 'hsl(var(--ds-accent))',
-                  borderColor: 'hsl(var(--ds-accent) / 0.3)',
-                  background: 'hsl(var(--ds-accent) / 0.08)',
-                  fontSize: 13,
-                  padding: '6px 14px',
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                Total: {getTotalEquipmentCount()} itens
-              </span>
+              <StatusPill label={`Total: ${getTotalEquipmentCount()} itens`} tone="accent" />
             </div>
 
             {/* Detailed Summary */}

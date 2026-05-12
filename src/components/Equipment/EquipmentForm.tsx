@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Loader2, X, Package, Check, Link2, DollarSign, Calendar, Camera, Mic, Lightbulb, Wrench, HardDrive, CalendarIcon, Plus, type LucideIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { StatusPill } from '@/ds/components/StatusPill';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -441,12 +442,12 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     return labels[category] || category;
   };
 
-  // Helper para tonalidade do status (success/warning/neutral)
-  const getStatusTone = (status: EquipmentStatus): 'success' | 'warning' | 'neutral' => {
-    const tones: Record<EquipmentStatus, 'success' | 'warning' | 'neutral'> = {
+  // Helper para tonalidade do status (success/warning/muted)
+  const getStatusTone = (status: EquipmentStatus): 'success' | 'warning' | 'muted' => {
+    const tones: Record<EquipmentStatus, 'success' | 'warning' | 'muted'> = {
       available: 'success',
       maintenance: 'warning',
-      loaned: 'neutral'
+      loaned: 'muted'
     };
     return tones[status] || 'success';
   };
@@ -469,23 +470,6 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
       loaned: 'Emprestado'
     };
     return labels[status];
-  };
-
-  // Pill style helper for tonal pills
-  const tonalPillStyle = (tone: 'success' | 'warning' | 'neutral' | 'info' | 'danger'): React.CSSProperties => {
-    if (tone === 'neutral') {
-      return {
-        color: 'hsl(var(--ds-fg-2))',
-        borderColor: 'hsl(var(--ds-line-1))',
-        background: 'hsl(var(--ds-line-2) / 0.3)',
-      };
-    }
-    const tokenName = tone === 'info' ? 'info' : tone;
-    return {
-      color: `hsl(var(--ds-${tokenName}))`,
-      borderColor: `hsl(var(--ds-${tokenName}) / 0.3)`,
-      background: `hsl(var(--ds-${tokenName}) / 0.08)`,
-    };
   };
 
   // Helper para transformar itens principais em opções do Autocomplete
@@ -702,13 +686,11 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                       <span style={{ color: 'hsl(var(--ds-fg-4))' }}>•</span>
                     )}
                   {formData.category && (
-                    <span
-                      className="pill"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle('neutral') }}
-                    >
-                      {getCategoryIcon(formData.category)}
-                      {getCategoryLabel(formData.category)}
-                    </span>
+                    <StatusPill
+                      label={getCategoryLabel(formData.category)}
+                      tone="muted"
+                      icon={getCategoryIcon(formData.category)}
+                    />
                   )}
                   {formData.category &&
                     (formData.status ||
@@ -718,18 +700,11 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                       <span style={{ color: 'hsl(var(--ds-fg-4))' }}>•</span>
                     )}
                   {formData.status && (
-                    <span
-                      className="pill"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        ...tonalPillStyle(getStatusTone(formData.status)),
-                      }}
-                    >
-                      {getStatusIcon(formData.status)}
-                      {getStatusLabel(formData.status)}
-                    </span>
+                    <StatusPill
+                      label={getStatusLabel(formData.status)}
+                      tone={getStatusTone(formData.status)}
+                      icon={getStatusIcon(formData.status)}
+                    />
                   )}
                   {formData.status &&
                     formData.itemType === 'accessory' &&
@@ -737,13 +712,11 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                     formData.parentId !== 'none' && <span style={{ color: 'hsl(var(--ds-fg-4))' }}>•</span>}
 
                   {formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none' && (
-                    <span
-                      className="pill"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle('neutral') }}
-                    >
-                      <Link2 size={11} strokeWidth={1.5} />
-                      Acessório de <span style={{ margin: '0 4px' }}>›</span> {getSelectedParentName()}
-                    </span>
+                    <StatusPill
+                      label={`Acessório de › ${getSelectedParentName()}`}
+                      tone="muted"
+                      icon={<Link2 size={11} strokeWidth={1.5} />}
+                    />
                   )}
                 </div>
               )}
@@ -908,42 +881,22 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
         <Select value={formData.status} onValueChange={handleStatusChange}>
           <SelectTrigger id="status">
             <SelectValue>
-              <span
-                className="pill"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle(getStatusTone(formData.status)) }}
-              >
-                {getStatusIcon(formData.status)}
-                {getStatusLabel(formData.status)}
-              </span>
+              <StatusPill
+                label={getStatusLabel(formData.status)}
+                tone={getStatusTone(formData.status)}
+                icon={getStatusIcon(formData.status)}
+              />
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="available">
-              <span
-                className="pill"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle('success') }}
-              >
-                <Check size={11} strokeWidth={1.5} />
-                Disponível
-              </span>
+              <StatusPill label="Disponível" tone="success" icon={<Check size={11} strokeWidth={1.5} />} />
             </SelectItem>
             <SelectItem value="maintenance">
-              <span
-                className="pill"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle('warning') }}
-              >
-                <Wrench size={11} strokeWidth={1.5} />
-                Em Manutenção
-              </span>
+              <StatusPill label="Em Manutenção" tone="warning" icon={<Wrench size={11} strokeWidth={1.5} />} />
             </SelectItem>
             <SelectItem value="loaned">
-              <span
-                className="pill"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle('neutral') }}
-              >
-                <Package size={11} strokeWidth={1.5} />
-                Emprestado
-              </span>
+              <StatusPill label="Emprestado" tone="muted" icon={<Package size={11} strokeWidth={1.5} />} />
             </SelectItem>
           </SelectContent>
         </Select>
@@ -1332,13 +1285,13 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             <div>
               <FieldLabel>Categoria</FieldLabel>
               <div>
-                <span
-                  className="pill"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...tonalPillStyle('neutral') }}
-                >
-                  {formData.category && getCategoryIcon(formData.category)}
-                  {formData.category && getCategoryLabel(formData.category)}
-                </span>
+                {formData.category && (
+                  <StatusPill
+                    label={getCategoryLabel(formData.category)}
+                    tone="muted"
+                    icon={getCategoryIcon(formData.category)}
+                  />
+                )}
               </div>
             </div>
 

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import { StatusPill } from '@/ds/components/StatusPill';
 import { AVProjectStep, AVStepStatus, AV_STEP_STATUS_CONFIG } from '../types';
 import { useUpdateAVStep, useCreateAVSubstep, useUpdateAVSubstep, useDeleteAVSubstep } from '../hooks/useAVProjectDetails';
 import { useUsers } from '@/hooks/useUsers';
@@ -20,30 +21,15 @@ const STATUS_ICONS = {
   bloqueado: XCircle,
 };
 
-// Map config tone (tailwind classes) → DS tonal token
-const toneFromConfig = (key: AVStepStatus): 'warning' | 'info' | 'success' | 'danger' | 'neutral' => {
+// Map config tone → DS StatusPill token
+const toneFromConfig = (key: AVStepStatus): 'warning' | 'info' | 'success' | 'danger' | 'muted' => {
   switch (key) {
     case 'pendente': return 'warning';
     case 'em_progresso': return 'info';
     case 'concluido': return 'success';
     case 'bloqueado': return 'danger';
-    default: return 'neutral';
+    default: return 'muted';
   }
-};
-
-const tonalPillStyle = (tone: 'success' | 'warning' | 'neutral' | 'info' | 'danger'): React.CSSProperties => {
-  if (tone === 'neutral') {
-    return {
-      color: 'hsl(var(--ds-fg-2))',
-      borderColor: 'hsl(var(--ds-line-1))',
-      background: 'hsl(var(--ds-line-2) / 0.3)',
-    };
-  }
-  return {
-    color: `hsl(var(--ds-${tone}))`,
-    borderColor: `hsl(var(--ds-${tone}) / 0.3)`,
-    background: `hsl(var(--ds-${tone}) / 0.08)`,
-  };
 };
 
 interface NewSubstepData {
@@ -279,29 +265,19 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
               style={{ border: 0, background: 'transparent' }}
             >
               <SelectValue>
-                <span
-                  className="pill"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, ...tonalPillStyle(stepTone) }}
-                >
-                  <StatusIcon size={11} strokeWidth={1.5} />
-                  {statusConfig.label}
-                </span>
+                <StatusPill
+                  label={statusConfig.label}
+                  tone={stepTone}
+                  icon={<StatusIcon size={11} strokeWidth={1.5} />}
+                />
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {Object.entries(AV_STEP_STATUS_CONFIG).map(([key, config]) => {
-                const tone = toneFromConfig(key as AVStepStatus);
-                return (
-                  <SelectItem key={key} value={key}>
-                    <span
-                      className="pill"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, ...tonalPillStyle(tone) }}
-                    >
-                      {config.label}
-                    </span>
-                  </SelectItem>
-                );
-              })}
+              {Object.entries(AV_STEP_STATUS_CONFIG).map(([key, config]) => (
+                <SelectItem key={key} value={key}>
+                  <StatusPill label={config.label} tone={toneFromConfig(key as AVStepStatus)} />
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -361,15 +337,10 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
                 {substep.deadline ? format(new Date(substep.deadline), 'dd/MM') : '-'}
               </div>
               <div className="col-span-2">
-                {substep.is_completed ? (
-                  <span className="pill" style={{ fontSize: 10, ...tonalPillStyle('success') }}>
-                    Feito
-                  </span>
-                ) : (
-                  <span className="pill" style={{ fontSize: 10, ...tonalPillStyle('neutral') }}>
-                    Pendente
-                  </span>
-                )}
+                <StatusPill
+                  label={substep.is_completed ? 'Feito' : 'Pendente'}
+                  tone={substep.is_completed ? 'success' : 'muted'}
+                />
               </div>
               <div className="col-span-1 flex justify-end">
                 <button
@@ -512,13 +483,7 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
 
               {/* Status */}
               <div className="col-span-2">
-                <span
-                  className="pill"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, ...tonalPillStyle('neutral') }}
-                >
-                  <Clock size={11} strokeWidth={1.5} />
-                  Pendente
-                </span>
+                <StatusPill label="Pendente" tone="muted" icon={<Clock size={11} strokeWidth={1.5} />} />
               </div>
 
               {/* Ações */}
