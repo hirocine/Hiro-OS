@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Globe, BarChart3 } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/utils';
 import { formatTimeAgo } from '@/lib/marketing-dashboard-utils';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface Integration {
   account_name?: string | null;
@@ -84,13 +85,11 @@ export function SiteIdentityBanner({ integration, domain = 'hiro.film', rightAct
           >
             {domain}
           </span>
-          <span
-            className="pill"
-            style={{ color: tone, borderColor: `${tone.replace(')', ' / 0.3)')}`, display: 'inline-flex', alignItems: 'center', gap: 6 }}
-          >
-            <span className="dot" style={{ background: 'currentColor' }} />
-            Conectado
-          </span>
+          <StatusPill
+            label="Conectado"
+            tone={{ color: tone }}
+            icon={<span className="dot" style={{ background: 'currentColor' }} />}
+          />
         </div>
         <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
           via Google Analytics ·{' '}

@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
+import { StatusPill } from '@/ds/components/StatusPill';
 import {
   RefreshCw,
   Search,
@@ -436,17 +437,15 @@ export default function MarketingPosts() {
 
                 {selectedPost.pillar_id && pillarMap.get(selectedPost.pillar_id) && (
                   <div>
-                    <span
-                      className="pill"
-                      style={{
-                        backgroundColor: (pillarMap.get(selectedPost.pillar_id)?.color
-                          ?? getPillarColor(pillarMap.get(selectedPost.pillar_id)?.name ?? '')) as string,
+                    <StatusPill
+                      label={pillarMap.get(selectedPost.pillar_id)?.name ?? ''}
+                      tone={{
                         color: 'white',
+                        background: (pillarMap.get(selectedPost.pillar_id)?.color
+                          ?? getPillarColor(pillarMap.get(selectedPost.pillar_id)?.name ?? '')) as string,
                         borderColor: 'transparent',
                       }}
-                    >
-                      {pillarMap.get(selectedPost.pillar_id)?.name}
-                    </span>
+                    />
                   </div>
                 )}
 

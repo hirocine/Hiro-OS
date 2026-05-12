@@ -5,6 +5,7 @@ import { Equipment } from '@/types/equipment';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { logger } from '@/lib/logger';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface BulkActionsBarProps {
   selectedItems: Equipment[];
@@ -88,12 +89,7 @@ export function BulkActionsBar({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
-            <span
-              className="pill"
-              style={{ fontSize: 11, fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}
-            >
-              {selectedCount} item{selectedCount !== 1 ? 's' : ''}
-            </span>
+            <StatusPill label={`${selectedCount} item${selectedCount !== 1 ? 's' : ''}`} tone="muted" />
             <button
               type="button"
               onClick={onClearSelection}

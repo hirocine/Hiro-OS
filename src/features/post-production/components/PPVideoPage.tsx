@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { StatusPill } from '@/ds/components/StatusPill';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -293,18 +294,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                 </p>
               </div>
               {latestVersion && (
-                <span
-                  className="pill"
-                  style={{
-                    flexShrink: 0,
-                    color: 'hsl(var(--ds-fg-2))',
-                    borderColor: 'hsl(var(--ds-line-1))',
-                    background: 'hsl(var(--ds-line-2) / 0.3)',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  v{latestVersion.version_number}
-                </span>
+                <StatusPill label={`v${latestVersion.version_number}`} tone="muted" />
               )}
             </div>
 

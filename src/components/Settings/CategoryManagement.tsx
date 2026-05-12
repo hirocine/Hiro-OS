@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { getCategoryIcon } from '@/lib/categoryIconMap';
 import { logger } from '@/lib/logger';
+import { StatusPill } from '@/ds/components/StatusPill';
 import {
   DndContext,
   closestCenter,
@@ -767,9 +768,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
                                         <FileText size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
                                         <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-2))' }}>{sub.name}</span>
                                         {sub.usageCount > 0 && (
-                                          <span className="pill" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                                            {sub.usageCount} equipamentos
-                                          </span>
+                                          <StatusPill label={`${sub.usageCount} equipamentos`} tone="muted" />
                                         )}
                                       </div>
 

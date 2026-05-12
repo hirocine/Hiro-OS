@@ -3,6 +3,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Check, Package } from 'lucide-react';
 import { Equipment } from '@/types/equipment';
 import { type LucideIcon } from 'lucide-react';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface EquipmentSelectionStepProps {
   availableItems: Equipment[];
@@ -247,17 +248,7 @@ export function EquipmentSelectionStep({
             }}>
               {selectedTitle}
             </h4>
-            <span
-              className="pill"
-              style={{
-                color: 'hsl(var(--ds-accent))',
-                borderColor: 'hsl(var(--ds-accent) / 0.3)',
-                background: 'hsl(var(--ds-accent) / 0.08)',
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
-              {selectedItems.length}
-            </span>
+            <StatusPill label={String(selectedItems.length)} tone="accent" />
           </div>
 
           {selectedItems.length === 0 ? (

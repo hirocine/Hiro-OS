@@ -323,16 +323,7 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
                       {equipment.category}
                     </span>
                     {equipment.patrimonyNumber && (
-                      <span
-                        className="pill"
-                        style={{
-                          fontSize: 10,
-                          background: 'hsl(var(--ds-line-2))',
-                          fontVariantNumeric: 'tabular-nums',
-                        }}
-                      >
-                        #{equipment.patrimonyNumber}
-                      </span>
+                      <StatusPill label={`#${equipment.patrimonyNumber}`} tone="muted" />
                     )}
                   </div>
                 ))}
@@ -425,7 +416,6 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
       value: React.ReactNode;
       tone: 'success' | 'info' | 'warning' | 'danger';
     }) => {
-      const color = `hsl(var(--ds-${tone}))`;
       return (
         <div
           style={{
@@ -438,17 +428,7 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
           }}
         >
           <span style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{label}</span>
-          <span
-            className="pill"
-            style={{
-              color,
-              borderColor: `hsl(var(--ds-${tone}) / 0.3)`,
-              background: `hsl(var(--ds-${tone}) / 0.1)`,
-              fontVariantNumeric: 'tabular-nums',
-            }}
-          >
-            {value}
-          </span>
+          <StatusPill label={String(value)} tone={tone} />
         </div>
       );
     };

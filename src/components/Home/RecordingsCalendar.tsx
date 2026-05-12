@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, Video, ExternalLink, X, Calendar, MapPin, FileText } from 'lucide-react';
 import { useRecordingsCalendar, getEventTitle, getEventType, RecordingEvent } from '@/hooks/useRecordingsCalendar';
+import { StatusPill } from '@/ds/components/StatusPill';
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   addMonths, addWeeks, subMonths, subWeeks, addDays,
@@ -126,20 +127,10 @@ function EventDetailPopover({ event, onClose }: { event: RecordingEvent; onClose
         <div style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <span
-                className="pill"
-                style={{
-                  fontSize: 10,
-                  fontWeight: 500,
-                  marginBottom: 8,
-                  color: config.color,
-                  borderColor: `${config.color.replace(')', ' / 0.3)')}`,
-                  background: config.bg,
-                  display: 'inline-flex',
-                }}
-              >
-                {config.label}
-              </span>
+              <StatusPill
+                label={config.label}
+                tone={{ color: config.color, background: config.bg }}
+              />
               <h3
                 style={{
                   fontFamily: '"HN Display", sans-serif',
@@ -701,18 +692,10 @@ export function RecordingsCalendar() {
                               {e.location && ` · ${e.location}`}
                             </p>
                           </div>
-                          <span
-                            className="pill"
-                            style={{
-                              fontSize: 10,
-                              flexShrink: 0,
-                              color: cfg.color,
-                              borderColor: cfg.color.replace(')', ' / 0.3)'),
-                              background: cfg.bg,
-                            }}
-                          >
-                            {cfg.label}
-                          </span>
+                          <StatusPill
+                            label={cfg.label}
+                            tone={{ color: cfg.color, background: cfg.bg }}
+                          />
                         </div>
                       );
                     })}

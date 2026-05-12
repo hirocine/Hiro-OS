@@ -14,6 +14,7 @@ import { EquipmentPagination } from '@/components/Equipment/EquipmentPagination'
 import { EquipmentStatsCards } from '@/components/Equipment/EquipmentStatsCards';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Equipment } from '@/types/equipment';
+import { StatusPill } from '@/ds/components/StatusPill';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -365,7 +366,7 @@ export default function EquipmentPage() {
             flexWrap: 'wrap', gap: 8,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span className="pill"><ViewIcon size={12} strokeWidth={1.5} />{viewLabel}</span>
+              <StatusPill label={viewLabel} tone="muted" icon={<ViewIcon size={12} strokeWidth={1.5} />} />
               <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
                 {((currentPage - 1) * itemsPerPage) + 1}–{Math.min(currentPage * itemsPerPage, totalItems)} de {totalItems}
               </span>

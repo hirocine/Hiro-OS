@@ -8,6 +8,7 @@ import { useProjectEquipment } from '@/features/projects';
 import { useSeparationChecklist } from '@/hooks/useSeparationChecklist';
 import { useProjectDetails } from '@/features/projects';
 import { useToast } from '@/hooks/use-toast';
+import { StatusPill } from '@/ds/components/StatusPill';
 import { SeparationDialog } from '@/components/Projects/SeparationDialog';
 import { useAuthContext } from '@/contexts/AuthContext';
 import {
@@ -203,21 +204,10 @@ export default function ProjectSeparation() {
         <div style={sectionWrap}>
           <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-              <span
-                className="pill"
-                style={
-                  allItemsChecked
-                    ? {
-                        color: 'hsl(var(--ds-success))',
-                        borderColor: 'hsl(var(--ds-success) / 0.3)',
-                        background: 'hsl(var(--ds-success) / 0.08)',
-                        fontVariantNumeric: 'tabular-nums',
-                      }
-                    : { fontVariantNumeric: 'tabular-nums' }
-                }
-              >
-                {checkedCount}/{totalCount} itens confirmados
-              </span>
+              <StatusPill
+                label={`${checkedCount}/${totalCount} itens confirmados`}
+                tone={allItemsChecked ? 'success' : 'muted'}
+              />
               {allItemsChecked && (
                 <div
                   style={{

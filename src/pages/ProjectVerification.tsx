@@ -10,6 +10,7 @@ import { useProjectDetails } from '@/features/projects';
 import { useToast } from '@/hooks/use-toast';
 import { VerificationDialog } from '@/components/Projects/VerificationDialog';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { StatusPill } from '@/ds/components/StatusPill';
 import {
   CheckCircle2,
   CheckCircle,
@@ -204,21 +205,10 @@ export default function ProjectVerification() {
         <div style={sectionWrap}>
           <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-              <span
-                className="pill"
-                style={
-                  allItemsChecked
-                    ? {
-                        color: 'hsl(var(--ds-success))',
-                        borderColor: 'hsl(var(--ds-success) / 0.3)',
-                        background: 'hsl(var(--ds-success) / 0.08)',
-                        fontVariantNumeric: 'tabular-nums',
-                      }
-                    : { fontVariantNumeric: 'tabular-nums' }
-                }
-              >
-                {checkedCount}/{totalCount} itens verificados
-              </span>
+              <StatusPill
+                label={`${checkedCount}/${totalCount} itens verificados`}
+                tone={allItemsChecked ? 'success' : 'muted'}
+              />
               {allItemsChecked && (
                 <div
                   style={{

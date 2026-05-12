@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
 import { type MarketingPersona } from '@/hooks/useMarketingPersonas';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface Props {
   open: boolean;
@@ -54,8 +55,8 @@ export function MarketingPersonaDetailsDialog({ open, onOpenChange, persona }: P
                 {persona.name}
               </DialogTitle>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
-                {persona.segment && <span className="pill">{persona.segment}</span>}
-                {persona.company_size && <span className="pill">{persona.company_size}</span>}
+                {persona.segment && <StatusPill label={persona.segment} tone="muted" />}
+                {persona.company_size && <StatusPill label={persona.company_size} tone="muted" />}
               </div>
             </div>
           </div>

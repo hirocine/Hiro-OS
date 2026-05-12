@@ -21,6 +21,7 @@ import {
   CATEGORY_OPTIONS,
 } from '@/components/Marketing/MarketingReferenceDialog';
 import { MarketingReferenceLightbox } from '@/components/Marketing/MarketingReferenceLightbox';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 const PLATFORM_ICONS: Record<string, typeof Instagram> = {
   instagram: Instagram,
@@ -256,9 +257,7 @@ export default function MarketingReferences() {
                       </h3>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                         {platformLabel && (
-                          <span className="pill" style={{ fontSize: 10 }}>
-                            {platformLabel}
-                          </span>
+                          <StatusPill label={platformLabel} tone="muted" />
                         )}
                         {ref.tags.slice(0, 3).map((t) => (
                           <span key={t} className="pill muted" style={{ fontSize: 10 }}>

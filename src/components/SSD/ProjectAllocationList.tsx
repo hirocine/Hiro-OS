@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Plus, Trash2 } from 'lucide-react';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 export interface ProjectAllocation {
   id?: string;
@@ -30,14 +31,10 @@ export const ProjectAllocationList = ({
   const freeSpace = totalCapacity - totalAllocated;
   const utilizationPercent = totalCapacity > 0 ? (totalAllocated / totalCapacity) * 100 : 0;
 
-  const getBadgeStyle = (): React.CSSProperties => {
-    if (utilizationPercent > 80) {
-      return { color: 'hsl(var(--ds-danger))', borderColor: 'hsl(var(--ds-danger) / 0.3)' };
-    }
-    if (utilizationPercent > 50) {
-      return { color: 'hsl(var(--ds-warning))', borderColor: 'hsl(var(--ds-warning) / 0.3)' };
-    }
-    return { color: 'hsl(var(--ds-success))', borderColor: 'hsl(var(--ds-success) / 0.3)' };
+  const getBadgeTone = (): 'danger' | 'warning' | 'success' => {
+    if (utilizationPercent > 80) return 'danger';
+    if (utilizationPercent > 50) return 'warning';
+    return 'success';
   };
 
   const handleAdd = () => {
@@ -81,12 +78,10 @@ export const ProjectAllocationList = ({
         >
           Projetos Alocados
         </h3>
-        <span
-          className="pill"
-          style={{ ...getBadgeStyle(), fontVariantNumeric: 'tabular-nums' }}
-        >
-          {freeSpace.toFixed(0)} GB livres de {totalCapacity} GB
-        </span>
+        <StatusPill
+          label={`${freeSpace.toFixed(0)} GB livres de ${totalCapacity} GB`}
+          tone={getBadgeTone()}
+        />
       </div>
 
       {localAllocations.length === 0 ? (

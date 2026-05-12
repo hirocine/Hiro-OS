@@ -2,6 +2,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ExternalLink, Pencil, Trash2 } from 'lucide-react';
 import { type MarketingReference } from '@/hooks/useMarketingReferences';
 import { CATEGORY_OPTIONS, PLATFORM_OPTIONS } from './MarketingReferenceDialog';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface Props {
   reference: MarketingReference | null;
@@ -70,8 +71,8 @@ export function MarketingReferenceLightbox({ reference, onOpenChange, onEdit, on
                 {reference.title}
               </h2>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-                {platformLabel && <span className="pill">{platformLabel}</span>}
-                {categoryLabel && <span className="pill muted">{categoryLabel}</span>}
+                {platformLabel && <StatusPill label={platformLabel} tone="muted" />}
+                {categoryLabel && <StatusPill label={categoryLabel} tone="muted" />}
               </div>
             </div>
 

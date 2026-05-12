@@ -1,6 +1,7 @@
 import { Pencil, Trash2 } from 'lucide-react';
 import { AdminOnly } from '@/components/RoleGuard';
 import { TeamMember } from '@/hooks/useTeamMembers';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface TeamMemberCardProps {
   member: TeamMember;
@@ -157,18 +158,7 @@ export function TeamMemberCard({ member, onEdit, onDelete }: TeamMemberCardProps
         {member.tags && member.tags.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {member.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="pill"
-                style={{
-                  fontSize: 10,
-                  color: 'hsl(var(--ds-success))',
-                  borderColor: 'hsl(var(--ds-success) / 0.3)',
-                  background: 'hsl(var(--ds-success) / 0.08)',
-                }}
-              >
-                {tag}
-              </span>
+              <StatusPill key={index} label={tag} tone="success" />
             ))}
           </div>
         )}

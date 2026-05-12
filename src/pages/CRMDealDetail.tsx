@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatBRL, type Deal } from '@/features/crm/types/crm.types';
 import { Clock, FileText } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 export default function CRMDealDetail() {
   const { id } = useParams<{ id: string }>();
@@ -120,16 +121,15 @@ export default function CRMDealDetail() {
                 {formatBRL(deal.estimated_value)}
               </p>
               {currentStage && (
-                <span
-                  className="pill"
-                  style={{
-                    marginTop: 4,
-                    backgroundColor: currentStage.color ?? '#6366f1',
-                    color: '#fff',
-                    borderColor: currentStage.color ?? '#6366f1',
-                  }}
-                >
-                  {currentStage.name}
+                <span style={{ display: 'inline-block', marginTop: 4 }}>
+                  <StatusPill
+                    label={currentStage.name}
+                    tone={{
+                      color: '#fff',
+                      background: currentStage.color ?? '#6366f1',
+                      borderColor: currentStage.color ?? '#6366f1',
+                    }}
+                  />
                 </span>
               )}
             </div>

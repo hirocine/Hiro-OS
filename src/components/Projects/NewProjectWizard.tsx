@@ -8,6 +8,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { Equipment } from '@/types/equipment';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface NewProjectWizardProps {
   open: boolean;
@@ -34,12 +35,6 @@ const fieldLabel: React.CSSProperties = {
   color: 'hsl(var(--ds-fg-3))',
   display: 'block',
   marginBottom: 6,
-};
-
-const successPill: React.CSSProperties = {
-  color: 'hsl(var(--ds-success))',
-  borderColor: 'hsl(var(--ds-success) / 0.3)',
-  background: 'hsl(var(--ds-success) / 0.08)',
 };
 
 export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWizardProps) {
@@ -592,12 +587,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
                   >
                     Selecionados
                   </span>
-                  <span
-                    className="pill"
-                    style={{ ...successPill, fontVariantNumeric: 'tabular-nums' }}
-                  >
-                    {selectedEquipment.length}
-                  </span>
+                  <StatusPill label={String(selectedEquipment.length)} tone="success" />
                 </div>
                 <div
                   style={{

@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
+import { StatusPill } from '@/ds/components/StatusPill';
 import {
   Select,
   SelectContent,
@@ -352,19 +353,10 @@ export const SSDDetailsDialog = ({ ssd, open, onOpenChange, onUpdate }: SSDDetai
               >
                 Espaço Livre
               </span>
-              <span
-                className="pill"
-                style={{
-                  color: isLowSpace ? 'hsl(var(--ds-danger))' : 'hsl(var(--ds-success))',
-                  borderColor: isLowSpace
-                    ? 'hsl(var(--ds-danger) / 0.3)'
-                    : 'hsl(var(--ds-success) / 0.3)',
-                  fontVariantNumeric: 'tabular-nums',
-                  fontWeight: 600,
-                }}
-              >
-                {freeSpace.toFixed(0)} GB de {ssd.capacity} GB
-              </span>
+              <StatusPill
+                label={`${freeSpace.toFixed(0)} GB de ${ssd.capacity} GB`}
+                tone={isLowSpace ? 'danger' : 'success'}
+              />
             </div>
           )}
         </div>

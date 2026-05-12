@@ -25,6 +25,7 @@ import { getPillarColor } from '@/lib/marketing-colors';
 import {
   getPostFormatLabel, getPostPlatformLabel, getPostStatus,
 } from '@/lib/marketing-posts-config';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface Props {
   posts: MarketingPost[];
@@ -243,9 +244,7 @@ function DayDetailPopover({
                           {getPostFormatLabel(p.format)}
                         </span>
                       )}
-                      <span className="pill" style={{ fontSize: 10 }}>
-                        {status.emoji} {status.label}
-                      </span>
+                      <StatusPill label={status.label} tone="muted" icon={status.emoji} />
                     </div>
                   </div>
                   <div
@@ -908,9 +907,7 @@ export function PostsCalendar({ posts, pillars, loading, onCreate, onEdit, onDel
                                 {p.format && ` · ${getPostFormatLabel(p.format)}`}
                               </p>
                             </div>
-                            <span className="pill" style={{ flexShrink: 0, fontSize: 10 }}>
-                              {status.emoji} {status.label}
-                            </span>
+                            <StatusPill label={status.label} tone="muted" icon={status.emoji} />
                           </div>
                         );
                       })}

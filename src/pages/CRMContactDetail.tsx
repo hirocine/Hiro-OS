@@ -11,6 +11,7 @@ import { Plus, Handshake, Mail, Phone, Building2, Instagram, Globe, MessageCircl
 import { formatBRL, CONTACT_TYPES } from '@/features/crm/types/crm.types';
 import { useState } from 'react';
 import type { Contact } from '@/features/crm/types/crm.types';
+import { StatusPill } from '@/ds/components/StatusPill';
 
 function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -202,18 +203,11 @@ export default function CRMContactDetail() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{d.title}</p>
                         {d.proposal_id && (
-                          <span
-                            className="pill"
-                            style={{
-                              fontSize: 10,
-                              color: 'hsl(var(--ds-info))',
-                              borderColor: 'hsl(var(--ds-info) / 0.3)',
-                              background: 'hsl(var(--ds-info) / 0.08)',
-                            }}
-                          >
-                            <FileText size={10} strokeWidth={1.5} style={{ marginRight: 2 }} />
-                            Com proposta
-                          </span>
+                          <StatusPill
+                            label="Com proposta"
+                            tone="info"
+                            icon={<FileText size={10} strokeWidth={1.5} />}
+                          />
                         )}
                       </div>
                       <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>{d.stage_name}</p>
