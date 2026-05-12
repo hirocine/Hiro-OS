@@ -2245,6 +2245,79 @@ body > [role="dialog"][data-state],
 :is(.ds-preview, .ds-shell) .btn-ghost:hover { background: var(--surface-2); color: var(--fg-1); border-color: var(--line-1); }
 :is(.ds-preview, .ds-shell) .btn svg { width: 14px; height: 14px; stroke-width: 1.5; }
 
+/* Compound modifiers — alias of the BEM siblings so call sites can write
+   `className="btn primary"` or `className="btn ghost"` next to the
+   already-canonical `btn-primary` / `btn-ghost`. Both forms are intentional. */
+:is(.ds-preview, .ds-shell) .btn.primary {
+  background: var(--fg-1);
+  color: var(--bg);
+  border-color: var(--fg-1);
+}
+:is(.ds-preview, .ds-shell) .btn.primary:hover {
+  background: var(--accent);
+  color: #0A0A0A;
+  border-color: var(--accent);
+}
+:is(.ds-preview, .ds-shell) .btn.ghost {
+  border-color: transparent;
+  color: var(--fg-2);
+  background: transparent;
+}
+:is(.ds-preview, .ds-shell) .btn.ghost:hover { background: var(--surface-2); color: var(--fg-1); border-color: var(--line-1); }
+
+/* Danger — destructive actions. Outlined by default; pair with `.primary`
+   for filled red. Promoted from the form-foot scope so it works anywhere. */
+:is(.ds-preview, .ds-shell) .btn.danger {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--bg);
+}
+:is(.ds-preview, .ds-shell) .btn.danger:hover {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+:is(.ds-preview, .ds-shell) .btn.danger.primary,
+:is(.ds-preview, .ds-shell) .btn.primary.danger {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+:is(.ds-preview, .ds-shell) .btn.danger.primary:hover,
+:is(.ds-preview, .ds-shell) .btn.primary.danger:hover {
+  background: color-mix(in srgb, var(--danger) 85%, #000);
+  border-color: color-mix(in srgb, var(--danger) 85%, #000);
+}
+
+/* Sizes — `sm` for inline/tight rows, `icon` for square iconic buttons.
+   Stack with any variant modifier (e.g. `.btn.ghost.icon`). */
+:is(.ds-preview, .ds-shell) .btn.sm,
+:is(.ds-preview, .ds-shell) .btn-sm {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 11px;
+  gap: 6px;
+}
+:is(.ds-preview, .ds-shell) .btn.icon,
+:is(.ds-preview, .ds-shell) .btn-icon {
+  height: 32px;
+  width: 32px;
+  padding: 0;
+}
+:is(.ds-preview, .ds-shell) .btn.icon.sm,
+:is(.ds-preview, .ds-shell) .btn-icon.btn-sm {
+  height: 28px;
+  width: 28px;
+}
+
+/* Disabled — applies to any variant. */
+:is(.ds-preview, .ds-shell) .btn:disabled,
+:is(.ds-preview, .ds-shell) .btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* ============================================================
    GRID HELPERS
    ============================================================ */
