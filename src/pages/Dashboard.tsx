@@ -4,6 +4,7 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useFinancialData } from '@/hooks/useFinancialData';
 import { useCashFlowData } from '@/hooks/useCashFlowData';
 import { formatCurrency, formatRelativeTime } from '@/lib/utils';
+import { Money } from '@/ds/components/Money';
 import {
   Clock, TrendingUp, TrendingDown, DollarSign, Target, Award,
   Users, Zap, BarChart3, Heart, Hourglass, Calendar,
@@ -118,11 +119,11 @@ function CustomTooltip({ active, payload, label }: any) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, color: 'hsl(var(--ds-fg-3))' }}>
           <span>Meta</span>
-          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(meta)}</span>
+          <Money value={meta} />
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, color: 'hsl(var(--ds-accent))' }}>
           <span>Realizado</span>
-          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(realizado)}</span>
+          <Money value={realizado} />
         </div>
       </div>
       <div style={{

@@ -9,6 +9,7 @@ import { formatBRL, type Deal } from '@/features/crm/types/crm.types';
 import { Clock, FileText } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 import { StatusPill } from '@/ds/components/StatusPill';
+import { Money } from '@/ds/components/Money';
 
 export default function CRMDealDetail() {
   const { id } = useParams<{ id: string }>();
@@ -117,8 +118,8 @@ export default function CRMDealDetail() {
               )}
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
-              <p style={{ fontSize: 24, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))', fontFamily: '"HN Display", sans-serif' }}>
-                {formatBRL(deal.estimated_value)}
+              <p style={{ fontSize: 24, fontWeight: 600, color: 'hsl(var(--ds-fg-1))', fontFamily: '"HN Display", sans-serif' }}>
+                <Money value={deal.estimated_value} />
               </p>
               {currentStage && (
                 <span style={{ display: 'inline-block', marginTop: 4 }}>

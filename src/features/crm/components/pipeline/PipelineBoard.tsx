@@ -9,8 +9,9 @@ import { LostReasonDialog } from './LostReasonDialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, AlertTriangle, Handshake, DollarSign, Search } from 'lucide-react';
-import { formatBRL, type DealWithRelations } from '../../types/crm.types';
+import { type DealWithRelations } from '../../types/crm.types';
 import { useDebounce } from '@/hooks/useDebounce';
+import { Money } from '@/ds/components/Money';
 
 function DraggableDealCard({ deal }: { deal: DealWithRelations }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: deal.id });
@@ -181,9 +182,10 @@ export function PipelineBoard() {
         </div>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'hsl(var(--ds-fg-3))' }}>
           <DollarSign size={14} strokeWidth={1.5} />
-          <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>
-            {formatBRL(pipelineValue)}
-          </span>
+          <Money
+            value={pipelineValue}
+            style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}
+          />
         </div>
         {staleCount > 0 && (
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'hsl(var(--ds-warning))' }}>
@@ -257,15 +259,8 @@ export function PipelineBoard() {
                       {stageDeals.length}
                     </span>
                   </div>
-                  <p
-                    style={{
-                      fontSize: 11,
-                      color: 'hsl(var(--ds-fg-3))',
-                      marginTop: 4,
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
-                  >
-                    {formatBRL(stageValue)}
+                  <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
+                    <Money value={stageValue} />
                   </p>
                 </div>
                 <DroppableArea stageId={stage.id}>

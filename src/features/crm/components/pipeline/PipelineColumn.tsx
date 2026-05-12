@@ -1,6 +1,7 @@
 import { useDroppable } from '@dnd-kit/core';
 import { DealCard } from './DealCard';
-import { formatBRL, type DealWithRelations, type PipelineStage } from '../../types/crm.types';
+import { type DealWithRelations, type PipelineStage } from '../../types/crm.types';
+import { Money } from '@/ds/components/Money';
 
 interface PipelineColumnProps {
   stage: PipelineStage;
@@ -61,15 +62,8 @@ export function PipelineColumn({ stage, deals }: PipelineColumnProps) {
             {deals.length}
           </span>
         </div>
-        <p
-          style={{
-            fontSize: 11,
-            color: 'hsl(var(--ds-fg-3))',
-            marginTop: 4,
-            fontVariantNumeric: 'tabular-nums',
-          }}
-        >
-          {formatBRL(totalValue)}
+        <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
+          <Money value={totalValue} />
         </p>
       </div>
       <div

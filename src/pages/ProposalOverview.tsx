@@ -8,6 +8,7 @@ import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProposalDetailsBySlug } from '@/features/proposals/hooks/useProposalDetailsBySlug';
+import { formatMoney } from '@/ds/lib/money';
 import { useProposalViews } from '@/features/proposals/hooks/useProposalViews';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusPill } from '@/ds/components/StatusPill';
@@ -68,9 +69,9 @@ function formatDuration(seconds: number | null): string {
   return mins > 0 ? `${mins}min ${secs}s` : `${secs}s`;
 }
 
+// Falls back to '—' for null/undefined/zero; otherwise BRL via the canonical formatter.
 function formatCurrency(value: number | null | undefined): string {
-  if (!value) return '—';
-  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  return value ? formatMoney(value) : '—';
 }
 
 function parseUserAgent(ua: string | null): string {

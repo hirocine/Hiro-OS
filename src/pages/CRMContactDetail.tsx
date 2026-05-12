@@ -12,6 +12,7 @@ import { formatBRL, CONTACT_TYPES } from '@/features/crm/types/crm.types';
 import { useState } from 'react';
 import type { Contact } from '@/features/crm/types/crm.types';
 import { StatusPill } from '@/ds/components/StatusPill';
+import { Money } from '@/ds/components/Money';
 
 function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -213,8 +214,8 @@ export default function CRMContactDetail() {
                       <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>{d.stage_name}</p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontSize: 13, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))' }}>
-                        {formatBRL(d.estimated_value)}
+                      <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                        <Money value={d.estimated_value} />
                       </p>
                       <span
                         className="pill muted"

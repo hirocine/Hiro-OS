@@ -1,5 +1,6 @@
 import { Clock, User } from 'lucide-react';
-import { formatBRL, type DealWithRelations } from '../../types/crm.types';
+import { type DealWithRelations } from '../../types/crm.types';
+import { Money } from '@/ds/components/Money';
 
 interface DealCardProps {
   deal: DealWithRelations;
@@ -57,15 +58,10 @@ export function DealCard({ deal, isDragging }: DealCardProps) {
           fontSize: 11,
         }}
       >
-        <span
-          style={{
-            fontWeight: 500,
-            color: 'hsl(var(--ds-fg-1))',
-            fontVariantNumeric: 'tabular-nums',
-          }}
-        >
-          {formatBRL(deal.estimated_value)}
-        </span>
+        <Money
+          value={deal.estimated_value}
+          style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}
+        />
         <span
           style={{
             display: 'inline-flex',
