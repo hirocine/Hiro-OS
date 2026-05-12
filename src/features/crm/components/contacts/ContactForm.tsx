@@ -30,14 +30,18 @@ const fieldLabel: React.CSSProperties = {
   marginBottom: 6,
 };
 
+// Wraps the control inside the <label> so the native label↔control
+// association works without needing an explicit htmlFor/id pair on
+// every call site. Click on the text focuses the input, screen
+// readers announce them as paired.
 const Field = ({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) => (
-  <div style={{ display: 'flex', flexDirection: 'column' }}>
-    <label style={fieldLabel}>
+  <label style={{ display: 'flex', flexDirection: 'column' }}>
+    <span style={fieldLabel}>
       {label}
       {required && <span style={{ marginLeft: 4, color: 'hsl(var(--ds-danger))' }}>*</span>}
-    </label>
+    </span>
     {children}
-  </div>
+  </label>
 );
 
 export function ContactForm({ open, onOpenChange, contact }: ContactFormProps) {
