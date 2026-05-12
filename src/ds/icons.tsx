@@ -1,6 +1,7 @@
 import {
   Home,
   Inbox,
+  ListChecks,
   Film,
   Folder,
   Package,
@@ -55,8 +56,8 @@ const i = (Cmp: React.ComponentType<LucideProps>) => (
 export const I = {
   // Sections / nav items
   home:     i(Home),
-  inbox:    i(Inbox),
-  task:     i(Inbox),         // Tarefas (caixa de entrada)
+  inbox:    i(Inbox),         // Caixa de Entrada
+  task:     i(ListChecks),    // Tarefas — checklist semantics
   film:     i(Film),
   folder:   i(Folder),
   layers:   i(Folder),        // Projetos

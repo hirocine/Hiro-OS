@@ -50,8 +50,9 @@ export const NAV: NavSection[] = [
   {
     title: "Dia a Dia",
     items: [
-      { name: "Home",    href: "/",       icon: I.home,  permission: "home" },
-      { name: "Tarefas", href: "/tarefas", icon: I.inbox, permission: "tarefas" },
+      { name: "Home",             href: "/",                 icon: I.home,  permission: "home" },
+      { name: "Caixa de Entrada", href: "/caixa-de-entrada", icon: I.inbox, permission: "inbox" },
+      { name: "Tarefas",          href: "/tarefas",          icon: I.task,  permission: "tarefas" },
     ],
   },
   {

@@ -10,6 +10,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { NavigationBlockerProvider } from "./contexts/NavigationBlockerContext";
 // Lazy load pages for better performance
 const Home = lazy(() => import("./pages/Home"));
+const Inbox = lazy(() => import("./pages/Inbox"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Equipment = lazy(() => import("./pages/Equipment"));
 const AddEquipment = lazy(() => import("./pages/AddEquipment"));
@@ -96,6 +97,7 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<RequirePermission permission="home"><Home /></RequirePermission>} />
+                <Route path="caixa-de-entrada" element={<RequirePermission permission="inbox"><Inbox /></RequirePermission>} />
                 <Route path="dashboard" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro/dashboard" element={<RequirePermission permission="financeiro.dashboard"><Dashboard /></RequirePermission>} />

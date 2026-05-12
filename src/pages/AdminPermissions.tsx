@@ -37,6 +37,7 @@ const PERMISSIONS: PermissionSection[] = [
     title: 'Dia a Dia',
     items: [
       { key: 'home', label: 'Home' },
+      { key: 'inbox', label: 'Caixa de Entrada' },
       { key: 'tarefas', label: 'Tarefas' },
     ],
   },

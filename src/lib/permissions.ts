@@ -15,6 +15,7 @@ import type { UserRole } from '@/hooks/useUserRole';
 
 export type PermissionKey =
   | 'home'
+  | 'inbox'
   | 'tarefas'
   | 'esteira_de_pos'
   | 'projetos'
@@ -43,6 +44,7 @@ export type PermissionKey =
 /** All known permission keys (handy for iteration / seed). */
 export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'home',
+  'inbox',
   'tarefas',
   'esteira_de_pos',
   'projetos',
@@ -84,6 +86,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
   admin: ALL_TRUE,
   producao: {
     home: true,
+    inbox: true,
     tarefas: true,
     esteira_de_pos: true,
     projetos: true,
@@ -108,6 +111,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
   },
   marketing: {
     home: true,
+    inbox: true,
     'marketing.dashboard': true,
     'marketing.calendario': true,
     'marketing.instagram': true,
@@ -118,6 +122,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
   },
   comercial: {
     home: true,
+    inbox: true,
     tarefas: true,
     'crm.pipeline': true,
     'crm.contatos': true,
@@ -128,6 +133,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
   },
   edicao: {
     home: true,
+    inbox: true,
     tarefas: true,
     esteira_de_pos: true,
     projetos: true,
@@ -138,6 +144,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
   },
   financeiro: {
     home: true,
+    inbox: true,
     tarefas: true,
     'financeiro.dashboard': true,
     'financeiro.capex': true,
@@ -147,11 +154,13 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
   },
   user: {
     home: true,
+    inbox: true,
     tarefas: true,
     politicas: true,
   },
   convidado: {
     home: true,
+    inbox: true,
   },
 };
 

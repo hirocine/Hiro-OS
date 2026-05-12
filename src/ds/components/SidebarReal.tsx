@@ -6,6 +6,7 @@ import { canAccess, type PermissionKey } from "@/lib/permissions";
 import { I } from "../icons";
 import { NAV, type NavChild, type NavItem, type NavSection } from "../nav-data";
 import { TopbarSearch } from "./TopbarSearch";
+import { useInboxUnreadCount } from "@/features/inbox/useInbox";
 
 type Props = {
   collapsed: boolean;
@@ -16,6 +17,7 @@ export function SidebarReal({ collapsed, onToggle }: Props) {
   const location = useLocation();
   const { role, isAdmin, canAccessSuppliers, canAccessMarketing } = useAuthContext();
   const { requestNavigation } = useNavigationBlocker();
+  const inboxUnread = useInboxUnreadCount();
 
   /** Legacy gate — `requires` field. Drops once nav-data finishes migrating to `permission`. */
   const canSeeLegacy = (req?: "admin" | "suppliers" | "marketing") => {
@@ -135,6 +137,17 @@ export function SidebarReal({ collapsed, onToggle }: Props) {
                     >
                       <span className="badge-dot" />
                       {it.badge.label}
+                    </span>
+                  )}
+                  {/* Dynamic unread badge for the inbox entry. Static
+                      `it.badge` above wins if both are set. */}
+                  {!collapsed && !it.badge && it.href === "/caixa-de-entrada" && inboxUnread > 0 && (
+                    <span
+                      className="badge b-active"
+                      style={{ fontSize: "10px", fontVariantNumeric: "tabular-nums" }}
+                      aria-label={`${inboxUnread} não lidas`}
+                    >
+                      {inboxUnread > 99 ? "99+" : inboxUnread}
                     </span>
                   )}
                 </NavLink>
