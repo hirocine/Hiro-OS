@@ -5,6 +5,8 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useTaskDetails } from '@/features/tasks/hooks/useTaskDetails';
 import { useTaskMutations } from '@/features/tasks/hooks/useTaskMutations';
 import { PriorityBadge } from '@/features/tasks/components/PriorityBadge';
@@ -241,6 +243,26 @@ export default function TaskDetails() {
     label: config.label
   }));
 
+  // AV projects for the "Projeto" field
+  const projectsQuery = useQuery({
+    queryKey: ['av_projects', 'options'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('audiovisual_projects')
+        .select('id, name')
+        .order('name', { ascending: true })
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as Array<{ id: string; name: string }>;
+    },
+    staleTime: 60_000,
+  });
+
+  const projectOptions = [
+    { value: '__none__', label: 'Sem projeto' },
+    ...(projectsQuery.data ?? []).map((p) => ({ value: p.id, label: p.name })),
+  ];
+
   // Prazo banner data (only when overdue and task not concluida)
   const overdueDays = (() => {
     if (!task.due_date || task.status === 'concluida') return 0;
@@ -397,7 +419,7 @@ export default function TaskDetails() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
+            gridTemplateColumns: 'repeat(6, 1fr)',
             border: '1px solid hsl(var(--ds-line-1))',
             background: 'hsl(var(--ds-surface))',
           }}
@@ -447,12 +469,65 @@ export default function TaskDetails() {
           </div>
 
           {/* Responsável */}
-          <div style={{ ...detailCell, borderRight: 0 }}>
+          <div style={detailCell}>
             <span style={detailKey}>Responsável</span>
             <InlineAssigneeCell
               value={task.assignees?.map(a => a.user_id) || (task.assigned_to ? [task.assigned_to] : [])}
               users={users}
               onSave={(newAssignees) => updateAssignees.mutate({ taskId: task.id, assigneeIds: newAssignees })}
+            />
+          </div>
+
+          {/* Projeto */}
+          <div style={{ ...detailCell, borderRight: 0 }}>
+            <span style={detailKey}>Projeto</span>
+            <InlineSelectCell
+              value={task.project_id ?? '__none__'}
+              options={projectOptions}
+              onSave={(newValue) =>
+                handleUpdateTask({
+                  project_id: (newValue === '__none__' ? null : newValue) as any,
+                } as any)
+              }
+              renderValue={(val) => {
+                if (val === '__none__' || !val) {
+                  return (
+                    <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>Sem projeto</span>
+                  );
+                }
+                const proj = projectOptions.find((o) => o.value === val);
+                return (
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      fontSize: 13,
+                      color: 'hsl(var(--ds-fg-1))',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '100%',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        background: projectDotColor,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {proj?.label ?? task.project_name ?? '—'}
+                    </span>
+                  </span>
+                );
+              }}
+              renderOption={(val) => {
+                const proj = projectOptions.find((o) => o.value === val);
+                return <span style={{ fontSize: 13 }}>{proj?.label ?? val}</span>;
+              }}
             />
           </div>
         </div>
