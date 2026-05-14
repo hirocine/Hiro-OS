@@ -891,27 +891,17 @@ export default function TaskDetails() {
                       </span>
                       <button
                         type="submit"
+                        className="btn primary"
                         disabled={addComment.isPending || !newComment.trim()}
                         style={{
                           marginLeft: 'auto',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 8,
                           height: 28,
                           padding: '0 14px',
-                          background: addComment.isPending || !newComment.trim() ? 'hsl(var(--ds-line-2))' : 'hsl(var(--ds-fg-1))',
-                          color: 'hsl(var(--ds-bg))',
-                          fontFamily: '"HN Display", sans-serif',
-                          fontSize: 10,
-                          fontWeight: 500,
-                          letterSpacing: '0.14em',
-                          textTransform: 'uppercase',
-                          border: 0,
-                          cursor: addComment.isPending || !newComment.trim() ? 'not-allowed' : 'pointer',
-                          transition: 'background 120ms',
+                          fontSize: 11,
+                          opacity: addComment.isPending || !newComment.trim() ? 0.5 : 1,
                         }}
                       >
-                        <Send size={11} strokeWidth={1.5} />
+                        <Send size={12} strokeWidth={1.5} />
                         <span>Enviar</span>
                       </button>
                     </div>
