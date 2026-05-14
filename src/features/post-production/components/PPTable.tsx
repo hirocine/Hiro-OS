@@ -50,16 +50,25 @@ function relTime(iso: string): string {
   return format(date, 'dd/MM');
 }
 
-function PipelineProgress({ status }: { status: PPStatus }) {
+function PipelineProgress({
+  status,
+  isOverdue = false,
+}: {
+  status: PPStatus;
+  /** When true, the active segment turns red instead of orange. */
+  isOverdue?: boolean;
+}) {
   const currentIndex = PIPELINE_STEPS.indexOf(status);
   const isDelivered = status === 'entregue';
 
   // Color semantics:
-  //   delivered  → all green (success) — celebra a entrega
-  //   completed  → fg-2 (cinza escuro) — passou pela fase
-  //   active     → orange — em andamento aqui, com pulse
-  //   pending    → line-2 (cinza claro) — ainda não chegou
+  //   delivered          → all green (success) — celebra a entrega
+  //   completed          → fg-2 (cinza escuro) — passou pela fase
+  //   active (no prazo)  → laranja — em andamento, pulse
+  //   active (atrasado)  → vermelho — em andamento mas vencido, pulse
+  //   pending            → line-2 (cinza claro) — ainda não chegou
   const activeOrange = 'hsl(25 95% 53%)';
+  const activeColor = isOverdue ? 'hsl(var(--ds-danger))' : activeOrange;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%' }}>
       {PIPELINE_STEPS.map((_, i) => {
@@ -71,7 +80,7 @@ function PipelineProgress({ status }: { status: PPStatus }) {
         } else if (isCompleted) {
           bg = 'hsl(var(--ds-fg-2))';
         } else if (isActive) {
-          bg = activeOrange;
+          bg = activeColor;
         }
         return (
           <span
@@ -372,7 +381,7 @@ export function PPTable({ items, isLoading }: PPTableProps) {
                   <StageNowNext status={item.status} />
                 </div>
                 <div style={{ overflow: 'hidden' }}>
-                  <PipelineProgress status={item.status} />
+                  <PipelineProgress status={item.status} isOverdue={!!isOverdue} />
                 </div>
                 <div onClick={(e) => e.stopPropagation()}>
                   <InlineSelectCell
