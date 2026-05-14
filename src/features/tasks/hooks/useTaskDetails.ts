@@ -52,22 +52,34 @@ export function useTaskDetails(taskId: string) {
       const projectName =
         (taskData as any)?.audiovisual_projects?.name ?? null;
 
-      // Fetch assignees with profiles
+      // Fetch assignees first, then profiles (the FK between
+      // task_assignees.user_id and profiles.user_id isn't declared as
+      // a relation, so the Supabase inline join silently returns null).
       const { data: assigneesData } = await supabase
         .from('task_assignees')
-        .select(`
-          user_id,
-          profiles:user_id (
-            display_name,
-            avatar_url
-          )
-        `)
+        .select('user_id')
         .eq('task_id', taskId);
 
-      const assignees: TaskAssignee[] = (assigneesData || []).map((a: any) => ({
-        user_id: a.user_id,
-        display_name: a.profiles?.display_name || null,
-        avatar_url: a.profiles?.avatar_url || null,
+      const assigneeIds = (assigneesData || []).map((a: any) => a.user_id);
+
+      let profilesMap: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
+      if (assigneeIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, avatar_url')
+          .in('user_id', assigneeIds);
+        (profiles || []).forEach((p: any) => {
+          profilesMap[p.user_id] = {
+            display_name: p.display_name,
+            avatar_url: p.avatar_url,
+          };
+        });
+      }
+
+      const assignees: TaskAssignee[] = assigneeIds.map((uid) => ({
+        user_id: uid,
+        display_name: profilesMap[uid]?.display_name ?? null,
+        avatar_url: profilesMap[uid]?.avatar_url ?? null,
       }));
 
       // Fetch subtasks, comments, attachments, links in parallel
