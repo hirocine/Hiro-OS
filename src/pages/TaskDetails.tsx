@@ -300,6 +300,7 @@ export default function TaskDetails() {
                 <InlineDateCell
                   value={task.due_date}
                   onSave={(newDate) => handleUpdateTask({ due_date: newDate })}
+                  isDone={task.status === 'concluida'}
                 />
               </div>
 

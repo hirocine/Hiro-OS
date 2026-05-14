@@ -265,30 +265,11 @@ export function TasksTable({
 
         {/* Prazo */}
         <div onClick={(e) => e.stopPropagation()}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.2 }}>
-            <InlineDateCell
-              value={task.due_date}
-              onSave={(val) => updateTask.mutate({ id: task.id, updates: { due_date: val }, oldTask: task })}
-            />
-            {rel ? (
-              <span
-                style={{
-                  fontSize: 10,
-                  letterSpacing: '0.14em',
-                  textTransform: 'uppercase',
-                  color:
-                    rel.tone === 'late'
-                      ? 'hsl(var(--ds-danger))'
-                      : rel.tone === 'today'
-                        ? 'hsl(var(--ds-accent))'
-                        : 'hsl(var(--ds-fg-4))',
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {rel.label}
-              </span>
-            ) : null}
-          </div>
+          <InlineDateCell
+            value={task.due_date}
+            onSave={(val) => updateTask.mutate({ id: task.id, updates: { due_date: val }, oldTask: task })}
+            isDone={task.status === 'concluida'}
+          />
         </div>
 
         {/* Status — full StatusBadge */}

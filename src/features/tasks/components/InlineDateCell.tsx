@@ -9,6 +9,12 @@ interface InlineDateCellProps {
   value: string | null;
   onSave: (newDate: string | null) => void;
   className?: string;
+  /**
+   * If true, treats the date as "delivered/completed" — no more
+   * "Atrasada" / "Vence em X". Shows the date in success tone with
+   * a "(Concluída)" hint. Defaults to false.
+   */
+  isDone?: boolean;
 }
 
 const parseLocalDate = (dateString: string): Date => {
@@ -16,10 +22,19 @@ const parseLocalDate = (dateString: string): Date => {
   return new Date(year, month - 1, day);
 };
 
-export function InlineDateCell({ value, onSave, className = '' }: InlineDateCellProps) {
+export function InlineDateCell({ value, onSave, className = '', isDone = false }: InlineDateCellProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const getDueDateLabel = (dueDate: string) => {
+    // Task completed → no more "Atrasada" / "Vence em" — show "Concluída" in green
+    if (isDone) {
+      return (
+        <span style={{ fontSize: 11, color: 'hsl(var(--ds-success))', fontWeight: 500 }}>
+          (Concluída)
+        </span>
+      );
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const due = parseLocalDate(dueDate);
@@ -86,7 +101,13 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
           >
             {value ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-1))', fontVariantNumeric: 'tabular-nums' }}>
+                <span
+                  style={{
+                    fontSize: 13,
+                    color: isDone ? 'hsl(var(--ds-success))' : 'hsl(var(--ds-fg-1))',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
                   {format(parseLocalDate(value), 'dd/MM/yyyy', { locale: ptBR })}
                 </span>
                 {getDueDateLabel(value)}
