@@ -6,7 +6,14 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useCurrentUserProfile } from "@/hooks/useCurrentUserProfile";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { BannerCropperDialog } from "@/components/Home/BannerCropperDialog";
-import { useTeamMembers, type TeamMember } from "@/hooks/useTeamMembers";
+import { TeamMemberDialog } from "@/components/Home/TeamMemberDialog";
+import {
+  useTeamMembers,
+  useTeamMemberMutations,
+  type TeamMember,
+  type TeamMemberInsert,
+  type TeamMemberUpdate,
+} from "@/hooks/useTeamMembers";
 import { usePostProduction } from "@/features/post-production/hooks/usePostProduction";
 import { PP_PRIORITY_ORDER, PP_PRIORITY_CONFIG } from "@/features/post-production/types";
 import { useTasks } from "@/features/tasks/hooks/useTasks";
@@ -144,6 +151,11 @@ export default function Home() {
   const [displayDate, setDisplayDate] = useState<Date>(() => new Date());
   const [selectedEvent, setSelectedEvent] = useState<RecordingEvent | null>(null);
   const [showBannerCropper, setShowBannerCropper] = useState(false);
+  // Team — profile modal (everyone) + edit dialog (admins only)
+  const [profileMember, setProfileMember] = useState<TeamMember | null>(null);
+  const [teamDialogOpen, setTeamDialogOpen] = useState(false);
+  const [editingTeamMember, setEditingTeamMember] = useState<TeamMember | null>(null);
+  const { createMember, updateMember } = useTeamMemberMutations();
   const { user, isAdmin } = useAuthContext();
   const { data: profile } = useCurrentUserProfile();
   const { bannerSettings } = useSiteSettings();
@@ -292,6 +304,29 @@ export default function Home() {
     );
   };
   const goToday = () => setDisplayDate(new Date());
+
+  // Team handlers
+  const handleAddTeam = () => {
+    setEditingTeamMember(null);
+    setTeamDialogOpen(true);
+  };
+  const handleEditFromProfile = () => {
+    if (!profileMember) return;
+    setEditingTeamMember(profileMember);
+    setProfileMember(null);
+    setTeamDialogOpen(true);
+  };
+  const handleSaveTeam = (data: TeamMemberInsert | TeamMemberUpdate) => {
+    if ("id" in data) {
+      updateMember.mutate(data as TeamMemberUpdate, {
+        onSuccess: () => setTeamDialogOpen(false),
+      });
+    } else {
+      createMember.mutate(data as TeamMemberInsert, {
+        onSuccess: () => setTeamDialogOpen(false),
+      });
+    }
+  };
 
   // Chronological events (filtered to month for list view)
   const sortedMonthEvents = useMemo(
@@ -638,11 +673,32 @@ export default function Home() {
               <span className="section-eyebrow">03</span>
               <span className="section-title">Nossa equipe</span>
             </div>
-            <a className="section-link">{I.plus} Adicionar</a>
+            {isAdmin && (
+              <button
+                type="button"
+                className="section-link"
+                onClick={handleAddTeam}
+                style={{ background: "transparent", border: 0, cursor: "pointer" }}
+              >
+                {I.plus} Adicionar
+              </button>
+            )}
           </div>
           <div className="team-grid">
             {visibleTeam.map((m, idx) => (
-              <div key={m.id} className="team-card">
+              <div
+                key={m.id}
+                className="team-card"
+                onClick={() => setProfileMember(m)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setProfileMember(m);
+                  }
+                }}
+              >
                 <div className="team-photo">
                   {m.photo_url ? (
                     <img src={m.photo_url} alt={m.name} />
@@ -674,6 +730,23 @@ export default function Home() {
       {selectedEvent && (
         <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
       )}
+
+      {profileMember && (
+        <TeamProfileModal
+          member={profileMember}
+          isAdmin={isAdmin}
+          onClose={() => setProfileMember(null)}
+          onEdit={handleEditFromProfile}
+        />
+      )}
+
+      <TeamMemberDialog
+        open={teamDialogOpen}
+        onOpenChange={setTeamDialogOpen}
+        member={editingTeamMember}
+        onSave={handleSaveTeam}
+        isSaving={createMember.isPending || updateMember.isPending}
+      />
 
       <BannerCropperDialog open={showBannerCropper} onOpenChange={setShowBannerCropper} />
     </div>
@@ -748,6 +821,126 @@ function EventDetailModal({ event, onClose }: { event: RecordingEvent; onClose: 
             <span>Abrir no Google Calendar</span>
             {I.ext}
           </a>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+function TeamProfileModal({
+  member,
+  isAdmin,
+  onClose,
+  onEdit,
+}: {
+  member: TeamMember;
+  isAdmin: boolean;
+  onClose: () => void;
+  onEdit: () => void;
+}) {
+  return createPortal(
+    <div className="ds-shell ev-modal-overlay" onClick={onClose}>
+      <div
+        className="ev-modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-label={`Perfil — ${member.name}`}
+        style={{ maxWidth: 420 }}
+      >
+        {/* Photo banner — square, fills modal width */}
+        <div
+          style={{
+            position: "relative",
+            aspectRatio: "1 / 1",
+            background: "hsl(var(--ds-surface-2))",
+            overflow: "hidden",
+          }}
+        >
+          {member.photo_url ? (
+            <img
+              src={member.photo_url}
+              alt={member.name}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                filter: "grayscale(0.15) contrast(1.04)",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "grid",
+                placeItems: "center",
+                fontFamily: '"HN Display", sans-serif',
+                fontWeight: 500,
+                fontSize: 64,
+                letterSpacing: "-0.04em",
+                color: "hsl(var(--ds-fg-3))",
+                background:
+                  "linear-gradient(135deg, hsl(var(--ds-surface-2)), hsl(var(--ds-surface-3)))",
+              }}
+            >
+              {initialsFromName(member.name)}
+            </div>
+          )}
+          <button
+            className="ev-modal-close"
+            onClick={onClose}
+            aria-label="Fechar"
+            type="button"
+            style={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              background: "hsl(0 0% 0% / 0.5)",
+              color: "#fff",
+              border: "1px solid hsl(0 0% 100% / 0.18)",
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M3 3l10 10M13 3L3 13" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="ev-modal-body" style={{ paddingTop: 20 }}>
+          <h3 className="ev-modal-title" style={{ marginBottom: 4 }}>
+            {member.name}
+          </h3>
+          {member.position && (
+            <div style={{ fontSize: 13, color: "hsl(var(--ds-fg-3))", marginBottom: 14 }}>
+              {member.position}
+            </div>
+          )}
+
+          {member.tags && member.tags.length > 0 && (
+            <div className="team-tags" style={{ marginBottom: 18 }}>
+              {member.tags.map((t, i) => (
+                <span key={i} className={"team-tag" + (i === 0 ? " acc" : "")}>
+                  {i === 0 && (
+                    <span style={{ width: 4, height: 4, background: "hsl(var(--ds-accent))" }} />
+                  )}
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {isAdmin && (
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, paddingTop: 14, borderTop: "1px solid hsl(var(--ds-line-1))" }}>
+              <button type="button" className="btn" onClick={onClose}>
+                Fechar
+              </button>
+              <button type="button" className="btn primary" onClick={onEdit}>
+                {I.edit}
+                <span>Editar</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>,

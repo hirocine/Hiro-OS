@@ -197,7 +197,7 @@ export function TeamMemberDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md ds-shell">
           <DialogHeader>
             <DialogTitle>
               <span style={{ fontFamily: '"HN Display", sans-serif' }}>
