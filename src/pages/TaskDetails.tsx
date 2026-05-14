@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText, CheckSquare, MessageCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText, CheckSquare, MessageCircle, Paperclip, Download, Upload, Loader2 } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Input } from '@/components/ui/input';
@@ -92,7 +92,34 @@ export default function TaskDetails() {
   const [newLinkUrl, setNewLinkUrl] = useState('');
   const [newLinkTitle, setNewLinkTitle] = useState('');
 
-  const { task, isLoading, addSubtask, updateSubtask, deleteSubtask, addComment, deleteComment, addLink, deleteLink } = useTaskDetails(id!);
+  const {
+    task,
+    isLoading,
+    addSubtask, updateSubtask, deleteSubtask,
+    addComment, deleteComment,
+    addAttachment, deleteAttachment, openAttachment,
+    addLink, deleteLink,
+  } = useTaskDetails(id!);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFilePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    addAttachment.mutate(file);
+    e.target.value = ''; // permite re-uploadar mesmo arquivo
+  };
+
+  const handleOpenAttachment = async (fileUrl: string) => {
+    const url = await openAttachment(fileUrl);
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  function formatBytes(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
   const { deleteTask, updateTask, updateAssignees } = useTaskMutations();
   const { users } = useUsers();
   const { departments } = useDepartments();
@@ -479,6 +506,116 @@ export default function TaskDetails() {
                   </div>
                 </div>
               </form>
+            </div>
+
+            <div style={sepStyle} />
+
+            {/* Seção: Anexos */}
+            <div>
+              <h3 style={{ ...sectionHeader, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Paperclip size={18} strokeWidth={1.5} />
+                Anexos <span style={{ fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-3))', fontWeight: 400 }}>({task.attachments?.length || 0})</span>
+              </h3>
+
+              {task.attachments && task.attachments.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                  {task.attachments.map((att) => (
+                    <div
+                      key={att.id}
+                      className="group"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        padding: 12,
+                        border: '1px solid hsl(var(--ds-line-1))',
+                        transition: 'background 150ms',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <FileText size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))', flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenAttachment(att.file_url)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            fontWeight: 500,
+                            fontSize: 13,
+                            color: 'hsl(var(--ds-fg-1))',
+                            textAlign: 'left',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                          onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                        >
+                          {att.file_name}
+                          <Download size={11} strokeWidth={1.5} style={{ opacity: 0.5 }} />
+                        </button>
+                        <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
+                          {formatBytes(att.file_size || 0)}
+                          {att.file_type ? ` · ${att.file_type}` : ''}
+                          {' · '}
+                          {format(new Date(att.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn opacity-0 group-hover:opacity-100"
+                        style={{
+                          width: 28,
+                          height: 28,
+                          padding: 0,
+                          justifyContent: 'center',
+                          color: 'hsl(var(--ds-fg-3))',
+                        }}
+                        onClick={() => deleteAttachment.mutateAsync({ id: att.id, fileName: att.file_name, fileUrl: att.file_url })}
+                        disabled={deleteAttachment.isPending}
+                        title="Remover anexo"
+                      >
+                        <Trash2 size={13} strokeWidth={1.5} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState icon={Paperclip} title="Nenhum anexo" description="Anexe arquivos relacionados à tarefa." compact />
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                style={{ display: 'none' }}
+                onChange={handleFilePick}
+              />
+              <button
+                type="button"
+                className="btn"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={addAttachment.isPending}
+                style={{ marginTop: 12 }}
+              >
+                {addAttachment.isPending ? (
+                  <>
+                    <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />
+                    <span>Enviando…</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={13} strokeWidth={1.5} />
+                    <span>Anexar arquivo</span>
+                  </>
+                )}
+              </button>
+              <p style={{ marginTop: 6, fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                Máx. 50 MB por arquivo. PDF, imagem, vídeo, doc — tudo aceito.
+              </p>
             </div>
 
             <div style={sepStyle} />

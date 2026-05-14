@@ -166,9 +166,58 @@ export function useTaskDetails(taskId: string) {
     },
   });
 
-  // Delete attachment
+  // Add attachment (upload file to storage + insert row)
+  const addAttachment = useMutation({
+    mutationFn: async (file: File) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      // Path: tasks/<task_id>/<random>__<original_name>
+      const random = Math.random().toString(36).slice(2, 10);
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `tasks/${taskId}/${random}__${safeName}`;
+
+      const { error: upErr } = await supabase.storage
+        .from('task-attachments')
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) throw upErr;
+
+      const { data, error } = await supabase
+        .from('task_attachments')
+        .insert([{
+          task_id: taskId,
+          file_name: file.name,
+          file_url: path,                // guardamos o PATH (privado); UI gera signed URL na hora
+          file_type: file.type || null,
+          file_size: file.size,
+          uploaded_by: user.id,
+        }])
+        .select().single();
+      if (error) {
+        // rollback do upload
+        await supabase.storage.from('task-attachments').remove([path]);
+        throw error;
+      }
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(taskId) });
+      addTaskHistoryEntry(taskId, `Anexo "${data.file_name}" adicionado`, 'attachments');
+      enhancedToast.success({ title: 'Anexo enviado!' });
+    },
+    onError: (err) => {
+      enhancedToast.error({
+        title: 'Erro ao enviar anexo',
+        description: err instanceof Error ? err.message : undefined,
+      });
+    },
+  });
+
+  // Delete attachment (removes from storage + row)
   const deleteAttachment = useMutation({
-    mutationFn: async ({ id, fileName }: { id: string; fileName: string }) => {
+    mutationFn: async ({ id, fileName, fileUrl }: { id: string; fileName: string; fileUrl: string }) => {
+      // fileUrl é o path do bucket. Remove primeiro (idempotente)
+      await supabase.storage.from('task-attachments').remove([fileUrl]);
       const { error } = await supabase.from('task_attachments').delete().eq('id', id);
       if (error) throw error;
       return fileName;
@@ -178,6 +227,18 @@ export function useTaskDetails(taskId: string) {
       addTaskHistoryEntry(taskId, `Anexo "${fileName}" removido`, 'attachments');
     },
   });
+
+  // Open attachment: gera signed URL e abre numa aba
+  const openAttachment = async (fileUrl: string): Promise<string | null> => {
+    const { data, error } = await supabase.storage
+      .from('task-attachments')
+      .createSignedUrl(fileUrl, 60 * 5); // 5 min de validade
+    if (error || !data?.signedUrl) {
+      enhancedToast.error({ title: 'Não consegui abrir o anexo' });
+      return null;
+    }
+    return data.signedUrl;
+  };
 
   // Add link
   const addLink = useMutation({
@@ -215,7 +276,8 @@ export function useTaskDetails(taskId: string) {
   return {
     task, isLoading, error,
     addSubtask, updateSubtask, deleteSubtask,
-    addComment, deleteComment, deleteAttachment,
+    addComment, deleteComment,
+    addAttachment, deleteAttachment, openAttachment,
     addLink, deleteLink,
   };
 }
