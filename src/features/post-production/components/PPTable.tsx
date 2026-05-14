@@ -57,8 +57,9 @@ function PipelineProgress({ status }: { status: PPStatus }) {
   // Color semantics:
   //   delivered  → all green (success) — celebra a entrega
   //   completed  → fg-2 (cinza escuro) — passou pela fase
-  //   active     → fg-2 com animação de pulse (1 ↔ 0.45) — em andamento
+  //   active     → orange — em andamento aqui, com pulse
   //   pending    → line-2 (cinza claro) — ainda não chegou
+  const activeOrange = 'hsl(25 95% 53%)';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%' }}>
       {PIPELINE_STEPS.map((_, i) => {
@@ -70,7 +71,7 @@ function PipelineProgress({ status }: { status: PPStatus }) {
         } else if (isCompleted) {
           bg = 'hsl(var(--ds-fg-2))';
         } else if (isActive) {
-          bg = 'hsl(var(--ds-fg-2))';
+          bg = activeOrange;
         }
         return (
           <span
