@@ -866,7 +866,10 @@ body > [role="dialog"][data-state],
   border-bottom: 1px solid var(--line-1);
 }
 :is(.ds-preview, .ds-shell) .rc-day {
-  min-height: 108px; padding: 10px 12px;
+  /* No horizontal padding on the cell itself — multi-day span chips need to
+     run flush from edge to edge so adjacent cells visually fuse. Per-element
+     horizontal insets live on .rc-day-num and on non-span .rc-event below. */
+  min-height: 108px; padding: 10px 0;
   border-right: 1px solid var(--line-1);
   border-bottom: 1px solid var(--line-1);
   position: relative; cursor: pointer; transition: background 120ms;
@@ -885,6 +888,7 @@ body > [role="dialog"][data-state],
 :is(.ds-preview, .ds-shell) .rc-day-num {
   font-family: "HN Display", sans-serif; font-weight: 500; font-size: 13px;
   color: var(--fg-2); font-variant-numeric: tabular-nums;
+  padding: 0 12px;
 }
 :is(.ds-preview, .ds-shell) .rc-day.other .rc-day-num { color: var(--fg-4); }
 :is(.ds-preview, .ds-shell) .rc-day.today {
@@ -910,7 +914,7 @@ body > [role="dialog"][data-state],
 }
 :is(.ds-preview, .ds-shell) .rc-event {
   display: flex; align-items: center; gap: 7px;
-  font-size: 11px; padding: 3px 0; color: var(--fg-2);
+  font-size: 11px; padding: 3px 12px; color: var(--fg-2);
   white-space: nowrap; overflow: hidden;
 }
 :is(.ds-preview, .ds-shell) .rc-event .ev-bar {
@@ -924,13 +928,11 @@ body > [role="dialog"][data-state],
   flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* Multi-day spans — filled bar that bleeds to the cell edges so adjacent
-   days look like one continuous Google-Calendar style strip. Hairline
-   cell borders still show through (intentional). */
+/* Multi-day spans — filled bar that runs flush from cell edge to cell edge.
+   Adjacent days butt together with only the 1px cell hairline between, so
+   they read as one continuous Google-Calendar style strip. */
 :is(.ds-preview, .ds-shell) .rc-event.span {
-  padding: 3px 8px;
-  margin-left: -12px;
-  margin-right: -12px;
+  padding: 3px 10px;
   font-weight: 500;
   background: hsl(var(--ds-fg-3) / 0.18);
   color: var(--fg-1);
@@ -952,7 +954,7 @@ body > [role="dialog"][data-state],
 }
 :is(.ds-preview, .ds-shell) .rc-event-more {
   font-family: "HN Display", sans-serif; font-size: 10px; letter-spacing: 0.1em;
-  color: var(--fg-4); text-transform: uppercase; padding: 2px 0;
+  color: var(--fg-4); text-transform: uppercase; padding: 2px 12px;
 }
 :is(.ds-preview, .ds-shell) .rc-foot {
   display: flex; align-items: center; justify-content: space-between;
