@@ -3708,6 +3708,7 @@ export type Database = {
       detect_suspicious_activity: { Args: never; Returns: undefined }
       finalize_security_improvements: { Args: never; Returns: Json }
       fire_birthday_inbox_items: { Args: never; Returns: undefined }
+      fire_loan_overdue_inbox_items: { Args: never; Returns: undefined }
       get_current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
