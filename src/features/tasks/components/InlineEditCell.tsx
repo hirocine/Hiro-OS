@@ -1,13 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { Input } from '@/components/ui/input';
 
 interface InlineEditCellProps {
   value: string;
   onSave: (newValue: string) => void;
   className?: string;
+  /** Override the default font-size/style of the cell (display + input). */
+  style?: CSSProperties;
 }
 
-export function InlineEditCell({ value, onSave, className = '' }: InlineEditCellProps) {
+export function InlineEditCell({ value, onSave, className = '', style }: InlineEditCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -45,7 +47,7 @@ export function InlineEditCell({ value, onSave, className = '' }: InlineEditCell
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         onClick={(e) => e.stopPropagation()}
-        style={{ height: 32, fontSize: 13 }}
+        style={{ height: 32, fontSize: 13, ...style }}
         className={className}
       />
     );
@@ -64,6 +66,7 @@ export function InlineEditCell({ value, onSave, className = '' }: InlineEditCell
         fontSize: 13,
         color: 'hsl(var(--ds-fg-1))',
         transition: 'background 0.15s',
+        ...style,
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = 'hsl(var(--ds-line-2))';

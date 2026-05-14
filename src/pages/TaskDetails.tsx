@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText, CheckSquare, MessageCircle, Paperclip, Download, Upload, Loader2, Folder, ArrowLeft } from 'lucide-react';
+import { Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText, CheckSquare, MessageCircle, Paperclip, Download, Upload, Loader2, Folder } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Input } from '@/components/ui/input';
@@ -300,17 +300,33 @@ export default function TaskDetails() {
 
       {/* ───────────────  HEADER  ─────────────── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
-        {/* Top row: back link + actions */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-          <button
-            type="button"
-            className="btn"
-            onClick={() => navigate('/tarefas')}
-            style={{ padding: '4px 10px', fontSize: 12 }}
-          >
-            <ArrowLeft size={14} strokeWidth={1.5} />
-            <span>Voltar para tarefas</span>
-          </button>
+        {/* Eyebrow row: projeto chip à esquerda + ações à direita */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, minHeight: 32 }}>
+          {task.project_name ? (
+            <button
+              type="button"
+              onClick={() => navigate(`/projetos-av/${task.project_id}`)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: 0,
+                background: 'transparent',
+                border: 0,
+                cursor: 'pointer',
+                fontSize: 12,
+                color: 'hsl(var(--ds-fg-3))',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-1))')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-3))')}
+            >
+              <span style={{ width: 8, height: 8, background: projectDotColor, flexShrink: 0 }} />
+              <span style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                {task.project_name}
+              </span>
+            </button>
+          ) : <span />}
+
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
@@ -327,41 +343,22 @@ export default function TaskDetails() {
           </div>
         </div>
 
-        {/* Eyebrow: projeto chip */}
-        {task.project_name ? (
-          <button
-            type="button"
-            onClick={() => navigate(`/projetos-av/${task.project_id}`)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 10,
-              padding: 0,
-              background: 'transparent',
-              border: 0,
-              cursor: 'pointer',
-              fontSize: 12,
-              color: 'hsl(var(--ds-fg-3))',
-              width: 'fit-content',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-1))')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-3))')}
-          >
-            <span style={{ width: 8, height: 8, background: projectDotColor, flexShrink: 0 }} />
-            <span style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
-              {task.project_name}
-            </span>
-          </button>
-        ) : null}
-
-        {/* Title (inline-editable) */}
-        <div>
-          <InlineEditCell
-            value={task.title}
-            onSave={(newTitle) => handleUpdateTask({ title: newTitle })}
-            className="text-3xl font-bold"
-          />
-        </div>
+        {/* Title (inline-editable) — usa o token --ds-display do DS,
+            mesmo tamanho dos h1 do PageHeader ("Tarefas.", "Inbox."). */}
+        <InlineEditCell
+          value={task.title}
+          onSave={(newTitle) => handleUpdateTask({ title: newTitle })}
+          style={{
+            fontFamily: '"HN Display", sans-serif',
+            fontWeight: 500,
+            fontSize: 'var(--ds-display)',
+            letterSpacing: '-0.04em',
+            lineHeight: 1,
+            color: 'hsl(var(--ds-fg-1))',
+            padding: 0,
+            margin: 0,
+          }}
+        />
 
         {/* Submeta: criada em / atualizada */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 12, color: 'hsl(var(--ds-fg-3))', flexWrap: 'wrap' }}>
