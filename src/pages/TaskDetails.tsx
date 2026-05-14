@@ -16,6 +16,7 @@ import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
 import { InlineAssigneeCell } from '@/features/tasks/components/InlineAssigneeCell';
 import { InlineDepartmentCell } from '@/features/tasks/components/InlineDepartmentCell';
 import { InlineEditCell } from '@/features/tasks/components/InlineEditCell';
+import { MentionTextarea } from '@/features/tasks/components/MentionTextarea';
 import { TaskHistorySection } from '@/features/tasks/components/TaskHistorySection';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -112,6 +113,7 @@ export default function TaskDetails() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [newSubtask, setNewSubtask] = useState('');
   const [newComment, setNewComment] = useState('');
+  const [replyingTo, setReplyingTo] = useState<TaskComment | null>(null);
   const [description, setDescription] = useState('');
   const [newLinkUrl, setNewLinkUrl] = useState('');
   const [newLinkTitle, setNewLinkTitle] = useState('');
@@ -195,8 +197,22 @@ export default function TaskDetails() {
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
-    await addComment.mutateAsync(newComment);
+    await addComment.mutateAsync({
+      content: newComment,
+      parent_id: replyingTo?.id ?? null,
+    });
     setNewComment('');
+    setReplyingTo(null);
+  };
+
+  const handleSubmitComment = async () => {
+    if (!newComment.trim()) return;
+    await addComment.mutateAsync({
+      content: newComment,
+      parent_id: replyingTo?.id ?? null,
+    });
+    setNewComment('');
+    setReplyingTo(null);
   };
 
   const handleAddLink = async (e: React.FormEvent) => {
@@ -299,7 +315,7 @@ export default function TaskDetails() {
       />
 
       {/* ───────────────  HEADER  ─────────────── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: -8, marginBottom: 20 }}>
         {/* Eyebrow row: projeto chip à esquerda + ações à direita */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, minHeight: 32 }}>
           {task.project_name ? (
@@ -725,6 +741,7 @@ export default function TaskDetails() {
                       key={comment.id}
                       comment={comment}
                       onDelete={() => deleteComment.mutateAsync(comment.id)}
+                      onReply={() => setReplyingTo(comment)}
                       isDeleting={deleteComment.isPending}
                     />
                   ))}
@@ -743,9 +760,9 @@ export default function TaskDetails() {
                     alignItems: 'flex-start',
                   }}
                 >
-                  <Avatar style={{ width: 32, height: 32 }}>
+                  <Avatar className="rounded-none [&_img]:rounded-none [&_span]:rounded-none" style={{ width: 32, height: 32, borderRadius: 0 }}>
                     {currentUserAvatar ? <AvatarImage src={currentUserAvatar} /> : null}
-                    <AvatarFallback style={{ fontSize: 10 }}>
+                    <AvatarFallback className="rounded-none" style={{ fontSize: 10, borderRadius: 0 }}>
                       {(currentUserName || 'U').charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -757,14 +774,74 @@ export default function TaskDetails() {
                       background: 'hsl(var(--ds-bg, var(--ds-surface)))',
                     }}
                   >
-                    <Textarea
-                      placeholder="Escreva um comentário… use @ para mencionar alguém"
+                    {replyingTo ? (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          padding: '8px 12px',
+                          borderBottom: '1px solid hsl(var(--ds-line-1))',
+                          background: 'hsl(var(--ds-line-2) / 0.3)',
+                          fontSize: 12,
+                          color: 'hsl(var(--ds-fg-3))',
+                          minWidth: 0,
+                        }}
+                      >
+                        <span style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>
+                          Em resposta a {replyingTo.user_name || 'comentário'}:
+                        </span>
+                        <span
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            fontStyle: 'italic',
+                          }}
+                        >
+                          {replyingTo.content.slice(0, 80)}{replyingTo.content.length > 80 ? '…' : ''}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setReplyingTo(null)}
+                          style={{
+                            background: 'transparent',
+                            border: 0,
+                            padding: 0,
+                            cursor: 'pointer',
+                            color: 'hsl(var(--ds-fg-4))',
+                            fontSize: 11,
+                          }}
+                          title="Cancelar resposta"
+                          aria-label="Cancelar resposta"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : null}
+
+                    <MentionTextarea
                       value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
+                      onChange={setNewComment}
+                      users={users.map((u: any) => ({
+                        id: u.id,
+                        display_name: u.display_name ?? null,
+                        email: u.email,
+                        avatar_url: u.avatar_url ?? null,
+                      }))}
+                      placeholder={
+                        replyingTo
+                          ? 'Sua resposta… use @ para mencionar alguém'
+                          : 'Escreva um comentário… use @ para mencionar alguém'
+                      }
                       rows={3}
                       className="resize-y border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       style={{ minHeight: 84, padding: '12px 14px', background: 'transparent', fontSize: 14 }}
+                      onSubmit={handleSubmitComment}
                     />
+
                     <div
                       style={{
                         display: 'flex',
@@ -1056,10 +1133,11 @@ function renderCommentContent(text: string): React.ReactNode[] {
 interface CommentRowProps {
   comment: TaskComment;
   onDelete: () => void;
+  onReply: () => void;
   isDeleting: boolean;
 }
 
-function CommentRow({ comment, onDelete, isDeleting }: CommentRowProps) {
+function CommentRow({ comment, onDelete, onReply, isDeleting }: CommentRowProps) {
   const initials = (comment.user_name ?? 'U').charAt(0).toUpperCase();
   const roleLabel = comment.role ? ROLE_LABEL[comment.role] : null;
 
@@ -1073,12 +1151,55 @@ function CommentRow({ comment, onDelete, isDeleting }: CommentRowProps) {
         borderBottom: '1px solid hsl(var(--ds-line-1))',
       }}
     >
-      <Avatar style={{ width: 32, height: 32 }}>
+      <Avatar className="rounded-none [&_img]:rounded-none [&_span]:rounded-none" style={{ width: 32, height: 32, borderRadius: 0 }}>
         {comment.avatar_url ? <AvatarImage src={comment.avatar_url} /> : null}
-        <AvatarFallback style={{ fontSize: 10 }}>{initials}</AvatarFallback>
+        <AvatarFallback className="rounded-none" style={{ fontSize: 10, borderRadius: 0 }}>{initials}</AvatarFallback>
       </Avatar>
 
       <div style={{ minWidth: 0 }}>
+        {comment.parent_snippet ? (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              marginBottom: 8,
+              padding: '6px 10px',
+              borderLeft: '2px solid hsl(var(--ds-line-2))',
+              fontSize: 12,
+              color: 'hsl(var(--ds-fg-3))',
+              fontStyle: 'italic',
+              minWidth: 0,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontStyle: 'normal',
+                fontSize: 10,
+                fontWeight: 500,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: 'hsl(var(--ds-fg-4))',
+                flexShrink: 0,
+              }}
+            >
+              ↳ Em resposta a {comment.parent_snippet.user_name || 'comentário'}:
+            </span>
+            <span
+              style={{
+                flex: 1,
+                minWidth: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {comment.parent_snippet.content_preview}
+              {comment.parent_snippet.content_preview.length >= 120 ? '…' : ''}
+            </span>
+          </div>
+        ) : null}
         <div
           style={{
             display: 'flex',
@@ -1139,6 +1260,27 @@ function CommentRow({ comment, onDelete, isDeleting }: CommentRowProps) {
         </div>
 
         <div style={{ display: 'flex', gap: 14, marginTop: 8 }}>
+          <button
+            type="button"
+            onClick={onReply}
+            style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontSize: 10,
+              fontWeight: 500,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'hsl(var(--ds-fg-4))',
+              background: 'transparent',
+              border: 0,
+              cursor: 'pointer',
+              padding: 0,
+              transition: 'color 120ms',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-1))')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-4))')}
+          >
+            Responder
+          </button>
           <button
             type="button"
             onClick={onDelete}

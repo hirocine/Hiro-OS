@@ -73,10 +73,14 @@ export interface TaskComment {
   content: string;
   created_at: string;
   updated_at: string;
+  /** FK to the comment being replied to. NULL = top-level. */
+  parent_id: string | null;
   /** Filled by useTaskDetails — not stored on the row. */
   avatar_url?: string | null;
   /** Filled by useTaskDetails — derived from task.created_by / assignees. */
   role?: 'solicitante' | 'responsavel' | 'colaborador' | null;
+  /** Filled by useTaskDetails — snapshot of the parent comment for quoting. */
+  parent_snippet?: { user_name: string | null; content_preview: string } | null;
 }
 
 export interface TaskAttachment {

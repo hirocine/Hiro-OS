@@ -107,16 +107,31 @@ export function useTaskDetails(taskId: string) {
         });
       }
 
+      // Build a quick lookup so a reply can show a snippet of its parent
+      const commentById = new Map<string, any>();
+      rawComments.forEach((c) => commentById.set(c.id, c));
+
       const assigneeIdSet = new Set(assigneeIds);
       const comments: TaskComment[] = rawComments.map((c) => {
         let role: TaskComment['role'] = null;
         if (c.user_id === taskData.created_by) role = 'solicitante';
         else if (assigneeIdSet.has(c.user_id)) role = 'responsavel';
         else role = 'colaborador';
+
+        let parent_snippet: TaskComment['parent_snippet'] = null;
+        if (c.parent_id && commentById.has(c.parent_id)) {
+          const parent = commentById.get(c.parent_id);
+          parent_snippet = {
+            user_name: parent.user_name,
+            content_preview: (parent.content ?? '').slice(0, 120),
+          };
+        }
+
         return {
           ...c,
           avatar_url: profilesMap[c.user_id]?.avatar_url ?? null,
           role,
+          parent_snippet,
         };
       });
 
@@ -181,16 +196,33 @@ export function useTaskDetails(taskId: string) {
     },
   });
 
-  // Add comment
+  // Add comment (optionally as a reply to another)
   const addComment = useMutation({
-    mutationFn: async (content: string) => {
+    mutationFn: async (
+      input: string | { content: string; parent_id?: string | null },
+    ) => {
+      const payload =
+        typeof input === 'string' ? { content: input, parent_id: null } : input;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
-      const { data: profile } = await supabase.from('profiles').select('display_name').eq('user_id', user.id).single();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', user.id)
+        .single();
       const { data, error } = await supabase
         .from('task_comments')
-        .insert([{ task_id: taskId, user_id: user.id, user_name: profile?.display_name || user.email, content }])
-        .select().single();
+        .insert([
+          {
+            task_id: taskId,
+            user_id: user.id,
+            user_name: profile?.display_name || user.email,
+            content: payload.content,
+            parent_id: payload.parent_id ?? null,
+          },
+        ])
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
