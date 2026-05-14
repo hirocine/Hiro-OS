@@ -131,28 +131,38 @@ export function StatusPill({
   interactive = false,
   noWrap = true,
 }: StatusPillProps) {
+  // NOTE: intentionally NOT using className="pill" anymore. The global
+  // .pill CSS (defined in src/ds/preview.css) was the source of the
+  // visual leak — its border + padding + letter-spacing interact in a
+  // way that lets the uppercase text appear to spill past the colored
+  // background. We render everything inline here so the component is
+  // self-contained and predictable across all contexts (including
+  // portals like Popovers).
   return (
     <span
-      className="pill"
       style={{
         ...resolveTone(tone, variant),
         cursor: interactive ? 'pointer' : 'default',
         whiteSpace: noWrap ? 'nowrap' : undefined,
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
-        paddingLeft: 12,
-        paddingRight: 12,
-        letterSpacing: '0.08em',
+        justifyContent: 'center',
+        gap: 6,
+        height: 24,
+        padding: '0 10px',
+        fontFamily: '"HN Display", sans-serif',
+        fontSize: 10,
+        fontWeight: 500,
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase',
+        lineHeight: 1,
+        verticalAlign: 'middle',
+        boxSizing: 'border-box',
       }}
     >
       {icon !== undefined && icon !== null && (
         <span
           style={{
-            // Color-emoji glyphs (📦, 🔥) render slightly larger than text
-            // at the same font-size. We give them a touch more headroom
-            // (fontSize 12 vs 10 label) and keep lineHeight: 1 so they
-            // don't grow the pill height.
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -164,7 +174,7 @@ export function StatusPill({
           {icon}
         </span>
       )}
-      {label}
+      <span style={{ display: 'inline-block' }}>{label}</span>
     </span>
   );
 }
