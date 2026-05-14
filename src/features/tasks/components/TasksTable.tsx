@@ -43,9 +43,9 @@ interface TasksTableProps {
   showAssignee?: boolean;
 }
 
-// 6 columns: title + priority + assignees + due + status + open button
-const COLS_FULL        = 'minmax(240px, 1.6fr) 130px 140px 120px 130px 48px';
-const COLS_NO_ASSIGNEE = 'minmax(240px, 1.8fr) 130px 120px 130px 48px';
+// 7 columns: title + projeto + priority + assignees + due + status + open button
+const COLS_FULL        = 'minmax(200px, 1.4fr) minmax(140px, 1fr) 130px 140px 120px 130px 48px';
+const COLS_NO_ASSIGNEE = 'minmax(200px, 1.6fr) minmax(140px, 1fr) 130px 120px 130px 48px';
 
 // Priority bar color (for group header)
 const PRIORITY_BAR_COLOR: Record<TaskPriority, string> = {
@@ -58,6 +58,15 @@ const PRIORITY_BAR_COLOR: Record<TaskPriority, string> = {
 
 // Render order (urgente first)
 const PRIORITIES_ORDERED: TaskPriority[] = ['urgente', 'alta', 'media', 'baixa', 'standby'];
+
+// Stable colored dot per project (hashed from id)
+function projectColor(id: string | null | undefined): string {
+  if (!id) return 'hsl(var(--ds-fg-4))';
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  const hue = Math.abs(h) % 360;
+  return `hsl(${hue} 55% 50%)`;
+}
 
 const MS_DAY = 24 * 60 * 60 * 1000;
 function relDate(due: string | null): { label: string; tone: 'late' | 'today' | 'near' | 'normal' } | null {
@@ -105,6 +114,7 @@ export function TasksTable({
       <div className="tbl" style={{ gridTemplateColumns: cols, border: '1px solid hsl(var(--ds-line-1))' }}>
         <div className="tbl-head">
           <div>Tarefa</div>
+          <div>Projeto</div>
           <div>Prioridade</div>
           {showAssignee && <div>Responsáveis</div>}
           <div>Prazo</div>
@@ -114,6 +124,7 @@ export function TasksTable({
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className={'tbl-row' + (i === 3 ? ' last' : '')}>
             <div><span className="sk line lg" style={{ width: '70%' }} /></div>
+            <div><span className="sk line" style={{ width: 100 }} /></div>
             <div><span className="sk line" style={{ width: 70 }} /></div>
             {showAssignee && <div><span className="sk line" style={{ width: 80 }} /></div>}
             <div><span className="sk line" style={{ width: 60 }} /></div>
@@ -187,6 +198,45 @@ export function TasksTable({
               Atrasada
             </span>
           ) : null}
+        </div>
+
+        {/* Projeto */}
+        <div onClick={(e) => e.stopPropagation()}>
+          {task.project_id && task.project_name ? (
+            <button
+              type="button"
+              onClick={() => navigate(`/projetos-av/${task.project_id}`)}
+              style={{
+                background: 'none',
+                border: 0,
+                padding: 0,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                fontSize: 13,
+                color: 'hsl(var(--ds-fg-2))',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-1))')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-2))')}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  background: projectColor(task.project_id),
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.project_name}</span>
+            </button>
+          ) : (
+            <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-4))' }}>—</span>
+          )}
         </div>
 
         {/* Prioridade */}
@@ -348,6 +398,7 @@ export function TasksTable({
           >
             <div className="tbl-head">
               <div>Tarefa</div>
+              <div>Projeto</div>
               <div>Prioridade</div>
               {showAssignee && <div>Responsáveis</div>}
               <div>Prazo</div>
