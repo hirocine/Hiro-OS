@@ -17,6 +17,7 @@ import {
   Clock,
   Eye,
   EyeOff,
+  Gift,
   type LucideIcon,
 } from 'lucide-react';
 import { useInbox } from '@/features/inbox/useInbox';
@@ -37,21 +38,24 @@ const TYPE_CONFIG: Record<InboxType, { label: string; Icon: LucideIcon; color: s
   proposal:  { label: 'Orçamento',   Icon: FileText,   color: 'hsl(var(--ds-success))' },
   marketing: { label: 'Marketing',   Icon: Radio,      color: 'hsl(var(--ds-info))' },
   access:    { label: 'Plataforma',  Icon: Key,        color: 'hsl(var(--ds-fg-3))' },
+  event:     { label: 'RH',          Icon: Gift,       color: 'hsl(var(--ds-info))' },
   system:    { label: 'Sistema',     Icon: Bell,       color: 'hsl(var(--ds-fg-3))' },
 };
 
 const REASON_LABEL: Record<InboxReason, { label: string; tone: 'muted' | 'info' | 'success' | 'warning' | 'danger' | 'accent' }> = {
-  assigned:      { label: 'Atribuída',     tone: 'accent' },
-  mentioned:     { label: 'Mencionado',    tone: 'info' },
-  status_change: { label: 'Status mudou',  tone: 'info' },
-  due_soon:      { label: 'Vencendo',      tone: 'warning' },
-  overdue:       { label: 'Atrasada',      tone: 'danger' },
-  completed:     { label: 'Concluída',     tone: 'success' },
-  approved:      { label: 'Aprovada',      tone: 'success' },
-  rejected:      { label: 'Rejeitada',     tone: 'danger' },
-  viewed:        { label: 'Visualizada',   tone: 'info' },
-  commented:     { label: 'Comentário',    tone: 'muted' },
-  new_version:   { label: 'Nova versão',   tone: 'info' },
+  assigned:         { label: 'Atribuída',     tone: 'accent' },
+  mentioned:        { label: 'Mencionado',    tone: 'info' },
+  status_change:    { label: 'Status mudou',  tone: 'info' },
+  due_soon:         { label: 'Vencendo',      tone: 'warning' },
+  overdue:          { label: 'Atrasada',      tone: 'danger' },
+  completed:        { label: 'Concluída',     tone: 'success' },
+  approved:         { label: 'Aprovada',      tone: 'success' },
+  rejected:         { label: 'Rejeitada',     tone: 'danger' },
+  viewed:           { label: 'Visualizada',   tone: 'info' },
+  commented:        { label: 'Comentário',    tone: 'muted' },
+  new_version:      { label: 'Nova versão',   tone: 'info' },
+  birthday:         { label: 'Aniversário',   tone: 'accent' },
+  work_anniversary: { label: 'Anos de Hiro',  tone: 'accent' },
 };
 
 function isUnread(it: InboxItem, nowMs: number) {

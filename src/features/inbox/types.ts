@@ -27,6 +27,7 @@ export type InboxType =
   | 'proposal'
   | 'marketing'
   | 'access'     // platform access
+  | 'event'      // RH (birthday, work anniversary)
   | 'system';
 
 /** Why this item is in the user's inbox. Drives the chip label. */
@@ -41,7 +42,9 @@ export type InboxReason =
   | 'rejected'
   | 'viewed'
   | 'commented'
-  | 'new_version';
+  | 'new_version'
+  | 'birthday'           // RH aniversário
+  | 'work_anniversary';  // RH anos de Hiro
 
 export interface InboxActor {
   name: string;
