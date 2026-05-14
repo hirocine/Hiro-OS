@@ -652,6 +652,7 @@ export default function TaskDetails() {
                           })
                         }
                         disabled={updateSubtask.isPending}
+                        className="data-[state=checked]:bg-[hsl(var(--ds-success))] data-[state=checked]:border-[hsl(var(--ds-success))] data-[state=checked]:text-white"
                       />
                       <span
                         className={cn(
