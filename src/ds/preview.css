@@ -872,6 +872,9 @@ body > [role="dialog"][data-state],
   position: relative; cursor: pointer; transition: background 120ms;
   min-width: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 :is(.ds-preview, .ds-shell) .rc-events { min-width: 0; }
 :is(.ds-preview, .ds-shell) .rc-event { min-width: 0; max-width: 100%; }
@@ -902,7 +905,8 @@ body > [role="dialog"][data-state],
   margin-left: 8px;
 }
 :is(.ds-preview, .ds-shell) .rc-events {
-  margin-top: 8px; display: flex; flex-direction: column; gap: 3px;
+  display: flex; flex-direction: column; gap: 3px;
+  min-width: 0; flex: 1;
 }
 :is(.ds-preview, .ds-shell) .rc-event {
   display: flex; align-items: center; gap: 7px;
@@ -918,6 +922,33 @@ body > [role="dialog"][data-state],
 :is(.ds-preview, .ds-shell) .rc-event.pre .ev-bar { background: var(--fg-4); }
 :is(.ds-preview, .ds-shell) .rc-event-title {
   flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Multi-day spans — filled bar that bleeds to the cell edges so adjacent
+   days look like one continuous Google-Calendar style strip. Hairline
+   cell borders still show through (intentional). */
+:is(.ds-preview, .ds-shell) .rc-event.span {
+  padding: 3px 8px;
+  margin-left: -12px;
+  margin-right: -12px;
+  font-weight: 500;
+  background: hsl(var(--ds-fg-3) / 0.18);
+  color: var(--fg-1);
+}
+:is(.ds-preview, .ds-shell) .rc-event.span.rec  { background: hsl(var(--ds-destructive) / 0.85); color: #fff; }
+:is(.ds-preview, .ds-shell) .rc-event.span.vt   { background: hsl(var(--ds-warn) / 0.9);        color: #0A0A0A; }
+:is(.ds-preview, .ds-shell) .rc-event.span.edit { background: hsl(var(--ds-info) / 0.85);       color: #fff; }
+:is(.ds-preview, .ds-shell) .rc-event.span.pre  { background: hsl(var(--ds-fg-3) / 0.35);       color: var(--fg-1); }
+
+/* On middle/end days the chip is a continuation — keep height aligned
+   but hide the title so the bar reads as a single strip. The week-wrap
+   override (`.span-wrap`) re-shows the label on Sundays. */
+:is(.ds-preview, .ds-shell) .rc-event.span.span-middle .rc-event-title,
+:is(.ds-preview, .ds-shell) .rc-event.span.span-end .rc-event-title {
+  visibility: hidden;
+}
+:is(.ds-preview, .ds-shell) .rc-event.span.span-wrap .rc-event-title {
+  visibility: visible;
 }
 :is(.ds-preview, .ds-shell) .rc-event-more {
   font-family: "HN Display", sans-serif; font-size: 10px; letter-spacing: 0.1em;

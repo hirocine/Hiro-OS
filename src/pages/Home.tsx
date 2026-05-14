@@ -84,6 +84,36 @@ function eventLocalDate(r: RecordingEvent): Date {
   return new Date(r.start);
 }
 
+/**
+ * Returns the *last* day an event visually covers, in local time. For Google
+ * all-day events `end` is exclusive (the day AFTER the last day), so we
+ * subtract a day there. For timed events we just use the start of the
+ * `end`'s local date.
+ */
+function eventLocalEndDate(r: RecordingEvent): Date {
+  if (!r.end) return eventLocalDate(r);
+  if (r.allDay && /^\d{4}-\d{2}-\d{2}/.test(r.end)) {
+    const [y, m, d] = r.end.slice(0, 10).split("-").map(Number);
+    return new Date(y, m - 1, d - 1, 0, 0, 0, 0);
+  }
+  const e = new Date(r.end);
+  return new Date(e.getFullYear(), e.getMonth(), e.getDate(), 0, 0, 0, 0);
+}
+
+/** Inclusive list of YYYY-MM-DD keys an event spans, in local time. */
+function eventSpanKeys(r: RecordingEvent): string[] {
+  const start = eventLocalDate(r);
+  const end = eventLocalEndDate(r);
+  const out: string[] = [];
+  const cur = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0, 0);
+  // Safety cap so a malformed long-running event can't loop forever.
+  for (let i = 0; i < 366 && cur <= end; i++) {
+    out.push(localDateKey(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return out.length > 0 ? out : [localDateKey(start)];
+}
+
 function buildMonthGrid(year: number, month: number) {
   const first = new Date(year, month, 1);
   const startWeekday = first.getDay();
@@ -167,14 +197,33 @@ export default function Home() {
     [todayRecsAll],
   );
 
-  // Calendar event map (YYYY-MM-DD → events)
+  // Calendar event map (YYYY-MM-DD → events). Multi-day events get
+  // a row entry on *every* day they cover, tagged with where in the
+  // span the cell sits so the chip can render as a continuous bar.
   const calendarEvents = useMemo(() => {
-    const map: Record<string, { event: RecordingEvent; type: "rec" | "vt" | "edit" | "pre"; title: string }[]> = {};
+    type Span = "single" | "start" | "middle" | "end";
+    type Entry = {
+      event: RecordingEvent;
+      type: "rec" | "vt" | "edit" | "pre";
+      title: string;
+      span: Span;
+    };
+    const map: Record<string, Entry[]> = {};
     for (const r of monthRecs) {
-      const key = eventDateKey(r);
       const type = recTypeToCalendarType(getEventType(r.summary));
       const title = getEventTitle(r.summary);
-      (map[key] ||= []).push({ event: r, type, title });
+      const keys = eventSpanKeys(r);
+      const isSingle = keys.length === 1;
+      keys.forEach((key, idx) => {
+        const span: Span = isSingle
+          ? "single"
+          : idx === 0
+            ? "start"
+            : idx === keys.length - 1
+              ? "end"
+              : "middle";
+        (map[key] ||= []).push({ event: r, type, title, span });
+      });
     }
     return map;
   }, [monthRecs]);
@@ -439,21 +488,37 @@ export default function Home() {
                     >
                       <span className="rc-day-num">{cell.n}</span>
                       <div className="rc-events">
-                        {events.slice(0, eventCap).map((e, i) => (
-                          <div
-                            key={i}
-                            className={"rc-event " + e.type}
-                            onClick={(ev) => {
-                              ev.stopPropagation();
-                              setSelectedEvent(e.event);
-                            }}
-                            role="button"
-                            tabIndex={0}
-                          >
-                            <span className="ev-bar" />
-                            <span className="rc-event-title">{e.title}</span>
-                          </div>
-                        ))}
+                        {events.slice(0, eventCap).map((e, i) => {
+                          const isSpan = e.span !== "single";
+                          // Show the title only at the start of a multi-day
+                          // span (or on Sunday, when the bar wraps into a new
+                          // week so the label appears again).
+                          const isWeekWrap = isSpan && dow === 0 && e.span !== "start";
+                          const showTitle = !isSpan || e.span === "start" || isWeekWrap;
+                          return (
+                            <div
+                              key={i}
+                              className={
+                                "rc-event " +
+                                e.type +
+                                (isSpan ? ` span span-${e.span}` : "") +
+                                (isWeekWrap ? " span-wrap" : "")
+                              }
+                              onClick={(ev) => {
+                                ev.stopPropagation();
+                                setSelectedEvent(e.event);
+                              }}
+                              role="button"
+                              tabIndex={0}
+                              title={e.title}
+                            >
+                              {!isSpan && <span className="ev-bar" />}
+                              <span className="rc-event-title">
+                                {showTitle ? e.title : " "}
+                              </span>
+                            </div>
+                          );
+                        })}
                         {events.length > eventCap && (
                           <span className="rc-event-more">+{events.length - eventCap} mais</span>
                         )}
