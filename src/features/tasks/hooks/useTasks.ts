@@ -31,9 +31,8 @@ export function useTasks(filters?: TaskFilters) {
         .from('tasks')
         .select(`
           *,
-          task_assignees (
-            user_id
-          )
+          task_assignees ( user_id ),
+          audiovisual_projects:project_id ( name )
         `)
         .order('created_at', { ascending: false });
 
@@ -110,9 +109,11 @@ export function useTasks(filters?: TaskFilters) {
         return {
           ...task,
           task_assignees: undefined,
+          audiovisual_projects: undefined,
           assignees,
           assignee_name: assignees[0]?.display_name || null,
           assignee_avatar: assignees[0]?.avatar_url || null,
+          project_name: task.audiovisual_projects?.name ?? null,
         };
       });
 

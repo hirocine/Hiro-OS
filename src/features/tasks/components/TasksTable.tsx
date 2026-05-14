@@ -1,413 +1,431 @@
-import { useState, useMemo } from 'react';
+/**
+ * ════════════════════════════════════════════════════════════════
+ * TasksTable — redesign enxuto, opcionalmente agrupado por prioridade
+ * ════════════════════════════════════════════════════════════════
+ *
+ * Colunas:
+ *   [checkbox] | Tarefa | Projeto | Responsáveis | Prazo | Status
+ *
+ * Quando `groupByPriority` é true, as tasks são quebradas em sub-grupos
+ * (Urgente / Alta / Média / Baixa / Stand-by) com header próprio
+ * (barra colorida + label + contador). Quando false, vira tabela simples.
+ *
+ * Layout: linhas finas, status borderless (dot + label), prazo com
+ * chip relativo abaixo da data ("HOJE", "1 DIA", "ATRASADA…"). Click
+ * no título navega pra detalhes; click no checkbox toggle status.
+ */
+
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChevronDown, Inbox, ChevronRight } from 'lucide-react';
+import { Inbox, Check, Folder } from 'lucide-react';
 import { EmptyState } from '@/ds/components/EmptyState';
-import { Input } from '@/components/ui/input';
-import { TaskSortableHeader } from './TaskSortableHeader';
-import { InlineEditCell } from './InlineEditCell';
 import { InlineSelectCell } from './InlineSelectCell';
 import { InlineDateCell } from './InlineDateCell';
 import { InlineDepartmentCell } from './InlineDepartmentCell';
 import { InlineAssigneeCell } from './InlineAssigneeCell';
-import { PriorityBadge } from './PriorityBadge';
 import { StatusBadge } from './StatusBadge';
 import { useTaskMutations } from '../hooks/useTaskMutations';
 import { useDepartments } from '../hooks/useDepartments';
 import { useUsers } from '@/hooks/useUsers';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
 import {
   Task,
   TaskPriority,
   TaskStatus,
-  TaskSortableField,
-  TaskSortOrder,
   PRIORITY_ORDER,
-  STATUS_ORDER,
   PRIORITY_CONFIG,
   STATUS_CONFIG,
 } from '../types';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface TasksTableProps {
   tasks: Task[];
   isLoading?: boolean;
-  showCreationRow?: boolean;
+  /** Sub-section header colored bar by priority. Default false. */
+  groupByPriority?: boolean;
+  /** Show Responsáveis column. Default true. */
   showAssignee?: boolean;
 }
 
-const defaultTaskState = {
-  title: '',
-  priority: 'standby' as TaskPriority,
-  status: 'pendente' as TaskStatus,
-  assignee_ids: [] as string[],
-  due_date: null as string | null,
-  department: null as string | null,
+// 6 columns: checkbox + title + project + assignee + due + status
+const COLS_FULL = '28px minmax(220px, 1.6fr) 180px 140px 120px 110px';
+const COLS_NO_ASSIGNEE = '28px minmax(220px, 1.8fr) 180px 120px 110px';
+
+// Priority bar color
+const PRIORITY_BAR_COLOR: Record<TaskPriority, string> = {
+  urgente: 'hsl(var(--ds-danger))',
+  alta:    'hsl(var(--ds-warning))',
+  media:   'hsl(var(--ds-info))',
+  baixa:   'hsl(var(--ds-fg-3))',
+  standby: 'hsl(var(--ds-fg-4))',
 };
 
-const COLS_WITH_ASSIGNEE = '1.5fr 130px 120px 1fr 140px 1fr 64px';
-const COLS_WITHOUT_ASSIGNEE = '2fr 130px 120px 140px 1fr 64px';
+// Render order (urgente first)
+const PRIORITIES_ORDERED: TaskPriority[] = ['urgente', 'alta', 'media', 'baixa', 'standby'];
+
+// Status dot color
+const STATUS_DOT_COLOR: Record<TaskStatus, string> = {
+  pendente:     'hsl(var(--ds-fg-3))',
+  em_progresso: 'hsl(var(--ds-info))',
+  concluida:    'hsl(var(--ds-success))',
+  arquivada:    'hsl(var(--ds-fg-4))',
+};
+
+// Hash function for project color (stable per project id)
+function projectColor(id: string | null): string {
+  if (!id) return 'hsl(var(--ds-fg-4))';
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  const hue = Math.abs(h) % 360;
+  return `hsl(${hue} 55% 50%)`;
+}
+
+const MS_DAY = 24 * 60 * 60 * 1000;
+function relDate(due: string | null): { label: string; tone: 'late' | 'today' | 'near' | 'normal' } | null {
+  if (!due) return null;
+  const dueMs = new Date(due + 'T00:00:00').getTime();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = Math.round((dueMs - today.getTime()) / MS_DAY);
+  if (diff < 0) return { label: `${Math.abs(diff)}d atrás`, tone: 'late' };
+  if (diff === 0) return { label: 'Hoje', tone: 'today' };
+  if (diff === 1) return { label: 'Amanhã', tone: 'near' };
+  if (diff <= 7) return { label: `Em ${diff}d`, tone: 'near' };
+  return { label: `Em ${diff}d`, tone: 'normal' };
+}
+
+function formatDateBR(iso: string | null): string {
+  if (!iso) return '—';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
 
 export function TasksTable({
   tasks,
   isLoading,
-  showCreationRow = false,
+  groupByPriority = false,
   showAssignee = true,
 }: TasksTableProps) {
   const navigate = useNavigate();
-  const { user } = useAuthContext();
-  const { updateTask, updateAssignees, createTask } = useTaskMutations();
-  const { departments } = useDepartments();
+  const { updateTask, updateAssignees } = useTaskMutations();
   const { users } = useUsers();
+  const { departments } = useDepartments();
 
-  const [sortBy, setSortBy] = useState<TaskSortableField>('due_date');
-  const [sortOrder, setSortOrder] = useState<TaskSortOrder>('asc');
-  const [newTask, setNewTask] = useState(defaultTaskState);
+  const cols = showAssignee ? COLS_FULL : COLS_NO_ASSIGNEE;
 
-  const parseLocalDate = (dateStr: string): Date => {
-    const [year, month, day] = dateStr.split('-').map(Number);
-    return new Date(year, month - 1, day);
-  };
-
-  const sortedTasks = useMemo(() => {
-    if (!tasks.length) return tasks;
-
-    return [...tasks].sort((a, b) => {
-      let comparison = 0;
-
-      switch (sortBy) {
-        case 'title':
-          comparison = (a.title || '').localeCompare(b.title || '', 'pt-BR');
-          break;
-        case 'priority':
-          comparison = (PRIORITY_ORDER[a.priority as TaskPriority] ?? -1) - (PRIORITY_ORDER[b.priority as TaskPriority] ?? -1);
-          break;
-        case 'status':
-          comparison = (STATUS_ORDER[a.status as TaskStatus] ?? -1) - (STATUS_ORDER[b.status as TaskStatus] ?? -1);
-          break;
-        case 'assignee_name': {
-          const nameA = a.assignees?.[0]?.display_name || '';
-          const nameB = b.assignees?.[0]?.display_name || '';
-          if (!nameA && !nameB) comparison = 0;
-          else if (!nameA) comparison = 1;
-          else if (!nameB) comparison = -1;
-          else comparison = nameA.localeCompare(nameB, 'pt-BR');
-          break;
-        }
-        case 'due_date':
-          if (!a.due_date && !b.due_date) comparison = 0;
-          else if (!a.due_date) comparison = 1;
-          else if (!b.due_date) comparison = -1;
-          else comparison = parseLocalDate(a.due_date).getTime() - parseLocalDate(b.due_date).getTime();
-          break;
-        case 'department':
-          if (!a.department && !b.department) comparison = 0;
-          else if (!a.department) comparison = 1;
-          else if (!b.department) comparison = -1;
-          else comparison = a.department.localeCompare(b.department, 'pt-BR');
-          break;
-      }
-
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
-  }, [tasks, sortBy, sortOrder]);
-
-  const handleSort = (field: TaskSortableField, order: TaskSortOrder) => {
-    setSortBy(field);
-    setSortOrder(order);
-  };
-
-  const isTaskActive = () => {
-    return (
-      newTask.title !== defaultTaskState.title ||
-      newTask.priority !== defaultTaskState.priority ||
-      newTask.status !== defaultTaskState.status ||
-      newTask.assignee_ids.length > 0 ||
-      newTask.due_date !== defaultTaskState.due_date ||
-      newTask.department !== defaultTaskState.department
-    );
-  };
-
-  const handleCreateTask = async () => {
-    if (!newTask.title.trim() || !user) return;
-
-    try {
-      await createTask.mutateAsync({
-        title: newTask.title,
-        priority: newTask.priority,
-        status: newTask.status,
-        due_date: newTask.due_date,
-        department: newTask.department,
-        assignee_ids: newTask.assignee_ids,
-      });
-      setNewTask(defaultTaskState);
-      toast.success('Tarefa criada com sucesso');
-    } catch (error) {
-      toast.error('Erro ao criar tarefa');
-    }
-  };
-
-  const cols = showAssignee ? COLS_WITH_ASSIGNEE : COLS_WITHOUT_ASSIGNEE;
+  // Build groups when grouping is on
+  const groups = useMemo(() => {
+    if (!groupByPriority) return [{ priority: null as TaskPriority | null, items: tasks }];
+    return PRIORITIES_ORDERED.map((p) => ({
+      priority: p,
+      items: tasks.filter((t) => t.priority === p),
+    })).filter((g) => g.items.length > 0);
+  }, [tasks, groupByPriority]);
 
   if (isLoading) {
     return (
       <div className="tbl" style={{ gridTemplateColumns: cols, border: '1px solid hsl(var(--ds-line-1))' }}>
         <div className="tbl-head">
-          <div>Título</div>
-          <div>Prioridade</div>
-          <div>Status</div>
+          <div />
+          <div>Tarefa</div>
+          <div>Projeto</div>
           {showAssignee && <div>Responsáveis</div>}
           <div>Prazo</div>
-          <div>Departamento</div>
-          <div aria-label="Abrir" />
+          <div>Status</div>
         </div>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className={'tbl-row' + (i === 4 ? ' last' : '')}>
-            <div><span className="sk line lg" style={{ width: '70%' }} /></div>
-            <div><span className="sk line" style={{ width: 80 }} /></div>
-            <div><span className="sk line" style={{ width: 80 }} /></div>
-            {showAssignee && <div><span className="sk line" style={{ width: 100 }} /></div>}
-            <div><span className="sk line" style={{ width: 100 }} /></div>
-            <div><span className="sk line" style={{ width: 90 }} /></div>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className={'tbl-row' + (i === 3 ? ' last' : '')}>
             <div />
+            <div><span className="sk line lg" style={{ width: '70%' }} /></div>
+            <div><span className="sk line" style={{ width: 100 }} /></div>
+            {showAssignee && <div><span className="sk line" style={{ width: 80 }} /></div>}
+            <div><span className="sk line" style={{ width: 60 }} /></div>
+            <div><span className="sk line" style={{ width: 80 }} /></div>
           </div>
         ))}
       </div>
     );
   }
 
-  const totalRows = sortedTasks.length + (showCreationRow ? 1 : 0);
+  if (tasks.length === 0) {
+    return (
+      <EmptyState
+        icon={Inbox}
+        title="Nenhuma tarefa encontrada"
+        description="Crie sua primeira tarefa para começar."
+        variant="bare"
+      />
+    );
+  }
 
-  return (
-    <div className="tbl" style={{ gridTemplateColumns: cols, border: '1px solid hsl(var(--ds-line-1))' }}>
-      <div className="tbl-head">
-        <div>
-          <TaskSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
-        </div>
-        <div>
-          <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
-        </div>
-        <div>
-          <TaskSortableHeader field="status" label="Status" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
-        </div>
-        {showAssignee && (
-          <div>
-            <TaskSortableHeader field="assignee_name" label="Responsáveis" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
-          </div>
-        )}
-        <div>
-          <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
-        </div>
-        <div>
-          <TaskSortableHeader field="department" label="Departamento" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
-        </div>
-        <div aria-label="Abrir" />
-      </div>
+  const handleToggleDone = (task: Task) => {
+    const newStatus: TaskStatus = task.status === 'concluida' ? 'pendente' : 'concluida';
+    updateTask.mutate({
+      id: task.id,
+      updates: { status: newStatus },
+      oldTask: task,
+    });
+  };
 
-      {showCreationRow && (
-        <div
-          className="tbl-row"
-          style={{
-            opacity: isTaskActive() ? 1 : 0.7,
-            background: isTaskActive() ? 'hsl(var(--ds-line-2) / 0.3)' : 'transparent',
-          }}
-        >
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Plus size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-4))' }} />
-              <Input
-                placeholder="+ Adicionar nova tarefa…"
-                value={newTask.title}
-                onChange={(e) => setNewTask((prev) => ({ ...prev, title: e.target.value }))}
-                onKeyDown={(e) => e.key === 'Enter' && handleCreateTask()}
-                style={{
-                  border: 0,
-                  padding: 0,
-                  height: 'auto',
-                  background: 'transparent',
-                  fontSize: 13,
-                  fontStyle: 'italic',
-                }}
-              />
-            </div>
-          </div>
-          <div>
-            <InlineSelectCell
-              value={newTask.priority}
-              options={Object.entries(PRIORITY_CONFIG).map(([value, config]) => ({ value, label: config.label }))}
-              onSave={(value) => setNewTask((prev) => ({ ...prev, priority: value as TaskPriority }))}
-              renderValue={(val) =>
-                isTaskActive() ? (
-                  <PriorityBadge priority={val as TaskPriority} />
-                ) : (
-                  <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-4))', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    Selecionar <ChevronDown size={11} strokeWidth={1.5} />
-                  </span>
-                )
-              }
-              renderOption={(optVal) => <PriorityBadge priority={optVal as TaskPriority} />}
-            />
-          </div>
-          <div>
-            <InlineSelectCell
-              value={newTask.status}
-              options={Object.entries(STATUS_CONFIG).map(([value, config]) => ({ value, label: config.label }))}
-              onSave={(value) => setNewTask((prev) => ({ ...prev, status: value as TaskStatus }))}
-              renderValue={(val) =>
-                isTaskActive() ? (
-                  <StatusBadge status={val as TaskStatus} />
-                ) : (
-                  <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-4))', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    Selecionar <ChevronDown size={11} strokeWidth={1.5} />
-                  </span>
-                )
-              }
-              renderOption={(optVal) => <StatusBadge status={optVal as TaskStatus} />}
-            />
-          </div>
-          {showAssignee && (
-            <div>
-              <InlineAssigneeCell
-                value={newTask.assignee_ids}
-                users={users}
-                onSave={(value) => setNewTask((prev) => ({ ...prev, assignee_ids: value }))}
-                isActive={isTaskActive()}
-              />
-            </div>
-          )}
-          <div>
-            <InlineDateCell value={newTask.due_date} onSave={(value) => setNewTask((prev) => ({ ...prev, due_date: value }))} />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'space-between' }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <InlineDepartmentCell
-                value={newTask.department}
-                departments={departments}
-                onSave={(value) => setNewTask((prev) => ({ ...prev, department: value }))}
-              />
-            </div>
+  const renderRow = (task: Task, isLast: boolean) => {
+    const isDone = task.status === 'concluida';
+    const rel = relDate(task.due_date);
+    return (
+      <div
+        key={task.id}
+        className={'tbl-row' + (isLast ? ' last' : '')}
+        style={{ cursor: 'default' }}
+      >
+        {/* Checkbox */}
+        <div onClick={(e) => e.stopPropagation()} style={{ paddingRight: 0 }}>
+          <button
+            type="button"
+            onClick={() => handleToggleDone(task)}
+            aria-label={isDone ? 'Marcar como pendente' : 'Concluir tarefa'}
+            style={{
+              width: 16,
+              height: 16,
+              border: '1.5px solid ' + (isDone ? 'hsl(var(--ds-success))' : 'hsl(var(--ds-line-3, var(--ds-line-1)))'),
+              background: isDone ? 'hsl(var(--ds-success))' : 'transparent',
+              display: 'grid',
+              placeItems: 'center',
+              cursor: 'pointer',
+              transition: 'border-color 120ms, background 120ms',
+            }}
+          >
+            {isDone ? <Check size={10} strokeWidth={3} color="#fff" /> : null}
+          </button>
+        </div>
+
+        {/* Title — clickable to open details */}
+        <div onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={() => navigate(`/tarefas/${task.id}`)}
+            style={{
+              background: 'none',
+              border: 0,
+              padding: 0,
+              cursor: 'pointer',
+              fontFamily: '"HN Display", sans-serif',
+              fontWeight: 500,
+              fontSize: 13.5,
+              color: isDone ? 'hsl(var(--ds-fg-3))' : 'hsl(var(--ds-fg-1))',
+              textAlign: 'left',
+              textDecoration: isDone ? 'line-through' : 'none',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '100%',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.textDecoration = isDone ? 'line-through' : 'underline')}
+            onMouseLeave={(e) => (e.currentTarget.style.textDecoration = isDone ? 'line-through' : 'none')}
+          >
+            {task.title}
+          </button>
+          {rel?.tone === 'late' && !isDone ? (
+            <span
+              style={{
+                marginLeft: 8,
+                fontSize: 9,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                fontWeight: 500,
+                color: 'hsl(var(--ds-danger))',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              <span style={{ width: 4, height: 4, background: 'hsl(var(--ds-danger))' }} />
+              Atrasada
+            </span>
+          ) : null}
+        </div>
+
+        {/* Projeto */}
+        <div onClick={(e) => e.stopPropagation()}>
+          {task.project_id && task.project_name ? (
             <button
               type="button"
-              onClick={handleCreateTask}
-              disabled={!newTask.title.trim()}
+              onClick={() => navigate(`/projetos-av/${task.project_id}`)}
               style={{
-                width: 24,
-                height: 24,
-                display: 'grid',
-                placeItems: 'center',
-                background: 'transparent',
+                background: 'none',
                 border: 0,
-                color: 'hsl(var(--ds-fg-3))',
+                padding: 0,
                 cursor: 'pointer',
-                opacity: newTask.title.trim() ? 1 : 0.4,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                fontSize: 13,
+                color: 'hsl(var(--ds-fg-2))',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
               }}
-              aria-label="Criar tarefa"
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-1))')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-2))')}
             >
-              <Plus size={14} strokeWidth={1.5} />
-            </button>
-          </div>
-          <div />
-        </div>
-      )}
-
-      {sortedTasks.map((task, idx) => {
-        const isLast = idx === sortedTasks.length - 1;
-        return (
-          <div
-            key={task.id}
-            className={'tbl-row' + (isLast ? ' last' : '')}
-          >
-            <div onClick={(e) => e.stopPropagation()}>
-              <InlineEditCell
-                value={task.title}
-                onSave={(value) => updateTask.mutate({ id: task.id, updates: { title: value }, oldTask: task })}
-              />
-            </div>
-            <div onClick={(e) => e.stopPropagation()}>
-              <InlineSelectCell
-                value={task.priority}
-                options={Object.entries(PRIORITY_CONFIG).map(([val, config]) => ({ value: val, label: config.label }))}
-                onSave={(val) => updateTask.mutate({ id: task.id, updates: { priority: val as TaskPriority }, oldTask: task })}
-                renderValue={(val) => <PriorityBadge priority={val as TaskPriority} />}
-                renderOption={(optVal) => <PriorityBadge priority={optVal as TaskPriority} />}
-              />
-            </div>
-            <div onClick={(e) => e.stopPropagation()}>
-              <InlineSelectCell
-                value={task.status}
-                options={Object.entries(STATUS_CONFIG).map(([val, config]) => ({ value: val, label: config.label }))}
-                onSave={(val) => updateTask.mutate({ id: task.id, updates: { status: val as TaskStatus }, oldTask: task })}
-                renderValue={(val) => <StatusBadge status={val as TaskStatus} />}
-                renderOption={(optVal) => <StatusBadge status={optVal as TaskStatus} />}
-              />
-            </div>
-            {showAssignee && (
-              <div onClick={(e) => e.stopPropagation()}>
-                <InlineAssigneeCell
-                  value={task.assignees?.map((a) => a.user_id) || []}
-                  users={users}
-                  onSave={(newIds) => updateAssignees.mutate({ taskId: task.id, assigneeIds: newIds })}
-                />
-              </div>
-            )}
-            <div onClick={(e) => e.stopPropagation()}>
-              <InlineDateCell
-                value={task.due_date}
-                onSave={(val) => updateTask.mutate({ id: task.id, updates: { due_date: val }, oldTask: task })}
-              />
-            </div>
-            <div onClick={(e) => e.stopPropagation()}>
-              <InlineDepartmentCell
-                value={task.department}
-                departments={departments}
-                onSave={(value) => updateTask.mutate({ id: task.id, updates: { department: value }, oldTask: task })}
-              />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <button
-                type="button"
-                onClick={() => navigate(`/tarefas/${task.id}`)}
+              <span
                 style={{
-                  width: 32,
-                  height: 32,
+                  width: 8,
+                  height: 8,
+                  background: projectColor(task.project_id),
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.project_name}</span>
+            </button>
+          ) : (
+            <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-4))' }}>—</span>
+          )}
+        </div>
+
+        {/* Responsáveis */}
+        {showAssignee && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <InlineAssigneeCell
+              value={task.assignees?.map((a) => a.user_id) || []}
+              users={users}
+              onSave={(newIds) => updateAssignees.mutate({ taskId: task.id, assigneeIds: newIds })}
+            />
+          </div>
+        )}
+
+        {/* Prazo */}
+        <div onClick={(e) => e.stopPropagation()}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.2 }}>
+            <InlineDateCell
+              value={task.due_date}
+              onSave={(val) => updateTask.mutate({ id: task.id, updates: { due_date: val }, oldTask: task })}
+            />
+            {rel ? (
+              <span
+                style={{
+                  fontSize: 10,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  color:
+                    rel.tone === 'late'
+                      ? 'hsl(var(--ds-danger))'
+                      : rel.tone === 'today'
+                        ? 'hsl(var(--ds-accent))'
+                        : 'hsl(var(--ds-fg-4))',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {rel.label}
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Status — borderless dot + label, clickable via InlineSelectCell */}
+        <div onClick={(e) => e.stopPropagation()}>
+          <InlineSelectCell
+            value={task.status}
+            options={Object.entries(STATUS_CONFIG).map(([val, cfg]) => ({ value: val, label: cfg.label }))}
+            onSave={(val) =>
+              updateTask.mutate({ id: task.id, updates: { status: val as TaskStatus }, oldTask: task })
+            }
+            renderValue={(val) => (
+              <span
+                style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  background: 'transparent',
-                  border: '1px solid hsl(var(--ds-line-1))',
-                  color: 'hsl(var(--ds-fg-2))',
-                  cursor: 'pointer',
-                  transition: 'color 120ms, background 120ms, border-color 120ms',
+                  gap: 8,
+                  fontSize: 12,
+                  color:
+                    (val as TaskStatus) === 'concluida'
+                      ? 'hsl(var(--ds-fg-4))'
+                      : 'hsl(var(--ds-fg-2))',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'hsl(var(--ds-bg))';
-                  e.currentTarget.style.background = 'hsl(var(--ds-fg-1))';
-                  e.currentTarget.style.borderColor = 'hsl(var(--ds-fg-1))';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'hsl(var(--ds-fg-2))';
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
-                }}
-                aria-label="Abrir detalhes da tarefa"
-                title="Abrir detalhes"
               >
-                <ChevronRight size={16} strokeWidth={1.75} />
-              </button>
-            </div>
-          </div>
-        );
-      })}
-
-      {totalRows === 0 && (
-        <div style={{ gridColumn: '1 / -1' }}>
-          <EmptyState
-            icon={Inbox}
-            title="Nenhuma tarefa encontrada"
-            description="Crie sua primeira tarefa para começar."
-            variant="bare"
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    background: STATUS_DOT_COLOR[val as TaskStatus],
+                    flexShrink: 0,
+                  }}
+                />
+                {STATUS_CONFIG[val as TaskStatus]?.label ?? val}
+              </span>
+            )}
+            renderOption={(val) => <StatusBadge status={val as TaskStatus} />}
           />
         </div>
-      )}
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      {groups.map((group, gIdx) => (
+        <div key={group.priority ?? 'all'} style={{ marginTop: gIdx === 0 ? 0 : 32 }}>
+          {group.priority && groupByPriority && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0 0 12px',
+                borderBottom: '1px solid hsl(var(--ds-line-1))',
+                marginBottom: 0,
+              }}
+            >
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  fontFamily: '"HN Display", sans-serif',
+                  fontSize: 11,
+                  fontWeight: 500,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: 'hsl(var(--ds-fg-1))',
+                }}
+              >
+                <span style={{ width: 24, height: 3, background: PRIORITY_BAR_COLOR[group.priority] }} />
+                {PRIORITY_CONFIG[group.priority].label}
+              </span>
+              <span
+                style={{
+                  fontFamily: '"HN Display", sans-serif',
+                  fontSize: 10,
+                  fontWeight: 500,
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  color: 'hsl(var(--ds-fg-4))',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {String(group.items.length).padStart(2, '0')}
+              </span>
+            </div>
+          )}
+
+          <div
+            className="tbl"
+            style={{
+              gridTemplateColumns: cols,
+              border: group.priority && groupByPriority ? 'none' : '1px solid hsl(var(--ds-line-1))',
+              borderTop: group.priority && groupByPriority ? 'none' : '1px solid hsl(var(--ds-line-1))',
+            }}
+          >
+            <div className="tbl-head">
+              <div />
+              <div>Tarefa</div>
+              <div>Projeto</div>
+              {showAssignee && <div>Responsáveis</div>}
+              <div>Prazo</div>
+              <div>Status</div>
+            </div>
+            {group.items.map((task, idx) => renderRow(task, idx === group.items.length - 1))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
