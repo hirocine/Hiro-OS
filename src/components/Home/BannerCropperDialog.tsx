@@ -258,167 +258,355 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
     setPendingFile(null);
   };
 
+  const eyebrowStyle: React.CSSProperties = {
+    fontFamily: '"HN Display", sans-serif',
+    fontSize: 10,
+    fontWeight: 500,
+    letterSpacing: '0.18em',
+    textTransform: 'uppercase',
+    color: 'hsl(var(--ds-fg-4))',
+  };
+  const valueStyle: React.CSSProperties = {
+    fontFamily: '"HN Display", sans-serif',
+    fontSize: 11,
+    fontWeight: 500,
+    letterSpacing: '0.04em',
+    color: 'hsl(var(--ds-fg-1))',
+    fontVariantNumeric: 'tabular-nums',
+    minWidth: 44,
+    textAlign: 'right',
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ImageIcon className="h-5 w-5" />
-            Editar Banner da Home
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0 border-[hsl(var(--ds-line-1))] bg-[hsl(var(--ds-surface))]">
+        <div className="ds-shell" style={{ display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+          {/* ─── Header ─── */}
+          <DialogHeader
+            style={{
+              padding: '18px 24px 14px',
+              borderBottom: '1px solid hsl(var(--ds-line-1))',
+              display: 'block',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ ...eyebrowStyle, display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <span style={{ width: 6, height: 6, background: 'hsl(var(--ds-accent))', flexShrink: 0 }} />
+              Hiro OS · Configuração
+            </div>
+            <DialogTitle
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontWeight: 500,
+                fontSize: 22,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.1,
+                color: 'hsl(var(--ds-fg-1))',
+                margin: 0,
+              }}
+            >
+              Editar banner da Home
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-4">
-          {!imageSrc ? (
-            <div className="p-4">
-              {isLoadingImage ? (
-                <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-[hsl(var(--ds-line-1))]">
-                  <Loader2 className="h-12 w-12 text-muted-foreground mb-4 animate-spin" />
-                  <p className="text-muted-foreground">Carregando imagem...</p>
+          {/* ─── Body ─── */}
+          <div style={{ padding: 24, overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {!imageSrc ? (
+              isLoadingImage ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 48,
+                    border: '1px dashed hsl(var(--ds-line-1))',
+                    background: 'hsl(var(--ds-line-2) / 0.25)',
+                  }}
+                >
+                  <Loader2 className="h-10 w-10 animate-spin" style={{ color: 'hsl(var(--ds-fg-3))', marginBottom: 12 }} strokeWidth={1.5} />
+                  <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-2))' }}>Carregando imagem…</p>
                   {fileName && (
-                    <p className="text-sm text-muted-foreground mt-2">{fileName}</p>
+                    <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>{fileName}</p>
                   )}
                 </div>
               ) : (
-                <div className={`grid gap-4 ${bannerSettings?.url ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gap: 12,
+                    gridTemplateColumns: bannerSettings?.url ? '1fr 1fr' : '1fr',
+                  }}
+                >
                   {/* Opção 1: Nova imagem */}
                   <button
+                    type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-[hsl(var(--ds-line-1))] hover:border-[hsl(var(--ds-accent))] hover:bg-[hsl(var(--ds-line-2)/0.3)] transition-colors"
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 32,
+                      border: '1px dashed hsl(var(--ds-line-1))',
+                      background: 'transparent',
+                      cursor: 'pointer',
+                      transition: 'background 120ms, border-color 120ms',
+                      textAlign: 'center',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+                      e.currentTarget.style.borderColor = 'hsl(var(--ds-fg-3))';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                    }}
                   >
-                    <Upload className="h-12 w-12 text-muted-foreground mb-3" />
-                    <span className="font-medium">Enviar Nova Imagem</span>
-                    <span className="text-sm text-muted-foreground mt-1 text-center">
-                      Fazer upload de uma nova foto
+                    <Upload size={28} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))', marginBottom: 12 }} />
+                    <span
+                      style={{
+                        fontFamily: '"HN Display", sans-serif',
+                        fontWeight: 500,
+                        fontSize: 14,
+                        color: 'hsl(var(--ds-fg-1))',
+                      }}
+                    >
+                      Enviar nova imagem
+                    </span>
+                    <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
+                      Upload de uma foto nova
                     </span>
                   </button>
 
-                  {/* Opção 2: Editar atual (só se existir) */}
+                  {/* Opção 2: Editar atual */}
                   {bannerSettings?.url && (
                     <button
+                      type="button"
                       onClick={loadExistingBanner}
-                      className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-[hsl(var(--ds-line-1))] hover:border-[hsl(var(--ds-accent))] hover:bg-[hsl(var(--ds-line-2)/0.3)] transition-colors"
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: 32,
+                        border: '1px dashed hsl(var(--ds-line-1))',
+                        background: 'transparent',
+                        cursor: 'pointer',
+                        transition: 'background 120ms, border-color 120ms',
+                        textAlign: 'center',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)';
+                        e.currentTarget.style.borderColor = 'hsl(var(--ds-fg-3))';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                      }}
                     >
-                      <ImageIcon className="h-12 w-12 text-muted-foreground mb-3" />
-                      <span className="font-medium">Editar Banner Atual</span>
-                      <span className="text-sm text-muted-foreground mt-1 text-center">
+                      <ImageIcon size={28} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))', marginBottom: 12 }} />
+                      <span
+                        style={{
+                          fontFamily: '"HN Display", sans-serif',
+                          fontWeight: 500,
+                          fontSize: 14,
+                          color: 'hsl(var(--ds-fg-1))',
+                        }}
+                      >
+                        Editar banner atual
+                      </span>
+                      <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
                         Ajustar crop, zoom ou rotação
                       </span>
                       {bannerSettings.original_url && (
-                        <span className="text-xs text-success mt-2">
-                          ✓ Imagem original preservada
+                        <span
+                          style={{
+                            fontSize: 10,
+                            letterSpacing: '0.08em',
+                            textTransform: 'uppercase',
+                            color: 'hsl(var(--ds-accent))',
+                            marginTop: 10,
+                            fontFamily: '"HN Display", sans-serif',
+                            fontWeight: 500,
+                          }}
+                        >
+                          ✓ Original preservado
                         </span>
                       )}
                     </button>
                   )}
                 </div>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-            </div>
-          ) : (
-            <>
-              {/* Image info */}
-              {imageDimensions && fileName && (
-                <div className="flex items-center justify-between text-sm text-muted-foreground bg-[hsl(var(--ds-line-2)/0.4)] border border-[hsl(var(--ds-line-1))] px-3 py-2">
-                  <span>{fileName}</span>
-                  <span>{imageDimensions.width} × {imageDimensions.height}px</span>
-                </div>
-              )}
+              )
+            ) : (
+              <>
+                {/* Image info bar */}
+                {imageDimensions && fileName && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '10px 14px',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      background: 'hsl(var(--ds-line-2) / 0.3)',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: '"HN Display", sans-serif',
+                        fontSize: 12,
+                        fontWeight: 500,
+                        color: 'hsl(var(--ds-fg-1))',
+                        letterSpacing: '0.02em',
+                      }}
+                    >
+                      {fileName}
+                    </span>
+                    <span
+                      style={{
+                        ...eyebrowStyle,
+                        fontSize: 11,
+                        color: 'hsl(var(--ds-fg-3))',
+                      }}
+                    >
+                      {imageDimensions.width} × {imageDimensions.height} px
+                    </span>
+                  </div>
+                )}
 
-              <p className="text-sm text-muted-foreground">
-                Arraste para posicionar, use os controles para zoom e rotação
-              </p>
-              
-              <div className="relative h-80 bg-[hsl(var(--ds-line-2)/0.4)] border border-[hsl(var(--ds-line-1))] overflow-hidden">
-                <Cropper
-                  image={imageSrc}
-                  crop={crop}
-                  zoom={zoom}
-                  rotation={rotation}
-                  aspect={3}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onRotationChange={setRotation}
-                  onCropComplete={onCropComplete}
-                />
-              </div>
+                {/* Hint */}
+                <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', margin: 0 }}>
+                  Arraste a imagem para posicionar · use os controles abaixo para zoom e rotação.
+                </p>
 
-              <div className="space-y-4">
-                {/* Zoom control */}
-                <div className="flex items-center gap-4">
-                  <ZoomOut className="h-4 w-4 text-muted-foreground" />
-                  <Slider
-                    value={[zoom]}
-                    min={1}
-                    max={3}
-                    step={0.1}
-                    onValueChange={([value]) => setZoom(value)}
-                    className="flex-1"
+                {/* Cropper */}
+                <div
+                  style={{
+                    position: 'relative',
+                    aspectRatio: '3 / 1',
+                    background: 'hsl(var(--ds-line-2) / 0.4)',
+                    border: '1px solid hsl(var(--ds-line-1))',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <Cropper
+                    image={imageSrc}
+                    crop={crop}
+                    zoom={zoom}
+                    rotation={rotation}
+                    aspect={3}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onRotationChange={setRotation}
+                    onCropComplete={onCropComplete}
                   />
-                  <ZoomIn className="h-4 w-4 text-muted-foreground" />
-                  <Label className="w-12 text-right text-sm text-muted-foreground">
-                    {zoom.toFixed(1)}x
-                  </Label>
                 </div>
 
-                {/* Rotation control */}
-                <div className="flex items-center gap-4">
-                  <RotateCcw className="h-4 w-4 text-muted-foreground" />
-                  <Slider
-                    value={[rotation]}
-                    min={-180}
-                    max={180}
-                    step={1}
-                    onValueChange={([value]) => setRotation(value)}
-                    className="flex-1"
-                  />
-                  <RotateCw className="h-4 w-4 text-muted-foreground" />
-                  <Label className="w-12 text-right text-sm text-muted-foreground">
-                    {rotation}°
-                  </Label>
+                {/* Sliders */}
+                <div style={{ display: 'grid', gap: 14, paddingTop: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <Label style={{ ...eyebrowStyle, width: 64, margin: 0 }}>Zoom</Label>
+                    <ZoomOut size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-4))', flexShrink: 0 }} />
+                    <Slider
+                      value={[zoom]}
+                      min={1}
+                      max={3}
+                      step={0.1}
+                      onValueChange={([value]) => setZoom(value)}
+                      className="flex-1"
+                    />
+                    <ZoomIn size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-4))', flexShrink: 0 }} />
+                    <span style={valueStyle}>{zoom.toFixed(1)}x</span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <Label style={{ ...eyebrowStyle, width: 64, margin: 0 }}>Rotação</Label>
+                    <RotateCcw size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-4))', flexShrink: 0 }} />
+                    <Slider
+                      value={[rotation]}
+                      min={-180}
+                      max={180}
+                      step={1}
+                      onValueChange={([value]) => setRotation(value)}
+                      className="flex-1"
+                    />
+                    <RotateCw size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-4))', flexShrink: 0 }} />
+                    <span style={valueStyle}>{rotation}°</span>
+                  </div>
                 </div>
 
-                <div className="flex gap-2">
+                {/* Quick actions */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    paddingTop: 8,
+                    borderTop: '1px solid hsl(var(--ds-line-1))',
+                  }}
+                >
                   <button type="button" className="btn sm" onClick={handleRotateLeft}>
-                    <RotateCcw className="h-4 w-4" />
-                    -90°
+                    <RotateCcw size={13} strokeWidth={1.5} />
+                    <span>-90°</span>
                   </button>
                   <button type="button" className="btn sm" onClick={handleRotateRight}>
-                    <RotateCw className="h-4 w-4" />
-                    +90°
+                    <RotateCw size={13} strokeWidth={1.5} />
+                    <span>+90°</span>
                   </button>
                   <button type="button" className="btn sm" onClick={handleReset}>
-                    Resetar
+                    <span>Resetar</span>
                   </button>
+                  <div style={{ flex: 1 }} />
                   <button type="button" className="btn sm" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="h-4 w-4" />
-                    Trocar
+                    <Upload size={13} strokeWidth={1.5} />
+                    <span>Trocar imagem</span>
                   </button>
                 </div>
-              </div>
-            </>
-          )}
-        </div>
+              </>
+            )}
 
-        <DialogFooter>
-          <button type="button" className="btn" onClick={handleClose}>
-            Cancelar
-          </button>
-          <button
-            type="button"
-            className="btn primary"
-            onClick={handleSave}
-            disabled={!imageSrc || isProcessing || isUpdating}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </div>
+
+          {/* ─── Footer ─── */}
+          <DialogFooter
+            style={{
+              padding: '14px 24px',
+              borderTop: '1px solid hsl(var(--ds-line-1))',
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              gap: 8,
+              margin: 0,
+            }}
           >
-            {isProcessing ? "Processando..." : "Salvar Banner"}
-          </button>
-        </DialogFooter>
+            <button type="button" className="btn" onClick={handleClose}>
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleSave}
+              disabled={!imageSrc || isProcessing || isUpdating}
+            >
+              {isProcessing || isUpdating ? (
+                <>
+                  <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />
+                  <span>Processando…</span>
+                </>
+              ) : (
+                <span>Salvar banner</span>
+              )}
+            </button>
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
