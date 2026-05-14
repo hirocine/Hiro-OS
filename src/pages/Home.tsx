@@ -138,6 +138,10 @@ export default function Home() {
   const navigate = useNavigate();
   const now = new Date();
   const [view, setView] = useState<"month" | "week" | "list">("month");
+  // The date currently *displayed* in the calendar — independent of `now`
+  // so the prev/next/Hoje buttons can navigate without affecting the
+  // "today" highlight (which always compares against the real Date).
+  const [displayDate, setDisplayDate] = useState<Date>(() => new Date());
   const [selectedEvent, setSelectedEvent] = useState<RecordingEvent | null>(null);
   const [showBannerCropper, setShowBannerCropper] = useState(false);
   const { user, isAdmin } = useAuthContext();
@@ -150,9 +154,15 @@ export default function Home() {
   const { tasks = [] } = useTasks();
   const { data: todayRecsAll = [] } = useRecordingsToday();
 
-  // Month range for the calendar
-  const monthStart = useMemo(() => new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), [now.getFullYear(), now.getMonth()]);
-  const monthEnd = useMemo(() => new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString(), [now.getFullYear(), now.getMonth()]);
+  // Month range for the calendar — follows the currently-displayed month
+  const monthStart = useMemo(
+    () => new Date(displayDate.getFullYear(), displayDate.getMonth(), 1).toISOString(),
+    [displayDate],
+  );
+  const monthEnd = useMemo(
+    () => new Date(displayDate.getFullYear(), displayDate.getMonth() + 1, 0, 23, 59, 59).toISOString(),
+    [displayDate],
+  );
   const { data: monthRecs = [] as RecordingEvent[] } = useRecordingsCalendar(monthStart, monthEnd);
 
   // Upcoming recording (for hero chip) — next 30 days
@@ -244,24 +254,44 @@ export default function Home() {
   // ----- presentational helpers -----
   const displayName = (profile?.display_name?.split(" ")[0]) || user?.email?.split("@")[0] || "";
   const greeting = greetingFor(now);
-  const monthLabel = `${MONTHS[now.getMonth()].charAt(0).toUpperCase() + MONTHS[now.getMonth()].slice(1)} · ${now.getFullYear()}`;
-  const cells = useMemo(() => buildMonthGrid(now.getFullYear(), now.getMonth()), [now.getFullYear(), now.getMonth()]);
-  const today = now.getDate();
+  const monthLabel = `${MONTHS[displayDate.getMonth()].charAt(0).toUpperCase() + MONTHS[displayDate.getMonth()].slice(1)} · ${displayDate.getFullYear()}`;
+  const cells = useMemo(
+    () => buildMonthGrid(displayDate.getFullYear(), displayDate.getMonth()),
+    [displayDate],
+  );
 
   const heroPhoto = bannerSettings?.url || null;
   const visibleTeam = team.filter((m) => m.is_visible);
 
-  // Current week (Sun → Sat, anchored on today)
+  // Week view — Sun → Sat anchored on the currently-displayed date.
   const weekCells = useMemo(() => {
-    const dow = now.getDay();
-    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
+    const dow = displayDate.getDay();
+    const weekStart = new Date(displayDate.getFullYear(), displayDate.getMonth(), displayDate.getDate() - dow);
     const out: { n: number; other: boolean; date: Date }[] = [];
     for (let i = 0; i < 7; i++) {
       const d = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i);
-      out.push({ n: d.getDate(), other: d.getMonth() !== now.getMonth(), date: d });
+      out.push({ n: d.getDate(), other: d.getMonth() !== displayDate.getMonth(), date: d });
     }
     return out;
-  }, [now.getFullYear(), now.getMonth(), now.getDate()]);
+  }, [displayDate]);
+
+  // Nav handlers for the calendar header (prev / Hoje / next).
+  // In month view a step is a calendar month; in week view it's 7 days.
+  const goPrev = () => {
+    setDisplayDate((d) =>
+      view === "week"
+        ? new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7)
+        : new Date(d.getFullYear(), d.getMonth() - 1, 1),
+    );
+  };
+  const goNext = () => {
+    setDisplayDate((d) =>
+      view === "week"
+        ? new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7)
+        : new Date(d.getFullYear(), d.getMonth() + 1, 1),
+    );
+  };
+  const goToday = () => setDisplayDate(new Date());
 
   // Chronological events (filtered to month for list view)
   const sortedMonthEvents = useMemo(
@@ -450,11 +480,30 @@ export default function Home() {
               </div>
               <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                 <div className="rc-controls">
-                  <button className="rc-nav" type="button">{I.chevL}</button>
-                  <button className="rc-nav" type="button">
+                  <button
+                    className="rc-nav"
+                    type="button"
+                    onClick={goPrev}
+                    aria-label={view === "week" ? "Semana anterior" : "Mês anterior"}
+                  >
+                    {I.chevL}
+                  </button>
+                  <button
+                    className="rc-nav"
+                    type="button"
+                    onClick={goToday}
+                    aria-label="Ir para hoje"
+                  >
                     <span style={{ fontFamily: '"HN Display", sans-serif', fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", padding: "0 10px" }}>Hoje</span>
                   </button>
-                  <button className="rc-nav" type="button">{I.chevR}</button>
+                  <button
+                    className="rc-nav"
+                    type="button"
+                    onClick={goNext}
+                    aria-label={view === "week" ? "Próxima semana" : "Próximo mês"}
+                  >
+                    {I.chevR}
+                  </button>
                 </div>
                 <div className="rc-views">
                   <button className={view === "month" ? "on" : ""} type="button" onClick={() => setView("month")}>Mês</button>
@@ -472,7 +521,10 @@ export default function Home() {
                 {(view === "week" ? weekCells : cells).map((cell, idx) => {
                   const key = localDateKey(cell.date);
                   const events = calendarEvents[key] || [];
-                  const isToday = !cell.other && cell.n === today && cell.date.getMonth() === now.getMonth();
+                  // Compare the cell date to the real "today" (not displayDate),
+                  // so the highlight stays on the actual current day while the
+                  // user navigates other months.
+                  const isToday = localDateKey(cell.date) === todayKey;
                   const dow = idx % 7;
                   const isWeekend = dow === 0 || dow === 6;
                   const eventCap = view === "week" ? 8 : 3;
