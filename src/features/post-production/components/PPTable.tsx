@@ -54,18 +54,26 @@ function PipelineProgress({ status }: { status: PPStatus }) {
   const currentIndex = PIPELINE_STEPS.indexOf(status);
   const isDelivered = status === 'entregue';
 
+  // Color semantics:
+  //   delivered  → all green (success) — celebra a entrega
+  //   completed  → fg-2 (cinza escuro) — passou pela fase
+  //   active     → fg-2 com opacity 0.5 — em andamento
+  //   pending    → line-2 (cinza claro) — ainda não chegou
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%' }}>
       {PIPELINE_STEPS.map((_, i) => {
         const isCompleted = i < currentIndex;
         const isActive = i === currentIndex;
-        const bg = isDelivered
-          ? 'hsl(var(--ds-success))'
-          : isCompleted
-            ? 'hsl(var(--ds-accent))'
-            : isActive
-              ? 'hsl(var(--ds-accent))'
-              : 'hsl(var(--ds-line-2))';
+        let bg = 'hsl(var(--ds-line-2))';
+        let opacity = 1;
+        if (isDelivered) {
+          bg = 'hsl(var(--ds-success))';
+        } else if (isCompleted) {
+          bg = 'hsl(var(--ds-fg-2))';
+        } else if (isActive) {
+          bg = 'hsl(var(--ds-fg-2))';
+          opacity = 0.5;
+        }
         return (
           <span
             key={i}
@@ -73,7 +81,7 @@ function PipelineProgress({ status }: { status: PPStatus }) {
               flex: 1,
               height: 4,
               background: bg,
-              opacity: isActive && !isDelivered ? 0.5 : 1,
+              opacity,
             }}
           />
         );
