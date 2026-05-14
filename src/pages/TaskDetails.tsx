@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText, CheckSquare, MessageCircle, Paperclip, Download, Upload, Loader2, Folder } from 'lucide-react';
+import { Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText, CheckSquare, MessageCircle, Paperclip, Download, Upload, Loader2, Folder, ArrowLeft } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Input } from '@/components/ui/input';
@@ -80,6 +80,25 @@ const sepStyle: React.CSSProperties = {
   height: 1,
   background: 'hsl(var(--ds-line-1))',
   margin: '24px 0',
+};
+
+// Details strip cell (5-column horizontal KV)
+const detailCell: React.CSSProperties = {
+  padding: '16px 18px',
+  borderRight: '1px solid hsl(var(--ds-line-1))',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+  minWidth: 0,
+};
+
+const detailKey: React.CSSProperties = {
+  fontFamily: '"HN Display", sans-serif',
+  fontSize: 10,
+  fontWeight: 500,
+  letterSpacing: '0.16em',
+  textTransform: 'uppercase',
+  color: 'hsl(var(--ds-fg-4))',
 };
 
 export default function TaskDetails() {
@@ -222,6 +241,24 @@ export default function TaskDetails() {
     label: config.label
   }));
 
+  // Prazo banner data (only when overdue and task not concluida)
+  const overdueDays = (() => {
+    if (!task.due_date || task.status === 'concluida') return 0;
+    const due = new Date(task.due_date + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diff = Math.floor((today.getTime() - due.getTime()) / (24 * 60 * 60 * 1000));
+    return diff > 0 ? diff : 0;
+  })();
+
+  // Project color hash (same as TasksTable for consistency)
+  const projectDotColor = (() => {
+    if (!task.project_id) return 'hsl(var(--ds-fg-4))';
+    let h = 0;
+    for (let i = 0; i < task.project_id.length; i++) h = (h * 31 + task.project_id.charCodeAt(i)) | 0;
+    return `hsl(${Math.abs(h) % 360} 55% 50%)`;
+  })();
+
   return (
     <div className="ds-shell ds-page">
       <div className="ds-page-inner">
@@ -232,126 +269,191 @@ export default function TaskDetails() {
         ]}
       />
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      {/* ───────────────  HEADER  ─────────────── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
+        {/* Top row: back link + actions */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => navigate('/tarefas')}
+            style={{ padding: '4px 10px', fontSize: 12 }}
+          >
+            <ArrowLeft size={14} strokeWidth={1.5} />
+            <span>Voltar para tarefas</span>
+          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setDeleteOpen(true)}
+              style={{
+                color: 'hsl(var(--ds-danger))',
+                borderColor: 'hsl(var(--ds-danger) / 0.3)',
+              }}
+            >
+              <Trash2 size={13} strokeWidth={1.5} />
+              <span>Excluir</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Eyebrow: projeto chip */}
+        {task.project_name ? (
+          <button
+            type="button"
+            onClick={() => navigate(`/projetos-av/${task.project_id}`)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: 0,
+              background: 'transparent',
+              border: 0,
+              cursor: 'pointer',
+              fontSize: 12,
+              color: 'hsl(var(--ds-fg-3))',
+              width: 'fit-content',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-1))')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-3))')}
+          >
+            <span style={{ width: 8, height: 8, background: projectDotColor, flexShrink: 0 }} />
+            <span style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+              {task.project_name}
+            </span>
+          </button>
+        ) : null}
+
+        {/* Title (inline-editable) */}
         <div>
           <InlineEditCell
             value={task.title}
             onSave={(newTitle) => handleUpdateTask({ title: newTitle })}
             className="text-3xl font-bold"
           />
-          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>
-            Criada em {format(new Date(task.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-          </p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            type="button"
-            className="btn"
-            onClick={() => setDeleteOpen(true)}
+
+        {/* Submeta: criada em / atualizada */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 12, color: 'hsl(var(--ds-fg-3))', flexWrap: 'wrap' }}>
+          <span>
+            Criada em{' '}
+            <strong style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+              {format(new Date(task.created_at), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
+            </strong>
+          </span>
+          {task.updated_at && task.updated_at !== task.created_at ? (
+            <>
+              <span style={{ color: 'hsl(var(--ds-line-2))' }}>·</span>
+              <span>
+                Atualizada{' '}
+                <strong style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                  {format(new Date(task.updated_at), "dd/MM 'às' HH:mm", { locale: ptBR })}
+                </strong>
+              </span>
+            </>
+          ) : null}
+        </div>
+
+        {/* Banner de prazo vencido */}
+        {overdueDays > 0 && task.due_date ? (
+          <div
             style={{
-              color: 'hsl(var(--ds-danger))',
-              borderColor: 'hsl(var(--ds-danger) / 0.3)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '10px 14px',
+              border: '1px solid hsl(var(--ds-danger) / 0.3)',
+              background: 'hsl(var(--ds-danger) / 0.05)',
+              alignSelf: 'flex-start',
+              maxWidth: '100%',
             }}
           >
-            <Trash2 size={13} strokeWidth={1.5} />
-            <span>Excluir</span>
-          </button>
-        </div>
+            <span style={{ width: 8, height: 8, background: 'hsl(var(--ds-danger))', flexShrink: 0 }} />
+            <span
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 10,
+                fontWeight: 500,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: 'hsl(var(--ds-danger))',
+              }}
+            >
+              Prazo vencido
+            </span>
+            <span style={{ fontFamily: '"HN Display", sans-serif', fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+              {format(new Date(task.due_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })}
+            </span>
+            <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+              — atrasada há {overdueDays} {overdueDays === 1 ? 'dia' : 'dias'}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {/* Details Card */}
-        <div style={{ border: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-surface))' }}>
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid hsl(var(--ds-line-1))', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-2))' }}>
-              Detalhes
-            </span>
+        {/* ───────────────  DETAILS STRIP  ─────────────── */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            border: '1px solid hsl(var(--ds-line-1))',
+            background: 'hsl(var(--ds-surface))',
+          }}
+        >
+          {/* Status */}
+          <div style={detailCell}>
+            <span style={detailKey}>Status</span>
+            <InlineSelectCell
+              value={task.status}
+              options={statusOptions}
+              onSave={(newStatus) => handleUpdateTask({ status: newStatus as TaskStatus })}
+              renderValue={(val) => <StatusBadge status={val as TaskStatus} />}
+              renderOption={(val) => <StatusBadge status={val as TaskStatus} />}
+            />
           </div>
-          <div style={{ padding: 18 }}>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {/* Status */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={eyebrow}>Status</span>
-                <InlineSelectCell
-                  value={task.status}
-                  options={statusOptions}
-                  onSave={(newStatus) => handleUpdateTask({ status: newStatus as TaskStatus })}
-                  renderValue={(val) => <StatusBadge status={val as TaskStatus} />}
-                  renderOption={(val) => <StatusBadge status={val as TaskStatus} />}
-                />
-              </div>
 
-              {/* Priority */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={eyebrow}>Prioridade</span>
-                <InlineSelectCell
-                  value={task.priority}
-                  options={priorityOptions}
-                  onSave={(newPriority) => handleUpdateTask({ priority: newPriority as TaskPriority })}
-                  renderValue={(val) => <PriorityBadge priority={val as TaskPriority} />}
-                  renderOption={(val) => <PriorityBadge priority={val as TaskPriority} />}
-                />
-              </div>
+          {/* Priority */}
+          <div style={detailCell}>
+            <span style={detailKey}>Prioridade</span>
+            <InlineSelectCell
+              value={task.priority}
+              options={priorityOptions}
+              onSave={(newPriority) => handleUpdateTask({ priority: newPriority as TaskPriority })}
+              renderValue={(val) => <PriorityBadge priority={val as TaskPriority} />}
+              renderOption={(val) => <PriorityBadge priority={val as TaskPriority} />}
+            />
+          </div>
 
-              {/* Due Date */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={eyebrow}>Prazo</span>
-                <InlineDateCell
-                  value={task.due_date}
-                  onSave={(newDate) => handleUpdateTask({ due_date: newDate })}
-                  isDone={task.status === 'concluida'}
-                />
-              </div>
+          {/* Prazo */}
+          <div style={detailCell}>
+            <span style={detailKey}>Prazo</span>
+            <InlineDateCell
+              value={task.due_date}
+              onSave={(newDate) => handleUpdateTask({ due_date: newDate })}
+              isDone={task.status === 'concluida'}
+            />
+          </div>
 
-              {/* Department */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={eyebrow}>Departamento</span>
-                <InlineDepartmentCell
-                  value={task.department}
-                  departments={departments}
-                  onSave={(newDept) => handleUpdateTask({ department: newDept })}
-                />
-              </div>
+          {/* Departamento */}
+          <div style={detailCell}>
+            <span style={detailKey}>Departamento</span>
+            <InlineDepartmentCell
+              value={task.department}
+              departments={departments}
+              onSave={(newDept) => handleUpdateTask({ department: newDept })}
+            />
+          </div>
 
-              {/* Responsável */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={eyebrow}>Responsável</span>
-                <InlineAssigneeCell
-                  value={task.assignees?.map(a => a.user_id) || (task.assigned_to ? [task.assigned_to] : [])}
-                  users={users}
-                  onSave={(newAssignees) => updateAssignees.mutate({ taskId: task.id, assigneeIds: newAssignees })}
-                />
-              </div>
-
-              {/* Projeto vinculado (read-only chip; vínculo se altera via dialog) */}
-              {task.project_name ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <span style={eyebrow}>Projeto</span>
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/projetos-av/${task.project_id}`)}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      padding: '4px 8px',
-                      border: '1px solid hsl(var(--ds-line-1))',
-                      background: 'hsl(var(--ds-surface))',
-                      color: 'hsl(var(--ds-fg-1))',
-                      fontSize: 13,
-                      cursor: 'pointer',
-                      width: 'fit-content',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-surface))')}
-                  >
-                    <Folder size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
-                    <span>{task.project_name}</span>
-                  </button>
-                </div>
-              ) : null}
-            </div>
+          {/* Responsável */}
+          <div style={{ ...detailCell, borderRight: 0 }}>
+            <span style={detailKey}>Responsável</span>
+            <InlineAssigneeCell
+              value={task.assignees?.map(a => a.user_id) || (task.assigned_to ? [task.assigned_to] : [])}
+              users={users}
+              onSave={(newAssignees) => updateAssignees.mutate({ taskId: task.id, assigneeIds: newAssignees })}
+            />
           </div>
         </div>
 
@@ -382,6 +484,73 @@ export default function TaskDetails() {
                   ({task.subtasks.filter(s => s.is_completed).length}/{task.subtasks.length})
                 </span>
               </h3>
+              {task.subtasks && task.subtasks.length > 0 ? (
+                <>
+                  {/* Progress bar */}
+                  {(() => {
+                    const total = task.subtasks.length;
+                    const done = task.subtasks.filter((s) => s.is_completed).length;
+                    const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+                    return (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          marginBottom: 14,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: '"HN Display", sans-serif',
+                            fontSize: 10,
+                            fontWeight: 500,
+                            letterSpacing: '0.14em',
+                            color: 'hsl(var(--ds-fg-3))',
+                            fontVariantNumeric: 'tabular-nums',
+                            minWidth: 32,
+                          }}
+                        >
+                          {pct}%
+                        </span>
+                        <span
+                          style={{
+                            flex: 1,
+                            height: 3,
+                            background: 'hsl(var(--ds-line-2) / 0.6)',
+                            position: 'relative',
+                          }}
+                        >
+                          <span
+                            style={{
+                              position: 'absolute',
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              width: `${pct}%`,
+                              background: 'hsl(var(--ds-accent))',
+                              transition: 'width 200ms',
+                            }}
+                          />
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: '"HN Display", sans-serif',
+                            fontSize: 10,
+                            fontWeight: 500,
+                            letterSpacing: '0.14em',
+                            textTransform: 'uppercase',
+                            color: 'hsl(var(--ds-fg-3))',
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
+                          {done} de {total} concluídas
+                        </span>
+                      </div>
+                    );
+                  })()}
+                </>
+              ) : null}
               {task.subtasks && task.subtasks.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {task.subtasks.map((subtask) => (
