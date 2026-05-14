@@ -37,6 +37,7 @@ const SupplierDetails = lazy(() => import("./pages/SupplierDetails"));
 const Companies = lazy(() => import("./pages/Companies"));
 const CompanyDetails = lazy(() => import("./pages/CompanyDetails"));
 const Tasks = lazy(() => import("./pages/Tasks"));
+const TaskNew = lazy(() => import("./pages/TaskNew"));
 const TaskDetails = lazy(() => import("./pages/TaskDetails"));
 const AVProjects = lazy(() => import("./pages/AVProjects"));
 const AVProjectDetails = lazy(() => import("./pages/AVProjectDetails"));
@@ -160,6 +161,7 @@ const App = () => (
                 <Route path="rh/wiki/:slug" element={<RequirePermission permission="rh.wiki"><RHWikiArticle /></RequirePermission>} />
                 <Route path="rh/wiki/:slug/editar" element={<RequirePermission permission="rh.wiki"><RHWikiEditor /></RequirePermission>} />
                 <Route path="tarefas" element={<RequirePermission permission="tarefas"><Tasks /></RequirePermission>} />
+                <Route path="tarefas/nova" element={<RequirePermission permission="tarefas"><TaskNew /></RequirePermission>} />
                 <Route path="tarefas/:id" element={<RequirePermission permission="tarefas"><TaskDetails /></RequirePermission>} />
                 <Route path="fornecedores" element={<Navigate to="/fornecedores/freelancers" replace />} />
                 <Route path="fornecedores/freelancers" element={<RequirePermission permission="fornecedores.freelancers"><Suppliers /></RequirePermission>} />

@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Plus, List, Columns3, CalendarDays } from 'lucide-react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { TasksTable } from '@/features/tasks/components/TasksTable';
-import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { TaskKanbanView } from '@/features/tasks/components/TaskKanbanView';
 import { TaskCalendarView } from '@/features/tasks/components/TaskCalendarView';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
@@ -31,7 +31,6 @@ const TASKS_VIEWS: ViewToggleItem<ViewType>[] = [
 ];
 
 export default function Tasks() {
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [currentView, setCurrentView] = useState<ViewType>('lista');
 
   // Filter states
@@ -102,10 +101,10 @@ export default function Tasks() {
           title="Tarefas."
           subtitle="Gerencie suas tarefas e acompanhe o progresso."
           action={
-            <button className="btn primary" onClick={() => setDialogOpen(true)} type="button">
+            <Link to="/tarefas/nova" className="btn primary">
               <Plus size={14} strokeWidth={1.5} />
               <span>Nova Tarefa</span>
-            </button>
+            </Link>
           }
         />
 
@@ -240,8 +239,6 @@ export default function Tasks() {
           </div>
         )}
       </div>
-
-      <TaskDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 }
