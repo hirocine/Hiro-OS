@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { AlertTriangle, Film } from 'lucide-react';
+import { AlertTriangle, Film, ChevronRight } from 'lucide-react';
 import { CollapsibleSection } from '@/ds/components/CollapsibleSection';
 import { EmptyState } from '@/ds/components/EmptyState';
 import { PPSortableHeader } from './PPSortableHeader';
@@ -25,7 +25,29 @@ import {
 
 const PIPELINE_STEPS: PPStatus[] = ['fila', 'edicao', 'finalizacao', 'revisao', 'entregue'];
 
-const PP_COLS = '1.6fr 130px minmax(160px, 1fr) 120px 140px';
+const PP_COLS = 'minmax(220px, 1.4fr) 140px minmax(160px, 1fr) 120px 140px 56px';
+
+// Stable colored dot per project (hashed from id)
+function projectColor(id: string | null | undefined): string {
+  if (!id) return 'hsl(var(--ds-fg-4))';
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  const hue = Math.abs(h) % 360;
+  return `hsl(${hue} 55% 50%)`;
+}
+
+function relTime(iso: string): string {
+  const date = new Date(iso);
+  const diff = Date.now() - date.getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'agora';
+  if (minutes < 60) return `${minutes}min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d`;
+  return format(date, 'dd/MM');
+}
 
 function PipelineProgress({ status }: { status: PPStatus }) {
   const currentIndex = PIPELINE_STEPS.indexOf(status);
@@ -166,11 +188,12 @@ export function PPTable({ items, isLoading }: PPTableProps) {
     return (
       <div className="tbl" style={{ gridTemplateColumns: PP_COLS, border: '1px solid hsl(var(--ds-line-1))' }}>
         <div className="tbl-head">
-          <div>Título</div>
+          <div>Entrega</div>
           <div>Editor</div>
           <div>Pipeline</div>
           <div>Prioridade</div>
           <div>Prazo</div>
+          <div aria-label="Abrir" />
         </div>
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className={'tbl-row' + (i === 5 ? ' last' : '')}>
@@ -179,6 +202,7 @@ export function PPTable({ items, isLoading }: PPTableProps) {
             <div><span className="sk line" style={{ width: 120 }} /></div>
             <div><span className="sk line" style={{ width: 80 }} /></div>
             <div><span className="sk line" style={{ width: 100 }} /></div>
+            <div />
           </div>
         ))}
       </div>
@@ -190,7 +214,7 @@ export function PPTable({ items, isLoading }: PPTableProps) {
       <div className="tbl" style={{ gridTemplateColumns: PP_COLS, border: '1px solid hsl(var(--ds-line-1))' }}>
         <div className="tbl-head">
           <div>
-            <PPSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            <PPSortableHeader field="title" label="Entrega" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </div>
           <div>
             <PPSortableHeader field="editor_name" label="Editor" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
@@ -204,6 +228,7 @@ export function PPTable({ items, isLoading }: PPTableProps) {
           <div>
             <PPSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </div>
+          <div aria-label="Abrir" />
         </div>
 
         {activeItems.length === 0 ? (
@@ -233,10 +258,49 @@ export function PPTable({ items, isLoading }: PPTableProps) {
                 onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
               >
                 <div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {/* Eyebrow: pj-dot + projeto */}
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        fontFamily: '"HN Display", sans-serif',
+                        fontSize: 9,
+                        fontWeight: 500,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        color: 'hsl(var(--ds-fg-4))',
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 8,
+                          height: 8,
+                          background: projectColor(item.project_id),
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        style={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          maxWidth: 200,
+                        }}
+                      >
+                        {[item.client_name, item.project_name].filter(Boolean).join(' · ') || 'Sem projeto'}
+                      </span>
+                    </div>
                     <span className="t-title">{item.title}</span>
-                    <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
-                      {[item.client_name, item.project_name].filter(Boolean).join(' · ') || '—'}
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: 'hsl(var(--ds-fg-4))',
+                        fontFamily: '"HN Display", sans-serif',
+                      }}
+                    >
+                      atualizado · {relTime(item.updated_at)}
                     </span>
                   </div>
                 </div>
@@ -293,6 +357,42 @@ export function PPTable({ items, isLoading }: PPTableProps) {
                       onSave={(v) => updateItem.mutate({ id: item.id, updates: { due_date: v } })}
                     />
                   )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/esteira-de-pos/${item.id}`);
+                    }}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'transparent',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      color: 'hsl(var(--ds-fg-2))',
+                      cursor: 'pointer',
+                      transition: 'color 120ms, background 120ms, border-color 120ms',
+                      flexShrink: 0,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = 'hsl(var(--ds-bg))';
+                      e.currentTarget.style.background = 'hsl(var(--ds-fg-1))';
+                      e.currentTarget.style.borderColor = 'hsl(var(--ds-fg-1))';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = 'hsl(var(--ds-fg-2))';
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                    }}
+                    aria-label="Abrir detalhes"
+                    title="Abrir detalhes"
+                  >
+                    <ChevronRight size={18} strokeWidth={1.75} />
+                  </button>
                 </div>
               </div>
             );
