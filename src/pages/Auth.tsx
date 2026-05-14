@@ -57,16 +57,24 @@ export default function Auth() {
   if (showPendingScreen) {
     return (
       <div className="min-h-screen flex" style={{ background: '#0a0a0a' }}>
-        <div className="hidden lg:block w-[60%]" style={{ borderRight: '1px solid #1a1a1a' }}>
+        <div className="hidden lg:block w-[60%]" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
           <img src="/lovable-uploads/0023_DSC01650-Aprimorado-NR_HIRO_BACKSTAGE_290624.jpg" alt="" className="w-full h-full object-cover object-center opacity-60" />
         </div>
         <div className="flex-1 flex items-center justify-center p-8 lg:p-16">
           <div className="w-full max-w-sm space-y-6 text-center">
-            <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center mx-auto">
-              <Clock className="h-6 w-6 text-white/60" />
+            <div
+              className="w-12 h-12 flex items-center justify-center mx-auto"
+              style={{ border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)' }}
+            >
+              <Clock className="h-5 w-5 text-white/60" strokeWidth={1.5} />
             </div>
             <div className="space-y-2">
-              <h1 className="text-white text-2xl font-bold">Conta criada!</h1>
+              <h1
+                className="text-white text-2xl"
+                style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, letterSpacing: '-0.02em' }}
+              >
+                Conta criada
+              </h1>
               <p className="text-white/40 text-sm leading-relaxed">
                 Sua conta está aguardando aprovação de um administrador.<br />
                 Você receberá acesso em breve.
@@ -77,7 +85,7 @@ export default function Auth() {
               className="text-white/30 hover:text-white/60 text-sm transition-colors"
               onClick={() => { setShowPendingScreen(false); setMode('login'); }}
             >
-              Voltar para o login
+              ← Voltar para o login
             </button>
           </div>
         </div>
@@ -163,7 +171,7 @@ export default function Auth() {
       {/* ── Painel esquerdo ── */}
       <div
         className="hidden lg:flex flex-col justify-between w-[60%] p-12 relative overflow-hidden"
-        style={{ borderRight: '1px solid #1a1a1a' }}
+        style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}
       >
         <img
           src="/lovable-uploads/0023_DSC01650-Aprimorado-NR_HIRO_BACKSTAGE_290624.jpg"
@@ -180,12 +188,20 @@ export default function Auth() {
             alt="Hiro OS"
             className="h-10 w-10 "
           />
-          <span className="text-white font-semibold text-lg">Hiro OS®</span>
+          <span
+            className="text-white text-lg"
+            style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, letterSpacing: '-0.01em' }}
+          >
+            Hiro OS®
+          </span>
         </div>
 
 
         {/* Rodapé */}
-        <p className="text-white/20 text-xs">
+        <p
+          className="text-white/20 text-xs"
+          style={{ fontVariantNumeric: 'tabular-nums' }}
+        >
           © {new Date().getFullYear()} Hiro Films. Todos os direitos reservados.
         </p>
         </div>
@@ -202,15 +218,46 @@ export default function Auth() {
               alt="Hiro OS"
               className="h-9 w-9 "
             />
-            <span className="text-white font-semibold">Hiro OS®</span>
+            <span
+              className="text-white"
+              style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, letterSpacing: '-0.01em' }}
+            >
+              Hiro OS®
+            </span>
           </div>
 
           {/* Título do form */}
-          <div className="space-y-1">
-            <h1 className="text-white text-2xl font-bold">
+          <div className="space-y-2">
+            <div
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.4)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+              }}
+            >
+              <span style={{ width: 6, height: 6, background: 'hsl(var(--ds-accent))' }} />
+              {mode === 'login' ? 'Acesso' : 'Cadastro'}
+            </div>
+            <h1
+              className="text-white"
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontWeight: 500,
+                fontSize: 32,
+                letterSpacing: '-0.03em',
+                lineHeight: 1,
+                marginTop: 8,
+              }}
+            >
               {mode === 'login' ? 'Bem-vindo' : 'Criar conta'}
             </h1>
-            <p className="text-white/40 text-sm">
+            <p className="text-white/40 text-sm" style={{ marginTop: 8 }}>
               {mode === 'login'
                 ? 'Entre com suas credenciais para acessar'
                 : 'Preencha os dados para criar sua conta'}
@@ -219,7 +266,10 @@ export default function Auth() {
 
           {/* Alerta de erro */}
           {error && (
-            <Alert variant="destructive" className="border-red-900/50 bg-red-950/30">
+            <Alert
+              variant="destructive"
+              className="border-red-900/50 bg-red-950/30 rounded-none"
+            >
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -234,7 +284,7 @@ export default function Auth() {
                   <Input
                     value={formData.full_name}
                     onChange={e => setFormData(p => ({ ...p, full_name: sanitizeInput(e.target.value) }))}
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-white/20"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-white/20 rounded-none h-11"
                     required
                     maxLength={100}
                   />
@@ -246,7 +296,7 @@ export default function Auth() {
                       value={formData.position}
                       onChange={e => setFormData(p => ({ ...p, position: sanitizeInput(e.target.value) }))}
                       placeholder="Ex: Editor"
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-white/20"
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-white/20 rounded-none h-11"
                       maxLength={50}
                     />
                   </div>
@@ -256,7 +306,7 @@ export default function Auth() {
                       value={formData.department}
                       onChange={e => setFormData(p => ({ ...p, department: sanitizeInput(e.target.value) }))}
                       placeholder="Ex: Pós-produção"
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-white/20"
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-white/20 rounded-none h-11"
                       maxLength={50}
                     />
                   </div>
@@ -274,7 +324,7 @@ export default function Auth() {
                   setFormData(p => ({ ...p, email }));
                   setEmailValid(validateEmail(email));
                 }}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-white/20"
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-white/20 rounded-none h-11"
                 required
                 maxLength={100}
               />
@@ -300,7 +350,8 @@ export default function Auth() {
 
             <Button
               type="submit"
-              className="w-full bg-white text-black hover:bg-white/90 font-semibold h-11"
+              className="w-full bg-white text-black hover:bg-white/90 h-11 rounded-none"
+              style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, letterSpacing: '-0.01em' }}
               disabled={loading || (mode === 'signup' && (!passwordValid || !emailValid))}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -322,7 +373,8 @@ export default function Auth() {
           <Button
             type="button"
             variant="outline"
-            className="w-full border-white/10 bg-white/5 text-white hover:bg-white/10 h-11"
+            className="w-full border-white/10 bg-white/5 text-white hover:bg-white/10 h-11 rounded-none"
+            style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, letterSpacing: '-0.01em' }}
             onClick={handleGoogleAuth}
             disabled={loading}
           >
