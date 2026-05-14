@@ -57,7 +57,7 @@ function PipelineProgress({ status }: { status: PPStatus }) {
   // Color semantics:
   //   delivered  → all green (success) — celebra a entrega
   //   completed  → fg-2 (cinza escuro) — passou pela fase
-  //   active     → fg-2 com opacity 0.5 — em andamento
+  //   active     → fg-2 com animação de pulse (1 ↔ 0.45) — em andamento
   //   pending    → line-2 (cinza claro) — ainda não chegou
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%' }}>
@@ -65,27 +65,38 @@ function PipelineProgress({ status }: { status: PPStatus }) {
         const isCompleted = i < currentIndex;
         const isActive = i === currentIndex;
         let bg = 'hsl(var(--ds-line-2))';
-        let opacity = 1;
         if (isDelivered) {
           bg = 'hsl(var(--ds-success))';
         } else if (isCompleted) {
           bg = 'hsl(var(--ds-fg-2))';
         } else if (isActive) {
           bg = 'hsl(var(--ds-fg-2))';
-          opacity = 0.5;
         }
         return (
           <span
             key={i}
+            className={isActive && !isDelivered ? 'pp-pipe-active' : undefined}
             style={{
               flex: 1,
               height: 4,
               background: bg,
-              opacity,
             }}
           />
         );
       })}
+      {/* Local keyframes for the active segment — slow heartbeat */}
+      <style>{`
+        @keyframes ppPipePulse {
+          0%, 100% { opacity: 1; }
+          50%      { opacity: 0.35; }
+        }
+        .pp-pipe-active {
+          animation: ppPipePulse 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .pp-pipe-active { animation: none; opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 }
