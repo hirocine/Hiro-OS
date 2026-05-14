@@ -619,7 +619,14 @@ export default function Home() {
                 <span className="rc-legend-item"><span className="swatch" style={{ background: "var(--info)" }} /> Edição</span>
                 <span className="rc-legend-item"><span className="swatch" style={{ background: "var(--fg-4)" }} /> Pré-agenda</span>
               </div>
-              <a className="section-link">Abrir no Google Calendar {I.ext}</a>
+              <a
+                className="section-link"
+                href={`https://calendar.google.com/calendar/u/0/r/${view === "week" ? "week" : "month"}/${displayDate.getFullYear()}/${displayDate.getMonth() + 1}/${displayDate.getDate()}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Abrir no Google Calendar {I.ext}
+              </a>
             </div>
           </div>
         </section>
