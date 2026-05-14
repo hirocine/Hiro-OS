@@ -136,8 +136,9 @@ const App = () => (
             }>
               <Route index element={<RequirePermission permission="home"><Home /></RequirePermission>} />
                 <Route path="caixa-de-entrada" element={<RequirePermission permission="inbox"><Inbox /></RequirePermission>} />
-                {/* Jurídico/Contratos ainda escondido até backend Supabase
-                 *  + integração ZapSign ficarem prontos. */}
+                <Route path="juridico" element={<Navigate to="/juridico/contratos" replace />} />
+                <Route path="juridico/contratos" element={<RequirePermission permission="juridico.contratos"><Contracts /></RequirePermission>} />
+                <Route path="juridico/contratos/:id" element={<RequirePermission permission="juridico.contratos"><ContractDetail /></RequirePermission>} />
                 <Route path="dashboard" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro/dashboard" element={<RequirePermission permission="financeiro.dashboard"><Dashboard /></RequirePermission>} />

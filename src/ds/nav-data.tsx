@@ -118,19 +118,16 @@ export const NAV: NavSection[] = [
       },
     ],
   },
-  // Seção Jurídico escondida até backend Supabase + ZapSign ficarem prontos.
-  // Quando re-habilitar, restaurar este bloco:
-  //
-  // {
-  //   title: "Jurídico",
-  //   items: [
-  //     { name: "Jurídico", href: "/juridico", icon: I.scale,
-  //       children: [
-  //         { name: "Contratos", href: "/juridico/contratos", permission: "juridico.contratos" },
-  //       ],
-  //     },
-  //   ],
-  // },
+  {
+    title: "Jurídico",
+    items: [
+      { name: "Jurídico", href: "/juridico", icon: I.scale,
+        children: [
+          { name: "Contratos", href: "/juridico/contratos", permission: "juridico.contratos" },
+        ],
+      },
+    ],
+  },
   {
     title: "Tecnologia",
     items: [
