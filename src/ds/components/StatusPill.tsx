@@ -134,10 +134,14 @@ export function StatusPill({
         display: 'inline-flex',
         alignItems: 'center',
         gap: 4,
-        // CSS applies `letter-spacing: 0.14em` AFTER the last character too,
-        // which pushes the rightmost letter visually outside the background.
-        // Compensate with extra padding-right (≈ 0.14em ≈ 1.4px at 10px).
-        paddingRight: 'calc(10px + 0.14em)',
+        // Override global .pill to be more forgiving:
+        //  - boxSizing border-box so border doesn't push content out
+        //  - bigger horizontal padding so text never grazes the bg edge
+        //  - tighter letter-spacing reduces uppercase trailing overflow
+        boxSizing: 'border-box',
+        paddingLeft: 12,
+        paddingRight: 12,
+        letterSpacing: '0.08em',
       }}
     >
       {icon !== undefined && icon !== null && (
