@@ -134,18 +134,26 @@ export function StatusPill({
         display: 'inline-flex',
         alignItems: 'center',
         gap: 4,
+        // CSS applies `letter-spacing: 0.14em` AFTER the last character too,
+        // which pushes the rightmost letter visually outside the background.
+        // Compensate with extra padding-right (≈ 0.14em ≈ 1.4px at 10px).
+        paddingRight: 'calc(10px + 0.14em)',
       }}
     >
       {icon !== undefined && icon !== null && (
         <span
           style={{
-            fontSize: 11,
-            lineHeight: 1,
+            // Color-emoji glyphs (📦, 🔥) render ~1.3em tall regardless of
+            // font-size, making the pill look bursting. Scale visually
+            // without affecting layout box so the pill height stays at 22px.
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            height: '1em',
+            fontSize: 10,
+            lineHeight: 1,
             flexShrink: 0,
+            transform: 'scale(0.85)',
+            transformOrigin: 'center',
           }}
         >
           {icon}
