@@ -137,7 +137,19 @@ export function StatusPill({
       }}
     >
       {icon !== undefined && icon !== null && (
-        <span style={{ fontSize: 10, display: 'inline-flex', alignItems: 'center' }}>{icon}</span>
+        <span
+          style={{
+            fontSize: 11,
+            lineHeight: 1,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '1em',
+            flexShrink: 0,
+          }}
+        >
+          {icon}
+        </span>
       )}
       {label}
     </span>
