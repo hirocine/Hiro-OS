@@ -72,8 +72,19 @@ function withAlpha(color: string, alpha: number): string {
 }
 
 function resolveTone(tone: Tone, variant: 'filled' | 'outlined'): CSSProperties {
+  // Defensive: callers may pass a missing token (e.g. enum value that
+  // isn't in the local TONE_BY_X map). Fall back to 'muted' instead of
+  // crashing with "Cannot read properties of undefined".
   if (typeof tone === 'string') {
-    const t = TONE_TOKENS[tone];
+    const t = TONE_TOKENS[tone] ?? TONE_TOKENS.muted;
+    return {
+      color: t.color,
+      borderColor: t.border,
+      background: variant === 'filled' ? t.bg : 'transparent',
+    };
+  }
+  if (!tone || typeof tone !== 'object' || !tone.color) {
+    const t = TONE_TOKENS.muted;
     return {
       color: t.color,
       borderColor: t.border,

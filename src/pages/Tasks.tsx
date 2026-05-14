@@ -200,7 +200,7 @@ export default function Tasks() {
               <div className="ds-page-table-host">
                 <Tabs value="active">
                   <TabsContent value="active">
-                    <TasksTable tasks={activeTasks} isLoading={isLoading} showCreationRow={true} showAssignee={true} />
+                    <TasksTable tasks={activeTasks} isLoading={isLoading} showAssignee={true} />
                   </TabsContent>
                 </Tabs>
               </div>

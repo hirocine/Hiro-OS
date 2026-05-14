@@ -1,14 +1,16 @@
 import { TaskStatus, STATUS_CONFIG } from '../types';
 import { StatusPill } from '@/ds/components/StatusPill';
 
-const TONE_BY_STATUS = {
-  concluida: 'success',
+const TONE_BY_STATUS: Record<TaskStatus, 'success' | 'info' | 'muted' | 'warning' | 'danger' | 'accent'> = {
+  concluida:    'success',
   em_progresso: 'info',
-  pendente: 'muted',
-} as const;
+  pendente:     'muted',
+  arquivada:    'muted',
+};
 
 const ICON_BY_STATUS: Partial<Record<TaskStatus, string>> = {
   concluida: '✓',
+  arquivada: '📦',
 };
 
 interface StatusBadgeProps {
