@@ -734,8 +734,11 @@ body > [role="dialog"][data-state],
 :is(.ds-preview, .ds-shell) .section-link:hover { color: var(--accent); }
 :is(.ds-preview, .ds-shell) .section-link svg { width: 12px; height: 12px; }
 
-/* TODAY WIDGETS */
-:is(.ds-preview, .ds-shell) .today {
+/* TODAY WIDGETS — the "Hoje na Hiro" 3-card row. The bare `.today`
+   selector also matched `.rc-day.today` (the highlighted calendar
+   cell), which was inheriting a stray 1px border-top that nudged
+   its content down. Scope to widgets only with `:not(.rc-day)`. */
+:is(.ds-preview, .ds-shell) .today:not(.rc-day) {
   display: grid; grid-template-columns: repeat(3,1fr); gap: 0;
   border-top: 1px solid var(--line-1);
 }
@@ -800,7 +803,7 @@ body > [role="dialog"][data-state],
   font-size: 13px; color: var(--fg-4);
 }
 @media (max-width: 900px) {
-  :is(.ds-preview, .ds-shell) .today { grid-template-columns: 1fr; border-top: 0; }
+  :is(.ds-preview, .ds-shell) .today:not(.rc-day) { grid-template-columns: 1fr; border-top: 0; }
   :is(.ds-preview, .ds-shell) .today-card { border-right: 0; border-bottom: 1px solid var(--line-1); padding: 24px 0; }
   :is(.ds-preview, .ds-shell) .today-card:nth-child(n+2) { padding-left: 0; }
 }
@@ -893,8 +896,19 @@ body > [role="dialog"][data-state],
 :is(.ds-preview, .ds-shell) .rc-day.other .rc-day-num { color: var(--fg-4); }
 :is(.ds-preview, .ds-shell) .rc-day.today {
   background: hsl(var(--ds-accent) / 0.05);
-  /* compose: accent top bar + the regular cell hairlines */
-  box-shadow: inset 0 2px 0 0 var(--accent), inset -1px -1px 0 0 var(--line-1);
+  /* Just the hairlines — accent top bar moved to ::before below so it
+     can't influence layout. (The inset 2px shadow was nudging today's
+     content down by ~1px from sub-pixel rendering, making the chip
+     misalign with neighbouring days.) */
+  box-shadow: inset -1px -1px 0 0 var(--line-1);
+}
+:is(.ds-preview, .ds-shell) .rc-day.today::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  pointer-events: none;
 }
 :is(.ds-preview, .ds-shell) .rc-day.today.weekend { background: hsl(var(--ds-accent) / 0.08); }
 :is(.ds-preview, .ds-shell) .rc-day.today:hover,
