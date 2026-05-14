@@ -25,7 +25,8 @@ import {
 
 const PIPELINE_STEPS: PPStatus[] = ['fila', 'edicao', 'finalizacao', 'revisao', 'entregue'];
 
-const PP_COLS = 'minmax(220px, 1.4fr) 140px minmax(160px, 1fr) 120px 140px 56px';
+// 7 columns: entrega | editor | fase (atual → próxima) | pipeline | prioridade | prazo | abrir
+const PP_COLS = 'minmax(220px, 1.4fr) 140px 180px minmax(120px, 0.8fr) 110px 130px 56px';
 
 // Stable colored dot per project (hashed from id)
 function projectColor(id: string | null | undefined): string {
@@ -51,61 +52,86 @@ function relTime(iso: string): string {
 
 function PipelineProgress({ status }: { status: PPStatus }) {
   const currentIndex = PIPELINE_STEPS.indexOf(status);
-  const config = PP_STATUS_CONFIG[status];
-  const total = PIPELINE_STEPS.length;
-  const segW = 14;
-  const gap = 3;
-  const totalW = total * segW + (total - 1) * gap;
   const isDelivered = status === 'entregue';
 
-  const labelColor =
-    status === 'entregue' ? 'hsl(var(--ds-success))'
-    : status === 'edicao' ? 'hsl(var(--ds-info))'
-    : status === 'color_grading' ? 'hsl(280 70% 60%)'
-    : status === 'finalizacao' ? 'hsl(var(--ds-warning))'
-    : status === 'revisao' ? 'hsl(var(--ds-warning))'
-    : status === 'validacao_cliente' ? 'hsl(var(--ds-info))'
-    : 'hsl(var(--ds-fg-3))';
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%' }}>
+      {PIPELINE_STEPS.map((_, i) => {
+        const isCompleted = i < currentIndex;
+        const isActive = i === currentIndex;
+        const bg = isDelivered
+          ? 'hsl(var(--ds-success))'
+          : isCompleted
+            ? 'hsl(var(--ds-accent))'
+            : isActive
+              ? 'hsl(var(--ds-accent))'
+              : 'hsl(var(--ds-line-2))';
+        return (
+          <span
+            key={i}
+            style={{
+              flex: 1,
+              height: 4,
+              background: bg,
+              opacity: isActive && !isDelivered ? 0.5 : 1,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+/** "07 · Color" — fase atual com índice (2 dígitos) e label */
+function formatStage(status: PPStatus | null): string {
+  if (!status) return '—';
+  const idx = PIPELINE_STEPS.indexOf(status);
+  if (idx < 0) return PP_STATUS_CONFIG[status]?.label ?? '—';
+  return `${String(idx + 1).padStart(2, '0')} · ${PP_STATUS_CONFIG[status].label}`;
+}
+
+/** Próxima fase do pipeline (null se já entregue/última). */
+function nextStage(status: PPStatus): PPStatus | null {
+  const idx = PIPELINE_STEPS.indexOf(status);
+  if (idx < 0 || idx >= PIPELINE_STEPS.length - 1) return null;
+  return PIPELINE_STEPS[idx + 1];
+}
+
+/** Renderiza "atual → próxima" como duas linhas */
+function StageNowNext({ status }: { status: PPStatus }) {
+  const next = nextStage(status);
+  const isDelivered = status === 'entregue';
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.2, minWidth: 0 }}>
       <span
         style={{
-          fontSize: 11,
+          fontFamily: '"HN Display", sans-serif',
+          fontSize: 12,
           fontWeight: 500,
-          letterSpacing: '0.06em',
-          textTransform: 'uppercase',
-          lineHeight: 1,
-          color: labelColor,
+          color: isDelivered ? 'hsl(var(--ds-success))' : 'hsl(var(--ds-fg-1))',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}
       >
-        {config.label}
+        {formatStage(status)}
       </span>
-      <svg width={totalW} height={4} style={{ display: 'block' }}>
-        {PIPELINE_STEPS.map((_, i) => {
-          const x = i * (segW + gap);
-          const isCompleted = i < currentIndex;
-          const isActive = i === currentIndex;
-          const fill = isDelivered
-            ? 'hsl(var(--ds-success))'
-            : isCompleted
-              ? 'hsl(var(--ds-accent))'
-              : isActive
-                ? 'hsl(var(--ds-accent))'
-                : 'hsl(var(--ds-line-2))';
-          return (
-            <rect
-              key={i}
-              x={x}
-              y={0}
-              width={segW}
-              height={4}
-              fill={fill}
-              opacity={isActive && !isDelivered ? 0.5 : 1}
-            />
-          );
-        })}
-      </svg>
+      {next ? (
+        <span
+          style={{
+            fontFamily: '"HN Display", sans-serif',
+            fontSize: 11,
+            color: 'hsl(var(--ds-fg-4))',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          → {formatStage(next)}
+        </span>
+      ) : (
+        <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))' }}>—</span>
+      )}
     </div>
   );
 }
@@ -190,6 +216,7 @@ export function PPTable({ items, isLoading }: PPTableProps) {
         <div className="tbl-head">
           <div>Entrega</div>
           <div>Editor</div>
+          <div>Fase atual → próxima</div>
           <div>Pipeline</div>
           <div>Prioridade</div>
           <div>Prazo</div>
@@ -199,6 +226,7 @@ export function PPTable({ items, isLoading }: PPTableProps) {
           <div key={i} className={'tbl-row' + (i === 5 ? ' last' : '')}>
             <div><span className="sk line lg" style={{ width: '70%' }} /></div>
             <div><span className="sk line" style={{ width: 100 }} /></div>
+            <div><span className="sk line" style={{ width: 150 }} /></div>
             <div><span className="sk line" style={{ width: 120 }} /></div>
             <div><span className="sk line" style={{ width: 80 }} /></div>
             <div><span className="sk line" style={{ width: 100 }} /></div>
@@ -220,8 +248,9 @@ export function PPTable({ items, isLoading }: PPTableProps) {
             <PPSortableHeader field="editor_name" label="Editor" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </div>
           <div>
-            <PPSortableHeader field="status" label="Pipeline" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            <PPSortableHeader field="status" label="Fase atual → próxima" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </div>
+          <div>Pipeline</div>
           <div>
             <PPSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </div>
@@ -318,6 +347,9 @@ export function PPTable({ items, isLoading }: PPTableProps) {
                       });
                     }}
                   />
+                </div>
+                <div style={{ overflow: 'hidden' }}>
+                  <StageNowNext status={item.status} />
                 </div>
                 <div style={{ overflow: 'hidden' }}>
                   <PipelineProgress status={item.status} />
