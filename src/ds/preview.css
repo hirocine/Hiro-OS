@@ -942,6 +942,16 @@ body > [role="dialog"][data-state],
 :is(.ds-preview, .ds-shell) .rc-event.span-end .rc-event-title {
   visibility: hidden;
 }
+
+/* Edge insets — chips only touch the cell border where the event continues
+   into the next day. At the *boundaries* of an event (start of first day,
+   end of last day, or a single-day event) we leave a 4px breathing gap so
+   it reads as a discrete pill, matching Google Calendar's rhythm. */
+:is(.ds-preview, .ds-shell) .rc-event.span-single { margin: 0 4px; }
+:is(.ds-preview, .ds-shell) .rc-event.span-start  { margin-left: 4px; }
+:is(.ds-preview, .ds-shell) .rc-event.span-end    { margin-right: 4px; }
+/* .span-middle stays flush on both sides — continuation in the middle of
+   a run. */
 :is(.ds-preview, .ds-shell) .rc-event-more {
   font-family: "HN Display", sans-serif; font-size: 10px; letter-spacing: 0.1em;
   color: var(--fg-4); text-transform: uppercase; padding: 2px 12px;
