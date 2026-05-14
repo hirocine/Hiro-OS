@@ -44,8 +44,8 @@ const defaultTaskState = {
   department: null as string | null,
 };
 
-const COLS_WITH_ASSIGNEE = '1.5fr 130px 120px 1fr 140px 1fr 40px';
-const COLS_WITHOUT_ASSIGNEE = '2fr 130px 120px 140px 1fr 40px';
+const COLS_WITH_ASSIGNEE = '1.5fr 130px 120px 1fr 140px 1fr 64px';
+const COLS_WITHOUT_ASSIGNEE = '2fr 130px 120px 140px 1fr 64px';
 
 export function TasksTable({
   tasks,
@@ -367,28 +367,31 @@ export function TasksTable({
                 type="button"
                 onClick={() => navigate(`/tarefas/${task.id}`)}
                 style={{
-                  width: 28,
-                  height: 28,
-                  display: 'grid',
-                  placeItems: 'center',
+                  width: 32,
+                  height: 32,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   background: 'transparent',
-                  border: 0,
-                  color: 'hsl(var(--ds-fg-3))',
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  color: 'hsl(var(--ds-fg-2))',
                   cursor: 'pointer',
-                  transition: 'color 120ms, background 120ms',
+                  transition: 'color 120ms, background 120ms, border-color 120ms',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'hsl(var(--ds-fg-1))';
-                  e.currentTarget.style.background = 'hsl(var(--ds-line-2))';
+                  e.currentTarget.style.color = 'hsl(var(--ds-bg))';
+                  e.currentTarget.style.background = 'hsl(var(--ds-fg-1))';
+                  e.currentTarget.style.borderColor = 'hsl(var(--ds-fg-1))';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'hsl(var(--ds-fg-3))';
+                  e.currentTarget.style.color = 'hsl(var(--ds-fg-2))';
                   e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
                 }}
                 aria-label="Abrir detalhes da tarefa"
                 title="Abrir detalhes"
               >
-                <ChevronRight size={14} strokeWidth={1.5} />
+                <ChevronRight size={16} strokeWidth={1.75} />
               </button>
             </div>
           </div>
