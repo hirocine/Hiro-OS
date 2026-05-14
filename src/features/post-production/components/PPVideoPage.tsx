@@ -95,6 +95,25 @@ const sectionTitleStyle: React.CSSProperties = {
   color: 'hsl(var(--ds-fg-2))',
 };
 
+// Details strip cell (4-column horizontal KV — Etapa, Prioridade, Editor, Prazo)
+const ppDetailCell: React.CSSProperties = {
+  padding: '16px 18px',
+  borderRight: '1px solid hsl(var(--ds-line-1))',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+  minWidth: 0,
+};
+
+const ppDetailKey: React.CSSProperties = {
+  fontFamily: '"HN Display", sans-serif',
+  fontSize: 10,
+  fontWeight: 500,
+  letterSpacing: '0.16em',
+  textTransform: 'uppercase',
+  color: 'hsl(var(--ds-fg-4))',
+};
+
 interface Props {
   item: PostProductionItem;
   onBack: () => void;
@@ -227,15 +246,110 @@ export function PPVideoPage({ item, onBack }: Props) {
   return (
     <div className="ds-shell ds-page">
       <div className="ds-page-inner">
+      <BreadcrumbNav items={[
+        { label: 'Esteira de Pós', href: '/esteira-de-pos' },
+        { label: composedTitle || 'Vídeo' },
+      ]} className="mb-0" />
+
       <div className="animate-fade-in space-y-6">
 
-        {/* HEADER */}
-        <div className="flex items-center justify-between gap-4">
-          <BreadcrumbNav items={[
-            { label: 'Esteira de Pós', href: '/esteira-de-pos' },
-            { label: composedTitle || 'Vídeo' },
-          ]} className="mb-0" />
-          <div className="flex items-center gap-2 shrink-0">
+        {/* ───────────────  HEADER  ─────────────── */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto',
+            alignItems: 'end',
+            gap: 24,
+          }}
+        >
+          <div>
+            {/* Eyebrow: chip do cliente/projeto */}
+            {(form.client_name || form.project_name) ? (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  fontSize: 12,
+                  color: 'hsl(var(--ds-fg-3))',
+                  marginBottom: 12,
+                  fontFamily: '"HN Display", sans-serif',
+                }}
+              >
+                <span style={{ width: 8, height: 8, background: 'hsl(var(--ds-accent))', flexShrink: 0 }} />
+                <span style={{ fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                  {form.client_name || '—'}
+                  {form.project_name ? ` · ${form.project_name}` : ''}
+                </span>
+                {latestVersion ? (
+                  <>
+                    <span style={{ color: 'hsl(var(--ds-line-2))' }}>·</span>
+                    <span style={{ fontWeight: 500 }}>V{latestVersion.version_number} atual</span>
+                  </>
+                ) : null}
+              </div>
+            ) : null}
+
+            {/* Title — token --ds-display, same as other pages */}
+            <h1
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontWeight: 500,
+                fontSize: 'var(--ds-display)',
+                letterSpacing: '-0.04em',
+                lineHeight: 1,
+                color: 'hsl(var(--ds-fg-1))',
+                margin: 0,
+              }}
+            >
+              {composedTitle || 'Novo Vídeo'}
+            </h1>
+
+            {/* Submeta */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                fontSize: 12,
+                color: 'hsl(var(--ds-fg-3))',
+                flexWrap: 'wrap',
+                marginTop: 12,
+              }}
+            >
+              {selectedEditor ? (
+                <>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    Editor{' '}
+                    <strong style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                      {selectedEditor.display_name || selectedEditor.email}
+                    </strong>
+                  </span>
+                  <span style={{ color: 'hsl(var(--ds-line-2))' }}>·</span>
+                </>
+              ) : null}
+              <span>
+                Criado em{' '}
+                <strong style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                  {format(parseISO(item.created_at), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
+                </strong>
+              </span>
+              {item.updated_at && item.updated_at !== item.created_at ? (
+                <>
+                  <span style={{ color: 'hsl(var(--ds-line-2))' }}>·</span>
+                  <span>
+                    Atualizado{' '}
+                    <strong style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                      {formatDistanceToNow(parseISO(item.updated_at), { addSuffix: true, locale: ptBR })}
+                    </strong>
+                  </span>
+                </>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Right actions */}
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
               className="btn"
@@ -263,156 +377,122 @@ export function PPVideoPage({ item, onBack }: Props) {
           </div>
         </div>
 
-        {/* SUMMARY (no header) */}
-        <div style={sectionShellStyle}>
-          <div style={{ padding: 18 }}>
-            {/* Title row */}
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div className="min-w-0">
-                <h1
-                  style={{
-                    fontFamily: '"HN Display", sans-serif',
-                    fontSize: 20,
-                    fontWeight: 600,
-                    color: 'hsl(var(--ds-fg-1))',
-                    lineHeight: 1.2,
-                  }}
-                  className="truncate"
+        {/* ─────────────── DETAILS STRIP (5 cols) ─────────────── */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            border: '1px solid hsl(var(--ds-line-1))',
+            background: 'hsl(var(--ds-surface))',
+          }}
+        >
+          {/* Etapa */}
+          <div style={ppDetailCell}>
+            <span style={ppDetailKey}>Etapa</span>
+            <PPStatusBadge status={form.status} />
+          </div>
+
+          {/* Prioridade */}
+          <div style={ppDetailCell}>
+            <span style={ppDetailKey}>Prioridade</span>
+            <Select value={form.priority} onValueChange={v => {
+              setForm(prev => ({ ...prev, priority: v as PPPriority }));
+              updateItem.mutate({ id: item.id, updates: { priority: v as PPPriority } });
+            }}>
+              <SelectTrigger className="w-auto h-7 border-0 bg-transparent p-0 shadow-none focus:ring-0 gap-1 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-50">
+                <PPPriorityBadge priority={form.priority} />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(PP_PRIORITY_CONFIG).map(v => (
+                  <SelectItem key={v} value={v}>
+                    <PPPriorityBadge priority={v as PPPriority} />
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Editor */}
+          <div style={ppDetailCell}>
+            <span style={ppDetailKey}>Editor</span>
+            <Select value={form.editor_id} onValueChange={v => {
+              const editorUser = users.find(u => u.id === v);
+              setForm(prev => ({ ...prev, editor_id: v }));
+              updateItem.mutate({ id: item.id, updates: { editor_id: v || null, editor_name: editorUser?.display_name || null } });
+            }}>
+              <SelectTrigger className="w-auto h-7 border-0 bg-transparent p-0 shadow-none focus:ring-0 gap-1 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-50">
+                {selectedEditor ? (
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-5 w-5 rounded-none [&_img]:rounded-none [&_span]:rounded-none" style={{ borderRadius: 0 }}>
+                      <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
+                      <AvatarFallback className="text-[9px] rounded-none" style={{ borderRadius: 0 }}>{getInitials(selectedEditor.display_name)}</AvatarFallback>
+                    </Avatar>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{selectedEditor.display_name?.split(' ')[0] || selectedEditor.email}</span>
+                  </div>
+                ) : (
+                  <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>Sem editor</span>
+                )}
+              </SelectTrigger>
+              <SelectContent>
+                {users.map(u => (
+                  <SelectItem key={u.id} value={u.id}>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-5 w-5 rounded-none [&_img]:rounded-none [&_span]:rounded-none" style={{ borderRadius: 0 }}>
+                        <AvatarImage src={getUserAvatarUrl(u)} />
+                        <AvatarFallback className="text-[9px] rounded-none" style={{ borderRadius: 0 }}>{getInitials(u.display_name)}</AvatarFallback>
+                      </Avatar>
+                      <span>{u.display_name || u.email}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Prazo */}
+          <div style={{ ...ppDetailCell, borderRight: 0 }}>
+            <span style={ppDetailKey}>Prazo</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+                  style={{ fontSize: 13, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))', background: 'transparent', border: 0, padding: 0 }}
                 >
-                  {composedTitle || 'Novo Vídeo'}
-                </h1>
-                <p
-                  style={{
-                    fontSize: 13,
-                    color: 'hsl(var(--ds-fg-3))',
-                    marginTop: 4,
-                    fontVariantNumeric: 'tabular-nums',
+                  <CalendarIcon size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+                  {form.due_date
+                    ? format(new Date(form.due_date + 'T00:00:00'), 'dd/MM/yyyy')
+                    : <span style={{ color: 'hsl(var(--ds-fg-3))' }}>—</span>}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
+                  onSelect={date => {
+                    const val = date ? format(date, 'yyyy-MM-dd') : '';
+                    setForm(prev => ({ ...prev, due_date: val }));
+                    updateItem.mutate({ id: item.id, updates: { due_date: val || null } });
                   }}
-                >
-                  {form.client_name}{form.project_name ? ` · ${form.project_name}` : ''}
-                  {' · '}criado em {format(parseISO(item.created_at), 'dd/MM/yyyy')}
-                </p>
-              </div>
-              {latestVersion && (
-                <StatusPill label={`v${latestVersion.version_number}`} tone="muted" />
-              )}
-            </div>
-
-            <Separator className="mb-4" />
-
-            {/* Inline fields row */}
-            <div className="flex items-center flex-wrap gap-x-5 gap-y-3">
-
-              {/* Etapa */}
-              <div className="flex items-center gap-1.5">
-                <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))' }}>Etapa</span>
-                <PPStatusBadge status={form.status} />
-              </div>
-
-              {/* Prioridade */}
-              <div className="flex items-center gap-1.5">
-                <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))' }}>Prioridade</span>
-                <Select value={form.priority} onValueChange={v => {
-                  setForm(prev => ({ ...prev, priority: v as PPPriority }));
-                  updateItem.mutate({ id: item.id, updates: { priority: v as PPPriority } });
-                }}>
-                  <SelectTrigger className="w-auto h-7 border-0 bg-transparent p-0 shadow-none focus:ring-0 gap-1 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-50">
-                    <PPPriorityBadge priority={form.priority} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(PP_PRIORITY_CONFIG).map(v => (
-                      <SelectItem key={v} value={v}>
-                        <PPPriorityBadge priority={v as PPPriority} />
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Editor */}
-              <div className="flex items-center gap-1.5">
-                <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))' }}>Editor</span>
-                <Select value={form.editor_id} onValueChange={v => {
-                  const editorUser = users.find(u => u.id === v);
-                  setForm(prev => ({ ...prev, editor_id: v }));
-                  updateItem.mutate({ id: item.id, updates: { editor_id: v || null, editor_name: editorUser?.display_name || null } });
-                }}>
-                  <SelectTrigger className="w-auto h-7 border-0 bg-transparent p-0 shadow-none focus:ring-0 gap-1 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-50">
-                    {selectedEditor ? (
-                      <div className="flex items-center gap-1.5">
-                        <Avatar className="h-5 w-5">
-                          <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
-                          <AvatarFallback className="text-[9px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
-                        </Avatar>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>{selectedEditor.display_name?.split(' ')[0] || selectedEditor.email}</span>
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>Sem editor</span>
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map(u => (
-                      <SelectItem key={u.id} value={u.id}>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-5 w-5">
-                            <AvatarImage src={getUserAvatarUrl(u)} />
-                            <AvatarFallback className="text-[9px]">{getInitials(u.display_name)}</AvatarFallback>
-                          </Avatar>
-                          <span>{u.display_name || u.email}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Prazo */}
-              <div className="flex items-center gap-1.5">
-                <span style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500, color: 'hsl(var(--ds-fg-3))' }}>Prazo</span>
-                <Popover>
-                  <PopoverTrigger asChild>
+                  initialFocus className="p-3 pointer-events-auto"
+                />
+                {form.due_date && (
+                  <div style={{ padding: 8, borderTop: '1px solid hsl(var(--ds-line-1))' }}>
                     <button
                       type="button"
-                      className="flex items-center gap-1 hover:opacity-70 transition-opacity"
-                      style={{ fontSize: 13, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-1))' }}
-                    >
-                      <CalendarIcon size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
-                      {form.due_date
-                        ? format(new Date(form.due_date + 'T00:00:00'), 'dd/MM/yyyy')
-                        : <span style={{ color: 'hsl(var(--ds-fg-3))' }}>—</span>}
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
-                      onSelect={date => {
-                        const val = date ? format(date, 'yyyy-MM-dd') : '';
-                        setForm(prev => ({ ...prev, due_date: val }));
-                        updateItem.mutate({ id: item.id, updates: { due_date: val || null } });
+                      className="btn"
+                      style={{ width: '100%', justifyContent: 'flex-start' }}
+                      onClick={() => {
+                        setForm(prev => ({ ...prev, due_date: '' }));
+                        updateItem.mutate({ id: item.id, updates: { due_date: null } });
                       }}
-                      initialFocus className="p-3 pointer-events-auto"
-                    />
-                    {form.due_date && (
-                      <div style={{ padding: 8, borderTop: '1px solid hsl(var(--ds-line-1))' }}>
-                        <button
-                          type="button"
-                          className="btn"
-                          style={{ width: '100%', justifyContent: 'flex-start' }}
-                          onClick={() => {
-                            setForm(prev => ({ ...prev, due_date: '' }));
-                            updateItem.mutate({ id: item.id, updates: { due_date: null } });
-                          }}
-                        >
-                          <X size={13} strokeWidth={1.5} /> Limpar
-                        </button>
-                      </div>
-                    )}
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-            </div>
+                    >
+                      <X size={13} strokeWidth={1.5} /> Limpar
+                    </button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
