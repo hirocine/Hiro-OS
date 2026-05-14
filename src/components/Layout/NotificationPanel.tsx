@@ -4,59 +4,34 @@
  * ════════════════════════════════════════════════════════════════
  *
  * Lê da mesma fonte que a página /caixa-de-entrada (`inbox_items`).
- * Substituiu o sistema legado (`notifications` + `user_notification_status`)
- * pra cobrir TUDO: tarefas, orçamentos, CRM, esteira de pós, empréstimos
- * vencidos, aniversários — tudo gateado por permission no banco.
+ * Cobre TUDO: tarefas, orçamentos, CRM, esteira de pós, empréstimos
+ * vencidos, aniversários — gateado por permission no banco.
+ *
+ * Filosofia: o sino é uma *prévia rápida*. Sem busca, sem filtros —
+ * pra isso o usuário abre /caixa-de-entrada (botão no rodapé).
  *
  * Comportamento:
  *   - Click no item → marca como lido + navega pra `deep_link`
  *   - Botão check → marca como lido sem navegar
- *   - Rodapé "Ver tudo" → /caixa-de-entrada com lista completa
- *   - Filtros (status + tipo) escondidos atrás do ícone funil
+ *   - Rodapé → /caixa-de-entrada
  */
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Bell, Check, CheckCheck, Filter, ArrowRight,
+  Bell, Check, CheckCheck, ArrowRight,
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Input } from '@/components/ui/input';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useInbox, useInboxUnreadCount } from '@/features/inbox/useInbox';
-import type { InboxItem, InboxType, InboxTypeFilter } from '@/features/inbox/types';
+import type { InboxItem } from '@/features/inbox/types';
 import { TYPE_CONFIG } from '@/features/inbox/display';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Z_INDEX } from '@/lib/z-index';
-
-type StatusFilter = 'all' | 'unread' | 'read';
-
-const STATUS_LABEL: Record<StatusFilter, string> = {
-  all:    'Todas',
-  unread: 'Não lidas',
-  read:   'Lidas',
-};
-
-const TYPE_FILTER_OPTIONS: { value: InboxTypeFilter; label: string }[] = [
-  { value: 'all',       label: 'Todos os tipos' },
-  { value: 'task',      label: 'Tarefas' },
-  { value: 'proposal',  label: 'Orçamentos' },
-  { value: 'deal',      label: 'CRM' },
-  { value: 'pp',        label: 'Esteira de Pós' },
-  { value: 'loan',      label: 'Empréstimos' },
-  { value: 'project',   label: 'Projetos' },
-  { value: 'event',     label: 'RH' },
-  { value: 'access',    label: 'Plataformas' },
-  { value: 'marketing', label: 'Marketing' },
-  { value: 'system',    label: 'Sistema' },
-];
 
 function isUnread(it: InboxItem, nowMs: number): boolean {
   if (it.read_at) return false;
@@ -65,12 +40,10 @@ function isUnread(it: InboxItem, nowMs: number): boolean {
   return true;
 }
 
+const PREVIEW_LIMIT = 8; // quantos itens mostrar no popover
+
 export function NotificationPanel() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [typeFilter, setTypeFilter] = useState<InboxTypeFilter>('all');
-  const [search, setSearch] = useState('');
   const isMobile = useIsMobile();
   const navigate = useNavigate();
 
@@ -79,27 +52,15 @@ export function NotificationPanel() {
 
   const nowMs = Date.now();
 
-  // Filter applied to the popover (page Inbox has its own filtering)
-  const filtered = items.filter((it) => {
-    // Status
-    if (statusFilter === 'unread' && !isUnread(it, nowMs)) return false;
-    if (statusFilter === 'read' && isUnread(it, nowMs)) return false;
-    // Type
-    if (typeFilter !== 'all' && it.type !== typeFilter) return false;
-    // Search
-    if (search) {
-      const q = search.toLowerCase();
-      const haystack = [it.title, it.preview ?? '', it.actor?.name ?? ''].join(' ').toLowerCase();
-      if (!haystack.includes(q)) return false;
-    }
-    return true;
-  });
+  // Mostra unread primeiro, depois lidos. Limita o total.
+  const unreadList = items.filter((it) => isUnread(it, nowMs));
+  const readList = items.filter((it) => !isUnread(it, nowMs) && !it.done_at);
 
-  const unreadList = filtered.filter((it) => isUnread(it, nowMs));
-  const readList = filtered.filter((it) => !isUnread(it, nowMs));
+  const visibleUnread = unreadList.slice(0, PREVIEW_LIMIT);
+  const remainingSlots = Math.max(0, PREVIEW_LIMIT - visibleUnread.length);
+  const visibleRead = readList.slice(0, remainingSlots);
 
   const handleItemClick = (item: InboxItem) => {
-    // Marca como lido sem navegar se já é lido
     if (isUnread(item, nowMs)) {
       markRead(item.id);
     }
@@ -243,190 +204,154 @@ export function NotificationPanel() {
     );
   };
 
-  const NotificationContent = () => (
-    <>
-      {showFilters && (
-        <div style={{ padding: '0 14px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <Input
-            placeholder="Buscar notificações..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <div style={{ display: 'flex', gap: 8 }}>
-            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-              <SelectTrigger style={{ flex: 1 }}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(STATUS_LABEL) as StatusFilter[]).map((k) => (
-                  <SelectItem key={k} value={k}>{STATUS_LABEL[k]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+  const NotificationContent = () => {
+    const hasItems = visibleUnread.length + visibleRead.length > 0;
 
-            <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as InboxTypeFilter)}>
-              <SelectTrigger style={{ flex: 1 }}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TYPE_FILTER_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+    return (
+      <>
+        {unreadCount > 0 && (
+          <div style={{ padding: '0 14px 8px' }}>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => markAllRead()}
+              style={{ width: '100%', justifyContent: 'center', gap: 6 }}
+            >
+              <CheckCheck size={12} strokeWidth={1.5} />
+              <span>Marcar todas como lidas</span>
+            </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {unreadCount > 0 && (
-        <div style={{ padding: '0 14px 8px' }}>
+        <ScrollArea className={isMobile ? 'h-[calc(100vh-18rem)]' : 'max-h-[60vh]'}>
+          {!hasItems ? (
+            <div style={{ padding: 28, textAlign: 'center' }}>
+              <Bell
+                size={36}
+                strokeWidth={1.25}
+                style={{ display: 'block', margin: '0 auto 10px', color: 'hsl(var(--ds-fg-4))', opacity: 0.4 }}
+              />
+              <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-2))', marginBottom: 4 }}>
+                Nenhuma notificação
+              </p>
+              <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                Você está em dia com tudo!
+              </p>
+            </div>
+          ) : (
+            <div>
+              {visibleUnread.length > 0 && (
+                <div>
+                  <div style={{ padding: '8px 18px', background: 'hsl(var(--ds-line-2) / 0.3)' }}>
+                    <h4
+                      style={{
+                        fontSize: 11,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        fontWeight: 500,
+                        color: 'hsl(var(--ds-fg-2))',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        margin: 0,
+                      }}
+                    >
+                      <Bell size={11} strokeWidth={1.5} />
+                      <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        Não lidas ({unreadList.length})
+                      </span>
+                    </h4>
+                  </div>
+                  {visibleUnread.map((it) => (
+                    <NotificationItem key={it.id} item={it} isRead={false} />
+                  ))}
+                </div>
+              )}
+
+              {visibleRead.length > 0 && (
+                <div>
+                  <div style={{ padding: '8px 18px', background: 'hsl(var(--ds-line-2) / 0.2)' }}>
+                    <h4
+                      style={{
+                        fontSize: 11,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        fontWeight: 500,
+                        color: 'hsl(var(--ds-fg-3))',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        margin: 0,
+                      }}
+                    >
+                      <Check size={11} strokeWidth={1.5} />
+                      <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        Lidas
+                      </span>
+                    </h4>
+                  </div>
+                  {visibleRead.map((it) => (
+                    <NotificationItem key={it.id} item={it} isRead={true} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </ScrollArea>
+
+        <div
+          style={{
+            padding: '8px 14px',
+            borderTop: '1px solid hsl(var(--ds-line-1))',
+          }}
+        >
           <button
             type="button"
             className="btn"
-            onClick={() => markAllRead()}
-            style={{ width: '100%', justifyContent: 'center' }}
+            onClick={() => {
+              setIsOpen(false);
+              navigate('/caixa-de-entrada');
+            }}
+            style={{
+              width: '100%',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: 12,
+            }}
           >
-            <CheckCheck size={12} strokeWidth={1.5} />
-            <span>Marcar todas como lidas</span>
+            <span>Abrir Caixa de Entrada</span>
+            <ArrowRight size={12} strokeWidth={1.5} />
           </button>
         </div>
-      )}
-
-      <ScrollArea className={isMobile ? 'h-[calc(100vh-18rem)]' : 'max-h-[60vh]'}>
-        {filtered.length === 0 ? (
-          <div style={{ padding: 28, textAlign: 'center' }}>
-            <Bell
-              size={36}
-              strokeWidth={1.25}
-              style={{ display: 'block', margin: '0 auto 10px', color: 'hsl(var(--ds-fg-4))', opacity: 0.4 }}
-            />
-            <p style={{ fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-2))', marginBottom: 4 }}>
-              Nenhuma notificação
-            </p>
-            <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
-              {search || statusFilter !== 'all' || typeFilter !== 'all'
-                ? 'Tente outro filtro.'
-                : 'Você está em dia com tudo!'}
-            </p>
-          </div>
-        ) : (
-          <div>
-            {unreadList.length > 0 && (
-              <div>
-                <div style={{ padding: '8px 18px', background: 'hsl(var(--ds-line-2) / 0.3)' }}>
-                  <h4
-                    style={{
-                      fontSize: 11,
-                      letterSpacing: '0.14em',
-                      textTransform: 'uppercase',
-                      fontWeight: 500,
-                      color: 'hsl(var(--ds-fg-2))',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      margin: 0,
-                    }}
-                  >
-                    <Bell size={11} strokeWidth={1.5} />
-                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>
-                      Não lidas ({unreadList.length})
-                    </span>
-                  </h4>
-                </div>
-                {unreadList.map((it) => (
-                  <NotificationItem key={it.id} item={it} isRead={false} />
-                ))}
-              </div>
-            )}
-
-            {readList.length > 0 && (
-              <div>
-                <div style={{ padding: '8px 18px', background: 'hsl(var(--ds-line-2) / 0.2)' }}>
-                  <h4
-                    style={{
-                      fontSize: 11,
-                      letterSpacing: '0.14em',
-                      textTransform: 'uppercase',
-                      fontWeight: 500,
-                      color: 'hsl(var(--ds-fg-3))',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      margin: 0,
-                    }}
-                  >
-                    <Check size={11} strokeWidth={1.5} />
-                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>
-                      Lidas ({readList.length})
-                    </span>
-                  </h4>
-                </div>
-                {readList.slice(0, 20).map((it) => (
-                  <NotificationItem key={it.id} item={it} isRead={true} />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </ScrollArea>
-
-      <div
-        style={{
-          padding: '8px 14px',
-          borderTop: '1px solid hsl(var(--ds-line-1))',
-        }}
-      >
-        <button
-          type="button"
-          className="btn"
-          onClick={() => {
-            setIsOpen(false);
-            navigate('/caixa-de-entrada');
-          }}
-          style={{ width: '100%', justifyContent: 'space-between', fontSize: 12 }}
-        >
-          <span>Abrir Caixa de Entrada</span>
-          <ArrowRight size={12} strokeWidth={1.5} />
-        </button>
-      </div>
-    </>
-  );
+      </>
+    );
+  };
 
   const Header = () => (
     <div
       style={{
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '14px 18px 8px',
+        gap: 8,
+        padding: '14px 18px 10px',
       }}
     >
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-        <span
-          style={{
-            fontFamily: '"HN Display", sans-serif',
-            fontSize: 13,
-            fontWeight: 600,
-            color: 'hsl(var(--ds-fg-1))',
-          }}
-        >
-          Notificações
-        </span>
-        {unreadCount > 0 && (
-          <span className="pill muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {unreadCount} {unreadCount === 1 ? 'nova' : 'novas'}
-          </span>
-        )}
-      </div>
-      <button
-        type="button"
-        className="btn"
-        onClick={() => setShowFilters(!showFilters)}
-        style={{ width: 28, height: 28, padding: 0, justifyContent: 'center' }}
-        aria-label="Filtros"
+      <span
+        style={{
+          fontFamily: '"HN Display", sans-serif',
+          fontSize: 13,
+          fontWeight: 600,
+          color: 'hsl(var(--ds-fg-1))',
+        }}
       >
-        <Filter size={12} strokeWidth={1.5} />
-      </button>
+        Notificações
+      </span>
+      {unreadCount > 0 && (
+        <span className="pill muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
+          {unreadCount} {unreadCount === 1 ? 'nova' : 'novas'}
+        </span>
+      )}
     </div>
   );
 
