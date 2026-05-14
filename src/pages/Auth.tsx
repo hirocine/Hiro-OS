@@ -344,6 +344,7 @@ export default function Auth() {
                   setFormData(p => ({ ...p, password }));
                   setPasswordValid(isValid);
                 }}
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-white/20 rounded-none h-11"
                 required
               />
             </div>
