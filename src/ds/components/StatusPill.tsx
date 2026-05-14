@@ -134,14 +134,15 @@ export function StatusPill({
         display: 'inline-flex',
         alignItems: 'center',
         gap: 4,
-        // Override global .pill to be more forgiving:
-        //  - boxSizing border-box so border doesn't push content out
-        //  - bigger horizontal padding so text never grazes the bg edge
-        //  - tighter letter-spacing reduces uppercase trailing overflow
-        boxSizing: 'border-box',
         paddingLeft: 12,
         paddingRight: 12,
         letterSpacing: '0.08em',
+        // Ensure the background fills the full visual box, including the
+        // border area. Some browsers/contexts default to padding-box which
+        // can leave a 1px gap between background edge and border edge —
+        // making the text appear to spill past the colored region.
+        backgroundClip: 'border-box',
+        WebkitBackgroundClip: 'border-box',
       }}
     >
       {icon !== undefined && icon !== null && (
