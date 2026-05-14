@@ -66,6 +66,7 @@ const MarketingSite = lazy(() => import("./pages/MarketingSite"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const DsPreview = lazy(() => import("./ds/preview"));
 const PlaygroundToolbar = lazy(() => import("./pages/_ds/PlaygroundToolbar"));
+const PlaygroundJuridico = lazy(() => import("./pages/_ds/PlaygroundJuridico"));
 const AdminPermissions = lazy(() => import("./pages/AdminPermissions"));
 const RHDates = lazy(() => import("./pages/RHDates"));
 const RHWiki = lazy(() => import("./pages/RHWiki"));
@@ -146,6 +147,7 @@ const App = () => (
                 <Route path="inventario/editar/:id" element={<RequirePermission permission="equipamentos.inventario"><AddEquipment /></RequirePermission>} />
                 <Route path="ssds" element={<RequirePermission permission="armazenamento"><SSDs /></RequirePermission>} />
                 <Route path="_ds/playground/toolbar" element={<PlaygroundToolbar />} />
+                <Route path="_ds/playground/juridico" element={<PlaygroundJuridico />} />
                 <Route path="retiradas" element={<RequirePermission permission="equipamentos.retiradas"><Projects /></RequirePermission>} />
                 <Route path="retiradas/nova" element={<RequirePermission permission="equipamentos.retiradas"><ProjectWithdrawal /></RequirePermission>} />
                 <Route path="retiradas/:id" element={<RequirePermission permission="equipamentos.retiradas"><ProjectDetails /></RequirePermission>} />
