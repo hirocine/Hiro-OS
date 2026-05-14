@@ -64,11 +64,10 @@ function PipelineProgress({
   // Color semantics:
   //   delivered          → all green (success) — celebra a entrega
   //   completed          → fg-2 (cinza escuro) — passou pela fase
-  //   active (no prazo)  → laranja — em andamento, pulse
-  //   active (atrasado)  → vermelho — em andamento mas vencido, pulse
+  //   active (no prazo)  → azul (info) — em andamento, pulse
+  //   active (atrasado)  → vermelho (danger) — em andamento mas vencido, pulse
   //   pending            → line-2 (cinza claro) — ainda não chegou
-  const activeOrange = 'hsl(25 95% 53%)';
-  const activeColor = isOverdue ? 'hsl(var(--ds-danger))' : activeOrange;
+  const activeColor = isOverdue ? 'hsl(var(--ds-danger))' : 'hsl(var(--ds-info))';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%' }}>
       {PIPELINE_STEPS.map((_, i) => {
