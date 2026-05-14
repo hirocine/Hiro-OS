@@ -316,10 +316,18 @@ export default function TaskDetails() {
         ]}
       />
 
-      {/* ───────────────  HEADER  ─────────────── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: -8, marginBottom: 20 }}>
-        {/* Eyebrow row: projeto chip à esquerda + ações à direita */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, minHeight: 32 }}>
+      {/* ───────────────  HEADER (mesmo layout do PageHeader)  ─────────────── */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr auto',
+          alignItems: 'end',
+          gap: 24,
+          marginBottom: 24,
+        }}
+      >
+        <div>
+          {/* Eyebrow: chip do projeto (quando há) */}
           {task.project_name ? (
             <button
               type="button"
@@ -334,6 +342,7 @@ export default function TaskDetails() {
                 cursor: 'pointer',
                 fontSize: 12,
                 color: 'hsl(var(--ds-fg-3))',
+                marginBottom: 12,
               }}
               onMouseEnter={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-1))')}
               onMouseLeave={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-3))')}
@@ -343,99 +352,109 @@ export default function TaskDetails() {
                 {task.project_name}
               </span>
             </button>
-          ) : <span />}
-
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              type="button"
-              className="btn"
-              onClick={() => setDeleteOpen(true)}
-              style={{
-                color: 'hsl(var(--ds-danger))',
-                borderColor: 'hsl(var(--ds-danger) / 0.3)',
-              }}
-            >
-              <Trash2 size={13} strokeWidth={1.5} />
-              <span>Excluir</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Title (inline-editable) — replica os mesmos tokens da
-            classe .ph-title do DS (mesmo tamanho que os h1 das
-            outras páginas: "Tarefas.", "Inbox.", "Wiki."). */}
-        <InlineEditCell
-          value={task.title}
-          onSave={(newTitle) => handleUpdateTask({ title: newTitle })}
-          style={{
-            fontFamily: '"HN Display", sans-serif',
-            fontWeight: 500,
-            fontSize: 'var(--ds-display)',
-            letterSpacing: '-0.04em',
-            lineHeight: 1,
-            color: 'hsl(var(--ds-fg-1))',
-            padding: 0,
-            margin: 0,
-          }}
-        />
-
-        {/* Submeta: criada em / atualizada */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 12, color: 'hsl(var(--ds-fg-3))', flexWrap: 'wrap' }}>
-          <span>
-            Criada em{' '}
-            <strong style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
-              {format(new Date(task.created_at), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
-            </strong>
-          </span>
-          {task.updated_at && task.updated_at !== task.created_at ? (
-            <>
-              <span style={{ color: 'hsl(var(--ds-line-2))' }}>·</span>
-              <span>
-                Atualizada{' '}
-                <strong style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
-                  {format(new Date(task.updated_at), "dd/MM 'às' HH:mm", { locale: ptBR })}
-                </strong>
-              </span>
-            </>
           ) : null}
-        </div>
 
-        {/* Banner de prazo vencido */}
-        {overdueDays > 0 && task.due_date ? (
+          {/* Title (inline-editable) — mesmos tokens do .ph-title */}
+          <InlineEditCell
+            value={task.title}
+            onSave={(newTitle) => handleUpdateTask({ title: newTitle })}
+            style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontWeight: 500,
+              fontSize: 'var(--ds-display)',
+              letterSpacing: '-0.04em',
+              lineHeight: 1,
+              color: 'hsl(var(--ds-fg-1))',
+              padding: 0,
+              margin: 0,
+            }}
+          />
+
+          {/* Submeta abaixo do título */}
           <div
             style={{
-              display: 'inline-flex',
+              display: 'flex',
               alignItems: 'center',
-              gap: 10,
-              padding: '10px 14px',
-              border: '1px solid hsl(var(--ds-danger) / 0.3)',
-              background: 'hsl(var(--ds-danger) / 0.05)',
-              alignSelf: 'flex-start',
-              maxWidth: '100%',
+              gap: 14,
+              fontSize: 12,
+              color: 'hsl(var(--ds-fg-3))',
+              flexWrap: 'wrap',
+              marginTop: 12,
             }}
           >
-            <span style={{ width: 8, height: 8, background: 'hsl(var(--ds-danger))', flexShrink: 0 }} />
-            <span
-              style={{
-                fontFamily: '"HN Display", sans-serif',
-                fontSize: 10,
-                fontWeight: 500,
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-                color: 'hsl(var(--ds-danger))',
-              }}
-            >
-              Prazo vencido
+            <span>
+              Criada em{' '}
+              <strong style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                {format(new Date(task.created_at), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
+              </strong>
             </span>
-            <span style={{ fontFamily: '"HN Display", sans-serif', fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
-              {format(new Date(task.due_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })}
-            </span>
-            <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
-              — atrasada há {overdueDays} {overdueDays === 1 ? 'dia' : 'dias'}
-            </span>
+            {task.updated_at && task.updated_at !== task.created_at ? (
+              <>
+                <span style={{ color: 'hsl(var(--ds-line-2))' }}>·</span>
+                <span>
+                  Atualizada{' '}
+                  <strong style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                    {format(new Date(task.updated_at), "dd/MM 'às' HH:mm", { locale: ptBR })}
+                  </strong>
+                </span>
+              </>
+            ) : null}
           </div>
-        ) : null}
+        </div>
+
+        {/* Ações — alinhadas ao fundo (mesma linha-base do título) */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setDeleteOpen(true)}
+            style={{
+              color: 'hsl(var(--ds-danger))',
+              borderColor: 'hsl(var(--ds-danger) / 0.3)',
+            }}
+          >
+            <Trash2 size={13} strokeWidth={1.5} />
+            <span>Excluir</span>
+          </button>
+        </div>
       </div>
+
+      {/* Banner de prazo vencido — fora do header pra não inflar a altura */}
+      {overdueDays > 0 && task.due_date ? (
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '10px 14px',
+            border: '1px solid hsl(var(--ds-danger) / 0.3)',
+            background: 'hsl(var(--ds-danger) / 0.05)',
+            alignSelf: 'flex-start',
+            maxWidth: '100%',
+            marginBottom: 24,
+          }}
+        >
+          <span style={{ width: 8, height: 8, background: 'hsl(var(--ds-danger))', flexShrink: 0 }} />
+          <span
+            style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontSize: 10,
+              fontWeight: 500,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              color: 'hsl(var(--ds-danger))',
+            }}
+          >
+            Prazo vencido
+          </span>
+          <span style={{ fontFamily: '"HN Display", sans-serif', fontSize: 13, fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+            {format(new Date(task.due_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })}
+          </span>
+          <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+            — atrasada há {overdueDays} {overdueDays === 1 ? 'dia' : 'dias'}
+          </span>
+        </div>
+      ) : null}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* ───────────────  DETAILS STRIP  ─────────────── */}
