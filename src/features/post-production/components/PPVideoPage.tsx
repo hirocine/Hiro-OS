@@ -496,91 +496,273 @@ export function PPVideoPage({ item, onBack }: Props) {
           </div>
         </div>
 
-        {/* PIPELINE */}
-        <div style={sectionShellStyle}>
-          <div style={sectionHeaderStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Clapperboard size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
-              <span style={sectionTitleStyle}>Pipeline de Produção</span>
-            </div>
+        {/* ─────────── PIPELINE ─────────── */}
+        <section>
+          {/* Section head */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              marginBottom: 18,
+              paddingBottom: 14,
+              borderBottom: '1px solid hsl(var(--ds-line-1))',
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: 'hsl(var(--ds-fg-1))',
+                margin: 0,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+              }}
+            >
+              <Clapperboard size={13} strokeWidth={1.5} />
+              Pipeline de Produção{' '}
+              <span
+                style={{
+                  fontFamily: '"HN Display", sans-serif',
+                  color: 'hsl(var(--ds-fg-4))',
+                  fontVariantNumeric: 'tabular-nums',
+                  letterSpacing: '0.06em',
+                }}
+              >
+                {String(currentStepIdx + 1).padStart(2, '0')} / {String(MACRO_STEPS.length).padStart(2, '0')}
+              </span>
+            </h3>
           </div>
 
-          <div style={{ padding: 18 }} className="space-y-4">
-            {/* 1. Thin progress track */}
-            <div className="flex items-center gap-1">
-              {MACRO_STEPS.map((_, i) => (
-                <div
-                  key={i}
-                  className="h-1.5 flex-1 rounded-full transition-all duration-500"
-                  style={{
-                    background: i < currentStepIdx
-                      ? 'hsl(var(--ds-accent))'
-                      : i === currentStepIdx
-                      ? 'hsl(var(--ds-accent) / 0.4)'
-                      : 'hsl(var(--ds-line-1))',
-                  }}
-                />
-              ))}
-            </div>
+          {/* Progress meta line */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 18,
+              marginBottom: 18,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 10,
+                fontWeight: 500,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: 'hsl(var(--ds-fg-4))',
+              }}
+            >
+              Progresso
+            </span>
+            <span
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 10,
+                fontWeight: 500,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: 'hsl(var(--ds-fg-2))',
+              }}
+            >
+              {currentStepIdx} de {MACRO_STEPS.length} concluídas
+            </span>
+            <span
+              style={{
+                flex: 1,
+                height: 2,
+                background: 'hsl(var(--ds-line-2))',
+                position: 'relative',
+                maxWidth: 340,
+              }}
+            >
+              <span
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: `${Math.round((currentStepIdx / MACRO_STEPS.length) * 100)}%`,
+                  background: 'hsl(var(--ds-accent))',
+                  transition: 'width 400ms',
+                }}
+              />
+            </span>
+            <span
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 10,
+                fontWeight: 500,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: 'hsl(var(--ds-fg-1))',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              {Math.round((currentStepIdx / MACRO_STEPS.length) * 100)}%
+            </span>
+          </div>
 
-            {/* 2. Phase cards */}
-            <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${MACRO_STEPS.length}, 1fr)` }}>
-              {MACRO_STEPS.map((step, i) => {
-                const isDone = i < currentStepIdx;
-                const isActive = i === currentStepIdx;
-                const phaseStyle: React.CSSProperties = isActive
-                  ? {
-                      background: 'hsl(var(--ds-accent) / 0.1)',
-                      border: '1px solid hsl(var(--ds-accent))',
-                    }
-                  : isDone
-                  ? {
-                      background: 'transparent',
-                      border: '1px solid transparent',
-                      opacity: 0.35,
-                    }
-                  : {
-                      background: 'transparent',
-                      border: '1px solid hsl(var(--ds-line-1) / 0.3)',
-                      opacity: 0.4,
-                    };
-                return (
+          {/* Phase cards grid */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${MACRO_STEPS.length}, 1fr)`,
+              gap: 1,
+              background: 'hsl(var(--ds-line-1))',
+              border: '1px solid hsl(var(--ds-line-1))',
+            }}
+          >
+            {MACRO_STEPS.map((step, i) => {
+              const isDone = i < currentStepIdx;
+              const isActive = i === currentStepIdx;
+              const phaseNum = String(i + 1).padStart(2, '0');
+
+              const cardBg = isActive
+                ? 'hsl(var(--ds-accent))'
+                : 'hsl(var(--ds-surface))';
+              const numColor = isActive
+                ? 'rgba(10,10,10,0.6)'
+                : isDone
+                  ? 'hsl(var(--ds-accent-deep, var(--ds-accent)))'
+                  : 'hsl(var(--ds-fg-4))';
+              const nameColor = isActive
+                ? '#0A0A0A'
+                : isDone
+                  ? 'hsl(var(--ds-fg-1))'
+                  : 'hsl(var(--ds-fg-3))';
+              const metaColor = isActive
+                ? 'rgba(10,10,10,0.6)'
+                : 'hsl(var(--ds-fg-4))';
+
+              // Mini-square (left of label)
+              const mkBg = isActive
+                ? '#0A0A0A'
+                : isDone
+                  ? 'hsl(var(--ds-accent))'
+                  : 'hsl(var(--ds-line-2))';
+              const mkColor = isActive
+                ? '#fff'
+                : isDone
+                  ? '#0A0A0A'
+                  : 'hsl(var(--ds-fg-3))';
+
+              return (
+                <div
+                  key={step.key}
+                  style={{
+                    background: cardBg,
+                    padding: '18px 16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                    minWidth: 0,
+                    position: 'relative',
+                    transition: 'background 120ms',
+                  }}
+                >
+                  {/* Step num / label row */}
                   <div
-                    key={step.key}
-                    className="flex flex-col items-center gap-1 py-3 px-2 transition-all duration-300 text-center cursor-default"
-                    style={phaseStyle}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      fontFamily: '"HN Display", sans-serif',
+                      fontSize: 10,
+                      fontWeight: 500,
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase',
+                      color: numColor,
+                    }}
                   >
                     <span
                       style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: isActive ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-3))',
+                        width: 18,
+                        height: 18,
+                        display: 'grid',
+                        placeItems: 'center',
+                        background: mkBg,
+                        color: mkColor,
+                        fontSize: 9,
+                        flexShrink: 0,
                       }}
                     >
-                      {isDone ? '✓' : i + 1}
+                      {isDone ? (
+                        <Check size={11} strokeWidth={2.5} />
+                      ) : (
+                        phaseNum
+                      )}
                     </span>
+                    {isActive ? 'Atual' : `Fase ${phaseNum}`}
+                  </div>
+
+                  {/* Step name */}
+                  <div
+                    style={{
+                      fontFamily: '"HN Display", sans-serif',
+                      fontSize: 15,
+                      fontWeight: 500,
+                      letterSpacing: '-0.005em',
+                      color: nameColor,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {step.label}
+                  </div>
+
+                  {/* Step meta (sub-step counter for current) */}
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: metaColor,
+                      fontFamily: '"HN Display", sans-serif',
+                    }}
+                  >
+                    {isActive && SUB_STEPS[normalizedStatus]?.length > 0
+                      ? `${subStepIndex}/${SUB_STEPS[normalizedStatus].length} sub-etapas`
+                      : isDone
+                        ? 'Concluída'
+                        : isActive
+                          ? 'Em andamento'
+                          : 'Aguardando'}
+                  </div>
+
+                  {/* Pointer down arrow for current (connects to drawer) */}
+                  {isActive ? (
                     <span
                       style={{
-                        fontSize: 12,
-                        lineHeight: 1.2,
-                        fontWeight: isActive ? 600 : 400,
-                        color: isActive ? 'hsl(var(--ds-accent))' : 'hsl(var(--ds-fg-3))',
+                        position: 'absolute',
+                        bottom: -9,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 0,
+                        height: 0,
+                        borderLeft: '8px solid transparent',
+                        borderRight: '8px solid transparent',
+                        borderTop: '8px solid hsl(var(--ds-accent))',
                       }}
-                    >
-                      {step.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+                    />
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
 
-            {/* 3. Sub-steps row — only when current step has sub-steps */}
+            {/* 3. Sub-steps drawer — connected visually to the current phase card */}
             {SUB_STEPS[normalizedStatus]?.length > 0 && (
               <div
                 style={{
-                  background: 'hsl(var(--ds-line-2) / 0.3)',
-                  border: '1px solid hsl(var(--ds-line-1))',
-                  padding: '12px 16px',
+                  background: 'hsl(var(--ds-accent) / 0.05)',
+                  border: '1px solid hsl(var(--ds-accent) / 0.3)',
+                  borderTop: 'none',
+                  padding: '16px 18px',
+                  marginTop: 8,
                 }}
                 className="space-y-3"
               >
@@ -714,7 +896,7 @@ export function PPVideoPage({ item, onBack }: Props) {
 
             {/* When no sub-steps: show back/advance buttons standalone */}
             {SUB_STEPS[normalizedStatus]?.length === 0 && (
-              <div className="flex items-center justify-end gap-2 pt-1">
+              <div className="flex items-center justify-end gap-2 pt-3">
                 {currentStepIdx > 0 && (
                   <button type="button" className="btn" onClick={handleGoBack}>
                     ← Voltar
@@ -727,8 +909,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                 )}
               </div>
             )}
-          </div>
-        </div>
+        </section>
 
         {/* ATIVIDADE & VERSÕES */}
         <div style={sectionShellStyle}>
