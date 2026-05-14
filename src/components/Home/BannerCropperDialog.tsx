@@ -174,11 +174,14 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
       croppedAreaPixels.height
     );
 
-    // PASSO 3: Redimensionar para tamanho final (1920x640, aspect 3:1)
+    // PASSO 3: Redimensionar para tamanho final (1920×600, aspect 16:5)
+    // Aspect alinhado com o hero da Home (height: clamp(360px, 52vh, 520px)
+    // full-bleed → ~3.2:1 em laptops, ~3.7:1 em telas wide; 16:5 cobre os dois
+    // sem cortar conteúdo central).
     const finalCanvas = document.createElement("canvas");
     const maxWidth = 1920;
     finalCanvas.width = maxWidth;
-    finalCanvas.height = maxWidth / 3; // 640px
+    finalCanvas.height = Math.round(maxWidth / (16 / 5)); // 600px
     const finalCtx = finalCanvas.getContext("2d");
     if (!finalCtx) return null;
 
@@ -480,11 +483,11 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
                   Arraste a imagem para posicionar · use os controles abaixo para zoom e rotação.
                 </p>
 
-                {/* Cropper */}
+                {/* Cropper — 16:5 matches the new hero banner aspect */}
                 <div
                   style={{
                     position: 'relative',
-                    aspectRatio: '3 / 1',
+                    aspectRatio: '16 / 5',
                     background: 'hsl(var(--ds-line-2) / 0.4)',
                     border: '1px solid hsl(var(--ds-line-1))',
                     overflow: 'hidden',
@@ -495,7 +498,7 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
                     crop={crop}
                     zoom={zoom}
                     rotation={rotation}
-                    aspect={3}
+                    aspect={16 / 5}
                     onCropChange={setCrop}
                     onZoomChange={setZoom}
                     onRotationChange={setRotation}
