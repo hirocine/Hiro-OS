@@ -489,21 +489,16 @@ export default function Home() {
                       <span className="rc-day-num">{cell.n}</span>
                       <div className="rc-events">
                         {events.slice(0, eventCap).map((e, i) => {
-                          const isSpan = e.span !== "single";
-                          // Show the title only at the start of a multi-day
-                          // span (or on Sunday, when the bar wraps into a new
-                          // week so the label appears again).
-                          const isWeekWrap = isSpan && dow === 0 && e.span !== "start";
-                          const showTitle = !isSpan || e.span === "start" || isWeekWrap;
+                          // Title only on `single` and on the first day of a
+                          // multi-day span. Subsequent days (including any
+                          // week-wrap into a new row) stay empty so the
+                          // colored bar reads as one continuous strip — the
+                          // title from the start day carries the meaning.
+                          const showTitle = e.span === "single" || e.span === "start";
                           return (
                             <div
                               key={i}
-                              className={
-                                "rc-event " +
-                                e.type +
-                                (isSpan ? ` span span-${e.span}` : "") +
-                                (isWeekWrap ? " span-wrap" : "")
-                              }
+                              className={"rc-event " + e.type + " span-" + e.span}
                               onClick={(ev) => {
                                 ev.stopPropagation();
                                 setSelectedEvent(e.event);
@@ -512,7 +507,6 @@ export default function Home() {
                               tabIndex={0}
                               title={e.title}
                             >
-                              {!isSpan && <span className="ev-bar" />}
                               <span className="rc-event-title">
                                 {showTitle ? e.title : " "}
                               </span>

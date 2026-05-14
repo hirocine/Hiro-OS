@@ -866,12 +866,12 @@ body > [role="dialog"][data-state],
   border-bottom: 1px solid var(--line-1);
 }
 :is(.ds-preview, .ds-shell) .rc-day {
-  /* No horizontal padding on the cell itself — multi-day span chips need to
-     run flush from edge to edge so adjacent cells visually fuse. Per-element
-     horizontal insets live on .rc-day-num and on non-span .rc-event below. */
+  /* Borders moved to box-shadow so the chip layer can render *on top* of the
+     hairline divider — gives the multi-day strip the continuous look. No
+     horizontal cell padding either; per-element insets are on .rc-day-num
+     and on .rc-event-more (the chip itself bleeds to the edges). */
   min-height: 108px; padding: 10px 0;
-  border-right: 1px solid var(--line-1);
-  border-bottom: 1px solid var(--line-1);
+  box-shadow: inset -1px -1px 0 0 var(--line-1);
   position: relative; cursor: pointer; transition: background 120ms;
   min-width: 0;
   overflow: hidden;
@@ -893,7 +893,8 @@ body > [role="dialog"][data-state],
 :is(.ds-preview, .ds-shell) .rc-day.other .rc-day-num { color: var(--fg-4); }
 :is(.ds-preview, .ds-shell) .rc-day.today {
   background: hsl(var(--ds-accent) / 0.05);
-  box-shadow: inset 0 2px 0 0 var(--accent);
+  /* compose: accent top bar + the regular cell hairlines */
+  box-shadow: inset 0 2px 0 0 var(--accent), inset -1px -1px 0 0 var(--line-1);
 }
 :is(.ds-preview, .ds-shell) .rc-day.today.weekend { background: hsl(var(--ds-accent) / 0.08); }
 :is(.ds-preview, .ds-shell) .rc-day.today:hover,
@@ -912,45 +913,34 @@ body > [role="dialog"][data-state],
   display: flex; flex-direction: column; gap: 3px;
   min-width: 0; flex: 1;
 }
+/* Unified chip — filled colored box for every event, single-day or
+   multi-day. Bleeds flush to the cell edges so adjacent days in a span
+   visually butt together. `position: relative` + `z-index: 1` so the
+   chip paints on top of the cell's hairline box-shadow, giving the
+   "continuous strip" sensation. */
 :is(.ds-preview, .ds-shell) .rc-event {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 11px; padding: 3px 12px; color: var(--fg-2);
+  display: flex; align-items: center;
+  font-size: 11px; padding: 3px 10px;
+  font-weight: 500;
+  color: var(--fg-1);
+  background: hsl(var(--ds-fg-3) / 0.18);
   white-space: nowrap; overflow: hidden;
+  position: relative; z-index: 1;
 }
-:is(.ds-preview, .ds-shell) .rc-event .ev-bar {
-  width: 3px; height: 11px; flex-shrink: 0; background: var(--fg-3);
-}
-:is(.ds-preview, .ds-shell) .rc-event.rec .ev-bar { background: var(--danger); }
-:is(.ds-preview, .ds-shell) .rc-event.vt .ev-bar { background: var(--warn); }
-:is(.ds-preview, .ds-shell) .rc-event.edit .ev-bar { background: var(--info); }
-:is(.ds-preview, .ds-shell) .rc-event.pre .ev-bar { background: var(--fg-4); }
+:is(.ds-preview, .ds-shell) .rc-event.rec  { background: hsl(var(--ds-destructive) / 0.85); color: #fff; }
+:is(.ds-preview, .ds-shell) .rc-event.vt   { background: hsl(var(--ds-warn) / 0.9);        color: #0A0A0A; }
+:is(.ds-preview, .ds-shell) .rc-event.edit { background: hsl(var(--ds-info) / 0.85);       color: #fff; }
+:is(.ds-preview, .ds-shell) .rc-event.pre  { background: hsl(var(--ds-fg-3) / 0.35);       color: var(--fg-1); }
+
 :is(.ds-preview, .ds-shell) .rc-event-title {
   flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* Multi-day spans — filled bar that runs flush from cell edge to cell edge.
-   Adjacent days butt together with only the 1px cell hairline between, so
-   they read as one continuous Google-Calendar style strip. */
-:is(.ds-preview, .ds-shell) .rc-event.span {
-  padding: 3px 10px;
-  font-weight: 500;
-  background: hsl(var(--ds-fg-3) / 0.18);
-  color: var(--fg-1);
-}
-:is(.ds-preview, .ds-shell) .rc-event.span.rec  { background: hsl(var(--ds-destructive) / 0.85); color: #fff; }
-:is(.ds-preview, .ds-shell) .rc-event.span.vt   { background: hsl(var(--ds-warn) / 0.9);        color: #0A0A0A; }
-:is(.ds-preview, .ds-shell) .rc-event.span.edit { background: hsl(var(--ds-info) / 0.85);       color: #fff; }
-:is(.ds-preview, .ds-shell) .rc-event.span.pre  { background: hsl(var(--ds-fg-3) / 0.35);       color: var(--fg-1); }
-
-/* On middle/end days the chip is a continuation — keep height aligned
-   but hide the title so the bar reads as a single strip. The week-wrap
-   override (`.span-wrap`) re-shows the label on Sundays. */
-:is(.ds-preview, .ds-shell) .rc-event.span.span-middle .rc-event-title,
-:is(.ds-preview, .ds-shell) .rc-event.span.span-end .rc-event-title {
+/* Multi-day continuation: keep the bar height for vertical alignment
+   but hide the title — the start day's label carries the meaning. */
+:is(.ds-preview, .ds-shell) .rc-event.span-middle .rc-event-title,
+:is(.ds-preview, .ds-shell) .rc-event.span-end .rc-event-title {
   visibility: hidden;
-}
-:is(.ds-preview, .ds-shell) .rc-event.span.span-wrap .rc-event-title {
-  visibility: visible;
 }
 :is(.ds-preview, .ds-shell) .rc-event-more {
   font-family: "HN Display", sans-serif; font-size: 10px; letter-spacing: 0.1em;
