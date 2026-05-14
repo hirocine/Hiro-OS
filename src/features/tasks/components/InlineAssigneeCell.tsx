@@ -59,6 +59,7 @@ export function InlineAssigneeCell({
               padding: 0,
               cursor: 'pointer',
               transition: 'opacity 0.15s',
+              textAlign: 'left',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.opacity = '0.8';
@@ -102,7 +103,17 @@ export function InlineAssigneeCell({
                   </span>
                 )}
                 {selectedUsers.length <= 2 && (
-                  <span style={{ fontSize: 13, marginLeft: 6, color: 'hsl(var(--ds-fg-1))' }}>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      marginLeft: 6,
+                      color: 'hsl(var(--ds-fg-1))',
+                      textAlign: 'left',
+                      whiteSpace: 'normal',
+                      wordBreak: 'normal',
+                      overflowWrap: 'anywhere',
+                    }}
+                  >
                     {selectedUsers.map((u) => u.display_name?.split(' ')[0] || u.email.split('@')[0]).join(', ')}
                   </span>
                 )}
