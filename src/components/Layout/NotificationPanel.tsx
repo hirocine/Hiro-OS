@@ -215,7 +215,13 @@ export function NotificationPanel() {
               type="button"
               className="btn"
               onClick={() => markAllRead()}
-              style={{ width: '100%', justifyContent: 'center', gap: 6 }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                width: '100%',
+              }}
             >
               <CheckCheck size={12} strokeWidth={1.5} />
               <span>Marcar todas como lidas</span>
@@ -313,10 +319,11 @@ export function NotificationPanel() {
               navigate('/caixa-de-entrada');
             }}
             style={{
-              width: '100%',
-              justifyContent: 'center',
+              display: 'inline-flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: 8,
+              width: '100%',
               fontSize: 12,
             }}
           >
