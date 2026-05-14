@@ -23,6 +23,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useUsers } from '@/hooks/useUsers';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getAvatarData } from '@/lib/avatarUtils';
 import type { TaskComment } from '@/features/tasks/types';
 import { useDepartments } from '@/features/tasks/hooks/useDepartments';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TaskPriority, TaskStatus, TaskLinkType } from '@/features/tasks/types';
@@ -160,6 +161,22 @@ export default function TaskDetails() {
     }
   }, [task?.description]);
 
+  // AV projects for the "Projeto" field — kept above any early
+  // return so Rules of Hooks aren't broken across loading/error states.
+  const projectsQuery = useQuery({
+    queryKey: ['av_projects', 'options'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('audiovisual_projects')
+        .select('id, name')
+        .order('name', { ascending: true })
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as Array<{ id: string; name: string }>;
+    },
+    staleTime: 60_000,
+  });
+
   if (isLoading) {
     return (
       <div className="ds-shell ds-page">
@@ -266,21 +283,6 @@ export default function TaskDetails() {
     label: config.label
   }));
 
-  // AV projects for the "Projeto" field
-  const projectsQuery = useQuery({
-    queryKey: ['av_projects', 'options'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('audiovisual_projects')
-        .select('id, name')
-        .order('name', { ascending: true })
-        .limit(500);
-      if (error) throw error;
-      return (data ?? []) as Array<{ id: string; name: string }>;
-    },
-    staleTime: 60_000,
-  });
-
   const projectOptions = [
     { value: '__none__', label: 'Sem projeto' },
     ...(projectsQuery.data ?? []).map((p) => ({ value: p.id, label: p.name })),
@@ -359,13 +361,22 @@ export default function TaskDetails() {
           </div>
         </div>
 
-        {/* Title (inline-editable) — usa a classe .ph-title do DS,
-            mesma altura/peso/letter-spacing dos h1 do PageHeader. */}
+        {/* Title (inline-editable) — replica os mesmos tokens da
+            classe .ph-title do DS (mesmo tamanho que os h1 das
+            outras páginas: "Tarefas.", "Inbox.", "Wiki."). */}
         <InlineEditCell
           value={task.title}
           onSave={(newTitle) => handleUpdateTask({ title: newTitle })}
-          className="ph-title"
-          style={{ padding: 0, margin: 0, fontSize: 'inherit', lineHeight: 1 }}
+          style={{
+            fontFamily: '"HN Display", sans-serif',
+            fontWeight: 500,
+            fontSize: 'var(--ds-display)',
+            letterSpacing: '-0.04em',
+            lineHeight: 1,
+            color: 'hsl(var(--ds-fg-1))',
+            padding: 0,
+            margin: 0,
+          }}
         />
 
         {/* Submeta: criada em / atualizada */}
@@ -817,12 +828,19 @@ export default function TaskDetails() {
                     <MentionTextarea
                       value={newComment}
                       onChange={setNewComment}
-                      users={users.map((u: any) => ({
-                        id: u.id,
-                        display_name: u.display_name ?? null,
-                        email: u.email,
-                        avatar_url: u.avatar_url ?? null,
-                      }))}
+                      users={users.map((u: any) => {
+                        const a = getAvatarData(
+                          { id: u.id, email: u.email, user_metadata: u.user_metadata } as any,
+                          u.avatar_url,
+                          u.display_name,
+                        );
+                        return {
+                          id: u.id,
+                          display_name: u.display_name ?? null,
+                          email: u.email,
+                          avatar_url: a.url,
+                        };
+                      })}
                       placeholder={
                         replyingTo
                           ? 'Sua resposta… use @ para mencionar alguém'
