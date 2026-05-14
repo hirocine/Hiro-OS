@@ -5,6 +5,7 @@ import { I } from "@/ds/icons";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useCurrentUserProfile } from "@/hooks/useCurrentUserProfile";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { BannerCropperDialog } from "@/components/Home/BannerCropperDialog";
 import { useTeamMembers, type TeamMember } from "@/hooks/useTeamMembers";
 import { usePostProduction } from "@/features/post-production/hooks/usePostProduction";
 import { PP_PRIORITY_ORDER, PP_PRIORITY_CONFIG } from "@/features/post-production/types";
@@ -108,7 +109,8 @@ export default function Home() {
   const now = new Date();
   const [view, setView] = useState<"month" | "week" | "list">("month");
   const [selectedEvent, setSelectedEvent] = useState<RecordingEvent | null>(null);
-  const { user } = useAuthContext();
+  const [showBannerCropper, setShowBannerCropper] = useState(false);
+  const { user, isAdmin } = useAuthContext();
   const { data: profile } = useCurrentUserProfile();
   const { bannerSettings } = useSiteSettings();
   const { data: team = [] as TeamMember[] } = useTeamMembers();
@@ -248,10 +250,16 @@ export default function Home() {
               <span className="acc-mark" />
               Hiro OS<sup style={{ fontSize: 8 }}>®</sup> · {WEEKDAYS[now.getDay()]} · {String(now.getDate()).padStart(2, "0")} de {MONTHS[now.getMonth()]} · semana {isoWeekNumber(now)}
             </div>
-            <button className="hero-edit" type="button">
-              {I.edit}
-              <span>Editar banner</span>
-            </button>
+            {isAdmin && (
+              <button
+                className="hero-edit"
+                type="button"
+                onClick={() => setShowBannerCropper(true)}
+              >
+                {I.edit}
+                <span>Editar banner</span>
+              </button>
+            )}
           </div>
 
           <div className="hero-mid">
@@ -548,6 +556,8 @@ export default function Home() {
       {selectedEvent && (
         <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
       )}
+
+      <BannerCropperDialog open={showBannerCropper} onOpenChange={setShowBannerCropper} />
     </div>
   );
 }
