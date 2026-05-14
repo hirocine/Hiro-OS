@@ -44,8 +44,13 @@ interface TasksTableProps {
 }
 
 // 7 columns: title + projeto + priority + assignees + due + status + open button
-const COLS_FULL        = 'minmax(200px, 1.4fr) minmax(140px, 1fr) 130px 140px 120px 130px 48px';
-const COLS_NO_ASSIGNEE = 'minmax(200px, 1.6fr) minmax(140px, 1fr) 130px 120px 130px 48px';
+//
+// Title/projeto use fractional widths so they grow with the viewport;
+// other columns are wider on purpose (140-160px) so badges/dates don't
+// get cramped on the right. Open button column = 56px, button = 40x40
+// square so it visually balances the row.
+const COLS_FULL        = 'minmax(180px, 1fr) minmax(140px, 0.7fr) 130px 160px 140px 140px 56px';
+const COLS_NO_ASSIGNEE = 'minmax(180px, 1fr) minmax(140px, 0.7fr) 130px 140px 140px 56px';
 
 // Priority bar color (for group header)
 const PRIORITY_BAR_COLOR: Record<TaskPriority, string> = {
@@ -291,8 +296,8 @@ export function TasksTable({
             type="button"
             onClick={() => navigate(`/tarefas/${task.id}`)}
             style={{
-              width: 32,
-              height: 32,
+              width: 40,
+              height: 40,
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -301,6 +306,7 @@ export function TasksTable({
               color: 'hsl(var(--ds-fg-2))',
               cursor: 'pointer',
               transition: 'color 120ms, background 120ms, border-color 120ms',
+              flexShrink: 0,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.color = 'hsl(var(--ds-bg))';
@@ -315,7 +321,7 @@ export function TasksTable({
             aria-label="Abrir detalhes da tarefa"
             title="Abrir detalhes"
           >
-            <ChevronRight size={16} strokeWidth={1.75} />
+            <ChevronRight size={18} strokeWidth={1.75} />
           </button>
         </div>
       </div>
