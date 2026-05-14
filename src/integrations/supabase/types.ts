@@ -3681,6 +3681,19 @@ export type Database = {
         }
         Returns: string
       }
+      create_notification_for_user: {
+        Args: {
+          _description?: string
+          _entity_id?: string
+          _related_entity?: string
+          _required_permission?: string
+          _responsible_user_id?: string
+          _target_user_id: string
+          _title: string
+          _type?: string
+        }
+        Returns: string
+      }
       create_security_alert: {
         Args: {
           _alert_type: string
@@ -4086,4 +4099,3 @@ export const Constants = {
     },
   },
 } as const
-
