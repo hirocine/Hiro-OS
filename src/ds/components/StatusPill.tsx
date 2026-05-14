@@ -143,17 +143,16 @@ export function StatusPill({
       {icon !== undefined && icon !== null && (
         <span
           style={{
-            // Color-emoji glyphs (📦, 🔥) render ~1.3em tall regardless of
-            // font-size, making the pill look bursting. Scale visually
-            // without affecting layout box so the pill height stays at 22px.
+            // Color-emoji glyphs (📦, 🔥) render slightly larger than text
+            // at the same font-size. We give them a touch more headroom
+            // (fontSize 12 vs 10 label) and keep lineHeight: 1 so they
+            // don't grow the pill height.
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 10,
+            fontSize: 12,
             lineHeight: 1,
             flexShrink: 0,
-            transform: 'scale(0.85)',
-            transformOrigin: 'center',
           }}
         >
           {icon}
