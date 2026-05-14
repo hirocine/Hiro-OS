@@ -1,17 +1,45 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+/**
+ * ════════════════════════════════════════════════════════════════
+ * TaskDialog — criar / editar tarefa
+ * ════════════════════════════════════════════════════════════════
+ *
+ * Comportamento da CRIAÇÃO:
+ *   - O criador é automaticamente o responsável (assignee).
+ *   - Sem multi-select de "Responsáveis" — reatribuição vai pela
+ *     célula inline na tabela ou pela página de detalhes.
+ *   - Campo "Projeto" opcional (link com audiovisual_projects).
+ *
+ * Comportamento da EDIÇÃO:
+ *   - Atualiza os mesmos campos. Responsáveis ainda são editados
+ *     fora deste dialog (inline na tabela / detalhe).
+ */
+
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useTaskMutations } from '../hooks/useTaskMutations';
-import { Task, TaskPriority, TaskStatus, PRIORITY_CONFIG, STATUS_CONFIG } from '../types';
-import { useUsers } from '@/hooks/useUsers';
 import { useDepartments } from '../hooks/useDepartments';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Plus, Check, X } from 'lucide-react';
-import { PriorityBadge } from './PriorityBadge';
-import { StatusBadge } from './StatusBadge';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Task, TaskPriority, TaskStatus, PRIORITY_CONFIG, STATUS_CONFIG } from '../types';
+import { Loader2 } from 'lucide-react';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 interface TaskDialogProps {
   open: boolean;
@@ -19,347 +47,265 @@ interface TaskDialogProps {
   task?: Task;
 }
 
-const fieldLabel: React.CSSProperties = {
-  fontSize: 11,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  fontWeight: 500,
-  color: 'hsl(var(--ds-fg-3))',
-  display: 'block',
-  marginBottom: 6,
-};
+interface AVProjectOption {
+  id: string;
+  name: string;
+}
 
-// Wraps the control inside the <label> so the native label↔control
-// association works without needing an explicit htmlFor/id pair on
-// every call site. Click on the text focuses the input, screen
-// readers announce them as paired.
-const Field = ({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) => (
-  <label style={{ display: 'flex', flexDirection: 'column' }}>
-    <span style={fieldLabel}>
-      {label}
-      {required && <span style={{ marginLeft: 4, color: 'hsl(var(--ds-danger))' }}>*</span>}
-    </span>
-    {children}
-  </label>
-);
+async function fetchProjectOptions(): Promise<AVProjectOption[]> {
+  const { data, error } = await supabase
+    .from('audiovisual_projects')
+    .select('id, name')
+    .order('name', { ascending: true })
+    .limit(500);
+  if (error) throw error;
+  return (data ?? []) as AVProjectOption[];
+}
 
 export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
-  const { createTask, updateTask, updateAssignees } = useTaskMutations();
-  const { users } = useUsers();
-  const { departments, createDepartment } = useDepartments();
+  const isEditing = !!task;
+  const { createTask, updateTask } = useTaskMutations();
+  const { departments } = useDepartments();
 
-  const [isCreatingNewDept, setIsCreatingNewDept] = useState(false);
-  const [newDeptName, setNewDeptName] = useState('');
-
-  const [formData, setFormData] = useState({
-    title: task?.title || '',
-    description: task?.description || '',
-    priority: task?.priority || ('media' as TaskPriority),
-    status: task?.status || ('pendente' as TaskStatus),
-    due_date: task?.due_date || '',
-    department: task?.department || '',
-    assignee_ids: task?.assignees?.map((a) => a.user_id) || ([] as string[]),
+  const projectsQuery = useQuery({
+    queryKey: ['av_projects', 'options'],
+    queryFn: fetchProjectOptions,
+    staleTime: 60_000,
+    enabled: open,
   });
 
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState<TaskPriority>('media');
+  const [status, setStatus] = useState<TaskStatus>('pendente');
+  const [dueDate, setDueDate] = useState('');
+  const [department, setDepartment] = useState<string>('');
+  const [projectId, setProjectId] = useState<string>('');
+  const [saving, setSaving] = useState(false);
+
+  // Hydrate / reset when opening
   useEffect(() => {
+    if (!open) return;
     if (task) {
-      setFormData({
-        title: task.title,
-        description: task.description || '',
-        priority: task.priority,
-        status: task.status,
-        due_date: task.due_date || '',
-        department: task.department || '',
-        assignee_ids: task.assignees?.map((a) => a.user_id) || [],
-      });
+      setTitle(task.title ?? '');
+      setDescription(task.description ?? '');
+      setPriority(task.priority ?? 'media');
+      setStatus(task.status ?? 'pendente');
+      setDueDate(task.due_date ?? '');
+      setDepartment(task.department ?? '');
+      setProjectId(task.project_id ?? '');
+    } else {
+      setTitle('');
+      setDescription('');
+      setPriority('media');
+      setStatus('pendente');
+      setDueDate('');
+      setDepartment('');
+      setProjectId('');
     }
-  }, [task]);
+  }, [open, task]);
+
+  const departmentOptions = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          ...(departments ?? []).map((d) => d.name),
+          ...(department ? [department] : []),
+        ]),
+      ).filter(Boolean),
+    [departments, department],
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (task) {
-      await updateTask.mutateAsync({
-        id: task.id,
-        updates: {
-          title: formData.title,
-          description: formData.description || null,
-          priority: formData.priority,
-          status: formData.status,
-          due_date: formData.due_date || null,
-          department: formData.department || null,
-        } as any,
-        oldTask: {
-          title: task.title,
-          description: task.description,
-          priority: task.priority,
-          status: task.status,
-          due_date: task.due_date,
-          department: task.department,
-        },
-      });
-      await updateAssignees.mutateAsync({ taskId: task.id, assigneeIds: formData.assignee_ids });
-    } else {
-      await createTask.mutateAsync({
-        ...formData,
-        description: formData.description || null,
-        due_date: formData.due_date || null,
-        department: formData.department || null,
-      } as any);
+    if (!title.trim()) {
+      enhancedToast.error({ title: 'Título obrigatório' });
+      return;
     }
+    setSaving(true);
+    try {
+      const basePayload = {
+        title: title.trim(),
+        description: description.trim() || null,
+        priority,
+        status,
+        due_date: dueDate || null,
+        department: department || null,
+        project_id: projectId || null,
+      };
 
-    onOpenChange(false);
-    setFormData({
-      title: '',
-      description: '',
-      priority: 'media',
-      status: 'pendente',
-      due_date: '',
-      department: '',
-      assignee_ids: [],
-    });
-  };
-
-  const toggleAssignee = (userId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      assignee_ids: prev.assignee_ids.includes(userId)
-        ? prev.assignee_ids.filter((id) => id !== userId)
-        : [...prev.assignee_ids, userId],
-    }));
+      if (isEditing && task) {
+        await updateTask.mutateAsync({
+          id: task.id,
+          updates: basePayload as any,
+          oldTask: {
+            title: task.title,
+            description: task.description,
+            priority: task.priority,
+            status: task.status,
+            due_date: task.due_date,
+            department: task.department,
+          },
+        });
+      } else {
+        await createTask.mutateAsync(basePayload as any);
+      }
+      onOpenChange(false);
+    } catch (err) {
+      enhancedToast.error({
+        title: 'Erro ao salvar tarefa',
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
-            {task ? 'Editar Tarefa' : 'Nova Tarefa'}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar tarefa' : 'Nova tarefa'}</DialogTitle>
+          {!isEditing && (
+            <DialogDescription>
+              A tarefa será criada com você como responsável. Você pode
+              reatribuir depois.
+            </DialogDescription>
+          )}
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <Field label="Título" required>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">
+              Título <span style={{ color: 'hsl(var(--ds-danger))' }}>*</span>
+            </Label>
             <Input
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              required
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ex: Editar reel do projeto X"
+              autoFocus
             />
-          </Field>
+          </div>
 
-          <Field label="Descrição">
+          <div className="space-y-2">
+            <Label htmlFor="description">Descrição</Label>
             <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               rows={3}
+              placeholder="Notas, contexto, links…"
             />
-          </Field>
+          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-            <Field label="Prioridade">
-              <Select
-                value={formData.priority}
-                onValueChange={(value: TaskPriority) => setFormData({ ...formData, priority: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue>
-                    <PriorityBadge priority={formData.priority} />
-                  </SelectValue>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="priority">Prioridade</Label>
+              <Select value={priority} onValueChange={(v) => setPriority(v as TaskPriority)}>
+                <SelectTrigger id="priority">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.keys(PRIORITY_CONFIG) as TaskPriority[]).map((key) => (
-                    <SelectItem key={key} value={key}>
-                      <PriorityBadge priority={key} />
+                  {(Object.keys(PRIORITY_CONFIG) as TaskPriority[]).map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {PRIORITY_CONFIG[p].label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </Field>
-
-            <Field label="Status">
-              <Select
-                value={formData.status}
-                onValueChange={(value: TaskStatus) => setFormData({ ...formData, status: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue>
-                    <StatusBadge status={formData.status} />
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(STATUS_CONFIG) as TaskStatus[]).map((key) => (
-                    <SelectItem key={key} value={key}>
-                      <StatusBadge status={key} />
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-            <Field label="Prazo">
-              <Input
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-              />
-            </Field>
-
-            <Field label="Departamento">
-              {!isCreatingNewDept ? (
-                <Select
-                  value={formData.department || 'none'}
-                  onValueChange={(value) => {
-                    if (value === 'create_new') {
-                      setIsCreatingNewDept(true);
-                      setNewDeptName('');
-                    } else if (value === 'none') {
-                      setFormData({ ...formData, department: '' });
-                    } else {
-                      setFormData({ ...formData, department: value });
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um departamento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Nenhum</SelectItem>
-                    {departments.map((dept) => (
-                      <SelectItem key={dept.id} value={dept.name}>
-                        {dept.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="create_new">
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'hsl(var(--ds-accent))' }}>
-                        <Plus size={14} strokeWidth={1.5} />
-                        Criar novo departamento…
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <Input
-                    value={newDeptName}
-                    onChange={(e) => setNewDeptName(e.target.value)}
-                    placeholder="Nome do novo departamento"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && newDeptName.trim()) {
-                        e.preventDefault();
-                        createDepartment.mutateAsync(newDeptName).then((dept) => {
-                          setFormData({ ...formData, department: dept.name });
-                          setIsCreatingNewDept(false);
-                          setNewDeptName('');
-                        });
-                      } else if (e.key === 'Escape') {
-                        setIsCreatingNewDept(false);
-                        setNewDeptName('');
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="btn primary"
-                    style={{ width: 36, padding: 0 }}
-                    onClick={() => {
-                      if (newDeptName.trim()) {
-                        createDepartment.mutateAsync(newDeptName).then((dept) => {
-                          setFormData({ ...formData, department: dept.name });
-                          setIsCreatingNewDept(false);
-                          setNewDeptName('');
-                        });
-                      }
-                    }}
-                    disabled={!newDeptName.trim() || createDepartment.isPending}
-                  >
-                    <Check size={14} strokeWidth={1.5} />
-                  </button>
-                  <button
-                    type="button"
-                    className="btn"
-                    style={{ width: 36, padding: 0 }}
-                    onClick={() => {
-                      setIsCreatingNewDept(false);
-                      setNewDeptName('');
-                    }}
-                  >
-                    <X size={14} strokeWidth={1.5} />
-                  </button>
-                </div>
-              )}
-            </Field>
-          </div>
-
-          <div>
-            <span style={fieldLabel}>Responsáveis</span>
-            <div
-              style={{
-                border: '1px solid hsl(var(--ds-line-1))',
-                background: 'hsl(var(--ds-surface))',
-                padding: 8,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-                maxHeight: 192,
-                overflowY: 'auto',
-              }}
-            >
-              {users.map((u) => {
-                const checked = formData.assignee_ids.includes(u.id);
-                return (
-                  <label
-                    key={u.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      padding: '6px 8px',
-                      cursor: 'pointer',
-                      transition: 'background 0.15s',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'transparent';
-                    }}
-                  >
-                    <Checkbox checked={checked} onCheckedChange={() => toggleAssignee(u.id)} />
-                    <Avatar style={{ width: 22, height: 22 }}>
-                      <AvatarImage src={u.avatar_url || undefined} />
-                      <AvatarFallback style={{ fontSize: 10 }}>
-                        {u.display_name?.[0] || '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-1))' }}>
-                      {u.display_name || u.email}
-                    </span>
-                  </label>
-                );
-              })}
             </div>
-            {formData.assignee_ids.length > 0 && (
-              <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 6 }}>
-                {formData.assignee_ids.length} responsável(is) selecionado(s)
-              </p>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select value={status} onValueChange={(v) => setStatus(v as TaskStatus)}>
+                <SelectTrigger id="status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(STATUS_CONFIG) as TaskStatus[]).map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {STATUS_CONFIG[s].label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 8 }}>
-            <button type="button" className="btn" onClick={() => onOpenChange(false)}>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="due_date">Prazo</Label>
+              <Input
+                id="due_date"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="department">Departamento</Label>
+              <Select
+                value={department || '__none__'}
+                onValueChange={(v) => setDepartment(v === '__none__' ? '' : v)}
+              >
+                <SelectTrigger id="department">
+                  <SelectValue placeholder="Nenhum" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Nenhum</SelectItem>
+                  {departmentOptions.map((d) => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="project">
+              Projeto{' '}
+              <span style={{ color: 'hsl(var(--ds-fg-3))', fontWeight: 400, fontSize: 11 }}>
+                — opcional
+              </span>
+            </Label>
+            <Select
+              value={projectId || '__none__'}
+              onValueChange={(v) => setProjectId(v === '__none__' ? '' : v)}
+            >
+              <SelectTrigger id="project">
+                <SelectValue
+                  placeholder={projectsQuery.isLoading ? 'Carregando…' : 'Sem projeto'}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Sem projeto</SelectItem>
+                {(projectsQuery.data ?? []).map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DialogFooter>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => onOpenChange(false)}
+              disabled={saving}
+            >
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="btn primary"
-              disabled={createTask.isPending || updateTask.isPending}
-            >
-              {task ? 'Salvar' : 'Criar'}
+            <button type="submit" className="btn primary" disabled={saving}>
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Salvando…</span>
+                </>
+              ) : (
+                <span>{isEditing ? 'Salvar' : 'Criar tarefa'}</span>
+              )}
             </button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

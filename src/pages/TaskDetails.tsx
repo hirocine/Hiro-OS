@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText, CheckSquare, MessageCircle, Paperclip, Download, Upload, Loader2 } from 'lucide-react';
+import { Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText, CheckSquare, MessageCircle, Paperclip, Download, Upload, Loader2, Folder } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Input } from '@/components/ui/input';
@@ -322,6 +322,34 @@ export default function TaskDetails() {
                   onSave={(newAssignees) => updateAssignees.mutate({ taskId: task.id, assigneeIds: newAssignees })}
                 />
               </div>
+
+              {/* Projeto vinculado (read-only chip; vínculo se altera via dialog) */}
+              {task.project_name ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <span style={eyebrow}>Projeto</span>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/projetos-av/${task.project_id}`)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '4px 8px',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      background: 'hsl(var(--ds-surface))',
+                      color: 'hsl(var(--ds-fg-1))',
+                      fontSize: 13,
+                      cursor: 'pointer',
+                      width: 'fit-content',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-surface))')}
+                  >
+                    <Folder size={13} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))' }} />
+                    <span>{task.project_name}</span>
+                  </button>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

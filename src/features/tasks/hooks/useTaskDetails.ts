@@ -39,14 +39,18 @@ export function useTaskDetails(taskId: string) {
     queryFn: async (): Promise<TaskWithDetails> => {
       logger.debug('Fetching task details', { module: 'tasks', data: { taskId } });
 
-      // Fetch task
+      // Fetch task (with optional joined AV project name for the
+      // "Projeto" chip in the detail page)
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
-        .select('*')
+        .select('*, audiovisual_projects:project_id(name)')
         .eq('id', taskId)
         .single();
 
       if (taskError) throw taskError;
+
+      const projectName =
+        (taskData as any)?.audiovisual_projects?.name ?? null;
 
       // Fetch assignees with profiles
       const { data: assigneesData } = await supabase
@@ -76,6 +80,7 @@ export function useTaskDetails(taskId: string) {
 
       return {
         ...taskData,
+        project_name: projectName,
         assignees,
         assignee_name: assignees[0]?.display_name || null,
         assignee_avatar: assignees[0]?.avatar_url || null,

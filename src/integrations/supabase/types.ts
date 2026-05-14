@@ -3373,6 +3373,7 @@ export type Database = {
           id: string
           is_private: boolean
           priority: string
+          project_id: string | null
           status: string
           title: string
           updated_at: string
@@ -3387,6 +3388,7 @@ export type Database = {
           id?: string
           is_private?: boolean
           priority?: string
+          project_id?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -3401,6 +3403,7 @@ export type Database = {
           id?: string
           is_private?: boolean
           priority?: string
+          project_id?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -3412,6 +3415,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "audiovisual_projects"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4100,3 +4110,4 @@ export const Constants = {
     },
   },
 } as const
+

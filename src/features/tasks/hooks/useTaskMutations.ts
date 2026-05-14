@@ -127,16 +127,18 @@ export function useTaskMutations() {
 
       if (error) throw error;
 
-      // Insert assignees if provided
-      const idsToInsert = assignee_ids || [];
-      if (idsToInsert.length > 0) {
-        const { error: assigneeError } = await supabase
-          .from('task_assignees')
-          .insert(idsToInsert.map((uid: string) => ({ task_id: data.id, user_id: uid })));
-        
-        if (assigneeError) {
-          logger.error('Error inserting task assignees', { module: 'tasks', error: assigneeError });
-        }
+      // Default: assign the task to its creator if no explicit list given.
+      // The Nova Tarefa dialog no longer asks for responsáveis — the
+      // creator is auto-assigned. Reattribution happens later via the
+      // inline assignee cell on the table / detail page.
+      const idsToInsert = (assignee_ids && assignee_ids.length > 0)
+        ? assignee_ids
+        : [user.id];
+      const { error: assigneeError } = await supabase
+        .from('task_assignees')
+        .insert(idsToInsert.map((uid: string) => ({ task_id: data.id, user_id: uid })));
+      if (assigneeError) {
+        logger.error('Error inserting task assignees', { module: 'tasks', error: assigneeError });
       }
 
       return data;

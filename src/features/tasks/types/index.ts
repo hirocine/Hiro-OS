@@ -41,12 +41,16 @@ export interface Task {
   created_at: string;
   updated_at: string;
   is_private: boolean;
-  
+  /** Optional link to audiovisual_projects.id. */
+  project_id: string | null;
+
   // Joined data
   assignee_name?: string;
   assignee_avatar?: string;
   creator_name?: string;
-  
+  /** Joined: audiovisual_projects.name (when project_id set). */
+  project_name?: string | null;
+
   // Multi-assignee data
   assignees?: TaskAssignee[];
 }
