@@ -308,6 +308,7 @@ export function PPTable({ items, isLoading }: PPTableProps) {
                   <InlineAssigneeCell
                     value={item.editor_id ? [item.editor_id] : []}
                     users={users}
+                    avatarShape="square"
                     onSave={(values) => {
                       const newId = values[0] || null;
                       const editorUser = users.find((u) => u.id === newId);

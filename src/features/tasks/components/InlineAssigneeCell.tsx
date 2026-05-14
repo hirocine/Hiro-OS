@@ -17,6 +17,8 @@ interface InlineAssigneeCellProps {
   onSave: (newValue: string[]) => void;
   className?: string;
   isActive?: boolean;
+  /** Avatar shape — `'square'` removes the default circle rounding. */
+  avatarShape?: 'circle' | 'square';
 }
 
 export function InlineAssigneeCell({
@@ -25,8 +27,14 @@ export function InlineAssigneeCell({
   onSave,
   className = '',
   isActive = true,
+  avatarShape = 'circle',
 }: InlineAssigneeCellProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const isSquare = avatarShape === 'square';
+  const avatarSquareClass = isSquare
+    ? 'rounded-none [&_img]:rounded-none [&_span]:rounded-none'
+    : '';
+  const avatarSquareStyle: React.CSSProperties = isSquare ? { borderRadius: 0 } : {};
 
   const selectedUsers = users.filter((u) => value.includes(u.id));
 
@@ -84,15 +92,22 @@ export function InlineAssigneeCell({
                     return (
                       <Avatar
                         key={user.id}
+                        className={avatarSquareClass}
                         style={{
                           width: 22,
                           height: 22,
                           border: '2px solid hsl(var(--ds-surface))',
                           marginLeft: i === 0 ? 0 : -6,
+                          ...avatarSquareStyle,
                         }}
                       >
                         <AvatarImage src={avatarData.url || undefined} />
-                        <AvatarFallback style={{ fontSize: 9 }}>{avatarData.initials}</AvatarFallback>
+                        <AvatarFallback
+                          className={avatarSquareClass}
+                          style={{ fontSize: 9, ...avatarSquareStyle }}
+                        >
+                          {avatarData.initials}
+                        </AvatarFallback>
                       </Avatar>
                     );
                   })}
@@ -160,9 +175,17 @@ export function InlineAssigneeCell({
                       style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Avatar style={{ width: 24, height: 24 }}>
+                        <Avatar
+                          className={avatarSquareClass}
+                          style={{ width: 24, height: 24, ...avatarSquareStyle }}
+                        >
                           <AvatarImage src={userData.url || undefined} />
-                          <AvatarFallback style={{ fontSize: 10 }}>{userData.initials}</AvatarFallback>
+                          <AvatarFallback
+                            className={avatarSquareClass}
+                            style={{ fontSize: 10, ...avatarSquareStyle }}
+                          >
+                            {userData.initials}
+                          </AvatarFallback>
                         </Avatar>
                         <span>{userData.displayName || user.email}</span>
                       </div>
