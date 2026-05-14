@@ -1,41 +1,38 @@
 /**
  * ════════════════════════════════════════════════════════════════
- * TasksTable — redesign enxuto, opcionalmente agrupado por prioridade
+ * TasksTable — enxuto, opcionalmente agrupado por prioridade
  * ════════════════════════════════════════════════════════════════
  *
- * Colunas:
- *   [checkbox] | Tarefa | Projeto | Responsáveis | Prazo | Status
+ * Colunas (na ordem): Tarefa | Prioridade | Responsáveis | Prazo |
+ *                     Status | (botão abrir)
  *
  * Quando `groupByPriority` é true, as tasks são quebradas em sub-grupos
  * (Urgente / Alta / Média / Baixa / Stand-by) com header próprio
- * (barra colorida + label + contador). Quando false, vira tabela simples.
+ * (barra colorida + label + contador). A coluna Prioridade continua
+ * existindo pra edição inline mesmo dentro do grupo.
  *
- * Layout: linhas finas, status borderless (dot + label), prazo com
- * chip relativo abaixo da data ("HOJE", "1 DIA", "ATRASADA…"). Click
- * no título navega pra detalhes; click no checkbox toggle status.
+ * Visual: linhas finas, prazo com chip relativo abaixo da data
+ * ("HOJE", "1d", "3d atrás" em vermelho).
  */
 
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Inbox, Check, Folder } from 'lucide-react';
+import { Inbox, ChevronRight } from 'lucide-react';
 import { EmptyState } from '@/ds/components/EmptyState';
 import { InlineSelectCell } from './InlineSelectCell';
 import { InlineDateCell } from './InlineDateCell';
-import { InlineDepartmentCell } from './InlineDepartmentCell';
 import { InlineAssigneeCell } from './InlineAssigneeCell';
+import { PriorityBadge } from './PriorityBadge';
 import { StatusBadge } from './StatusBadge';
 import { useTaskMutations } from '../hooks/useTaskMutations';
-import { useDepartments } from '../hooks/useDepartments';
 import { useUsers } from '@/hooks/useUsers';
 import {
   Task,
   TaskPriority,
   TaskStatus,
-  PRIORITY_ORDER,
   PRIORITY_CONFIG,
   STATUS_CONFIG,
 } from '../types';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface TasksTableProps {
   tasks: Task[];
@@ -46,11 +43,11 @@ interface TasksTableProps {
   showAssignee?: boolean;
 }
 
-// 6 columns: checkbox + title + project + assignee + due + status
-const COLS_FULL = '28px minmax(220px, 1.6fr) 180px 140px 120px 110px';
-const COLS_NO_ASSIGNEE = '28px minmax(220px, 1.8fr) 180px 120px 110px';
+// 6 columns: title + priority + assignees + due + status + open button
+const COLS_FULL        = 'minmax(240px, 1.6fr) 130px 140px 120px 130px 48px';
+const COLS_NO_ASSIGNEE = 'minmax(240px, 1.8fr) 130px 120px 130px 48px';
 
-// Priority bar color
+// Priority bar color (for group header)
 const PRIORITY_BAR_COLOR: Record<TaskPriority, string> = {
   urgente: 'hsl(var(--ds-danger))',
   alta:    'hsl(var(--ds-warning))',
@@ -61,23 +58,6 @@ const PRIORITY_BAR_COLOR: Record<TaskPriority, string> = {
 
 // Render order (urgente first)
 const PRIORITIES_ORDERED: TaskPriority[] = ['urgente', 'alta', 'media', 'baixa', 'standby'];
-
-// Status dot color
-const STATUS_DOT_COLOR: Record<TaskStatus, string> = {
-  pendente:     'hsl(var(--ds-fg-3))',
-  em_progresso: 'hsl(var(--ds-info))',
-  concluida:    'hsl(var(--ds-success))',
-  arquivada:    'hsl(var(--ds-fg-4))',
-};
-
-// Hash function for project color (stable per project id)
-function projectColor(id: string | null): string {
-  if (!id) return 'hsl(var(--ds-fg-4))';
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
-  const hue = Math.abs(h) % 360;
-  return `hsl(${hue} 55% 50%)`;
-}
 
 const MS_DAY = 24 * 60 * 60 * 1000;
 function relDate(due: string | null): { label: string; tone: 'late' | 'today' | 'near' | 'normal' } | null {
@@ -108,7 +88,6 @@ export function TasksTable({
   const navigate = useNavigate();
   const { updateTask, updateAssignees } = useTaskMutations();
   const { users } = useUsers();
-  const { departments } = useDepartments();
 
   const cols = showAssignee ? COLS_FULL : COLS_NO_ASSIGNEE;
 
@@ -125,21 +104,21 @@ export function TasksTable({
     return (
       <div className="tbl" style={{ gridTemplateColumns: cols, border: '1px solid hsl(var(--ds-line-1))' }}>
         <div className="tbl-head">
-          <div />
           <div>Tarefa</div>
-          <div>Projeto</div>
+          <div>Prioridade</div>
           {showAssignee && <div>Responsáveis</div>}
           <div>Prazo</div>
           <div>Status</div>
+          <div aria-label="Abrir" />
         </div>
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className={'tbl-row' + (i === 3 ? ' last' : '')}>
-            <div />
             <div><span className="sk line lg" style={{ width: '70%' }} /></div>
-            <div><span className="sk line" style={{ width: 100 }} /></div>
+            <div><span className="sk line" style={{ width: 70 }} /></div>
             {showAssignee && <div><span className="sk line" style={{ width: 80 }} /></div>}
             <div><span className="sk line" style={{ width: 60 }} /></div>
             <div><span className="sk line" style={{ width: 80 }} /></div>
+            <div />
           </div>
         ))}
       </div>
@@ -157,17 +136,7 @@ export function TasksTable({
     );
   }
 
-  const handleToggleDone = (task: Task) => {
-    const newStatus: TaskStatus = task.status === 'concluida' ? 'pendente' : 'concluida';
-    updateTask.mutate({
-      id: task.id,
-      updates: { status: newStatus },
-      oldTask: task,
-    });
-  };
-
   const renderRow = (task: Task, isLast: boolean) => {
-    const isDone = task.status === 'concluida';
     const rel = relDate(task.due_date);
     return (
       <div
@@ -175,28 +144,7 @@ export function TasksTable({
         className={'tbl-row' + (isLast ? ' last' : '')}
         style={{ cursor: 'default' }}
       >
-        {/* Checkbox */}
-        <div onClick={(e) => e.stopPropagation()} style={{ paddingRight: 0 }}>
-          <button
-            type="button"
-            onClick={() => handleToggleDone(task)}
-            aria-label={isDone ? 'Marcar como pendente' : 'Concluir tarefa'}
-            style={{
-              width: 16,
-              height: 16,
-              border: '1.5px solid ' + (isDone ? 'hsl(var(--ds-success))' : 'hsl(var(--ds-line-3, var(--ds-line-1)))'),
-              background: isDone ? 'hsl(var(--ds-success))' : 'transparent',
-              display: 'grid',
-              placeItems: 'center',
-              cursor: 'pointer',
-              transition: 'border-color 120ms, background 120ms',
-            }}
-          >
-            {isDone ? <Check size={10} strokeWidth={3} color="#fff" /> : null}
-          </button>
-        </div>
-
-        {/* Title — clickable to open details */}
+        {/* Tarefa — clickable title */}
         <div onClick={(e) => e.stopPropagation()}>
           <button
             type="button"
@@ -209,20 +157,19 @@ export function TasksTable({
               fontFamily: '"HN Display", sans-serif',
               fontWeight: 500,
               fontSize: 13.5,
-              color: isDone ? 'hsl(var(--ds-fg-3))' : 'hsl(var(--ds-fg-1))',
+              color: 'hsl(var(--ds-fg-1))',
               textAlign: 'left',
-              textDecoration: isDone ? 'line-through' : 'none',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               maxWidth: '100%',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.textDecoration = isDone ? 'line-through' : 'underline')}
-            onMouseLeave={(e) => (e.currentTarget.style.textDecoration = isDone ? 'line-through' : 'none')}
+            onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+            onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
           >
             {task.title}
           </button>
-          {rel?.tone === 'late' && !isDone ? (
+          {rel?.tone === 'late' && task.status !== 'concluida' ? (
             <span
               style={{
                 marginLeft: 8,
@@ -242,43 +189,17 @@ export function TasksTable({
           ) : null}
         </div>
 
-        {/* Projeto */}
+        {/* Prioridade */}
         <div onClick={(e) => e.stopPropagation()}>
-          {task.project_id && task.project_name ? (
-            <button
-              type="button"
-              onClick={() => navigate(`/projetos-av/${task.project_id}`)}
-              style={{
-                background: 'none',
-                border: 0,
-                padding: 0,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                fontSize: 13,
-                color: 'hsl(var(--ds-fg-2))',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                maxWidth: '100%',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-1))')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-2))')}
-            >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  background: projectColor(task.project_id),
-                  flexShrink: 0,
-                }}
-              />
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.project_name}</span>
-            </button>
-          ) : (
-            <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-4))' }}>—</span>
-          )}
+          <InlineSelectCell
+            value={task.priority}
+            options={Object.entries(PRIORITY_CONFIG).map(([val, cfg]) => ({ value: val, label: cfg.label }))}
+            onSave={(val) =>
+              updateTask.mutate({ id: task.id, updates: { priority: val as TaskPriority }, oldTask: task })
+            }
+            renderValue={(val) => <PriorityBadge priority={val as TaskPriority} />}
+            renderOption={(val) => <PriorityBadge priority={val as TaskPriority} />}
+          />
         </div>
 
         {/* Responsáveis */}
@@ -320,7 +241,7 @@ export function TasksTable({
           </div>
         </div>
 
-        {/* Status — borderless dot + label, clickable via InlineSelectCell */}
+        {/* Status — full StatusBadge */}
         <div onClick={(e) => e.stopPropagation()}>
           <InlineSelectCell
             value={task.status}
@@ -328,32 +249,43 @@ export function TasksTable({
             onSave={(val) =>
               updateTask.mutate({ id: task.id, updates: { status: val as TaskStatus }, oldTask: task })
             }
-            renderValue={(val) => (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  fontSize: 12,
-                  color:
-                    (val as TaskStatus) === 'concluida'
-                      ? 'hsl(var(--ds-fg-4))'
-                      : 'hsl(var(--ds-fg-2))',
-                }}
-              >
-                <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    background: STATUS_DOT_COLOR[val as TaskStatus],
-                    flexShrink: 0,
-                  }}
-                />
-                {STATUS_CONFIG[val as TaskStatus]?.label ?? val}
-              </span>
-            )}
+            renderValue={(val) => <StatusBadge status={val as TaskStatus} />}
             renderOption={(val) => <StatusBadge status={val as TaskStatus} />}
           />
+        </div>
+
+        {/* Open detail */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button
+            type="button"
+            onClick={() => navigate(`/tarefas/${task.id}`)}
+            style={{
+              width: 32,
+              height: 32,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'transparent',
+              border: '1px solid hsl(var(--ds-line-1))',
+              color: 'hsl(var(--ds-fg-2))',
+              cursor: 'pointer',
+              transition: 'color 120ms, background 120ms, border-color 120ms',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'hsl(var(--ds-bg))';
+              e.currentTarget.style.background = 'hsl(var(--ds-fg-1))';
+              e.currentTarget.style.borderColor = 'hsl(var(--ds-fg-1))';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'hsl(var(--ds-fg-2))';
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+            }}
+            aria-label="Abrir detalhes da tarefa"
+            title="Abrir detalhes"
+          >
+            <ChevronRight size={16} strokeWidth={1.75} />
+          </button>
         </div>
       </div>
     );
@@ -415,12 +347,12 @@ export function TasksTable({
             }}
           >
             <div className="tbl-head">
-              <div />
               <div>Tarefa</div>
-              <div>Projeto</div>
+              <div>Prioridade</div>
               {showAssignee && <div>Responsáveis</div>}
               <div>Prazo</div>
               <div>Status</div>
+              <div aria-label="Abrir" />
             </div>
             {group.items.map((task, idx) => renderRow(task, idx === group.items.length - 1))}
           </div>
