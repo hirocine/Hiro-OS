@@ -24,6 +24,7 @@ import type {
   RecurringTab,
   RecurringVigencia,
 } from './types';
+import { MOCK_CONTRACTS } from './mockData';
 
 const QUERY_KEY = ['contracts', 'list'] as const;
 
@@ -93,8 +94,16 @@ async function fetchContracts(): Promise<Contract[]> {
     .select('*')
     .order('zapsign_created_at', { ascending: false })
     .limit(500);
-  if (error) throw error;
-  return (data as DbContractRow[]).map(rowToContract);
+
+  // Backend ZapSign + tabela `contracts` ainda não estão em prod:
+  // se a query falhar (tabela ausente / RLS negando) ou vier vazia,
+  // mostramos o mock para a página não ficar inacessível. Some
+  // automaticamente quando o webhook do ZapSign começar a popular
+  // a tabela.
+  if (error) return MOCK_CONTRACTS;
+  const rows = (data as DbContractRow[] | null) ?? [];
+  if (rows.length === 0) return MOCK_CONTRACTS;
+  return rows.map(rowToContract);
 }
 
 /**
