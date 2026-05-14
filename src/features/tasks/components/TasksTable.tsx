@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChevronDown, Inbox } from 'lucide-react';
+import { Plus, ChevronDown, Inbox, ChevronRight } from 'lucide-react';
 import { EmptyState } from '@/ds/components/EmptyState';
 import { Input } from '@/components/ui/input';
 import { TaskSortableHeader } from './TaskSortableHeader';
@@ -44,8 +44,8 @@ const defaultTaskState = {
   department: null as string | null,
 };
 
-const COLS_WITH_ASSIGNEE = '1.5fr 130px 120px 1fr 140px 1fr';
-const COLS_WITHOUT_ASSIGNEE = '2fr 130px 120px 140px 1fr';
+const COLS_WITH_ASSIGNEE = '1.5fr 130px 120px 1fr 140px 1fr 40px';
+const COLS_WITHOUT_ASSIGNEE = '2fr 130px 120px 140px 1fr 40px';
 
 export function TasksTable({
   tasks,
@@ -158,6 +158,7 @@ export function TasksTable({
           {showAssignee && <div>Responsáveis</div>}
           <div>Prazo</div>
           <div>Departamento</div>
+          <div aria-label="Abrir" />
         </div>
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className={'tbl-row' + (i === 4 ? ' last' : '')}>
@@ -167,6 +168,7 @@ export function TasksTable({
             {showAssignee && <div><span className="sk line" style={{ width: 100 }} /></div>}
             <div><span className="sk line" style={{ width: 100 }} /></div>
             <div><span className="sk line" style={{ width: 90 }} /></div>
+            <div />
           </div>
         ))}
       </div>
@@ -198,6 +200,7 @@ export function TasksTable({
         <div>
           <TaskSortableHeader field="department" label="Departamento" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
         </div>
+        <div aria-label="Abrir" />
       </div>
 
       {showCreationRow && (
@@ -302,6 +305,7 @@ export function TasksTable({
               <Plus size={14} strokeWidth={1.5} />
             </button>
           </div>
+          <div />
         </div>
       )}
 
@@ -311,7 +315,6 @@ export function TasksTable({
           <div
             key={task.id}
             className={'tbl-row' + (isLast ? ' last' : '')}
-            onClick={() => navigate(`/tarefas/${task.id}`)}
           >
             <div onClick={(e) => e.stopPropagation()}>
               <InlineEditCell
@@ -358,6 +361,35 @@ export function TasksTable({
                 departments={departments}
                 onSave={(value) => updateTask.mutate({ id: task.id, updates: { department: value }, oldTask: task })}
               />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => navigate(`/tarefas/${task.id}`)}
+                style={{
+                  width: 28,
+                  height: 28,
+                  display: 'grid',
+                  placeItems: 'center',
+                  background: 'transparent',
+                  border: 0,
+                  color: 'hsl(var(--ds-fg-3))',
+                  cursor: 'pointer',
+                  transition: 'color 120ms, background 120ms',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'hsl(var(--ds-fg-1))';
+                  e.currentTarget.style.background = 'hsl(var(--ds-line-2))';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'hsl(var(--ds-fg-3))';
+                  e.currentTarget.style.background = 'transparent';
+                }}
+                aria-label="Abrir detalhes da tarefa"
+                title="Abrir detalhes"
+              >
+                <ChevronRight size={14} strokeWidth={1.5} />
+              </button>
             </div>
           </div>
         );
