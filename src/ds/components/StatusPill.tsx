@@ -72,30 +72,37 @@ function withAlpha(color: string, alpha: number): string {
 }
 
 function resolveTone(tone: Tone, variant: 'filled' | 'outlined'): CSSProperties {
-  // Defensive: callers may pass a missing token (e.g. enum value that
-  // isn't in the local TONE_BY_X map). Fall back to 'muted' instead of
-  // crashing with "Cannot read properties of undefined".
+  // Returns color, background, and an inset box-shadow that acts as a
+  // "border" without occupying layout space. The .pill global CSS sets
+  // `border: 1px solid`, which interacts weirdly with background-clip
+  // in some contexts (background appears smaller than the border box,
+  // and text leaks past the colored area). The inset box-shadow lives
+  // *inside* the element and never causes that mismatch.
+  let colorVal: string;
+  let bgVal: string;
+  let borderVal: string;
   if (typeof tone === 'string') {
     const t = TONE_TOKENS[tone] ?? TONE_TOKENS.muted;
-    return {
-      color: t.color,
-      borderColor: t.border,
-      background: variant === 'filled' ? t.bg : 'transparent',
-    };
-  }
-  if (!tone || typeof tone !== 'object' || !tone.color) {
+    colorVal = t.color;
+    bgVal = variant === 'filled' ? t.bg : 'transparent';
+    borderVal = t.border;
+  } else if (!tone || typeof tone !== 'object' || !tone.color) {
     const t = TONE_TOKENS.muted;
-    return {
-      color: t.color,
-      borderColor: t.border,
-      background: variant === 'filled' ? t.bg : 'transparent',
-    };
+    colorVal = t.color;
+    bgVal = variant === 'filled' ? t.bg : 'transparent';
+    borderVal = t.border;
+  } else {
+    colorVal = tone.color;
+    bgVal = variant === 'filled' ? (tone.background ?? withAlpha(tone.color, 0.08)) : 'transparent';
+    borderVal = tone.borderColor ?? withAlpha(tone.color, 0.3);
   }
   return {
-    color: tone.color,
-    borderColor: tone.borderColor ?? withAlpha(tone.color, 0.3),
-    background:
-      variant === 'filled' ? (tone.background ?? withAlpha(tone.color, 0.08)) : 'transparent',
+    color: colorVal,
+    background: bgVal,
+    // Kill the .pill global border + replace with an inset shadow that
+    // visually looks identical but doesn't clip the background.
+    border: 'none',
+    boxShadow: `inset 0 0 0 1px ${borderVal}`,
   };
 }
 
@@ -137,12 +144,6 @@ export function StatusPill({
         paddingLeft: 12,
         paddingRight: 12,
         letterSpacing: '0.08em',
-        // Ensure the background fills the full visual box, including the
-        // border area. Some browsers/contexts default to padding-box which
-        // can leave a 1px gap between background edge and border edge —
-        // making the text appear to spill past the colored region.
-        backgroundClip: 'border-box',
-        WebkitBackgroundClip: 'border-box',
       }}
     >
       {icon !== undefined && icon !== null && (
