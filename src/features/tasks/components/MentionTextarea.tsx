@@ -214,9 +214,25 @@ export function MentionTextarea({
                   fontFamily: '"HN Display", sans-serif',
                   fontSize: 10,
                   fontWeight: 500,
+                  overflow: 'hidden',
+                  position: 'relative',
                 }}
               >
-                {(u.display_name?.[0] || u.email[0]).toUpperCase()}
+                {u.avatar_url ? (
+                  <img
+                    src={u.avatar_url}
+                    alt=""
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      position: 'absolute',
+                      inset: 0,
+                    }}
+                  />
+                ) : (
+                  <span>{(u.display_name?.[0] || u.email[0]).toUpperCase()}</span>
+                )}
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div

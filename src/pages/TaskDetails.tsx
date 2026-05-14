@@ -359,21 +359,13 @@ export default function TaskDetails() {
           </div>
         </div>
 
-        {/* Title (inline-editable) — usa o token --ds-display do DS,
-            mesmo tamanho dos h1 do PageHeader ("Tarefas.", "Inbox."). */}
+        {/* Title (inline-editable) — usa a classe .ph-title do DS,
+            mesma altura/peso/letter-spacing dos h1 do PageHeader. */}
         <InlineEditCell
           value={task.title}
           onSave={(newTitle) => handleUpdateTask({ title: newTitle })}
-          style={{
-            fontFamily: '"HN Display", sans-serif',
-            fontWeight: 500,
-            fontSize: 'var(--ds-display)',
-            letterSpacing: '-0.04em',
-            lineHeight: 1,
-            color: 'hsl(var(--ds-fg-1))',
-            padding: 0,
-            margin: 0,
-          }}
+          className="ph-title"
+          style={{ padding: 0, margin: 0, fontSize: 'inherit', lineHeight: 1 }}
         />
 
         {/* Submeta: criada em / atualizada */}
