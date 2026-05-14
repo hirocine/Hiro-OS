@@ -758,8 +758,8 @@ export function PPVideoPage({ item, onBack }: Props) {
             {SUB_STEPS[normalizedStatus]?.length > 0 && (
               <div
                 style={{
-                  background: 'hsl(var(--ds-accent) / 0.05)',
-                  border: '1px solid hsl(var(--ds-accent) / 0.3)',
+                  background: 'transparent',
+                  border: '1px solid hsl(var(--ds-line-1))',
                   borderTop: 'none',
                   padding: '18px 20px',
                   marginTop: 8,
@@ -884,6 +884,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                   {SUB_STEPS[normalizedStatus].map((sub, i) => {
                     const isDone = i < subStepIndex;
                     const isActive = i === subStepIndex;
+                    const isLast = i === SUB_STEPS[normalizedStatus].length - 1;
                     const num = String(i + 1).padStart(2, '0');
 
                     return (
@@ -897,17 +898,16 @@ export function PPVideoPage({ item, onBack }: Props) {
                           gap: 14,
                           alignItems: 'center',
                           padding: '14px 0',
-                          borderBottom: '1px solid hsl(var(--ds-line-1))',
                           background: 'transparent',
-                          border: 0,
-                          borderBottomColor: 'hsl(var(--ds-line-1))',
+                          borderWidth: 0,
+                          borderBottomWidth: isLast ? 0 : 1,
                           borderBottomStyle: 'solid',
-                          borderBottomWidth: 1,
+                          borderBottomColor: 'hsl(var(--ds-line-1))',
                           cursor: 'pointer',
                           textAlign: 'left',
                           transition: 'background 120ms',
                         }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-accent) / 0.05)')}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-fg-1) / 0.025)')}
                         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
                         {/* Number box */}
