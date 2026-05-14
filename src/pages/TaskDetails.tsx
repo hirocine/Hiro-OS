@@ -20,6 +20,9 @@ import { TaskHistorySection } from '@/features/tasks/components/TaskHistorySecti
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUsers } from '@/hooks/useUsers';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import type { TaskComment } from '@/features/tasks/types';
 import { useDepartments } from '@/features/tasks/hooks/useDepartments';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TaskPriority, TaskStatus, TaskLinkType } from '@/features/tasks/types';
 import { format } from 'date-fns';
@@ -143,6 +146,10 @@ export default function TaskDetails() {
   }
   const { deleteTask, updateTask, updateAssignees } = useTaskMutations();
   const { users } = useUsers();
+  const { user: currentUser } = useAuthContext();
+  const currentUserProfile = users.find((u: any) => u.id === currentUser?.id);
+  const currentUserName: string | null = currentUserProfile?.display_name || currentUser?.email || null;
+  const currentUserAvatar: string | null = currentUserProfile?.avatar_url || null;
   const { departments } = useDepartments();
 
   useEffect(() => {
@@ -715,68 +722,96 @@ export default function TaskDetails() {
                 Comentários <span style={{ fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-3))', fontWeight: 400 }}>({task.comments.length})</span>
               </h3>
               {task.comments && task.comments.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', borderTop: '1px solid hsl(var(--ds-line-1))' }}>
                   {task.comments.map((comment) => (
-                    <div
+                    <CommentRow
                       key={comment.id}
-                      style={{
-                        borderLeft: '2px solid hsl(var(--ds-accent) / 0.3)',
-                        paddingLeft: 16,
-                        paddingTop: 4,
-                        paddingBottom: 4,
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                        <div>
-                          <p style={{ fontWeight: 500, fontSize: 13, color: 'hsl(var(--ds-fg-1))' }}>{comment.user_name || 'Usuário'}</p>
-                          <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
-                            {format(new Date(comment.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          className="btn"
-                          style={{
-                            width: 28,
-                            height: 28,
-                            padding: 0,
-                            justifyContent: 'center',
-                            color: 'hsl(var(--ds-fg-3))',
-                          }}
-                          onClick={() => deleteComment.mutateAsync(comment.id)}
-                          disabled={deleteComment.isPending}
-                        >
-                          <Trash2 size={13} strokeWidth={1.5} />
-                        </button>
-                      </div>
-                      <p style={{ marginTop: 8, fontSize: 13, whiteSpace: 'pre-wrap', color: 'hsl(var(--ds-fg-1))' }}>
-                        {comment.content}
-                      </p>
-                    </div>
+                      comment={comment}
+                      onDelete={() => deleteComment.mutateAsync(comment.id)}
+                      isDeleting={deleteComment.isPending}
+                    />
                   ))}
                 </div>
               ) : (
                 <EmptyState icon={MessageCircle} title="Nenhum comentário" description="Nenhum comentário." compact />
               )}
 
-              <form onSubmit={handleAddComment} style={{ marginTop: 12 }}>
-                <div style={{ position: 'relative', border: '1px solid hsl(var(--ds-line-1))' }}>
-                  <Textarea
-                    placeholder="Adicionar comentário..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    rows={2}
-                    className="resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 pb-10"
-                  />
-                  <div style={{ position: 'absolute', bottom: 8, right: 8 }}>
-                    <button
-                      type="submit"
-                      className="btn"
-                      style={{ height: 28, padding: '0 8px', justifyContent: 'center' }}
-                      disabled={addComment.isPending || !newComment.trim()}
+              {/* Reply box */}
+              <form onSubmit={handleAddComment} style={{ marginTop: 18 }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '32px 1fr',
+                    gap: 14,
+                    alignItems: 'flex-start',
+                  }}
+                >
+                  <Avatar style={{ width: 32, height: 32 }}>
+                    {currentUserAvatar ? <AvatarImage src={currentUserAvatar} /> : null}
+                    <AvatarFallback style={{ fontSize: 10 }}>
+                      {(currentUserName || 'U').charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      background: 'hsl(var(--ds-bg, var(--ds-surface)))',
+                    }}
+                  >
+                    <Textarea
+                      placeholder="Escreva um comentário… use @ para mencionar alguém"
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      rows={3}
+                      className="resize-y border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      style={{ minHeight: 84, padding: '12px 14px', background: 'transparent', fontSize: 14 }}
+                    />
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '6px 8px',
+                        borderTop: '1px solid hsl(var(--ds-line-1))',
+                        background: 'hsl(var(--ds-line-2) / 0.3)',
+                      }}
                     >
-                      <Send size={13} strokeWidth={1.5} />
-                    </button>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          color: 'hsl(var(--ds-fg-4))',
+                          marginLeft: 4,
+                        }}
+                      >
+                        Use <strong style={{ color: 'hsl(var(--ds-fg-2))' }}>@nome</strong> para mencionar
+                      </span>
+                      <button
+                        type="submit"
+                        disabled={addComment.isPending || !newComment.trim()}
+                        style={{
+                          marginLeft: 'auto',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          height: 28,
+                          padding: '0 14px',
+                          background: addComment.isPending || !newComment.trim() ? 'hsl(var(--ds-line-2))' : 'hsl(var(--ds-fg-1))',
+                          color: 'hsl(var(--ds-bg))',
+                          fontFamily: '"HN Display", sans-serif',
+                          fontSize: 10,
+                          fontWeight: 500,
+                          letterSpacing: '0.14em',
+                          textTransform: 'uppercase',
+                          border: 0,
+                          cursor: addComment.isPending || !newComment.trim() ? 'not-allowed' : 'pointer',
+                          transition: 'background 120ms',
+                        }}
+                      >
+                        <Send size={11} strokeWidth={1.5} />
+                        <span>Enviar</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </form>
@@ -791,105 +826,104 @@ export default function TaskDetails() {
                 Anexos <span style={{ fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--ds-fg-3))', fontWeight: 400 }}>({task.attachments?.length || 0})</span>
               </h3>
 
-              {task.attachments && task.attachments.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-                  {task.attachments.map((att) => (
-                    <div
-                      key={att.id}
-                      className="group"
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        padding: 12,
-                        border: '1px solid hsl(var(--ds-line-1))',
-                        transition: 'background 150ms',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                    >
-                      <FileText size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-3))', flexShrink: 0 }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenAttachment(att.file_url)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            padding: 0,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 4,
-                            fontWeight: 500,
-                            fontSize: 13,
-                            color: 'hsl(var(--ds-fg-1))',
-                            textAlign: 'left',
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
-                          onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
-                        >
-                          {att.file_name}
-                          <Download size={11} strokeWidth={1.5} style={{ opacity: 0.5 }} />
-                        </button>
-                        <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
-                          {formatBytes(att.file_size || 0)}
-                          {att.file_type ? ` · ${att.file_type}` : ''}
-                          {' · '}
-                          {format(new Date(att.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        className="btn opacity-0 group-hover:opacity-100"
-                        style={{
-                          width: 28,
-                          height: 28,
-                          padding: 0,
-                          justifyContent: 'center',
-                          color: 'hsl(var(--ds-fg-3))',
-                        }}
-                        onClick={() => deleteAttachment.mutateAsync({ id: att.id, fileName: att.file_name, fileUrl: att.file_url })}
-                        disabled={deleteAttachment.isPending}
-                        title="Remover anexo"
-                      >
-                        <Trash2 size={13} strokeWidth={1.5} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState icon={Paperclip} title="Nenhum anexo" description="Anexe arquivos relacionados à tarefa." compact />
-              )}
-
               <input
                 ref={fileInputRef}
                 type="file"
                 style={{ display: 'none' }}
                 onChange={handleFilePick}
               />
-              <button
-                type="button"
-                className="btn"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={addAttachment.isPending}
-                style={{ marginTop: 12 }}
+
+              {/* Grid de file-cards (sempre presente; última card é o "Arrastar ou clicar") */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  border: '1px solid hsl(var(--ds-line-1))',
+                }}
               >
-                {addAttachment.isPending ? (
-                  <>
-                    <Loader2 size={13} strokeWidth={1.5} className="animate-spin" />
-                    <span>Enviando…</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload size={13} strokeWidth={1.5} />
-                    <span>Anexar arquivo</span>
-                  </>
-                )}
-              </button>
-              <p style={{ marginTop: 6, fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
-                Máx. 50 MB por arquivo. PDF, imagem, vídeo, doc — tudo aceito.
-              </p>
+                {task.attachments?.map((att, idx) => (
+                  <FileCard
+                    key={att.id}
+                    fileName={att.file_name}
+                    fileType={att.file_type}
+                    fileSize={att.file_size}
+                    createdAt={att.created_at}
+                    onOpen={() => handleOpenAttachment(att.file_url)}
+                    onDelete={() =>
+                      deleteAttachment.mutateAsync({
+                        id: att.id,
+                        fileName: att.file_name,
+                        fileUrl: att.file_url,
+                      })
+                    }
+                    deleting={deleteAttachment.isPending}
+                    last={idx === (task.attachments?.length ?? 0) - 1 && (task.attachments?.length ?? 0) % 2 === 1}
+                  />
+                ))}
+
+                {/* Upload card (dashed) */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={addAttachment.isPending}
+                  style={{
+                    padding: '14px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    border: 0,
+                    borderRight: '1px dashed hsl(var(--ds-line-2))',
+                    borderBottom: '1px dashed hsl(var(--ds-line-2))',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    minWidth: 0,
+                    minHeight: 70,
+                    transition: 'background 120ms',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <div
+                    style={{
+                      width: 36,
+                      height: 46,
+                      flexShrink: 0,
+                      border: '1px dashed hsl(var(--ds-line-2))',
+                      display: 'grid',
+                      placeItems: 'center',
+                      color: 'hsl(var(--ds-fg-4))',
+                    }}
+                  >
+                    {addAttachment.isPending ? (
+                      <Loader2 size={16} strokeWidth={1.5} className="animate-spin" />
+                    ) : (
+                      <Upload size={16} strokeWidth={1.5} />
+                    )}
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontFamily: '"HN Display", sans-serif',
+                        fontWeight: 500,
+                        fontSize: 13,
+                        color: 'hsl(var(--ds-fg-2))',
+                      }}
+                    >
+                      {addAttachment.isPending ? 'Enviando…' : 'Arrastar ou clicar'}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: 'hsl(var(--ds-fg-4))',
+                        fontFamily: '"HN Display", sans-serif',
+                      }}
+                    >
+                      PDF, imagem, vídeo, doc — até 50 MB
+                    </div>
+                  </div>
+                </button>
+              </div>
             </div>
 
             <div style={sepStyle} />
@@ -902,63 +936,16 @@ export default function TaskDetails() {
               </h3>
 
               {task.links && task.links.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', borderTop: '1px solid hsl(var(--ds-line-1))', marginBottom: 16 }}>
                   {task.links.map((link) => (
-                    <div
+                    <LinkCard
                       key={link.id}
-                      className="group"
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        padding: 12,
-                        border: '1px solid hsl(var(--ds-line-1))',
-                        transition: 'background 150ms',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                    >
-                      {getLinkIcon(link.link_type)}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <a
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            fontWeight: 500,
-                            fontSize: 13,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 4,
-                            color: 'hsl(var(--ds-fg-1))',
-                            textDecoration: 'none',
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
-                          onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
-                        >
-                          {link.title}
-                          <ExternalLink size={11} strokeWidth={1.5} style={{ opacity: 0.5 }} />
-                        </a>
-                        <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {getDomain(link.url)}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        className="btn opacity-0 group-hover:opacity-100"
-                        style={{
-                          width: 28,
-                          height: 28,
-                          padding: 0,
-                          justifyContent: 'center',
-                          color: 'hsl(var(--ds-fg-3))',
-                        }}
-                        onClick={() => deleteLink.mutateAsync({ id: link.id, title: link.title })}
-                        disabled={deleteLink.isPending}
-                      >
-                        <Trash2 size={13} strokeWidth={1.5} />
-                      </button>
-                    </div>
+                      url={link.url}
+                      title={link.title}
+                      linkType={link.link_type}
+                      onDelete={() => deleteLink.mutateAsync({ id: link.id, title: link.title })}
+                      deleting={deleteLink.isPending}
+                    />
                   ))}
                 </div>
               ) : (
@@ -1025,5 +1012,503 @@ export default function TaskDetails() {
       </AlertDialog>
       </div>
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Helper: comment row with avatar + role + @mention highlighting
+// ─────────────────────────────────────────────────────────────────
+
+const ROLE_LABEL: Record<NonNullable<TaskComment['role']>, string> = {
+  solicitante: 'Solicitante',
+  responsavel: 'Responsável',
+  colaborador: 'Colaborador',
+};
+
+function renderCommentContent(text: string): React.ReactNode[] {
+  // Split on @word patterns and render mentions in accent color
+  const parts: React.ReactNode[] = [];
+  const re = /@([\p{L}0-9_.-]+)/gu;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+  while ((match = re.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    parts.push(
+      <span
+        key={key++}
+        style={{
+          color: 'hsl(var(--ds-info))',
+          fontFamily: '"HN Display", sans-serif',
+          fontWeight: 500,
+        }}
+      >
+        @{match[1]}
+      </span>,
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts;
+}
+
+interface CommentRowProps {
+  comment: TaskComment;
+  onDelete: () => void;
+  isDeleting: boolean;
+}
+
+function CommentRow({ comment, onDelete, isDeleting }: CommentRowProps) {
+  const initials = (comment.user_name ?? 'U').charAt(0).toUpperCase();
+  const roleLabel = comment.role ? ROLE_LABEL[comment.role] : null;
+
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '32px 1fr',
+        gap: 14,
+        padding: '18px 4px',
+        borderBottom: '1px solid hsl(var(--ds-line-1))',
+      }}
+    >
+      <Avatar style={{ width: 32, height: 32 }}>
+        {comment.avatar_url ? <AvatarImage src={comment.avatar_url} /> : null}
+        <AvatarFallback style={{ fontSize: 10 }}>{initials}</AvatarFallback>
+      </Avatar>
+
+      <div style={{ minWidth: 0 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 10,
+            marginBottom: 6,
+            flexWrap: 'wrap',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontWeight: 500,
+              fontSize: 13,
+              color: 'hsl(var(--ds-fg-1))',
+            }}
+          >
+            {comment.user_name || 'Usuário'}
+          </span>
+          {roleLabel ? (
+            <span
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 9,
+                fontWeight: 500,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: 'hsl(var(--ds-fg-4))',
+              }}
+            >
+              {roleLabel}
+            </span>
+          ) : null}
+          <span
+            style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontSize: 10,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'hsl(var(--ds-fg-4))',
+              marginLeft: 'auto',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {format(new Date(comment.created_at), "dd MMM · HH:mm", { locale: ptBR })}
+          </span>
+        </div>
+
+        <div
+          style={{
+            fontSize: 14,
+            color: 'hsl(var(--ds-fg-2))',
+            lineHeight: 1.6,
+            whiteSpace: 'pre-wrap',
+          }}
+        >
+          {renderCommentContent(comment.content)}
+        </div>
+
+        <div style={{ display: 'flex', gap: 14, marginTop: 8 }}>
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={isDeleting}
+            style={{
+              fontFamily: '"HN Display", sans-serif',
+              fontSize: 10,
+              fontWeight: 500,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'hsl(var(--ds-fg-4))',
+              background: 'transparent',
+              border: 0,
+              cursor: 'pointer',
+              padding: 0,
+              transition: 'color 120ms',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-danger))')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-4))')}
+          >
+            Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// FileCard — anexo com ícone colorido por extensão
+// ─────────────────────────────────────────────────────────────────
+
+function extColorFromName(name: string, mime?: string | null): { tone: string; ext: string } {
+  const dot = name.lastIndexOf('.');
+  const rawExt = dot > 0 ? name.slice(dot + 1).toUpperCase() : (mime?.split('/')?.[1] ?? 'FILE').toUpperCase();
+  const ext = rawExt.length > 4 ? rawExt.slice(0, 4) : rawExt;
+
+  // tone: 'default' | 'pdf' (red) | 'video' (blue) | 'image' (info) | 'doc' (info)
+  const lower = ext.toLowerCase();
+  if (lower === 'pdf') return { tone: 'pdf', ext };
+  if (['mov', 'mp4', 'avi', 'mkv', 'webm'].includes(lower)) return { tone: 'video', ext };
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(lower)) return { tone: 'image', ext };
+  if (['doc', 'docx', 'txt', 'rtf', 'odt', 'md'].includes(lower)) return { tone: 'doc', ext };
+  return { tone: 'default', ext };
+}
+
+function formatBytesShort(bytes: number | null): string {
+  if (!bytes) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+interface FileCardProps {
+  fileName: string;
+  fileType: string | null;
+  fileSize: number | null;
+  createdAt: string;
+  onOpen: () => void;
+  onDelete: () => void;
+  deleting: boolean;
+  last: boolean;
+}
+
+function FileCard({ fileName, fileType, fileSize, createdAt, onOpen, onDelete, deleting, last }: FileCardProps) {
+  const { tone, ext } = extColorFromName(fileName, fileType);
+  const toneStyles: Record<string, { bg: string; border: string; color: string }> = {
+    default: {
+      bg: 'hsl(var(--ds-line-2) / 0.5)',
+      border: 'hsl(var(--ds-line-2))',
+      color: 'hsl(var(--ds-fg-2))',
+    },
+    pdf: {
+      bg: 'hsl(var(--ds-danger) / 0.08)',
+      border: 'hsl(var(--ds-danger) / 0.25)',
+      color: 'hsl(var(--ds-danger))',
+    },
+    video: {
+      bg: 'hsl(var(--ds-info) / 0.08)',
+      border: 'hsl(var(--ds-info) / 0.25)',
+      color: 'hsl(var(--ds-info))',
+    },
+    image: {
+      bg: 'hsl(var(--ds-info) / 0.08)',
+      border: 'hsl(var(--ds-info) / 0.25)',
+      color: 'hsl(var(--ds-info))',
+    },
+    doc: {
+      bg: 'hsl(var(--ds-line-2) / 0.5)',
+      border: 'hsl(var(--ds-line-2))',
+      color: 'hsl(var(--ds-fg-2))',
+    },
+  };
+  const t = toneStyles[tone];
+
+  return (
+    <div
+      className="group"
+      style={{
+        padding: '14px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        borderRight: last ? 0 : '1px solid hsl(var(--ds-line-1))',
+        borderBottom: '1px solid hsl(var(--ds-line-1))',
+        background: 'transparent',
+        cursor: 'pointer',
+        transition: 'background 120ms',
+        minWidth: 0,
+        minHeight: 70,
+      }}
+      onClick={onOpen}
+      onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)')}
+      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+    >
+      {/* Icon */}
+      <div
+        style={{
+          width: 36,
+          height: 46,
+          flexShrink: 0,
+          background: t.bg,
+          border: '1px solid ' + t.border,
+          display: 'grid',
+          placeItems: 'center',
+          position: 'relative',
+        }}
+      >
+        <span
+          style={{
+            fontFamily: '"HN Display", sans-serif',
+            fontSize: 9,
+            fontWeight: 500,
+            letterSpacing: '0.06em',
+            color: t.color,
+          }}
+        >
+          {ext}
+        </span>
+        {/* Corner fold */}
+        <span
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: 0,
+            height: 0,
+            borderStyle: 'solid',
+            borderWidth: '0 7px 7px 0',
+            borderColor: 'transparent hsl(var(--ds-bg, var(--ds-surface))) transparent transparent',
+          }}
+        />
+      </div>
+
+      {/* Meta */}
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div
+          style={{
+            fontFamily: '"HN Display", sans-serif',
+            fontWeight: 500,
+            fontSize: 13,
+            color: 'hsl(var(--ds-fg-1))',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {fileName}
+        </div>
+        <div
+          style={{
+            fontSize: 11,
+            color: 'hsl(var(--ds-fg-4))',
+            fontFamily: '"HN Display", sans-serif',
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          {[
+            fileType,
+            formatBytesShort(fileSize),
+            format(new Date(createdAt), 'dd/MM', { locale: ptBR }),
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </div>
+      </div>
+
+      {/* Delete on hover */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete();
+        }}
+        disabled={deleting}
+        className="opacity-0 group-hover:opacity-100"
+        style={{
+          width: 28,
+          height: 28,
+          padding: 0,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'hsl(var(--ds-fg-3))',
+          background: 'transparent',
+          border: 0,
+          cursor: 'pointer',
+          flexShrink: 0,
+          transition: 'color 120ms, opacity 120ms',
+        }}
+        title="Remover anexo"
+        aria-label="Remover anexo"
+      >
+        <Trash2 size={14} strokeWidth={1.5} />
+      </button>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// LinkCard — link externo com favicon
+// ─────────────────────────────────────────────────────────────────
+
+const LINK_FAVI_BY_TYPE: Record<string, { letter: string; bg: string; border: string; color: string }> = {
+  google_drive: {
+    letter: 'G',
+    bg: 'hsl(var(--ds-success) / 0.1)',
+    border: 'hsl(var(--ds-success) / 0.3)',
+    color: 'hsl(var(--ds-success))',
+  },
+  dropbox: {
+    letter: 'D',
+    bg: 'hsl(var(--ds-info) / 0.1)',
+    border: 'hsl(var(--ds-info) / 0.3)',
+    color: 'hsl(var(--ds-info))',
+  },
+  notion: {
+    letter: 'N',
+    bg: 'hsl(var(--ds-line-2) / 0.5)',
+    border: 'hsl(var(--ds-line-2))',
+    color: 'hsl(var(--ds-fg-1))',
+  },
+  onedrive: {
+    letter: 'O',
+    bg: 'hsl(var(--ds-info) / 0.1)',
+    border: 'hsl(var(--ds-info) / 0.3)',
+    color: 'hsl(var(--ds-info))',
+  },
+  other: {
+    letter: '?',
+    bg: 'hsl(var(--ds-line-2) / 0.5)',
+    border: 'hsl(var(--ds-line-2))',
+    color: 'hsl(var(--ds-fg-2))',
+  },
+};
+
+function getDomainShort(url: string): string {
+  try {
+    const u = new URL(url);
+    return u.host.replace('www.', '') + (u.pathname !== '/' ? u.pathname : '');
+  } catch {
+    return url;
+  }
+}
+
+interface LinkCardProps {
+  url: string;
+  title: string;
+  linkType: TaskLinkType;
+  onDelete: () => void;
+  deleting: boolean;
+}
+
+function LinkCard({ url, title, linkType, onDelete, deleting }: LinkCardProps) {
+  const favi = LINK_FAVI_BY_TYPE[linkType] ?? LINK_FAVI_BY_TYPE.other;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '32px 1fr auto auto',
+        gap: 14,
+        alignItems: 'center',
+        padding: '14px 4px',
+        borderBottom: '1px solid hsl(var(--ds-line-1))',
+        transition: 'background 120ms',
+        textDecoration: 'none',
+        color: 'inherit',
+        cursor: 'pointer',
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-line-2) / 0.3)')}
+      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+    >
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          background: favi.bg,
+          border: '1px solid ' + favi.border,
+          display: 'grid',
+          placeItems: 'center',
+          fontFamily: '"HN Display", sans-serif',
+          fontSize: 12,
+          fontWeight: 500,
+          color: favi.color,
+        }}
+      >
+        {favi.letter}
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <div
+          style={{
+            fontFamily: '"HN Display", sans-serif',
+            fontWeight: 500,
+            fontSize: 13,
+            color: 'hsl(var(--ds-fg-1))',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {title}
+        </div>
+        <div
+          style={{
+            fontFamily: 'ui-monospace, monospace',
+            fontSize: 11,
+            color: 'hsl(var(--ds-fg-4))',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {getDomainShort(url)}
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onDelete();
+        }}
+        disabled={deleting}
+        className="opacity-0 group-hover:opacity-100"
+        style={{
+          width: 28,
+          height: 28,
+          padding: 0,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'hsl(var(--ds-fg-3))',
+          background: 'transparent',
+          border: 0,
+          cursor: 'pointer',
+          transition: 'color 120ms, opacity 120ms',
+        }}
+        title="Remover link"
+        aria-label="Remover link"
+      >
+        <Trash2 size={14} strokeWidth={1.5} />
+      </button>
+      <ExternalLink size={14} strokeWidth={1.5} style={{ color: 'hsl(var(--ds-fg-4))' }} />
+    </a>
   );
 }

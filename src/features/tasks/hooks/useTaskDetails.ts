@@ -90,6 +90,36 @@ export function useTaskDetails(taskId: string) {
         supabase.from('task_links').select('*').eq('task_id', taskId).order('created_at', { ascending: false }),
       ]);
 
+      // Enrich comments with avatar + role
+      const rawComments = (commentsRes.data || []) as TaskComment[];
+      const commentUserIds = Array.from(new Set(rawComments.map((c) => c.user_id).filter(Boolean)));
+      const missingProfileIds = commentUserIds.filter((id) => !profilesMap[id]);
+      if (missingProfileIds.length > 0) {
+        const { data: extraProfiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, avatar_url')
+          .in('user_id', missingProfileIds);
+        (extraProfiles || []).forEach((p: any) => {
+          profilesMap[p.user_id] = {
+            display_name: p.display_name,
+            avatar_url: p.avatar_url,
+          };
+        });
+      }
+
+      const assigneeIdSet = new Set(assigneeIds);
+      const comments: TaskComment[] = rawComments.map((c) => {
+        let role: TaskComment['role'] = null;
+        if (c.user_id === taskData.created_by) role = 'solicitante';
+        else if (assigneeIdSet.has(c.user_id)) role = 'responsavel';
+        else role = 'colaborador';
+        return {
+          ...c,
+          avatar_url: profilesMap[c.user_id]?.avatar_url ?? null,
+          role,
+        };
+      });
+
       return {
         ...taskData,
         project_name: projectName,
@@ -97,7 +127,7 @@ export function useTaskDetails(taskId: string) {
         assignee_name: assignees[0]?.display_name || null,
         assignee_avatar: assignees[0]?.avatar_url || null,
         subtasks: (subtasksRes.data || []) as TaskSubtask[],
-        comments: (commentsRes.data || []) as TaskComment[],
+        comments,
         attachments: (attachmentsRes.data || []) as TaskAttachment[],
         links: (linksRes.data || []) as TaskLink[],
       } as TaskWithDetails;

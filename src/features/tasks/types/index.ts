@@ -73,6 +73,10 @@ export interface TaskComment {
   content: string;
   created_at: string;
   updated_at: string;
+  /** Filled by useTaskDetails — not stored on the row. */
+  avatar_url?: string | null;
+  /** Filled by useTaskDetails — derived from task.created_by / assignees. */
+  role?: 'solicitante' | 'responsavel' | 'colaborador' | null;
 }
 
 export interface TaskAttachment {
