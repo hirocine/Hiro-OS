@@ -761,57 +761,219 @@ export function PPVideoPage({ item, onBack }: Props) {
                   background: 'hsl(var(--ds-accent) / 0.05)',
                   border: '1px solid hsl(var(--ds-accent) / 0.3)',
                   borderTop: 'none',
-                  padding: '16px 18px',
+                  padding: '18px 20px',
                   marginTop: 8,
                 }}
-                className="space-y-3"
               >
-                <div className="flex items-center gap-4 flex-wrap">
+                {/* Drawer head */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 14,
+                    marginBottom: 14,
+                  }}
+                >
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      fontFamily: '"HN Display", sans-serif',
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: 'hsl(var(--ds-fg-1))',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 10,
+                        height: 10,
+                        background: 'hsl(var(--ds-accent))',
+                        flexShrink: 0,
+                      }}
+                    />
+                    {MACRO_STEPS[currentStepIdx]?.label ?? 'Fase atual'} · em andamento
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: '"HN Display", sans-serif',
+                      fontSize: 10,
+                      fontWeight: 500,
+                      letterSpacing: '0.16em',
+                      textTransform: 'uppercase',
+                      color: 'hsl(var(--ds-fg-4))',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
+                    Sub-etapa{' '}
+                    <strong style={{ color: 'hsl(var(--ds-fg-1))', fontWeight: 500 }}>
+                      {Math.min(subStepIndex + 1, SUB_STEPS[normalizedStatus].length)} / {SUB_STEPS[normalizedStatus].length}
+                    </strong>
+                  </span>
+                </div>
+
+                {/* Sub-progress bar */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14,
+                    marginBottom: 16,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: '"HN Display", sans-serif',
+                      fontSize: 10,
+                      fontWeight: 500,
+                      letterSpacing: '0.16em',
+                      textTransform: 'uppercase',
+                      color: 'hsl(var(--ds-fg-4))',
+                      fontVariantNumeric: 'tabular-nums',
+                      minWidth: 110,
+                    }}
+                  >
+                    {subStepIndex} de {SUB_STEPS[normalizedStatus].length} sub-etapas
+                  </span>
+                  <span
+                    style={{
+                      flex: 1,
+                      height: 2,
+                      background: 'hsl(var(--ds-line-2))',
+                      position: 'relative',
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: `${Math.round((subStepIndex / SUB_STEPS[normalizedStatus].length) * 100)}%`,
+                        background: 'hsl(var(--ds-accent))',
+                        transition: 'width 300ms',
+                      }}
+                    />
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: '"HN Display", sans-serif',
+                      fontSize: 10,
+                      fontWeight: 500,
+                      letterSpacing: '0.16em',
+                      textTransform: 'uppercase',
+                      color: 'hsl(var(--ds-fg-1))',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
+                    {Math.round((subStepIndex / SUB_STEPS[normalizedStatus].length) * 100)}%
+                  </span>
+                </div>
+
+                {/* Sub-steps list (vertical) */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderTop: '1px solid hsl(var(--ds-line-1))',
+                    marginBottom: 16,
+                  }}
+                >
                   {SUB_STEPS[normalizedStatus].map((sub, i) => {
                     const isDone = i < subStepIndex;
                     const isActive = i === subStepIndex;
+                    const num = String(i + 1).padStart(2, '0');
+
                     return (
                       <button
                         key={i}
+                        type="button"
                         onClick={() => handleSubStepClick(i)}
-                        className={cn(
-                          'flex items-center gap-1.5 px-2 py-1 transition-all duration-200',
-                          isDone && 'opacity-40',
-                          !isDone && !isActive && 'opacity-50 hover:opacity-80',
-                        )}
-                        style={isActive ? { background: 'hsl(var(--ds-accent) / 0.1)' } : undefined}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '32px 1fr auto',
+                          gap: 14,
+                          alignItems: 'center',
+                          padding: '14px 0',
+                          borderBottom: '1px solid hsl(var(--ds-line-1))',
+                          background: 'transparent',
+                          border: 0,
+                          borderBottomColor: 'hsl(var(--ds-line-1))',
+                          borderBottomStyle: 'solid',
+                          borderBottomWidth: 1,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          transition: 'background 120ms',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--ds-accent) / 0.05)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
-                        <div
-                          className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200"
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 700,
-                            background: isActive
-                              ? 'hsl(var(--ds-accent))'
-                              : isDone
-                              ? 'hsl(var(--ds-fg-3) / 0.3)'
-                              : 'hsl(var(--ds-line-1) / 0.6)',
-                            color: isActive ? 'hsl(var(--ds-surface))' : 'hsl(var(--ds-fg-3))',
-                            transform: isActive ? 'scale(1.1)' : undefined,
-                            boxShadow: isActive ? '0 0 0 3px hsl(var(--ds-accent) / 0.25)' : undefined,
-                          }}
-                        >
-                          {isDone ? <Check className="h-2.5 w-2.5" /> : i + 1}
-                        </div>
+                        {/* Number box */}
                         <span
                           style={{
-                            fontSize: 12,
-                            whiteSpace: 'nowrap',
-                            textDecoration: isDone ? 'line-through' : undefined,
-                            fontWeight: isActive ? 600 : 400,
+                            width: 28,
+                            height: 28,
+                            display: 'grid',
+                            placeItems: 'center',
+                            fontFamily: '"HN Display", sans-serif',
+                            fontSize: 11,
+                            fontWeight: 500,
+                            letterSpacing: '0.04em',
                             color: isActive
-                              ? 'hsl(var(--ds-accent))'
+                              ? '#0A0A0A'
                               : isDone
-                              ? 'hsl(var(--ds-fg-3))'
-                              : 'hsl(var(--ds-fg-3) / 0.6)',
+                                ? 'hsl(var(--ds-fg-3))'
+                                : 'hsl(var(--ds-fg-3))',
+                            background: isActive ? 'hsl(var(--ds-accent))' : 'transparent',
+                            border: isActive
+                              ? '1px solid hsl(var(--ds-accent))'
+                              : '1px solid hsl(var(--ds-line-2))',
+                            flexShrink: 0,
                           }}
                         >
-                          {sub}
+                          {isDone ? <Check size={14} strokeWidth={2.5} /> : num}
+                        </span>
+
+                        {/* Title + description */}
+                        <div style={{ minWidth: 0 }}>
+                          <div
+                            style={{
+                              fontFamily: '"HN Display", sans-serif',
+                              fontSize: 14,
+                              fontWeight: 500,
+                              color: isDone ? 'hsl(var(--ds-fg-3))' : 'hsl(var(--ds-fg-1))',
+                              textDecoration: isDone ? 'line-through' : undefined,
+                            }}
+                          >
+                            {sub}
+                          </div>
+                          {isActive && (
+                            <div
+                              style={{
+                                fontSize: 12,
+                                color: 'hsl(var(--ds-fg-3))',
+                                marginTop: 2,
+                              }}
+                            >
+                              Em andamento
+                            </div>
+                          )}
+                        </div>
+
+                        {/* When meta */}
+                        <span
+                          style={{
+                            fontFamily: '"HN Display", sans-serif',
+                            fontSize: 11,
+                            color: 'hsl(var(--ds-fg-4))',
+                            letterSpacing: '0.04em',
+                            textAlign: 'right',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {isDone ? 'concluída' : isActive ? 'atual' : i === subStepIndex + 1 ? 'próxima' : `após sub-${String(i).padStart(2, '0')}`}
                         </span>
                       </button>
                     );
@@ -820,11 +982,19 @@ export function PPVideoPage({ item, onBack }: Props) {
 
                 {/* Footer: counter + advance/back buttons */}
                 <div
-                  className="flex items-center justify-between pt-2"
-                  style={{ borderTop: '1px solid hsl(var(--ds-line-1))' }}
+                  className="flex items-center justify-between"
+                  style={{ paddingTop: 4 }}
                 >
-                  <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', fontVariantNumeric: 'tabular-nums' }}>
-                    {subStepIndex} de {SUB_STEPS[normalizedStatus].length} concluídas
+                  <span style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>
+                    Quando terminar as {SUB_STEPS[normalizedStatus].length} sub-etapas,{' '}
+                    <strong style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                      Avançar fase
+                    </strong>{' '}
+                    envia para{' '}
+                    <strong style={{ fontFamily: '"HN Display", sans-serif', fontWeight: 500, color: 'hsl(var(--ds-fg-1))' }}>
+                      {nextStep?.label ?? 'a próxima fase'}
+                    </strong>
+                    .
                   </span>
                   <div className="flex items-center gap-2">
                     {(currentStepIdx > 0 || subStepIndex > 0) && (
