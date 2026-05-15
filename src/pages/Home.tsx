@@ -705,7 +705,6 @@ export default function Home() {
                   ) : (
                     <div className="team-photo-fallback">{initialsFromName(m.name)}</div>
                   )}
-                  <div className="team-photo-num">№ {String(idx + 1).padStart(2, "0")}</div>
                 </div>
                 <div className="team-info">
                   <div className="team-name">{m.name}</div>
