@@ -89,14 +89,13 @@ export function ProposalPublicPage() {
   useEffect(() => {
     if (!proposal || proposal.is_latest_version !== false) return;
     const parentId = proposal.parent_id || proposal.id;
+    // Mesmo motivo do useProposalDetailsBySlug: substituído o SELECT direto
+    // por uma RPC SECURITY DEFINER que devolve apenas o slug da versão mais
+    // recente daquele parent_id.
     supabase
-      .from('orcamentos')
-      .select('slug')
-      .eq('parent_id', parentId)
-      .eq('is_latest_version', true)
-      .maybeSingle()
+      .rpc('get_latest_proposal_slug', { p_parent_id: parentId })
       .then(({ data }) => {
-        if (data) setLatestSlug((data as any).slug);
+        if (data) setLatestSlug(data as unknown as string);
       });
   }, [proposal]);
 

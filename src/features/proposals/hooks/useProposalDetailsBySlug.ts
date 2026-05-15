@@ -7,12 +7,14 @@ export function useProposalDetailsBySlug(slug: string | undefined) {
     queryKey: ['proposal-by-slug', slug],
     queryFn: async () => {
       if (!slug) throw new Error('Slug não fornecido');
+      // Acesso público via RPC SECURITY DEFINER em vez de SELECT direto na
+      // tabela. Função retorna no máximo a única linha com aquele slug —
+      // anônimos não conseguem mais listar a tabela inteira.
       const { data, error } = await supabase
-        .from('orcamentos')
-        .select('*')
-        .eq('slug', slug)
+        .rpc('get_proposal_by_slug', { p_slug: slug })
         .single();
       if (error) throw error;
+      if (!data) throw new Error('Proposta não encontrada');
       return {
         ...data,
         client_logo: data.client_logo || null,
