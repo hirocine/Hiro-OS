@@ -334,7 +334,8 @@ export default function AllProjects() {
 // Table
 // ─────────────────────────────────────────────────────────────────
 
-const COLS = '90px minmax(220px, 1.6fr) minmax(180px, 1fr) 130px 140px minmax(180px, 1fr) 36px';
+// Column order: Nº · Empresa · Projeto · Data · Valor · Notas · (delete)
+const COLS = '90px minmax(180px, 1fr) minmax(220px, 1.6fr) 130px 140px minmax(180px, 1fr) 36px';
 
 function ProjectsTable({
   rows,
@@ -368,8 +369,8 @@ function ProjectsTable({
         }}
       >
         <HeadCell>Nº</HeadCell>
-        <HeadCell>Projeto</HeadCell>
         <HeadCell>Empresa</HeadCell>
+        <HeadCell>Projeto</HeadCell>
         <HeadCell>Data</HeadCell>
         <HeadCell align="right">Valor</HeadCell>
         <HeadCell>Notas</HeadCell>
@@ -434,17 +435,17 @@ function TableRow({
         onAutoFocusConsumed={onAutoFocusConsumed}
       />
       <InlineCell
-        value={row.project_name}
-        onCommit={(v) => onPatch(row.id, { project_name: v })}
-        placeholder="Nome do projeto"
-        kind="text"
-      />
-      <InlineCell
         value={row.client_name}
         onCommit={(v) => onPatch(row.id, { client_name: v })}
         placeholder="Empresa"
         kind="text"
         muted
+      />
+      <InlineCell
+        value={row.project_name}
+        onCommit={(v) => onPatch(row.id, { project_name: v })}
+        placeholder="Nome do projeto"
+        kind="text"
       />
       <InlineCell
         value={row.project_date}
