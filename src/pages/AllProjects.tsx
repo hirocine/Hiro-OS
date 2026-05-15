@@ -439,13 +439,13 @@ function TableRow({
         onCommit={(v) => onPatch(row.id, { client_name: v })}
         placeholder="Empresa"
         kind="text"
-        muted
       />
       <InlineCell
         value={row.project_name}
         onCommit={(v) => onPatch(row.id, { project_name: v })}
         placeholder="Nome do projeto"
         kind="text"
+        muted
       />
       <InlineCell
         value={row.project_date}
