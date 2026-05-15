@@ -104,8 +104,8 @@ export default function AllProjects() {
   const [dateFilter, setDateFilter] = useState<DateBucket>('all');
   const [valueFilter, setValueFilter] = useState<ValueBucket>('all');
 
-  // Default sort: by project_number descending (newest projects first).
-  const [sortCol, setSortCol] = useState<SortCol>('number');
+  // Default sort: by project_date descending (most recent first).
+  const [sortCol, setSortCol] = useState<SortCol>('date');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const [confirmDelete, setConfirmDelete] = useState<ProjectRegistryRow | null>(null);
