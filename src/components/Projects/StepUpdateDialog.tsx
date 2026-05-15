@@ -40,7 +40,7 @@ export function StepUpdateDialog({ project, open, onOpenChange, onUpdate }: Step
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md ds-shell">
         <DialogHeader>
           <DialogTitle>Atualizar Status da Retirada</DialogTitle>
         </DialogHeader>

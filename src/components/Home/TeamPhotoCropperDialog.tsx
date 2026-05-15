@@ -158,7 +158,7 @@ export function TeamPhotoCropperDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh]">
+      <DialogContent className="max-w-3xl max-h-[90vh] ds-shell">
         <DialogHeader>
           <DialogTitle>Ajustar Foto</DialogTitle>
         </DialogHeader>

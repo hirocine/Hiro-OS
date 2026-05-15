@@ -73,7 +73,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit }: NewProjectDia
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="max-w-3xl">
+      <ResponsiveDialogContent className="max-w-3xl ds-shell">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Nova Retirada de Equipamentos</ResponsiveDialogTitle>
         </ResponsiveDialogHeader>

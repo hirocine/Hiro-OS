@@ -54,7 +54,7 @@ export function DeleteProjectDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent className="max-w-md ds-shell">
         <AlertDialogHeader>
           <AlertDialogTitle>
             <span

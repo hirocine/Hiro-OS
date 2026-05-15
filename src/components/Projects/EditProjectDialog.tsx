@@ -70,7 +70,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSave }: EditP
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <ResponsiveDialogContent className="max-w-md max-h-[90vh] overflow-y-auto ds-shell">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Editar Projeto</ResponsiveDialogTitle>
         </ResponsiveDialogHeader>

@@ -86,7 +86,7 @@ export function LoanDialog({ open, onOpenChange, equipment, mode, currentLoan, o
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <ResponsiveDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto ds-shell">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             {mode === 'loan' ? 'Retirar Equipamento' : 'Devolver Equipamento'}

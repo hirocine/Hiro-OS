@@ -153,7 +153,7 @@ export const SSDDetailsDialog = ({ ssd, open, onOpenChange, onUpdate }: SSDDetai
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="max-w-2xl">
+      <ResponsiveDialogContent className="max-w-2xl ds-shell">
         <ResponsiveDialogHeader>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div
