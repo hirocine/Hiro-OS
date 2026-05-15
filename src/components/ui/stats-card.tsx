@@ -87,11 +87,22 @@ export function StatsCard({
         >
           {typeof value === 'number' ? <CountUp value={value} disabled={noAnimate} /> : value}
         </span>
-        {description && (
-          <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-4))', marginTop: 2, lineHeight: 1.3 }}>
-            {description}
-          </span>
-        )}
+        {/* Always render the description slot so cards with and without a
+            description share the same total content height — keeps the big
+            numbers across a row sitting on the same vertical baseline. When
+            no description is provided we render an NBSP placeholder. */}
+        <span
+          style={{
+            fontSize: 11,
+            color: 'hsl(var(--ds-fg-4))',
+            marginTop: 2,
+            lineHeight: 1.3,
+            minHeight: '1em',
+            visibility: description ? 'visible' : 'hidden',
+          }}
+        >
+          {description || ' '}
+        </span>
       </div>
     </div>
   );
