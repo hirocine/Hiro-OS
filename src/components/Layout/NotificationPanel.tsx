@@ -365,17 +365,21 @@ export function NotificationPanel() {
   const TriggerButton = (
     <button
       type="button"
-      className="btn"
       style={{
         position: 'relative',
-        width: 32,
-        height: 32,
+        width: '100%',
+        height: '100%',
         padding: 0,
-        justifyContent: 'center',
+        background: 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        display: 'grid',
+        placeItems: 'center',
+        color: 'inherit',
       }}
       aria-label="Notificações"
     >
-      <Bell size={14} strokeWidth={1.5} />
+      <Bell size={16} strokeWidth={1.5} />
       {unreadCount > 0 && (
         <span
           style={{
