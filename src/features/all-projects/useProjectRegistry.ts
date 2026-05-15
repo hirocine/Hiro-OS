@@ -36,13 +36,16 @@ export interface ProjectRegistryRow {
 }
 
 export interface ProjectRegistryInput {
-  project_number: string;
-  project_name: string;
-  client_name: string;
+  project_number: string | null;
+  project_name: string | null;
+  client_name: string | null;
   project_date: string | null;
   value_brl: number | null;
   notes: string | null;
 }
+
+/** A single field update — used by inline cell edits. */
+export type ProjectRegistryPatch = Partial<ProjectRegistryInput>;
 
 export const PROJECT_REGISTRY_QUERY_KEY = ['project-registry'] as const;
 
@@ -85,12 +88,22 @@ export function useProjectRegistryMutations() {
   const invalidate = () => qc.invalidateQueries({ queryKey: PROJECT_REGISTRY_QUERY_KEY });
 
   const create = useMutation({
-    mutationFn: async (input: ProjectRegistryInput): Promise<ProjectRegistryRow> => {
+    mutationFn: async (
+      input: ProjectRegistryPatch = {},
+    ): Promise<ProjectRegistryRow> => {
       const { data: userData } = await supabase.auth.getUser();
+      // Insert a fully-nullable row so the user can start filling cells
+      // inline. Defaults below match the column nullability after the
+      // `project_registry_allow_partial_rows` migration.
       const { data, error } = await sb
         .from('project_registry')
         .insert({
-          ...input,
+          project_number: input.project_number ?? null,
+          project_name: input.project_name ?? null,
+          client_name: input.client_name ?? null,
+          project_date: input.project_date ?? null,
+          value_brl: input.value_brl ?? null,
+          notes: input.notes ?? null,
           created_by: userData.user?.id ?? null,
         })
         .select()
@@ -98,21 +111,27 @@ export function useProjectRegistryMutations() {
       if (error) throw error;
       return data as ProjectRegistryRow;
     },
-    onSuccess: () => {
-      invalidate();
-      toast.success('Projeto adicionado');
-    },
     onError: (err) => {
       const msg = err instanceof Error ? err.message : 'erro desconhecido';
       toast.error(`Erro ao adicionar projeto: ${msg}`);
     },
+    // Optimistic-ish: invalidate only after success. Toast is omitted on
+    // success because inline-add creates a blank row visibly already.
+    onSuccess: () => {
+      invalidate();
+    },
   });
 
+  /**
+   * Update a single field (or several) — used by inline cell edits.
+   * Silent on success: no toast, just an invalidation, so editing feels
+   * spreadsheet-quiet. Errors still surface a toast.
+   */
   const update = useMutation({
     mutationFn: async ({
       id,
       ...patch
-    }: ProjectRegistryInput & { id: string }): Promise<ProjectRegistryRow> => {
+    }: ProjectRegistryPatch & { id: string }): Promise<ProjectRegistryRow> => {
       const { data, error } = await sb
         .from('project_registry')
         .update(patch)
@@ -122,10 +141,7 @@ export function useProjectRegistryMutations() {
       if (error) throw error;
       return data as ProjectRegistryRow;
     },
-    onSuccess: () => {
-      invalidate();
-      toast.success('Projeto atualizado');
-    },
+    onSuccess: () => invalidate(),
     onError: (err) => {
       const msg = err instanceof Error ? err.message : 'erro desconhecido';
       toast.error(`Erro ao atualizar projeto: ${msg}`);
