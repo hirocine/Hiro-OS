@@ -1,5 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Loader2, Plus, Trash2 } from 'lucide-react';
+import {
+  Briefcase,
+  Building2,
+  CalendarClock,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
+  Loader2,
+  Plus,
+  Trash2,
+  TrendingUp,
+} from 'lucide-react';
 import {
   PageHeader,
   PageToolbar,
@@ -8,6 +19,7 @@ import {
   FilterIndicator,
 } from '@/ds/components/toolbar';
 import { Money } from '@/ds/components/Money';
+import { StatsCard, StatsCardGrid } from '@/components/ui/stats-card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +44,7 @@ const HN_DISPLAY: React.CSSProperties = { fontFamily: '"HN Display", sans-serif'
 
 type DateBucket = 'all' | 'last_30' | 'last_90' | 'this_year' | 'last_year';
 type ValueBucket = 'all' | 'lt_10k' | '10k_50k' | '50k_100k' | 'gt_100k';
+type SortCol = 'number' | 'client' | 'project' | 'date' | 'value';
 
 const DATE_OPTIONS: { value: DateBucket; label: string }[] = [
   { value: 'last_30',   label: 'Últimos 30 dias' },
@@ -91,9 +104,24 @@ export default function AllProjects() {
   const [dateFilter, setDateFilter] = useState<DateBucket>('all');
   const [valueFilter, setValueFilter] = useState<ValueBucket>('all');
 
+  // Default sort: by project_number descending (newest projects first).
+  const [sortCol, setSortCol] = useState<SortCol>('number');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
   const [confirmDelete, setConfirmDelete] = useState<ProjectRegistryRow | null>(null);
   /** id of the row that just got inserted — drives autofocus on the Nº cell */
   const [focusRowId, setFocusRowId] = useState<string | null>(null);
+
+  const handleSort = (col: SortCol) => {
+    if (sortCol === col) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortCol(col);
+      // Smarter defaults per column: numeric / date columns default desc,
+      // text columns default asc (A→Z).
+      setSortDir(col === 'client' || col === 'project' ? 'asc' : 'desc');
+    }
+  };
 
   const clientOptions = useMemo(() => {
     const set = new Set<string>();
@@ -107,7 +135,7 @@ export default function AllProjects() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return items.filter((p) => {
+    const passes = items.filter((p) => {
       if (clientFilter !== 'all' && p.client_name !== clientFilter) return false;
       if (!bucketDateMatches(p.project_date, dateFilter)) return false;
       if (!bucketValueMatches(p.value_brl, valueFilter)) return false;
@@ -121,7 +149,46 @@ export default function AllProjects() {
       }
       return true;
     });
-  }, [items, search, clientFilter, dateFilter, valueFilter]);
+
+    // Sort by the active column. Nulls always sink to the bottom regardless
+    // of direction so they stay easy to spot and edit. Numbers compare
+    // numerically (cast project_number from text), text compares with
+    // pt-BR collation, dates by their ISO string.
+    const dir = sortDir === 'asc' ? 1 : -1;
+    const cmp = (a: ProjectRegistryRow, b: ProjectRegistryRow): number => {
+      const pick = (r: ProjectRegistryRow): string | number | null => {
+        if (sortCol === 'number') {
+          if (r.project_number == null) return null;
+          const n = Number(r.project_number);
+          return Number.isFinite(n) ? n : r.project_number.toLowerCase();
+        }
+        if (sortCol === 'client')  return r.client_name?.toLowerCase() ?? null;
+        if (sortCol === 'project') return r.project_name?.toLowerCase() ?? null;
+        if (sortCol === 'date')    return r.project_date ?? null;
+        if (sortCol === 'value')   return r.value_brl;
+        return null;
+      };
+      const av = pick(a);
+      const bv = pick(b);
+      if (av === null && bv === null) return 0;
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
+      const as = String(av);
+      const bs = String(bv);
+      return as.localeCompare(bs, 'pt-BR') * dir;
+    };
+
+    // Pin the just-inserted row to the top so the user can find their new
+    // blank entry even when a non-default sort is active.
+    return passes.slice().sort((a, b) => {
+      if (focusRowId) {
+        if (a.id === focusRowId && b.id !== focusRowId) return -1;
+        if (b.id === focusRowId && a.id !== focusRowId) return 1;
+      }
+      return cmp(a, b);
+    });
+  }, [items, search, clientFilter, dateFilter, valueFilter, sortCol, sortDir, focusRowId]);
 
   const hasActiveFilter =
     !!search ||
@@ -136,10 +203,26 @@ export default function AllProjects() {
     setValueFilter('all');
   };
 
-  const totalValue = useMemo(
-    () => filtered.reduce((acc, p) => acc + (p.value_brl ?? 0), 0),
-    [filtered],
-  );
+  // Stats — computed from the *full* dataset (not the filtered view) so the
+  // headline numbers reflect the whole history. Toggle to `filtered` later
+  // if the team wants the cards to react to filters.
+  const currentYear = new Date().getFullYear();
+  const stats = useMemo(() => {
+    const total = items.length;
+    const thisYear = items.filter((p) => {
+      if (!p.project_date) return false;
+      const y = Number(p.project_date.slice(0, 4));
+      return y === currentYear;
+    }).length;
+    const revenue = items.reduce((acc, p) => acc + (p.value_brl ?? 0), 0);
+    const companies = new Set(
+      items.map((p) => p.client_name).filter((c): c is string => !!c),
+    ).size;
+    return { total, thisYear, revenue, companies };
+  }, [items, currentYear]);
+
+  const fmtBRL = (v: number) =>
+    v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
 
   const handleAdd = () => {
     create.mutate(
@@ -176,6 +259,42 @@ export default function AllProjects() {
             </button>
           }
         />
+
+        {/* Stats — total / este ano / faturamento / empresas */}
+        <div style={{ marginTop: 24 }}>
+          <StatsCardGrid columns={4}>
+            <StatsCard
+              title="Total de projetos"
+              value={stats.total}
+              icon={Briefcase}
+            />
+            <StatsCard
+              title={`Em ${currentYear}`}
+              value={stats.thisYear}
+              icon={CalendarClock}
+              color="primary"
+              description={
+                stats.total > 0
+                  ? `${Math.round((stats.thisYear / stats.total) * 100)}% do histórico`
+                  : undefined
+              }
+            />
+            <StatsCard
+              title="Faturamento total"
+              value={stats.revenue > 0 ? fmtBRL(stats.revenue) : 'R$ —'}
+              icon={TrendingUp}
+              color="success"
+              description={
+                stats.revenue === 0 ? 'Aguardando valores' : undefined
+              }
+            />
+            <StatsCard
+              title="Empresas atendidas"
+              value={stats.companies}
+              icon={Building2}
+            />
+          </StatsCardGrid>
+        </div>
 
         <div style={{ marginTop: 24 }}>
           <PageToolbar
@@ -223,45 +342,6 @@ export default function AllProjects() {
           onClear={clearAllFilters}
         />
 
-        {/* Stats inline */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            marginTop: 12,
-            fontSize: 12,
-            color: 'hsl(var(--ds-fg-3))',
-            flexWrap: 'wrap',
-          }}
-        >
-          <span>
-            <strong
-              style={{
-                ...HN_DISPLAY,
-                fontWeight: 500,
-                color: 'hsl(var(--ds-fg-1))',
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
-              {filtered.length}
-            </strong>{' '}
-            {filtered.length === 1 ? 'projeto' : 'projetos'}
-          </span>
-          {totalValue > 0 && (
-            <>
-              <span style={{ color: 'hsl(var(--ds-line-2))' }}>·</span>
-              <span>
-                soma{' '}
-                <Money
-                  value={totalValue}
-                  style={{ fontSize: 12, color: 'hsl(var(--ds-fg-1))', fontWeight: 500 }}
-                />
-              </span>
-            </>
-          )}
-        </div>
-
         <div style={{ marginTop: 24 }}>
           {isLoading ? (
             <LoadingState />
@@ -274,6 +354,9 @@ export default function AllProjects() {
               onRequestDelete={(row) => setConfirmDelete(row)}
               focusRowId={focusRowId}
               clearFocusRow={() => setFocusRowId(null)}
+              sortCol={sortCol}
+              sortDir={sortDir}
+              onSort={handleSort}
             />
           )}
         </div>
@@ -343,12 +426,18 @@ function ProjectsTable({
   onRequestDelete,
   focusRowId,
   clearFocusRow,
+  sortCol,
+  sortDir,
+  onSort,
 }: {
   rows: ProjectRegistryRow[];
   onPatch: (id: string, patch: Parameters<typeof useProjectRegistryMutations>[number]) => void;
   onRequestDelete: (row: ProjectRegistryRow) => void;
   focusRowId: string | null;
   clearFocusRow: () => void;
+  sortCol: SortCol;
+  sortDir: 'asc' | 'desc';
+  onSort: (col: SortCol) => void;
 }) {
   return (
     <div
@@ -368,11 +457,11 @@ function ProjectsTable({
           background: 'hsl(var(--ds-line-2) / 0.25)',
         }}
       >
-        <HeadCell>Nº</HeadCell>
-        <HeadCell>Empresa</HeadCell>
-        <HeadCell>Projeto</HeadCell>
-        <HeadCell>Data</HeadCell>
-        <HeadCell align="right">Valor</HeadCell>
+        <HeadCell sortKey="number" sortCol={sortCol} sortDir={sortDir} onSort={onSort}>Nº</HeadCell>
+        <HeadCell sortKey="client" sortCol={sortCol} sortDir={sortDir} onSort={onSort}>Empresa</HeadCell>
+        <HeadCell sortKey="project" sortCol={sortCol} sortDir={sortDir} onSort={onSort}>Projeto</HeadCell>
+        <HeadCell sortKey="date" sortCol={sortCol} sortDir={sortDir} onSort={onSort}>Data</HeadCell>
+        <HeadCell sortKey="value" sortCol={sortCol} sortDir={sortDir} onSort={onSort} align="right">Valor</HeadCell>
         <HeadCell>Notas</HeadCell>
         <HeadCell aria-label="Ações" />
       </div>
@@ -675,28 +764,75 @@ function formatDisplay(value: string | null, kind: CellKind): string {
 function HeadCell({
   children,
   align = 'left',
+  sortKey,
+  sortCol,
+  sortDir,
+  onSort,
   ...rest
 }: {
   children?: React.ReactNode;
   align?: 'left' | 'right';
+  /** When set, the cell becomes a clickable sort handle. */
+  sortKey?: SortCol;
+  sortCol?: SortCol;
+  sortDir?: 'asc' | 'desc';
+  onSort?: (col: SortCol) => void;
   'aria-label'?: string;
 }) {
+  const isSortable = !!sortKey && !!onSort;
+  const isActive = isSortable && sortCol === sortKey;
+  const Icon = !isActive ? ChevronsUpDown : sortDir === 'asc' ? ChevronUp : ChevronDown;
+
+  const baseStyle: React.CSSProperties = {
+    ...HN_DISPLAY,
+    fontSize: 10,
+    fontWeight: 500,
+    letterSpacing: '0.14em',
+    textTransform: 'uppercase',
+    color: isActive ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-4))',
+    textAlign: align,
+    paddingRight: align === 'right' ? 12 : 0,
+  };
+
+  if (!isSortable) {
+    return (
+      <span {...rest} style={baseStyle}>
+        {children}
+      </span>
+    );
+  }
+
   return (
-    <span
+    <button
       {...rest}
+      type="button"
+      onClick={() => onSort!(sortKey!)}
+      title={isActive ? `Ordenado ${sortDir === 'asc' ? 'crescente' : 'decrescente'}` : 'Ordenar'}
       style={{
-        ...HN_DISPLAY,
-        fontSize: 10,
-        fontWeight: 500,
-        letterSpacing: '0.14em',
-        textTransform: 'uppercase',
-        color: 'hsl(var(--ds-fg-4))',
-        textAlign: align,
-        paddingRight: align === 'right' ? 12 : 0,
+        ...baseStyle,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        justifyContent: align === 'right' ? 'flex-end' : 'flex-start',
+        background: 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        padding: 0,
+        transition: 'color 120ms',
       }}
+      onMouseEnter={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-1))')}
+      onMouseLeave={(e) =>
+        (e.currentTarget.style.color = isActive ? 'hsl(var(--ds-fg-1))' : 'hsl(var(--ds-fg-4))')
+      }
     >
+      {align === 'right' && (
+        <Icon size={11} strokeWidth={1.5} style={{ opacity: isActive ? 1 : 0.5 }} />
+      )}
       {children}
-    </span>
+      {align !== 'right' && (
+        <Icon size={11} strokeWidth={1.5} style={{ opacity: isActive ? 1 : 0.5 }} />
+      )}
+    </button>
   );
 }
 
