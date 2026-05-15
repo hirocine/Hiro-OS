@@ -1,5 +1,15 @@
 # Hiro OS — Project Context
 
+## How Hiro likes to work
+
+Gabriel (the operator) **is not a developer** — he runs the production company and just wants a working tool. When he asks for something:
+
+1. **Decide for him.** Don't list 3 options and ask which one — pick the safest one and execute. Only ask if there's genuinely no safe default.
+2. **Default to zero-risk.** Prefer additive changes (new columns, new files) over destructive ones (drops, renames, schema migrations on populated tables). When a fix has both a "right" version and a "quick" version, ship the quick one if it can't break anything, and *flag* the right one for later.
+3. **Customer-facing pages are sacred.** Anything in `src/features/proposals/components/public/*` is what clients see — never break that without explicit confirmation, even for "obvious" wins like a security fix. Document the risk and wait.
+4. **Explain in Portuguese, in plain language.** Skip the jargon. "RLS policy sempre-true" → "qualquer pessoa com a URL consegue baixar os dados". When you have to use a term, define it.
+5. **Always say what could break.** Even if the answer is "nothing" — Gabriel reads that line first to decide whether to trust you. Be honest.
+
 ## DS migration scope
 
 The Hiro OS internal admin interface uses the new design system (`--ds-*` tokens, hairline borders, squared corners, HN Display + HN Text fonts, tabular nums for numbers/dates).
