@@ -40,6 +40,7 @@ const Tasks = lazy(() => import("./pages/Tasks"));
 const TaskNew = lazy(() => import("./pages/TaskNew"));
 const TaskDetails = lazy(() => import("./pages/TaskDetails"));
 const AVProjects = lazy(() => import("./pages/AVProjects"));
+const AllProjects = lazy(() => import("./pages/AllProjects"));
 const AVProjectDetails = lazy(() => import("./pages/AVProjectDetails"));
 const Capex = lazy(() => import("./pages/Capex"));
 const Proposals = lazy(() => import("./pages/Proposals"));
@@ -172,6 +173,7 @@ const App = () => (
                 <Route path="fornecedores/empresas" element={<RequirePermission permission="fornecedores.empresas"><Companies /></RequirePermission>} />
                 <Route path="fornecedores/empresas/:id" element={<RequirePermission permission="fornecedores.empresas"><CompanyDetails /></RequirePermission>} />
                 <Route path="projetos-av" element={<RequirePermission permission="projetos"><AVProjects /></RequirePermission>} />
+                <Route path="projetos-av/todos" element={<RequirePermission permission="projetos"><AllProjects /></RequirePermission>} />
                 <Route path="projetos-av/:id" element={<RequirePermission permission="projetos"><AVProjectDetails /></RequirePermission>} />
                 <Route path="orcamentos" element={<RequirePermission permission="orcamentos"><Proposals /></RequirePermission>} />
                 <Route path="orcamentos/novo" element={<RequirePermission permission="orcamentos"><Suspense fallback={<LoadingScreenSkeleton />}><NewProposal /></Suspense></RequirePermission>} />
