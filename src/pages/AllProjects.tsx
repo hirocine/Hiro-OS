@@ -1,37 +1,18 @@
 import { useMemo, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import {
+  PageHeader,
   PageToolbar,
   SearchField,
   FilterDropdown,
   FilterIndicator,
 } from '@/ds/components/toolbar';
-import { StatusPill } from '@/ds/components/StatusPill';
 import { Money } from '@/ds/components/Money';
 import {
-  useAllProjects,
-  projectEffectiveDate,
-  type AllProjectStatus,
-} from '@/features/all-projects/useAllProjects';
-
-type StatusTone = 'muted' | 'info' | 'warning' | 'success' | 'danger';
-
-const STATUS_LABEL: Record<AllProjectStatus, string> = {
-  draft:       'Rascunho',
-  sent:        'Enviada',
-  opened:      'Aberta',
-  new_version: 'Nova versão',
-  approved:    'Aprovada',
-  expired:     'Arquivada',
-};
-const STATUS_TONE: Record<AllProjectStatus, StatusTone> = {
-  draft:       'muted',
-  sent:        'info',
-  opened:      'warning',
-  new_version: 'info',
-  approved:    'success',
-  expired:     'danger',
-};
+  useProjectRegistry,
+  type ProjectRegistryRow,
+} from '@/features/all-projects/useProjectRegistry';
+import { ProjectRegistryDialog } from '@/features/all-projects/ProjectRegistryDialog';
 
 const HN_DISPLAY: React.CSSProperties = { fontFamily: '"HN Display", sans-serif' };
 
@@ -43,25 +24,22 @@ type DateBucket = 'all' | 'last_30' | 'last_90' | 'this_year' | 'last_year';
 type ValueBucket = 'all' | 'lt_10k' | '10k_50k' | '50k_100k' | 'gt_100k';
 
 const DATE_OPTIONS: { value: DateBucket; label: string }[] = [
-  { value: 'last_30',   label: 'Últimos 30 dias' },
-  { value: 'last_90',   label: 'Últimos 90 dias' },
+  { value: 'last_30', label: 'Últimos 30 dias' },
+  { value: 'last_90', label: 'Últimos 90 dias' },
   { value: 'this_year', label: 'Este ano' },
   { value: 'last_year', label: 'Ano passado' },
 ];
 
 const VALUE_OPTIONS: { value: ValueBucket; label: string }[] = [
-  { value: 'lt_10k',     label: 'Até R$ 10k' },
-  { value: '10k_50k',    label: 'R$ 10k – 50k' },
-  { value: '50k_100k',   label: 'R$ 50k – 100k' },
-  { value: 'gt_100k',    label: 'Acima de R$ 100k' },
+  { value: 'lt_10k', label: 'Até R$ 10k' },
+  { value: '10k_50k', label: 'R$ 10k – 50k' },
+  { value: '50k_100k', label: 'R$ 50k – 100k' },
+  { value: 'gt_100k', label: 'Acima de R$ 100k' },
 ];
 
-const STATUS_OPTIONS: { value: AllProjectStatus; label: string }[] = (
-  ['draft', 'sent', 'opened', 'new_version', 'approved', 'expired'] as AllProjectStatus[]
-).map((s) => ({ value: s, label: STATUS_LABEL[s] }));
-
-function bucketDateMatches(dateStr: string, bucket: DateBucket): boolean {
+function bucketDateMatches(dateStr: string | null, bucket: DateBucket): boolean {
   if (bucket === 'all') return true;
+  if (!dateStr) return false;
   const d = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
   if (Number.isNaN(d.valueOf())) return false;
   const now = new Date();
@@ -76,17 +54,22 @@ function bucketDateMatches(dateStr: string, bucket: DateBucket): boolean {
 function bucketValueMatches(value: number | null, bucket: ValueBucket): boolean {
   if (bucket === 'all') return true;
   if (value == null) return false;
-  if (bucket === 'lt_10k')   return value < 10_000;
-  if (bucket === '10k_50k')  return value >= 10_000 && value < 50_000;
+  if (bucket === 'lt_10k') return value < 10_000;
+  if (bucket === '10k_50k') return value >= 10_000 && value < 50_000;
   if (bucket === '50k_100k') return value >= 50_000 && value < 100_000;
-  if (bucket === 'gt_100k')  return value >= 100_000;
+  if (bucket === 'gt_100k') return value >= 100_000;
   return true;
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso: string | null): string {
+  if (!iso) return '—';
   const d = new Date(iso + (iso.length === 10 ? 'T00:00:00' : ''));
   if (Number.isNaN(d.valueOf())) return '—';
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return d.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -94,15 +77,16 @@ function formatDate(iso: string): string {
 // ─────────────────────────────────────────────────────────────────
 
 export default function AllProjects() {
-  const { data: items = [], isLoading } = useAllProjects();
+  const { data: items = [], isLoading } = useProjectRegistry();
 
   const [search, setSearch] = useState('');
   const [clientFilter, setClientFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState<DateBucket>('all');
   const [valueFilter, setValueFilter] = useState<ValueBucket>('all');
-  const [statusFilter, setStatusFilter] = useState<AllProjectStatus | 'all'>('all');
 
-  // Distinct clients for the filter dropdown
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<ProjectRegistryRow | null>(null);
+
   const clientOptions = useMemo(() => {
     const set = new Set<string>();
     items.forEach((p) => {
@@ -117,75 +101,57 @@ export default function AllProjects() {
     const q = search.trim().toLowerCase();
     return items.filter((p) => {
       if (clientFilter !== 'all' && p.client_name !== clientFilter) return false;
-      if (statusFilter !== 'all' && p.status !== statusFilter) return false;
-      if (!bucketDateMatches(projectEffectiveDate(p), dateFilter)) return false;
-      if (!bucketValueMatches(p.final_value, valueFilter)) return false;
+      if (!bucketDateMatches(p.project_date, dateFilter)) return false;
+      if (!bucketValueMatches(p.value_brl, valueFilter)) return false;
       if (q) {
-        const hay = [
-          p.project_name,
-          p.client_name,
-          p.project_number ?? '',
-        ]
+        const hay = [p.project_name, p.client_name, p.project_number]
           .join(' ')
           .toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [items, search, clientFilter, statusFilter, dateFilter, valueFilter]);
+  }, [items, search, clientFilter, dateFilter, valueFilter]);
 
   const hasActiveFilter =
-    !!search ||
-    clientFilter !== 'all' ||
-    dateFilter !== 'all' ||
-    valueFilter !== 'all' ||
-    statusFilter !== 'all';
+    !!search || clientFilter !== 'all' || dateFilter !== 'all' || valueFilter !== 'all';
 
   const clearAllFilters = () => {
     setSearch('');
     setClientFilter('all');
     setDateFilter('all');
     setValueFilter('all');
-    setStatusFilter('all');
   };
 
-  // Totals
   const totalValue = useMemo(
-    () => filtered.reduce((acc, p) => acc + (p.final_value ?? 0), 0),
+    () => filtered.reduce((acc, p) => acc + (p.value_brl ?? 0), 0),
     [filtered],
   );
+
+  const handleAdd = () => {
+    setEditingMember(null);
+    setDialogOpen(true);
+  };
+
+  const handleEdit = (row: ProjectRegistryRow) => {
+    setEditingMember(row);
+    setDialogOpen(true);
+  };
 
   return (
     <div className="ds-shell ds-page">
       <div className="ds-page-inner">
-        {/* ─── Header ─── */}
-        <div className="ph">
-          <div>
-            <div
-              style={{
-                ...HN_DISPLAY,
-                fontSize: 11,
-                fontWeight: 500,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                color: 'hsl(var(--ds-fg-3))',
-                marginBottom: 12,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
-              }}
-            >
-              <span style={{ width: 6, height: 6, background: 'hsl(var(--ds-accent))' }} />
-              Produção · Projetos
-            </div>
-            <h1 className="ph-title">Todos os projetos.</h1>
-            <p className="ph-sub">
-              Histórico completo da casa — todo orçamento que virou (ou pode virar) projeto.
-            </p>
-          </div>
-        </div>
+        <PageHeader
+          title="Todos os projetos."
+          subtitle="Histórico completo da casa — preenchido manualmente."
+          action={
+            <button type="button" className="btn primary" onClick={handleAdd}>
+              <Plus size={14} strokeWidth={1.5} />
+              <span>Adicionar projeto</span>
+            </button>
+          }
+        />
 
-        {/* ─── Toolbar ─── */}
         <div style={{ marginTop: 24 }}>
           <PageToolbar
             search={
@@ -220,14 +186,6 @@ export default function AllProjects() {
                 options={VALUE_OPTIONS}
                 width="md"
               />,
-              <FilterDropdown
-                key="status"
-                label="Status"
-                value={statusFilter}
-                onChange={(v) => setStatusFilter(v as AllProjectStatus | 'all')}
-                options={STATUS_OPTIONS}
-                width="md"
-              />,
             ]}
           />
         </div>
@@ -240,7 +198,7 @@ export default function AllProjects() {
           onClear={clearAllFilters}
         />
 
-        {/* ─── Stats inline ─── */}
+        {/* Stats inline */}
         <div
           style={{
             display: 'flex',
@@ -272,18 +230,13 @@ export default function AllProjects() {
                 soma{' '}
                 <Money
                   value={totalValue}
-                  style={{
-                    fontSize: 12,
-                    color: 'hsl(var(--ds-fg-1))',
-                    fontWeight: 500,
-                  }}
+                  style={{ fontSize: 12, color: 'hsl(var(--ds-fg-1))', fontWeight: 500 }}
                 />
               </span>
             </>
           )}
         </div>
 
-        {/* ─── Table ─── */}
         <div style={{ marginTop: 24 }}>
           {isLoading ? (
             <div
@@ -298,12 +251,18 @@ export default function AllProjects() {
               <Loader2 size={20} strokeWidth={1.5} className="animate-spin" />
             </div>
           ) : filtered.length === 0 ? (
-            <EmptyState hasActiveFilter={hasActiveFilter} />
+            <EmptyState hasActiveFilter={hasActiveFilter} onAdd={handleAdd} />
           ) : (
-            <ProjectsTable rows={filtered} />
+            <ProjectsTable rows={filtered} onRowClick={handleEdit} />
           )}
         </div>
       </div>
+
+      <ProjectRegistryDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        member={editingMember}
+      />
     </div>
   );
 }
@@ -312,9 +271,15 @@ export default function AllProjects() {
 // Table
 // ─────────────────────────────────────────────────────────────────
 
-const COLS = '80px minmax(220px, 1.6fr) minmax(160px, 1fr) 110px 140px 120px';
+const COLS = '80px minmax(220px, 1.6fr) minmax(160px, 1fr) 110px 140px';
 
-function ProjectsTable({ rows }: { rows: ReturnType<typeof useAllProjects>['data'] extends (infer R)[] | undefined ? R[] : never }) {
+function ProjectsTable({
+  rows,
+  onRowClick,
+}: {
+  rows: ProjectRegistryRow[];
+  onRowClick: (row: ProjectRegistryRow) => void;
+}) {
   return (
     <div
       style={{
@@ -338,13 +303,21 @@ function ProjectsTable({ rows }: { rows: ReturnType<typeof useAllProjects>['data
         <HeadCell>Empresa</HeadCell>
         <HeadCell>Data</HeadCell>
         <HeadCell align="right">Valor</HeadCell>
-        <HeadCell>Status</HeadCell>
       </div>
 
       {/* Body */}
       {rows.map((p, idx) => (
         <div
           key={p.id}
+          role="button"
+          tabIndex={0}
+          onClick={() => onRowClick(p)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onRowClick(p);
+            }
+          }}
           style={{
             display: 'grid',
             gridTemplateColumns: COLS,
@@ -352,6 +325,7 @@ function ProjectsTable({ rows }: { rows: ReturnType<typeof useAllProjects>['data
             padding: '14px 16px',
             alignItems: 'center',
             borderTop: idx === 0 ? undefined : '1px solid hsl(var(--ds-line-1))',
+            cursor: 'pointer',
             transition: 'background 120ms',
           }}
           onMouseEnter={(e) =>
@@ -364,13 +338,11 @@ function ProjectsTable({ rows }: { rows: ReturnType<typeof useAllProjects>['data
               ...HN_DISPLAY,
               fontSize: 13,
               fontWeight: 500,
-              color: p.project_number
-                ? 'hsl(var(--ds-fg-1))'
-                : 'hsl(var(--ds-fg-4))',
+              color: 'hsl(var(--ds-fg-1))',
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            {p.project_number ?? '—'}
+            {p.project_number}
           </span>
           <span
             style={{
@@ -407,20 +379,14 @@ function ProjectsTable({ rows }: { rows: ReturnType<typeof useAllProjects>['data
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            {formatDate(projectEffectiveDate(p))}
+            {formatDate(p.project_date)}
           </span>
           <span style={{ textAlign: 'right', paddingRight: 12 }}>
-            {p.final_value != null ? (
-              <Money value={p.final_value} style={{ fontSize: 13 }} />
+            {p.value_brl != null ? (
+              <Money value={p.value_brl} style={{ fontSize: 13 }} />
             ) : (
               <span style={{ color: 'hsl(var(--ds-fg-4))', fontSize: 13 }}>—</span>
             )}
-          </span>
-          <span>
-            <StatusPill
-              label={STATUS_LABEL[p.status as AllProjectStatus] ?? p.status}
-              tone={STATUS_TONE[p.status as AllProjectStatus] ?? 'muted'}
-            />
           </span>
         </div>
       ))}
@@ -453,7 +419,13 @@ function HeadCell({
   );
 }
 
-function EmptyState({ hasActiveFilter }: { hasActiveFilter: boolean }) {
+function EmptyState({
+  hasActiveFilter,
+  onAdd,
+}: {
+  hasActiveFilter: boolean;
+  onAdd: () => void;
+}) {
   return (
     <div
       style={{
@@ -472,13 +444,19 @@ function EmptyState({ hasActiveFilter }: { hasActiveFilter: boolean }) {
           marginBottom: 6,
         }}
       >
-        {hasActiveFilter ? 'Nenhum projeto encontrado.' : 'Sem projetos ainda.'}
+        {hasActiveFilter ? 'Nenhum projeto encontrado.' : 'Sem projetos no registro.'}
       </h3>
-      <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
+      <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginBottom: hasActiveFilter ? 0 : 18 }}>
         {hasActiveFilter
           ? 'Tente afrouxar os filtros para ver mais resultados.'
-          : 'Quando um orçamento for criado, ele aparece aqui automaticamente.'}
+          : 'Adicione o primeiro projeto manualmente para começar a montar o histórico.'}
       </p>
+      {!hasActiveFilter && (
+        <button type="button" className="btn primary" onClick={onAdd}>
+          <Plus size={14} strokeWidth={1.5} />
+          <span>Adicionar projeto</span>
+        </button>
+      )}
     </div>
   );
 }
