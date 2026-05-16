@@ -33,9 +33,17 @@ serve(async (req) => {
 
     const { action, password, encryptedPassword } = await req.json();
 
-    // Use a fixed encryption key (in production, use Supabase Vault)
-    // For now, using environment variable as fallback
-    const encryptionKey = Deno.env.get('PASSWORD_ENCRYPTION_KEY') || 'default-key-change-in-production-32ch';
+    // Require the encryption key to be configured. No more hardcoded fallback —
+    // if PASSWORD_ENCRYPTION_KEY isn't set, fail loudly instead of silently
+    // using a key that's checked into the public repo.
+    const encryptionKey = Deno.env.get('PASSWORD_ENCRYPTION_KEY');
+    if (!encryptionKey) {
+      console.error('PASSWORD_ENCRYPTION_KEY env var is not configured');
+      return new Response(
+        JSON.stringify({ error: 'Server misconfigured: encryption key missing' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     if (action === 'encrypt') {
       // Encrypt password using Web Crypto API
