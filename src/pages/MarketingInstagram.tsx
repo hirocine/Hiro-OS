@@ -56,7 +56,7 @@ export default function MarketingInstagram() {
       reachChange: pctChange(reachPeriod, 0),
       newPostsPeriod,
     };
-  }, [accountSnapshots, latestAccount, prevRange]);
+  }, [accountSnapshots, latestAccount]);
 
   const recentPosts = useMemo<PostWithMetrics[]>(
     () =>

@@ -74,7 +74,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
     });
 
     return steps;
-  }, [categories, getCategoriesHierarchy]);
+  }, [getCategoriesHierarchy]);
 
   const TOTAL_STEPS = 6 + EQUIPMENT_STEPS.length + 1;
 

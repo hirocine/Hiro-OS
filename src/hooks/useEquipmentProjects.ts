@@ -108,9 +108,13 @@ export function useEquipmentProjects(equipmentIds: string[]) {
     }
   };
 
+  // Key on the contents of the array, not its identity, so re-renders that
+  // produce a new array with the same ids don't re-fetch.
+  const equipmentIdsKey = equipmentIds.join(',');
   useEffect(() => {
     fetchProjectCounts();
-  }, [equipmentIds.join(',')]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchProjectCounts is recreated each render but closes over equipmentIds, which is what equipmentIdsKey already tracks.
+  }, [equipmentIdsKey]);
 
   const getProjectCount = (equipmentId: string): number => {
     return projectInfo.get(equipmentId)?.projectCount || 0;

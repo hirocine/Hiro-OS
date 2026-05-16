@@ -29,6 +29,11 @@ export function useMarketingPostMetricsHistory(
   const [history, setHistory] = useState<PostMetricHistoryEntry[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Stable deps for the effect below.
+  const postIdsKey = postIds.join(',');
+  const rangeStart = range.start?.toISOString();
+  const rangeEnd = range.end?.toISOString();
+
   useEffect(() => {
     if (postIds.length === 0) {
       setHistory([]);
@@ -57,7 +62,11 @@ export function useMarketingPostMetricsHistory(
     })();
 
     return () => { cancelled = true; };
-  }, [postIds.join(','), range.start?.toISOString(), range.end?.toISOString()]);
+    // Extract derived values so the linter can statically check deps. We
+    // intentionally key on the *contents* of postIds (not the array
+    // reference) and on ISO timestamps so a re-render with a new array
+    // identity but same data doesn't re-trigger the fetch.
+  }, [postIdsKey, rangeStart, rangeEnd]);
 
   return { history, loading };
 }
