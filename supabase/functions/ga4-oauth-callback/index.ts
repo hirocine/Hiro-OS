@@ -23,6 +23,38 @@ Deno.serve(async (req) => {
 
     if (!code) throw new Error("No authorization code received");
 
+    // CSRF / unauthenticated-overwrite defense.
+    // The callback is necessarily public (Google redirects here), but `state`
+    // is supposed to identify *which of our users* initiated the flow. Without
+    // validating it, anyone who completes a Google OAuth consent for our
+    // client_id can call this endpoint and stomp on the team's GA4 tokens.
+    //
+    // We require state to be a user_id with admin OR producao role. Other
+    // roles can't manage integrations from the UI, so they have no business
+    // appearing here either.
+    if (!state) throw new Error("Missing state parameter");
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    const { data: roles, error: rolesErr } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", state);
+
+    if (rolesErr) {
+      console.error("ga4-oauth-callback: role lookup failed:", rolesErr);
+      throw new Error("Failed to verify caller identity");
+    }
+    const allowedRoles = new Set(["admin", "producao"]);
+    const callerAuthorized = (roles ?? []).some((r) => allowedRoles.has(r.role));
+    if (!callerAuthorized) {
+      console.warn(`ga4-oauth-callback: rejecting state=${state} (not admin/producao)`);
+      throw new Error("Not authorized to manage integrations");
+    }
+
     const clientId = Deno.env.get("GOOGLE_OAUTH_CLIENT_ID");
     const clientSecret = Deno.env.get("GOOGLE_OAUTH_CLIENT_SECRET");
     if (!clientId || !clientSecret) throw new Error("Google OAuth secrets not configured");
@@ -46,11 +78,6 @@ Deno.serve(async (req) => {
     if (tokens.error) throw new Error(`Token exchange error: ${tokens.error_description ?? tokens.error}`);
 
     const { access_token, refresh_token, expires_in } = tokens;
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
 
     // Buscar email do usuário Google p/ display name
     let accountName: string | null = null;
