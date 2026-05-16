@@ -432,21 +432,25 @@ export default function ProposalDetails() {
 
   if (isLoading) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-40 w-full" />
-          <Skeleton className="h-60 w-full" />
-        </div>
-      </ResponsiveContainer>
+      <div className="ds-shell ds-page">
+        <ResponsiveContainer maxWidth="7xl">
+          <div className="space-y-6">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-60 w-full" />
+          </div>
+        </ResponsiveContainer>
+      </div>
     );
   }
 
   if (!proposal) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
-        <p style={{ color: 'hsl(var(--ds-fg-3))', textAlign: 'center', padding: '48px 0' }}>Proposta não encontrada.</p>
-      </ResponsiveContainer>
+      <div className="ds-shell ds-page">
+        <ResponsiveContainer maxWidth="7xl">
+          <p style={{ color: 'hsl(var(--ds-fg-3))', textAlign: 'center', padding: '48px 0' }}>Proposta não encontrada.</p>
+        </ResponsiveContainer>
+      </div>
     );
   }
 
@@ -751,8 +755,9 @@ export default function ProposalDetails() {
   const currentStatus = statusMap[proposal.status] || statusMap.draft;
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
-      <div className="animate-fade-in space-y-6">
+    <div className="ds-shell ds-page">
+      <ResponsiveContainer maxWidth="7xl">
+        <div className="animate-fade-in space-y-6">
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <BreadcrumbNav items={[
@@ -1877,6 +1882,7 @@ export default function ProposalDetails() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </ResponsiveContainer>
+      </ResponsiveContainer>
+    </div>
   );
 }
