@@ -19,6 +19,12 @@ interface InlineAssigneeCellProps {
   isActive?: boolean;
   /** Avatar shape — `'square'` removes the default circle rounding. */
   avatarShape?: 'circle' | 'square';
+  /**
+   * When true, picking a user replaces the current selection and closes the
+   * popover. Use this for single-owner fields like `editor_id` in the
+   * post-production queue. Default behavior is multi-select (toggle).
+   */
+  singleSelect?: boolean;
 }
 
 export function InlineAssigneeCell({
@@ -28,6 +34,7 @@ export function InlineAssigneeCell({
   className = '',
   isActive = true,
   avatarShape = 'circle',
+  singleSelect = false,
 }: InlineAssigneeCellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const isSquare = avatarShape === 'square';
@@ -39,6 +46,12 @@ export function InlineAssigneeCell({
   const selectedUsers = users.filter((u) => value.includes(u.id));
 
   const handleToggle = (userId: string) => {
+    if (singleSelect) {
+      // Picking the same user again clears it (acts as a deselect).
+      onSave(value.includes(userId) ? [] : [userId]);
+      setIsOpen(false);
+      return;
+    }
     if (value.includes(userId)) onSave(value.filter((id) => id !== userId));
     else onSave([...value, userId]);
   };
