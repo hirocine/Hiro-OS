@@ -1,5 +1,5 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+;
 import { WifiOff } from 'lucide-react';
 import { useIsPWA } from '@/hooks/useIsPWA';
 import { cn } from '@/lib/utils';
@@ -21,12 +21,22 @@ export function OfflineIndicator() {
       )}
       style={{ zIndex: Z_INDEX.offline_indicator }}
     >
-      <Alert className="border-destructive/50 bg-destructive/10 shadow-lg">
-        <WifiOff className="h-4 w-4" />
-        <AlertDescription>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 10,
+          padding: '12px 14px',
+          border: '1px solid hsl(var(--ds-danger, 0 84% 60%))',
+          background: 'hsl(var(--ds-surface))',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+        }}
+      >
+        <WifiOff size={16} strokeWidth={1.5} color="hsl(var(--ds-danger, 0 84% 60%))" style={{ flexShrink: 0, marginTop: 1 }} />
+        <div style={{ fontSize: 13, color: 'hsl(var(--ds-text))', lineHeight: 1.5 }}>
           Você está offline. Algumas funcionalidades podem estar limitadas.
-        </AlertDescription>
-      </Alert>
+        </div>
+      </div>
     </div>
   );
 }

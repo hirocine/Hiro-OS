@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { useProjectEquipment } from '@/features/projects';
 import { useSeparationChecklist } from '@/hooks/useSeparationChecklist';
@@ -236,7 +236,9 @@ export default function ProjectVerification() {
                 <span>Progresso da verificação</span>
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>{Math.round(progressPercentage)}%</span>
               </div>
-              <Progress value={progressPercentage} className="h-2" />
+              <div style={{ height: 4, background: 'hsl(var(--ds-line-1))', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${progressPercentage}%`, background: 'hsl(var(--ds-text))', transition: 'width 0.25s ease' }} />
+              </div>
             </div>
           </div>
         </div>
@@ -244,10 +246,19 @@ export default function ProjectVerification() {
         {/* Equipment List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {categorizedEquipment.length === 0 ? (
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>Nenhum equipamento encontrado para este projeto.</AlertDescription>
-            </Alert>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 10,
+                padding: '12px 14px',
+                border: '1px solid hsl(var(--ds-line-1))',
+                background: 'hsl(var(--ds-surface))',
+              }}
+            >
+              <AlertTriangle size={16} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" style={{ flexShrink: 0, marginTop: 1 }} />
+              <div style={{ fontSize: 13, color: 'hsl(var(--ds-text))', lineHeight: 1.5 }}>Nenhum equipamento encontrado para este projeto.</div>
+            </div>
           ) : (
             categorizedEquipment.map((category) => {
               const CategoryIcon = categoryIcons[category.category] || Settings;
@@ -468,12 +479,21 @@ export default function ProjectVerification() {
 
         {/* Alert */}
         {!allItemsChecked && (
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 10,
+              padding: '12px 14px',
+              border: '1px solid hsl(var(--ds-line-1))',
+              background: 'hsl(var(--ds-surface))',
+            }}
+          >
+            <AlertTriangle size={16} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" style={{ flexShrink: 0, marginTop: 1 }} />
+            <div style={{ fontSize: 13, color: 'hsl(var(--ds-text))', lineHeight: 1.5 }}>
               Todos os equipamentos e acessórios devem ser verificados antes de finalizar o projeto.
-            </AlertDescription>
-          </Alert>
+            </div>
+          </div>
         )}
 
         {/* Action Buttons */}

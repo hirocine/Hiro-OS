@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+;
 import { stepLabels, stepIcons, canTransitionTo } from '@/lib/projectSteps';
 import { AlertTriangle } from 'lucide-react';
 
@@ -78,12 +78,21 @@ export function StepUpdateDialog({ project, open, onOpenChange, onUpdate }: Step
           </div>
 
           {willCompleteProject && (
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 10,
+                padding: '12px 14px',
+                border: '1px solid hsl(var(--ds-line-1))',
+                background: 'hsl(var(--ds-surface))',
+              }}
+            >
+              <AlertTriangle size={16} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" style={{ flexShrink: 0, marginTop: 1 }} />
+              <div style={{ fontSize: 13, color: 'hsl(var(--ds-text))', lineHeight: 1.5 }}>
                 Ao marcar como "Verificado", o projeto será automaticamente finalizado.
-              </AlertDescription>
-            </Alert>
+              </div>
+            </div>
           )}
 
           <div className="space-y-2">

@@ -2,7 +2,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+;
 import {
   Database, Save, FileSpreadsheet, AlertCircle, Download, Upload,
 } from 'lucide-react';
@@ -155,13 +155,22 @@ export default function AdminSystem() {
 
           <SectionShell icon={FileSpreadsheet} title="Importar / Exportar Equipamentos">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  padding: '12px 14px',
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  background: 'hsl(var(--ds-surface))',
+                }}
+              >
+                <AlertCircle size={16} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" style={{ flexShrink: 0, marginTop: 1 }} />
+                <div style={{ fontSize: 13, color: 'hsl(var(--ds-text))', lineHeight: 1.5 }}>
                   <strong>Atenção:</strong> A importação pode adicionar ou atualizar equipamentos em
                   massa. Faça um backup antes de importar.
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
 
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button
