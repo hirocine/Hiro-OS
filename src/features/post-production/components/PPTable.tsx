@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { AlertTriangle, Film, ChevronRight } from 'lucide-react';
+import { AlertTriangle, Film, ChevronRight, ExternalLink } from 'lucide-react';
 import { CollapsibleSection } from '@/ds/components/CollapsibleSection';
 import { EmptyState } from '@/ds/components/EmptyState';
 import { PPSortableHeader } from './PPSortableHeader';
@@ -414,28 +414,29 @@ export function PPTable({ items, isLoading }: PPTableProps) {
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: 4,
+                          gap: 5,
                           padding: '3px 8px',
                           fontSize: 11,
                           fontFamily: '"HN Display", sans-serif',
                           fontWeight: 500,
                           fontVariantNumeric: 'tabular-nums',
-                          color: 'hsl(var(--ds-text))',
-                          border: '1px solid hsl(var(--ds-line-1))',
-                          background: 'hsl(var(--ds-surface))',
+                          color: 'hsl(var(--ds-accent))',
+                          border: '1px solid hsl(var(--ds-accent) / 0.4)',
+                          background: 'hsl(var(--ds-accent) / 0.06)',
                           textDecoration: 'none',
                           transition: 'background 120ms, border-color 120ms',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'hsl(var(--ds-bg))';
-                          e.currentTarget.style.borderColor = 'hsl(var(--ds-text))';
+                          e.currentTarget.style.background = 'hsl(var(--ds-accent) / 0.14)';
+                          e.currentTarget.style.borderColor = 'hsl(var(--ds-accent))';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'hsl(var(--ds-surface))';
-                          e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                          e.currentTarget.style.background = 'hsl(var(--ds-accent) / 0.06)';
+                          e.currentTarget.style.borderColor = 'hsl(var(--ds-accent) / 0.4)';
                         }}
                       >
-                        V{latest.version_number}
+                        <span>V{latest.version_number}</span>
+                        <ExternalLink size={10} strokeWidth={1.75} style={{ opacity: 0.85, flexShrink: 0 }} />
                       </a>
                     );
                   })()}
