@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,6 +12,28 @@ serve(async (req) => {
   }
 
   try {
+    // Ensure caller is a real logged-in user, not just anyone passing the
+    // public anon key. verify_jwt=true alone accepts anon JWTs because they
+    // are technically valid; we want a real user session.
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+    const sb = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    );
+    const { data: { user }, error: authError } = await sb.auth.getUser(
+      authHeader.replace(/^Bearer\s+/i, "")
+    );
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     const url = new URL(req.url);
     const timeMin = url.searchParams.get("timeMin");
     const timeMax = url.searchParams.get("timeMax");
