@@ -90,9 +90,9 @@ export function ResponsiveDialogContent({ className, children }: ResponsiveDialo
     // Para PWA, a altura é controlada diretamente no DrawerContent via CSS
       
     return (
-      <DrawerContent 
+      <DrawerContent
         ref={contentRef}
-        className={cn("overflow-hidden", className)}
+        className={cn("ds-shell overflow-hidden", className)}
         style={drawerStyle}
       >
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
@@ -103,7 +103,7 @@ export function ResponsiveDialogContent({ className, children }: ResponsiveDialo
   }
 
   return (
-    <DialogContent className={cn("max-w-[96vw] max-h-[96vh] overflow-y-auto", className)}>
+    <DialogContent className={cn("ds-shell max-w-[96vw] max-h-[96vh] overflow-y-auto", className)}>
       {children}
     </DialogContent>
   );

@@ -46,7 +46,7 @@ export function MobileOptimizedConfirmationDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className={isMobile ? "mx-4" : ""}>
+      <ResponsiveDialogContent className={`ds-shell ${isMobile ? "mx-4" : ""}`}>
         <ResponsiveDialogHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
             <IconComponent className={`h-6 w-6 ${iconColor}`} />

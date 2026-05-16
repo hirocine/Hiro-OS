@@ -153,7 +153,7 @@ export const AvatarCropperDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] ds-shell">
         <DialogHeader>
           <DialogTitle>Ajustar Foto de Perfil</DialogTitle>
         </DialogHeader>

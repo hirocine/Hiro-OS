@@ -201,7 +201,7 @@ export const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({
                           <Eye className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-3xl">
+                      <DialogContent className="max-w-3xl ds-shell">
                         <img
                           src={image.preview}
                           alt={image.file.name}
