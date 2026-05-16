@@ -5,8 +5,47 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function unauthorized() {
+  return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    status: 401,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+// Accept three flavors of caller, reject everyone else:
+//   1. The Edge Function calling itself (env service_role key, opaque `sb_secret_*`)
+//   2. A pg_cron job using a service_role JWT (legacy)
+//   3. A real logged-in user session (JWT verifiable via getUser)
+// The bare anon key is NOT accepted — verify_jwt=true alone lets the public anon
+// key through, which would expose admin-only sync endpoints to the internet.
+async function requireAuth(req: Request): Promise<Response | null> {
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader) return unauthorized();
+  const token = authHeader.replace(/^Bearer\s+/i, "");
+
+  const envServiceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (envServiceRole && token === envServiceRole) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1] ?? ""));
+    if (payload.role === "service_role") return null;
+  } catch { /* not a JWT, fall through to user lookup */ }
+
+  const ac = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+  );
+  const { data: { user } } = await ac.auth.getUser(token);
+  if (user) return null;
+
+  return unauthorized();
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const authFail = await requireAuth(req);
+  if (authFail) return authFail;
 
   try {
     const supabase = createClient(
