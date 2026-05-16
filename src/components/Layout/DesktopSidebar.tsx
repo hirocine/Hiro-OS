@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone, Bookmark, Lightbulb, UserCircle, CalendarDays, Trophy, Images, Target, Calendar, Instagram, Globe } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone, Bookmark, Lightbulb, UserCircle, CalendarDays, Trophy, Images, Target, Calendar, Instagram, Globe, Captions } from 'lucide-react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -23,12 +23,16 @@ interface NavigationItem {
 
 const operacoesNavigation: NavigationItem[] = [
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: Clapperboard },
   { name: 'Tarefas', href: '/tarefas', icon: CheckSquare },
   { name: 'Retiradas', href: '/retiradas', icon: Camera },
   { name: 'Armazenamento', href: '/ssds', icon: HardDrive },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
   { name: 'Políticas', href: '/politicas', icon: FileText },
+];
+
+const posProducaoNavigation: NavigationItem[] = [
+  { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: Clapperboard },
+  { name: 'Correção de Legendas', href: '/pos-producao/legendas', icon: Captions },
 ];
 
 const producaoNavigation: NavigationItem[] = [
@@ -255,7 +259,7 @@ export function DesktopSidebar() {
 
   // Auto-expand when route matches a child
   useEffect(() => {
-    const allItems = [...operacoesNavigation, ...producaoNavigation, ...marketingNavigation, ...adminNavigation];
+    const allItems = [...operacoesNavigation, ...posProducaoNavigation, ...producaoNavigation, ...marketingNavigation, ...adminNavigation];
     for (const item of allItems) {
       if (item.children?.some(c => !c.isSection && c.href ? isActive(c.href) : false)) {
         setExpandedItem(item.name);
@@ -271,6 +275,7 @@ export function DesktopSidebar() {
     const query = searchQuery.toLowerCase();
     const allItems = [
       ...operacoesNavigation,
+      ...posProducaoNavigation,
       ...(canAccessSuppliers ? producaoNavigation : []),
       ...(canAccessMarketing ? marketingNavigation : []),
       ...(isAdmin ? adminNavigation : []),
@@ -295,6 +300,13 @@ export function DesktopSidebar() {
 
   const filteredOperacoesNav = useMemo(() =>
     operacoesNavigation.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    ),
+    [searchQuery]
+  );
+  const filteredPosProducaoNav = useMemo(() =>
+    posProducaoNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
@@ -394,6 +406,29 @@ export function DesktopSidebar() {
               )
             ))}
           </nav>
+
+          {/* Pós-Produção Section */}
+          {(filteredPosProducaoNav.length > 0 || !searchQuery) && (
+            <>
+              <div className="px-3 my-5">
+                <Separator />
+              </div>
+              <p className="text-[11px] font-semibold text-[hsl(var(--ds-fg-3))] uppercase tracking-wider px-6 mb-2">
+                Pós-Produção
+              </p>
+              <nav className="space-y-0.5 px-3">
+                {filteredPosProducaoNav.map((item) => (
+                  <NavItem
+                    key={item.name}
+                    item={item}
+                    active={isActive(item.href)}
+                    onNavClick={handleNavClick}
+                    onClearExpanded={() => setExpandedItem(null)}
+                  />
+                ))}
+              </nav>
+            </>
+          )}
 
           {/* Produção Section */}
           {canAccessSuppliers && (filteredProducaoNav.length > 0 || !searchQuery) && (

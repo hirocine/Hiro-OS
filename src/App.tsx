@@ -51,6 +51,7 @@ const NewProposal = lazy(() => import("./pages/NewProposal"));
 const PostProduction = lazy(() => import("./pages/PostProduction"));
 const PPVideoDetail = lazy(() => import("./pages/PPVideoDetail"));
 const PPVideoEditDetail = lazy(() => import("./pages/PPVideoEditDetail"));
+const CorrecaoLegendas = lazy(() => import("./pages/CorrecaoLegendas"));
 const CRM = lazy(() => import("./pages/CRM"));
 const CRMContactDetail = lazy(() => import("./pages/CRMContactDetail"));
 const CRMDealDetail = lazy(() => import("./pages/CRMDealDetail"));
@@ -217,6 +218,7 @@ const App = () => (
                 <Route path="esteira-de-pos" element={<RequirePermission permission="esteira_de_pos"><PostProduction /></RequirePermission>} />
                 <Route path="esteira-de-pos/:id" element={<RequirePermission permission="esteira_de_pos"><PPVideoDetail /></RequirePermission>} />
                 <Route path="esteira-de-pos/:id/editar" element={<RequirePermission permission="esteira_de_pos"><PPVideoEditDetail /></RequirePermission>} />
+                <Route path="pos-producao/legendas" element={<RequirePermission permission="esteira_de_pos"><CorrecaoLegendas /></RequirePermission>} />
                 <Route path="perfil" element={<Profile />} />
                 <Route path="administracao" element={<Navigate to="/administracao/usuarios" replace />} />
                 <Route path="administracao/usuarios" element={<RequirePermission permission="admin"><AdminUsers /></RequirePermission>} />

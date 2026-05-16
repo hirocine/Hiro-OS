@@ -42,6 +42,7 @@ import {
   FileSignature,
   Gift,
   BookOpen,
+  Captions,
   type LucideProps,
 } from "lucide-react";
 
@@ -93,6 +94,7 @@ export const I = {
   contract: i(FileSignature),  // Contratos
   gift:     i(Gift),           // RH > Datas
   book:     i(BookOpen),       // RH > Wiki
+  captions: i(Captions),       // Pós > Correção de Legendas
 
   // Topbar / chrome
   search:   i(Search),

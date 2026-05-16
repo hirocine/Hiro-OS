@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone, Bookmark, Lightbulb, UserCircle, CalendarDays, Trophy, Images, Target, Calendar, Instagram, Globe } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone, Bookmark, Lightbulb, UserCircle, CalendarDays, Trophy, Images, Target, Calendar, Instagram, Globe, Captions } from 'lucide-react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -24,12 +24,16 @@ interface NavigationItem {
 }
 
 const operacoesNavigation: NavigationItem[] = [
-  { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: Clapperboard },
   { name: 'Tarefas', href: '/tarefas', icon: CheckSquare },
   { name: 'Retiradas', href: '/retiradas', icon: Camera },
   { name: 'Armazenamento', href: '/ssds', icon: HardDrive },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
   { name: 'Políticas', href: '/politicas', icon: FileText },
+];
+
+const posProducaoNavigation: NavigationItem[] = [
+  { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: Clapperboard },
+  { name: 'Correção de Legendas', href: '/pos-producao/legendas', icon: Captions },
 ];
 
 const producaoNavigation: NavigationItem[] = [
@@ -210,7 +214,7 @@ export function MobileSidebar() {
 
   // Auto-expand when route matches a child
   useEffect(() => {
-    const allItems = [...operacoesNavigation, ...producaoNavigation, ...marketingNavigation, ...adminNavigation];
+    const allItems = [...operacoesNavigation, ...posProducaoNavigation, ...producaoNavigation, ...marketingNavigation, ...adminNavigation];
     for (const item of allItems) {
       if (item.children?.some(c => !c.isSection && c.href ? isActive(c.href) : false)) {
         setExpandedItem(item.name);
@@ -226,6 +230,7 @@ export function MobileSidebar() {
     const query = searchQuery.toLowerCase();
     const allItems = [
       ...operacoesNavigation,
+      ...posProducaoNavigation,
       ...(canAccessSuppliers ? producaoNavigation : []),
       ...(canAccessMarketing ? marketingNavigation : []),
       ...(isAdmin ? adminNavigation : []),
@@ -255,6 +260,13 @@ export function MobileSidebar() {
 
   const filteredOperacoesNav = useMemo(() =>
     operacoesNavigation.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    ),
+    [searchQuery]
+  );
+  const filteredPosProducaoNav = useMemo(() =>
+    posProducaoNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
@@ -400,6 +412,44 @@ export function MobileSidebar() {
                 })()
               ))}
             </nav>
+
+            {/* Pós-Produção Section */}
+            {(filteredPosProducaoNav.length > 0 || !searchQuery) && (
+              <>
+                <div className="px-4 my-3">
+                  <Separator />
+                </div>
+                <p className="text-[11px] font-semibold text-[hsl(var(--ds-fg-3))] uppercase tracking-wider px-7 mb-2">
+                  Pós-Produção
+                </p>
+                <nav className="space-y-0.5 px-4">
+                  {filteredPosProducaoNav.map((item) => {
+                    const Icon = item.icon;
+                    if (!Icon || !item.href) return null;
+                    const active = isActive(item.href);
+                    return (
+                      <NavLink
+                        key={item.name}
+                        to={item.href}
+                        onClick={(e) => { setExpandedItem(null); handleNavClick(e, item.href!); }}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+                          active
+                            ? "bg-[hsl(var(--ds-text)/0.07)] text-[hsl(var(--ds-text))] font-medium"
+                            : "hover:bg-[hsl(var(--ds-bg))] text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]"
+                        )}
+                      >
+                        {active && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-[hsl(var(--ds-text))] rounded-r-full" />
+                        )}
+                        <Icon className={cn("h-[18px] w-[18px]", active && "text-[hsl(var(--ds-text))]")} />
+                        <span className="text-sm">{item.name}</span>
+                      </NavLink>
+                    );
+                  })}
+                </nav>
+              </>
+            )}
 
             {/* Produção Section */}
             {canAccessSuppliers && (filteredProducaoNav.length > 0 || !searchQuery) && (

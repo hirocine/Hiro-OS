@@ -56,9 +56,15 @@ export const NAV: NavSection[] = [
     ],
   },
   {
+    title: "Pós-Produção",
+    items: [
+      { name: "Esteira de Pós",       href: "/esteira-de-pos",        icon: I.film,     permission: "esteira_de_pos" },
+      { name: "Correção de Legendas", href: "/pos-producao/legendas", icon: I.captions, permission: "esteira_de_pos" },
+    ],
+  },
+  {
     title: "Produção",
     items: [
-      { name: "Esteira de Pós", href: "/esteira-de-pos", icon: I.film,   permission: "esteira_de_pos" },
       { name: "Projetos",       href: "/projetos-av",    icon: I.folder, permission: "projetos",
         children: [
           { name: "Esteira de projetos", href: "/projetos-av",       permission: "projetos" },
