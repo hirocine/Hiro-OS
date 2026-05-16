@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Package, AlertTriangle, HardDrive, ChevronDown, ChevronUp } from "lucide-react";
 import { useProjectEquipment } from "@/features/projects";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReminderDialog } from '@/components/Equipment/ReminderDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { StatusPill } from '@/ds/components/StatusPill';
 
 interface ProjectEquipmentListProps {
   projectId: string;
@@ -70,8 +69,8 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
   if (equipment.length === 0) {
     return (
       <div className="text-center py-8">
-        <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground mb-4">Nenhum equipamento encontrado para este projeto</p>
+        <Package size={40} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" className="mx-auto mb-4" />
+        <p style={{ color: 'hsl(var(--ds-fg-3))', marginBottom: 16 }}>Nenhum equipamento encontrado para este projeto</p>
         <button
           type="button"
           className="btn primary"
@@ -86,14 +85,14 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
     );
   }
 
-  const getStatusVariant = (status: string) => {
+  const getStatusTone = (status: string): 'success' | 'danger' | 'muted' => {
     switch (status) {
       case 'active':
-        return 'default';
+        return 'success';
       case 'overdue':
-        return 'destructive';
+        return 'danger';
       default:
-        return 'secondary';
+        return 'muted';
     }
   };
 
@@ -134,50 +133,99 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
       {sortedCategories.map((category) => (
         <div key={category} className="space-y-3">
           <div className="flex items-center gap-2 py-2">
-            <Package className="h-4 w-4 text-muted-foreground" />
-            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+            <Package size={14} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" />
+            <h3
+              style={{
+                fontFamily: '"HN Display", sans-serif',
+                fontSize: 12,
+                fontWeight: 500,
+                color: 'hsl(var(--ds-fg-3))',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+              }}
+            >
               {category}
             </h3>
             <div style={{ flex: 1, borderBottom: '1px solid hsl(var(--ds-line-1))' }} />
-            <Badge variant="secondary" className="text-xs">
+            <span
+              style={{
+                fontSize: 11,
+                padding: '2px 8px',
+                border: '1px solid hsl(var(--ds-line-1))',
+                color: 'hsl(var(--ds-fg-3))',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
               {equipmentByCategory[category].length}
-            </Badge>
+            </span>
           </div>
-          
+
           <div className="space-y-3">
             {equipmentByCategory[category].map((item) => (
-              <Card key={item.id} className="transition-all hover:shadow-md">
-                <CardContent className="p-0">
+              <div
+                key={item.id}
+                style={{
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  background: 'hsl(var(--ds-surface))',
+                }}
+              >
+                <div>
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <h4 className="font-medium truncate">{item.name}</h4>
-                          <Badge variant={getStatusVariant(item.loanInfo.status)}>
+                          <h4
+                            className="truncate"
+                            style={{
+                              fontFamily: '"HN Display", sans-serif',
+                              fontSize: 14,
+                              fontWeight: 500,
+                              color: 'hsl(var(--ds-text))',
+                            }}
+                          >
+                            {item.name}
+                          </h4>
+                          <StatusPill tone={getStatusTone(item.loanInfo.status)}>
                             {getStatusLabel(item.loanInfo.status)}
-                          </Badge>
-                          
-                          {/* Badge de acessórios */}
+                          </StatusPill>
+
+                          {/* Tag de acessórios */}
                           {item.accessoryCount && item.accessoryCount > 0 && (
-                            <Badge variant="outline" className="text-xs gap-1">
-                              <Package className="h-3 w-3" />
+                            <span
+                              className="flex items-center gap-1"
+                              style={{
+                                fontSize: 11,
+                                padding: '2px 6px',
+                                border: '1px solid hsl(var(--ds-line-1))',
+                                color: 'hsl(var(--ds-fg-3))',
+                              }}
+                            >
+                              <Package size={11} strokeWidth={1.5} />
                               {item.accessoryCount} acessório{item.accessoryCount !== 1 ? 's' : ''}
-                            </Badge>
+                            </span>
                           )}
-                          
+
                           {item.loanInfo.status === 'overdue' && (
-                            <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0" />
+                            <AlertTriangle size={14} strokeWidth={1.5} color="hsl(var(--ds-danger, 0 84% 60%))" className="flex-shrink-0" />
                           )}
-                          
+
                           {/* Indicador especial para SSDs/HDs */}
                           {isStorageDevice(item) && (
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Badge variant="outline" className="text-xs gap-1 border-primary/50">
-                                    <HardDrive className="h-3 w-3" />
+                                  <span
+                                    className="flex items-center gap-1"
+                                    style={{
+                                      fontSize: 11,
+                                      padding: '2px 6px',
+                                      border: '1px solid hsl(var(--ds-text))',
+                                      color: 'hsl(var(--ds-text))',
+                                    }}
+                                  >
+                                    <HardDrive size={11} strokeWidth={1.5} />
                                     <span>Kanban</span>
-                                  </Badge>
+                                  </span>
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   <p>Status gerenciado na página de Controle de SSDs</p>
@@ -186,25 +234,25 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                             </TooltipProvider>
                           )}
                         </div>
-                        
-                        <div className="text-sm text-muted-foreground space-y-1">
+
+                        <div className="space-y-1" style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
                           <div className="flex items-center gap-1">
-                            <Package className="h-3 w-3" />
+                            <Package size={12} strokeWidth={1.5} />
                             <span>{item.brand}</span>
                             {item.patrimonyNumber && (
                               <span>• Patrimônio: {item.patrimonyNumber}</span>
                             )}
                           </div>
-                          
+
                           {/* Para SSDs/HDs, mostrar mensagem informativa */}
                           {isStorageDevice(item) && (
-                            <p className="text-xs italic text-muted-foreground mt-1">
+                            <p style={{ fontSize: 11, fontStyle: 'italic', color: 'hsl(var(--ds-fg-3))', marginTop: 4 }}>
                               Use a página de Controle de SSDs para gerenciar o status
                             </p>
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col gap-2">
                         {item.loanInfo.status === 'overdue' && (
                           <button
@@ -226,7 +274,7 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                       onOpenChange={() => toggleExpanded(item.id)}
                     >
                       <CollapsibleTrigger className="w-full">
-                        <div className="px-4 py-2 bg-muted/30 hover:bg-muted/50 transition-colors border-t flex items-center justify-between">
+                        <div className="px-4 py-2 flex items-center justify-between" style={{ borderTop: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-bg))' }}>
                           <span className="text-sm font-medium flex items-center gap-2">
                             <Package className="h-4 w-4" />
                             {item.accessoryCount} acessório{item.accessoryCount !== 1 ? 's' : ''} incluído{item.accessoryCount !== 1 ? 's' : ''}
@@ -240,21 +288,21 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                       </CollapsibleTrigger>
                       
                       <CollapsibleContent>
-                        <div className="px-4 py-3 space-y-2 bg-muted/20 border-t">
+                        <div className="px-4 py-3 space-y-2" style={{ borderTop: '1px solid hsl(var(--ds-line-1))', background: 'hsl(var(--ds-bg))' }}>
                           {equipment
                             .filter(acc => acc.parentId === item.id && acc.itemType === 'accessory')
                             .map(accessory => (
                               <div key={accessory.id} className="flex items-start gap-2 text-sm">
-                                <span className="text-muted-foreground">•</span>
+                                <span style={{ color: 'hsl(var(--ds-fg-3))' }}>•</span>
                                 <div className="flex-1">
                                   <span className="font-medium">{accessory.name}</span>
                                   {accessory.brand && (
-                                    <span className="text-muted-foreground text-xs ml-2">
+                                    <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginLeft: 8 }}>
                                       {accessory.brand}
                                     </span>
                                   )}
                                   {accessory.patrimonyNumber && (
-                                    <span className="text-muted-foreground text-xs ml-2">
+                                    <span style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginLeft: 8 }}>
                                       • Patrimônio: {accessory.patrimonyNumber}
                                     </span>
                                   )}
@@ -266,8 +314,8 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                       </CollapsibleContent>
                     </Collapsible>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </div>

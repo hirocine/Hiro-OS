@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarData } from "@/lib/avatarUtils";
 import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Download, Video, ArrowLeft, X, Building2, User, Clock, FileText, Loader2, Edit, AlertCircle, Calendar as CalendarIconLucide, Layers, Cloud, CloudOff } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { differenceInDays } from 'date-fns';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -687,7 +686,7 @@ export default function ProjectWithdrawal() {
     
     if (!groupedCategory) {
       return (
-        <div className="text-center py-8 text-muted-foreground">
+        <div className="text-center py-8" style={{ color: 'hsl(var(--ds-fg-3))' }}>
           <p>Nenhum equipamento disponível nesta categoria</p>
         </div>
       );
@@ -709,7 +708,7 @@ export default function ProjectWithdrawal() {
         <div className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="projectNumber" className="text-base font-semibold flex items-center gap-2">
-              <Package className="h-4 w-4 text-muted-foreground" />
+              <Package size={14} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" />
               Número do Projeto
               <span className="text-destructive">*</span>
             </Label>
@@ -729,7 +728,7 @@ export default function ProjectWithdrawal() {
                   : ""
               )}
             />
-            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <p className="flex items-center gap-1.5" style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
               <FileText className="h-3 w-3" />
               Apenas números, máximo 4 dígitos
             </p>
@@ -737,7 +736,7 @@ export default function ProjectWithdrawal() {
 
           <div className="space-y-2">
             <Label htmlFor="company" className="text-base font-semibold flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-muted-foreground" />
+              <Building2 size={14} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" />
               Empresa
               <span className="text-destructive">*</span>
             </Label>
@@ -755,7 +754,7 @@ export default function ProjectWithdrawal() {
 
           <div className="space-y-2">
             <Label htmlFor="projectName" className="text-base font-semibold flex items-center gap-2">
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <FileText size={14} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" />
               Nome do Projeto
               <span className="text-destructive">*</span>
             </Label>
@@ -1087,21 +1086,21 @@ export default function ProjectWithdrawal() {
           <div style={{ padding: '16px 18px' }}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Responsável</Label>
+                <Label style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>Responsável</Label>
                 <p className="text-sm font-medium flex items-center gap-2">
                   <User className="h-4 w-4" />
                   {responsibleName}
                 </p>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Tipo de Gravação</Label>
+                <Label style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>Tipo de Gravação</Label>
                 <p className="text-sm font-medium flex items-center gap-2">
                   <Video className="h-4 w-4" />
                   {data.recordingType}
                 </p>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Data de Retirada</Label>
+                <Label style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>Data de Retirada</Label>
                 <p className="text-sm font-medium flex items-center gap-2">
                   <CalendarIconLucide className="h-4 w-4" />
                   {data.withdrawalDate ? format(data.withdrawalDate, 'dd/MM/yyyy', { locale: ptBR }) : ''}
@@ -1225,15 +1224,41 @@ export default function ProjectWithdrawal() {
 
         {/* Final Actions */}
         {totalEquipment > 0 && (
-          <div className="flex flex-col gap-3 pt-6 border-t">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Pronto para finalizar?</AlertTitle>
-              <AlertDescription>
-                Revise todas as informações antes de criar a retirada.
-                Você poderá fazer alterações posteriormente se necessário.
-              </AlertDescription>
-            </Alert>
+          <div
+            style={{
+              paddingTop: 24,
+              borderTop: '1px solid hsl(var(--ds-line-1))',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 12,
+                padding: '14px 16px',
+                border: '1px solid hsl(var(--ds-line-1))',
+                background: 'hsl(var(--ds-surface))',
+              }}
+            >
+              <AlertCircle size={16} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" style={{ flexShrink: 0, marginTop: 2 }} />
+              <div>
+                <div
+                  style={{
+                    fontFamily: '"HN Display", sans-serif',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    color: 'hsl(var(--ds-text))',
+                    marginBottom: 4,
+                  }}
+                >
+                  Pronto para finalizar?
+                </div>
+                <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', lineHeight: 1.55 }}>
+                  Revise todas as informações antes de criar a retirada.
+                  Você poderá fazer alterações posteriormente se necessário.
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -1246,7 +1271,7 @@ export default function ProjectWithdrawal() {
       <div className="ds-shell min-h-screen flex flex-col items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">
+          <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
             {isDraftLoading ? 'Verificando rascunhos...' : 'Carregando equipamentos...'}
           </p>
         </div>
