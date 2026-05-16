@@ -10,10 +10,28 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
+      _internal_config: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       audiovisual_projects: {
         Row: {
           actual_end_date: string | null
@@ -2447,6 +2465,45 @@ export type Database = {
         }
         Relationships: []
       }
+      project_registry: {
+        Row: {
+          client_name: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          project_date: string | null
+          project_name: string | null
+          project_number: string | null
+          updated_at: string
+          value_brl: number | null
+        }
+        Insert: {
+          client_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          project_date?: string | null
+          project_name?: string | null
+          project_number?: string | null
+          updated_at?: string
+          value_brl?: number | null
+        }
+        Update: {
+          client_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          project_date?: string | null
+          project_name?: string | null
+          project_number?: string | null
+          updated_at?: string
+          value_brl?: number | null
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           actual_end_date: string | null
@@ -3737,6 +3794,11 @@ export type Database = {
         Args: { equipment_id: string }
         Returns: number
       }
+      get_internal_config: { Args: { _key: string }; Returns: string }
+      get_latest_proposal_slug: {
+        Args: { p_parent_id: string }
+        Returns: string
+      }
       get_loan_contact_info: {
         Args: { loan_id: string }
         Returns: {
@@ -3789,6 +3851,58 @@ export type Database = {
           loan_id: string
           status: string
         }[]
+      }
+      get_proposal_by_slug: {
+        Args: { p_slug: string }
+        Returns: {
+          base_value: number | null
+          briefing: string | null
+          cases: Json | null
+          client_logo: string | null
+          client_name: string | null
+          client_responsible: string | null
+          company_description: string | null
+          created_at: string
+          created_by: string | null
+          diagnostico_dores: Json | null
+          discount_pct: number | null
+          entregaveis: Json | null
+          final_value: number | null
+          id: string
+          is_latest_version: boolean | null
+          list_price: number | null
+          moodboard_images: Json | null
+          objetivo: string | null
+          parent_id: string | null
+          payment_options: Json | null
+          payment_terms: string | null
+          project_name: string | null
+          project_number: string | null
+          scope_post_production: Json | null
+          scope_pre_production: Json | null
+          scope_production: Json | null
+          sent_date: string | null
+          services: Json | null
+          slug: string
+          status: string
+          testimonial_image: string | null
+          testimonial_name: string | null
+          testimonial_role: string | null
+          testimonial_text: string | null
+          timeline: Json | null
+          updated_at: string
+          validity_date: string | null
+          version: number | null
+          video_url: string | null
+          views_count: number | null
+          whatsapp_number: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "orcamentos"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_safe_equipment_list: {
         Args: never
@@ -4120,4 +4234,3 @@ export const Constants = {
     },
   },
 } as const
-
