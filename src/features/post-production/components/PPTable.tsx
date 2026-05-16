@@ -27,7 +27,7 @@ import {
 const PIPELINE_STEPS: PPStatus[] = ['fila', 'edicao', 'finalizacao', 'revisao', 'entregue'];
 
 // 8 columns: entrega | editor | fase (atual → próxima) | pipeline | prioridade | última versão | prazo | abrir
-const PP_COLS = 'minmax(220px, 1.4fr) 140px 180px minmax(120px, 0.8fr) 110px 90px 130px 56px';
+const PP_COLS = 'minmax(220px, 1.4fr) 140px 180px minmax(120px, 0.8fr) 110px 140px 130px 56px';
 
 // Stable colored dot per project (hashed from id)
 function projectColor(id: string | null | undefined): string {
@@ -420,22 +420,23 @@ export function PPTable({ items, isLoading }: PPTableProps) {
                           fontFamily: '"HN Display", sans-serif',
                           fontWeight: 500,
                           fontVariantNumeric: 'tabular-nums',
-                          color: 'hsl(var(--ds-accent))',
-                          border: '1px solid hsl(var(--ds-accent) / 0.4)',
-                          background: 'hsl(var(--ds-accent) / 0.06)',
+                          color: 'hsl(var(--ds-info))',
+                          border: '1px solid hsl(var(--ds-info) / 0.4)',
+                          background: 'hsl(var(--ds-info) / 0.06)',
                           textDecoration: 'none',
                           transition: 'background 120ms, border-color 120ms',
+                          whiteSpace: 'nowrap',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'hsl(var(--ds-accent) / 0.14)';
-                          e.currentTarget.style.borderColor = 'hsl(var(--ds-accent))';
+                          e.currentTarget.style.background = 'hsl(var(--ds-info) / 0.14)';
+                          e.currentTarget.style.borderColor = 'hsl(var(--ds-info))';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'hsl(var(--ds-accent) / 0.06)';
-                          e.currentTarget.style.borderColor = 'hsl(var(--ds-accent) / 0.4)';
+                          e.currentTarget.style.background = 'hsl(var(--ds-info) / 0.06)';
+                          e.currentTarget.style.borderColor = 'hsl(var(--ds-info) / 0.4)';
                         }}
                       >
-                        <span>V{latest.version_number}</span>
+                        <span>Frame.io · V{latest.version_number}</span>
                         <ExternalLink size={10} strokeWidth={1.75} style={{ opacity: 0.85, flexShrink: 0 }} />
                       </a>
                     );
