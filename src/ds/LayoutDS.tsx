@@ -5,7 +5,7 @@ import { TopBar as MobileTopBar } from "@/components/Layout/TopBar";
 import { UpdateNotification } from "@/components/PWA/UpdateNotification";
 import { OfflineIndicator } from "@/components/PWA/OfflineIndicator";
 import { InstallPrompt } from "@/components/PWA/InstallPrompt";
-import { HiroBubble } from "@/components/Layout/HiroBubble";
+// import { HiroBubble } from "@/components/Layout/HiroBubble"; // disabled — see render sites below
 import { LoadingScreenSkeleton } from "@/components/ui/loading-screen";
 import { useIsPWA } from "@/hooks/useIsPWA";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -92,7 +92,7 @@ export function LayoutDS() {
           <OfflineIndicator />
           <UpdateNotification />
           <InstallPrompt />
-          <HiroBubble />
+          {/* <HiroBubble /> — AI assistant temporarily disabled per request */}
           <main
             className={cn(
 "flex-1 w-full min-h-screen bg-[hsl(var(--ds-surface))] [contain:layout]",
@@ -141,7 +141,7 @@ export function LayoutDS() {
         <OfflineIndicator />
         <UpdateNotification />
         <InstallPrompt />
-        <HiroBubble />
+        {/* <HiroBubble /> — AI assistant temporarily disabled per request */}
       </div>
     </BreadcrumbProvider>
   );

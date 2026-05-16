@@ -109,7 +109,7 @@ const App = () => (
   <AuthProvider>
     <SessionBootstrap />
     <TooltipProvider delayDuration={300} skipDelayDuration={100}>
-      <Sonner position="top-center" />
+      <Sonner position="bottom-right" />
       <BrowserRouter>
         <NavigationBlockerProvider>
           <Routes>

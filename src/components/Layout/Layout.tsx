@@ -6,7 +6,7 @@ import { TopBar } from './TopBar';
 import { UpdateNotification } from '@/components/PWA/UpdateNotification';
 import { OfflineIndicator } from '@/components/PWA/OfflineIndicator';
 import { InstallPrompt } from '@/components/PWA/InstallPrompt';
-import { HiroBubble } from './HiroBubble';
+// import { HiroBubble } from './HiroBubble'; // disabled — see render site below
 import { LoadingScreenSkeleton } from '@/components/ui/loading-screen';
 import { useIsPWA } from '@/hooks/useIsPWA';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -26,7 +26,7 @@ export function Layout() {
       <OfflineIndicator />
       <UpdateNotification />
       <InstallPrompt />
-      <HiroBubble />
+      {/* <HiroBubble /> — AI assistant temporarily disabled per request */}
 
       <main
         className={cn(
