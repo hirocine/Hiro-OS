@@ -10,6 +10,7 @@ import { InlineAssigneeCell } from '@/features/tasks/components/InlineAssigneeCe
 import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
 import { PPPriorityBadge } from './PPPriorityBadge';
 import { usePostProductionMutations } from '../hooks/usePostProductionMutations';
+import { usePPLatestVersions } from '../hooks/usePPLatestVersions';
 import { useUsers } from '@/hooks/useUsers';
 import {
   PostProductionItem,
@@ -25,8 +26,8 @@ import {
 
 const PIPELINE_STEPS: PPStatus[] = ['fila', 'edicao', 'finalizacao', 'revisao', 'entregue'];
 
-// 7 columns: entrega | editor | fase (atual → próxima) | pipeline | prioridade | prazo | abrir
-const PP_COLS = 'minmax(220px, 1.4fr) 140px 180px minmax(120px, 0.8fr) 110px 130px 56px';
+// 8 columns: entrega | editor | fase (atual → próxima) | pipeline | prioridade | última versão | prazo | abrir
+const PP_COLS = 'minmax(220px, 1.4fr) 140px 180px minmax(120px, 0.8fr) 110px 90px 130px 56px';
 
 // Stable colored dot per project (hashed from id)
 function projectColor(id: string | null | undefined): string {
@@ -174,6 +175,7 @@ interface PPTableProps {
 export function PPTable({ items, isLoading }: PPTableProps) {
   const { updateItem } = usePostProductionMutations();
   const { users } = useUsers();
+  const { latestByItem } = usePPLatestVersions();
   const navigate = useNavigate();
 
   const [sortBy, setSortBy] = useState<PPSortableField>('due_date');
@@ -247,6 +249,7 @@ export function PPTable({ items, isLoading }: PPTableProps) {
           <div>Fase atual → próxima</div>
           <div>Pipeline</div>
           <div>Prioridade</div>
+          <div>Última versão</div>
           <div>Prazo</div>
           <div aria-label="Abrir" />
         </div>
@@ -257,6 +260,7 @@ export function PPTable({ items, isLoading }: PPTableProps) {
             <div><span className="sk line" style={{ width: 150 }} /></div>
             <div><span className="sk line" style={{ width: 120 }} /></div>
             <div><span className="sk line" style={{ width: 80 }} /></div>
+            <div><span className="sk line" style={{ width: 40 }} /></div>
             <div><span className="sk line" style={{ width: 100 }} /></div>
             <div />
           </div>
@@ -282,6 +286,7 @@ export function PPTable({ items, isLoading }: PPTableProps) {
           <div>
             <PPSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </div>
+          <div>Última versão</div>
           <div>
             <PPSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </div>
@@ -391,6 +396,49 @@ export function PPTable({ items, isLoading }: PPTableProps) {
                     renderValue={(v) => <PPPriorityBadge priority={v as PPPriority} />}
                     renderOption={(v) => <PPPriorityBadge priority={v as PPPriority} />}
                   />
+                </div>
+                <div onClick={(e) => e.stopPropagation()}>
+                  {(() => {
+                    const latest = latestByItem.get(item.id);
+                    if (!latest) {
+                      return (
+                        <span style={{ fontSize: 13, color: 'hsl(var(--ds-fg-4))' }}>—</span>
+                      );
+                    }
+                    return (
+                      <a
+                        href={latest.frame_io_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`Abrir V${latest.version_number} no Frame.io`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          padding: '3px 8px',
+                          fontSize: 11,
+                          fontFamily: '"HN Display", sans-serif',
+                          fontWeight: 500,
+                          fontVariantNumeric: 'tabular-nums',
+                          color: 'hsl(var(--ds-text))',
+                          border: '1px solid hsl(var(--ds-line-1))',
+                          background: 'hsl(var(--ds-surface))',
+                          textDecoration: 'none',
+                          transition: 'background 120ms, border-color 120ms',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'hsl(var(--ds-bg))';
+                          e.currentTarget.style.borderColor = 'hsl(var(--ds-text))';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'hsl(var(--ds-surface))';
+                          e.currentTarget.style.borderColor = 'hsl(var(--ds-line-1))';
+                        }}
+                      >
+                        V{latest.version_number}
+                      </a>
+                    );
+                  })()}
                 </div>
                 <div onClick={(e) => e.stopPropagation()}>
                   {isOverdue ? (
