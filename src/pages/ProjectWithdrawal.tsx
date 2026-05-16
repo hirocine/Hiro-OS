@@ -845,16 +845,20 @@ export default function ProjectWithdrawal() {
                 <Label>Data de Separação *</Label>
                 <Popover open={separationDateOpen} onOpenChange={setSeparationDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !data.separationDate && "text-muted-foreground"
-                      )}
+                    <button
+                      type="button"
+                      className="btn"
+                      style={{
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        color: data.separationDate
+                          ? 'hsl(var(--ds-text))'
+                          : 'hsl(var(--ds-fg-3))',
+                      }}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {data.separationDate ? format(data.separationDate, "dd/MM/yyyy") : "Selecionar"}
-                    </Button>
+                      <CalendarIcon size={14} strokeWidth={1.5} />
+                      <span>{data.separationDate ? format(data.separationDate, "dd/MM/yyyy") : "Selecionar"}</span>
+                    </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
                     <Calendar
@@ -875,16 +879,20 @@ export default function ProjectWithdrawal() {
                 <Label>Data de Retirada *</Label>
                 <Popover open={withdrawalDateOpen} onOpenChange={setWithdrawalDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !data.withdrawalDate && "text-muted-foreground"
-                      )}
+                    <button
+                      type="button"
+                      className="btn"
+                      style={{
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        color: data.withdrawalDate
+                          ? 'hsl(var(--ds-text))'
+                          : 'hsl(var(--ds-fg-3))',
+                      }}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {data.withdrawalDate ? format(data.withdrawalDate, "dd/MM/yyyy") : "Selecionar"}
-                    </Button>
+                      <CalendarIcon size={14} strokeWidth={1.5} />
+                      <span>{data.withdrawalDate ? format(data.withdrawalDate, "dd/MM/yyyy") : "Selecionar"}</span>
+                    </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
                     <Calendar
@@ -905,16 +913,20 @@ export default function ProjectWithdrawal() {
                 <Label>Data de Devolução *</Label>
                 <Popover open={returnDateOpen} onOpenChange={setReturnDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !data.returnDate && "text-muted-foreground"
-                      )}
+                    <button
+                      type="button"
+                      className="btn"
+                      style={{
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        color: data.returnDate
+                          ? 'hsl(var(--ds-text))'
+                          : 'hsl(var(--ds-fg-3))',
+                      }}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {data.returnDate ? format(data.returnDate, "dd/MM/yyyy") : "Selecionar"}
-                    </Button>
+                      <CalendarIcon size={14} strokeWidth={1.5} />
+                      <span>{data.returnDate ? format(data.returnDate, "dd/MM/yyyy") : "Selecionar"}</span>
+                    </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
                     <Calendar
@@ -997,79 +1009,86 @@ export default function ProjectWithdrawal() {
       <div className="space-y-6">
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <Card className="border-primary/20">
-            <CardContent className="p-4">
-              <div className="flex flex-col items-center text-center">
-                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                  <Package className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+          {[
+            { icon: Package, value: totalEquipment, label: 'Equipamentos' },
+            { icon: Layers, value: summaryCategories.length, label: 'Categorias' },
+            { icon: CalendarIconLucide, value: durationDays, label: 'Dias' },
+            { icon: FileText, value: `#${data.projectNumber}`, label: 'Projeto' },
+          ].map((stat, i) => {
+            const Icon = stat.icon;
+            return (
+              <div
+                key={i}
+                style={{
+                  border: '1px solid hsl(var(--ds-line-1))',
+                  background: 'hsl(var(--ds-surface))',
+                  padding: 16,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6,
+                }}
+              >
+                <Icon size={16} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" />
+                <div
+                  style={{
+                    fontFamily: '"HN Display", sans-serif',
+                    fontSize: 22,
+                    fontWeight: 500,
+                    letterSpacing: '-0.01em',
+                    color: 'hsl(var(--ds-text))',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {stat.value}
                 </div>
-                <p className="text-xl md:text-2xl font-bold">{totalEquipment}</p>
-                <p className="text-xs text-muted-foreground">Equipamentos</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-primary/20">
-            <CardContent className="p-4">
-              <div className="flex flex-col items-center text-center">
-                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                  <Layers className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                <div style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}>
+                  {stat.label}
                 </div>
-                <p className="text-xl md:text-2xl font-bold">{summaryCategories.length}</p>
-                <p className="text-xs text-muted-foreground">Categorias</p>
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-primary/20">
-            <CardContent className="p-4">
-              <div className="flex flex-col items-center text-center">
-                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                  <CalendarIconLucide className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                </div>
-                <p className="text-xl md:text-2xl font-bold">{durationDays}</p>
-                <p className="text-xs text-muted-foreground">Dias</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-primary/20">
-            <CardContent className="p-4">
-              <div className="flex flex-col items-center text-center">
-                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                  <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                </div>
-                <p className="text-xl md:text-2xl font-bold">#{data.projectNumber}</p>
-                <p className="text-xs text-muted-foreground">Projeto</p>
-              </div>
-            </CardContent>
-          </Card>
+            );
+          })}
         </div>
 
         {/* Project Information */}
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
+        <div
+          style={{
+            border: '1px solid hsl(var(--ds-line-1))',
+            background: 'hsl(var(--ds-surface))',
+          }}
+        >
+          <div
+            style={{
+              padding: '16px 18px',
+              borderBottom: '1px solid hsl(var(--ds-line-1))',
+            }}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                </div>
+                <FileText size={18} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" />
                 <div>
-                  <CardTitle className="text-lg md:text-xl">
+                  <div
+                    style={{
+                      fontFamily: '"HN Display", sans-serif',
+                      fontSize: 16,
+                      fontWeight: 500,
+                      letterSpacing: '-0.01em',
+                      color: 'hsl(var(--ds-text))',
+                    }}
+                  >
                     {data.projectNumber} - {data.company}
-                  </CardTitle>
-                  <CardDescription className="text-sm md:text-base">
+                  </div>
+                  <div style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>
                     {data.projectName}
-                  </CardDescription>
+                  </div>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => goToStep(1)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Editar
-              </Button>
+              <button type="button" className="btn" onClick={() => goToStep(1)}>
+                <Edit size={13} strokeWidth={1.5} />
+                <span>Editar</span>
+              </button>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div style={{ padding: '16px 18px' }}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Responsável</Label>
@@ -1093,8 +1112,8 @@ export default function ProjectWithdrawal() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Equipment by Category */}
         {summaryCategories.length > 0 && (
@@ -1103,25 +1122,50 @@ export default function ProjectWithdrawal() {
               const Icon = category.icon;
               return (
                 <AccordionItem key={category.key} value={category.key}>
-                  <Card>
+                  <div
+                    style={{
+                      border: '1px solid hsl(var(--ds-line-1))',
+                      background: 'hsl(var(--ds-surface))',
+                    }}
+                  >
                     <AccordionTrigger className="px-4 hover:no-underline">
                       <div className="flex items-center justify-between w-full pr-4">
                         <div className="flex items-center gap-3">
-                          <Icon className="h-5 w-5 text-primary" />
-                          <span className="font-medium">{category.name}</span>
+                          <Icon size={16} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" />
+                          <span
+                            style={{
+                              fontFamily: '"HN Display", sans-serif',
+                              fontSize: 14,
+                              fontWeight: 500,
+                              color: 'hsl(var(--ds-text))',
+                            }}
+                          >
+                            {category.name}
+                          </span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <Badge variant="secondary">{category.equipment.length}</Badge>
-                          <Button
-                            variant="ghost"
-                            size="sm"
+                          <span
+                            style={{
+                              fontSize: 11,
+                              padding: '2px 8px',
+                              border: '1px solid hsl(var(--ds-line-1))',
+                              color: 'hsl(var(--ds-fg-3))',
+                              fontVariantNumeric: 'tabular-nums',
+                            }}
+                          >
+                            {category.equipment.length}
+                          </span>
+                          <button
+                            type="button"
+                            className="btn icon"
                             onClick={(e) => {
                               e.stopPropagation();
                               goToStep(category.stepNumber);
                             }}
+                            aria-label="Editar categoria"
                           >
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                            <Edit size={13} strokeWidth={1.5} />
+                          </button>
                         </div>
                       </div>
                     </AccordionTrigger>
@@ -1130,33 +1174,53 @@ export default function ProjectWithdrawal() {
                         {category.equipment.map((item) => (
                           <div
                             key={item.id}
-                            className="flex items-center justify-between p-2 rounded-md bg-muted/30 text-sm"
+                            className="flex items-center justify-between p-2 text-sm"
+                            style={{
+                              background: 'hsl(var(--ds-bg))',
+                              border: '1px solid hsl(var(--ds-line-1))',
+                            }}
                           >
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               {item.image && (
                                 <img
                                   src={item.image}
                                   alt={item.name}
-                                  className="w-8 h-8 rounded object-cover flex-shrink-0"
+                                  className="w-8 h-8 object-cover flex-shrink-0"
                                 />
                               )}
                               <div className="flex flex-col min-w-0">
-                                <span className="font-medium truncate">{item.name}</span>
-                                <span className="text-xs text-muted-foreground truncate">
+                                <span
+                                  className="truncate"
+                                  style={{ color: 'hsl(var(--ds-text))', fontWeight: 500 }}
+                                >
+                                  {item.name}
+                                </span>
+                                <span
+                                  className="truncate"
+                                  style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))' }}
+                                >
                                   {item.brand} {item.subcategory && `• ${item.subcategory}`}
                                 </span>
                               </div>
                             </div>
                             {item.patrimonyNumber && (
-                              <Badge variant="outline" className="text-xs">
+                              <span
+                                style={{
+                                  fontSize: 11,
+                                  padding: '2px 6px',
+                                  border: '1px solid hsl(var(--ds-line-1))',
+                                  color: 'hsl(var(--ds-fg-3))',
+                                  fontVariantNumeric: 'tabular-nums',
+                                }}
+                              >
                                 Pat. {item.patrimonyNumber}
-                              </Badge>
+                              </span>
                             )}
                           </div>
                         ))}
                       </div>
                     </AccordionContent>
-                  </Card>
+                  </div>
                 </AccordionItem>
               );
             })}
@@ -1217,58 +1281,99 @@ export default function ProjectWithdrawal() {
         onCancel={handleCancelLeave}
         isSaving={isSavingBeforeLeave}
       />
-    <div className="min-h-screen flex flex-col bg-background">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: 'hsl(var(--ds-bg))' }}
+    >
       {/* Header */}
-      <div className="border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90 sticky top-0 z-10 shadow-sm">
+      <div
+        className="sticky top-0 z-10"
+        style={{
+          borderBottom: '1px solid hsl(var(--ds-line-1))',
+          background: 'hsl(var(--ds-surface) / 0.95)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
         <div className="container mx-auto px-4 py-4 md:py-5">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-            <span 
-              className="hover:text-foreground cursor-pointer transition-colors flex items-center gap-1.5"
+          {/* Breadcrumb */}
+          <div
+            className="flex items-center gap-2 mb-4"
+            style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}
+          >
+            <span
+              className="cursor-pointer flex items-center gap-1.5"
+              style={{ transition: 'color 0.15s' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-text))')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'hsl(var(--ds-fg-3))')}
               onClick={() => safeNavigate('/retiradas')}
             >
-              <Package className="h-3.5 w-3.5" />
-              Retiradas
+              <Package size={13} strokeWidth={1.5} />
+              <span>Retiradas</span>
             </span>
-            <ChevronRight className="h-3.5 w-3.5" />
-            <span className="text-foreground font-medium">Nova Retirada</span>
+            <ChevronRight size={13} strokeWidth={1.5} />
+            <span style={{ color: 'hsl(var(--ds-text))', fontWeight: 500 }}>Nova Retirada</span>
           </div>
-          
+
+          {/* Title row */}
           <div className="flex items-start gap-3 mb-5">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="mt-1"
+            <button
+              type="button"
+              className="btn icon"
               onClick={() => safeNavigate('/retiradas')}
+              aria-label="Voltar"
+              style={{ marginTop: 2 }}
             >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+              <ArrowLeft size={16} strokeWidth={1.5} />
+            </button>
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
+              <h1
+                style={{
+                  fontFamily: '"HN Display", sans-serif',
+                  fontSize: 26,
+                  fontWeight: 500,
+                  letterSpacing: '-0.015em',
+                  lineHeight: 1.15,
+                  color: 'hsl(var(--ds-text))',
+                  marginBottom: 2,
+                }}
+              >
                 Nova Retirada de Equipamentos
               </h1>
-              <p className="text-sm md:text-base text-muted-foreground">
+              <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
                 {getStepTitle()}
               </p>
             </div>
           </div>
-          
-          <div className="space-y-2.5">
-            <div className="flex justify-between items-center text-xs md:text-sm font-medium">
-              <span className="text-muted-foreground flex items-center gap-2">
+
+          {/* Progress */}
+          <div className="space-y-2">
+            <div
+              className="flex justify-between items-center"
+              style={{ fontSize: 12 }}
+            >
+              <span
+                className="flex items-center gap-2"
+                style={{ color: 'hsl(var(--ds-fg-3))' }}
+              >
                 <span className="hidden sm:inline">Progresso:</span>
-                <span className="font-semibold text-foreground">Etapa {currentStep}/{TOTAL_STEPS}</span>
+                <span style={{ color: 'hsl(var(--ds-text))', fontWeight: 500 }}>
+                  Etapa {currentStep}/{TOTAL_STEPS}
+                </span>
                 {/* Draft save indicator */}
                 {lastSavedAt && (
-                  <span className="flex items-center gap-1 text-success ml-2">
+                  <span
+                    className="flex items-center gap-1 ml-2"
+                    style={{ color: 'hsl(var(--ds-success, 142 76% 36%))' }}
+                  >
                     {isSaving ? (
                       <>
-                        <Cloud className="h-3.5 w-3.5 animate-pulse" />
-                        <span className="hidden sm:inline text-xs">Salvando...</span>
+                        <Cloud size={13} strokeWidth={1.5} className="animate-pulse" />
+                        <span className="hidden sm:inline">Salvando...</span>
                       </>
                     ) : (
                       <>
-                        <Cloud className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline text-xs">
+                        <Cloud size={13} strokeWidth={1.5} />
+                        <span className="hidden sm:inline">
                           Salvo às {format(lastSavedAt, 'HH:mm')}
                         </span>
                       </>
@@ -1276,9 +1381,32 @@ export default function ProjectWithdrawal() {
                   </span>
                 )}
               </span>
-              <span className="text-primary font-bold">{Math.round(progressPercentage)}%</span>
+              <span
+                style={{
+                  color: 'hsl(var(--ds-text))',
+                  fontWeight: 600,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {Math.round(progressPercentage)}%
+              </span>
             </div>
-            <Progress value={progressPercentage} className="h-2.5" />
+            <div
+              style={{
+                height: 4,
+                background: 'hsl(var(--ds-line-1))',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  height: '100%',
+                  width: `${progressPercentage}%`,
+                  background: 'hsl(var(--ds-text))',
+                  transition: 'width 0.25s ease',
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -1286,95 +1414,127 @@ export default function ProjectWithdrawal() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-6 md:py-8 max-w-3xl">
-          <div 
+          <div
             key={currentStep}
             className="animate-in fade-in slide-in-from-right-2 duration-200"
+            style={{
+              border: '1px solid hsl(var(--ds-line-1))',
+              background: 'hsl(var(--ds-surface))',
+            }}
           >
-            <Card className="border-border shadow-card">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl md:text-2xl flex items-center gap-2.5">
-                  {getStepIcon()}
-                  {getStepTitle()}
-                </CardTitle>
-                {getStepDescription() && (
-                  <CardDescription className="text-sm md:text-base mt-2">
-                    {getStepDescription()}
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {renderStep()}
-              </CardContent>
-            </Card>
+            <div
+              style={{
+                padding: '20px 24px 16px',
+                borderBottom: '1px solid hsl(var(--ds-line-1))',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  fontFamily: '"HN Display", sans-serif',
+                  fontSize: 20,
+                  fontWeight: 500,
+                  letterSpacing: '-0.01em',
+                  color: 'hsl(var(--ds-text))',
+                }}
+              >
+                {getStepIcon()}
+                <span>{getStepTitle()}</span>
+              </div>
+              {getStepDescription() && (
+                <p
+                  style={{
+                    marginTop: 6,
+                    fontSize: 13,
+                    color: 'hsl(var(--ds-fg-3))',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {getStepDescription()}
+                </p>
+              )}
+            </div>
+            <div style={{ padding: '20px 24px 24px' }} className="space-y-6">
+              {renderStep()}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 sticky bottom-0 shadow-elegant pb-safe">
+      <div
+        className="sticky bottom-0 pb-safe"
+        style={{
+          borderTop: '1px solid hsl(var(--ds-line-1))',
+          background: 'hsl(var(--ds-surface) / 0.95)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
-            <Button
-              variant="ghost"
+            <button
+              type="button"
+              className="btn w-full sm:w-auto"
               onClick={prevStep}
               disabled={currentStep === 1}
-              className="w-full sm:w-auto h-11 sm:h-10"
             >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Anterior
-            </Button>
+              <ChevronLeft size={14} strokeWidth={1.5} />
+              <span>Anterior</span>
+            </button>
 
             <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-              <Button 
-                variant="outline" 
+              <button
+                type="button"
+                className="btn w-full sm:w-auto"
                 onClick={() => safeNavigate('/retiradas')}
-                className="w-full sm:w-auto h-11 sm:h-10"
               >
                 Cancelar
-              </Button>
+              </button>
 
               {currentStep === TOTAL_STEPS ? (
                 <>
-                  <Button 
-                    variant="outline" 
+                  <button
+                    type="button"
+                    className="btn w-full sm:w-auto"
                     onClick={generatePDF}
-                    className="w-full sm:w-auto h-11 sm:h-10 border-primary/50 hover:bg-primary/5"
                   >
-                    <Download className="h-4 w-4 mr-2" />
-                    Baixar PDF
-                  </Button>
-                  <Button 
-                    onClick={handleSubmit} 
+                    <Download size={14} strokeWidth={1.5} />
+                    <span>Baixar PDF</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn primary w-full sm:w-auto"
+                    onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto h-12 sm:h-10 bg-primary hover:bg-primary/90 shadow-lg font-semibold"
-                    size="lg"
                   >
-                    <Check className="h-5 w-5 mr-2" />
-                    {isSubmitting ? 'Criando...' : 'Criar Retirada'}
-                  </Button>
+                    <Check size={14} strokeWidth={1.5} />
+                    <span>{isSubmitting ? 'Criando...' : 'Criar Retirada'}</span>
+                  </button>
                 </>
               ) : (
                 <>
                   {shouldShowSkipButton() && (
-                    <Button
-                      variant="ghost"
+                    <button
+                      type="button"
+                      className="btn w-full sm:w-auto"
                       onClick={nextStep}
-                      className="w-full sm:w-auto h-11 sm:h-10 text-muted-foreground"
                     >
-                      Pular categoria
-                      <ChevronRight className="h-4 w-4 ml-2" />
-                    </Button>
+                      <span>Pular categoria</span>
+                      <ChevronRight size={14} strokeWidth={1.5} />
+                    </button>
                   )}
 
-                  <Button
+                  <button
+                    type="button"
+                    className="btn primary w-full sm:w-auto"
                     onClick={nextStep}
                     disabled={!isStepValid()}
-                    className="w-full sm:w-auto h-12 sm:h-10 bg-primary hover:bg-primary/90 font-semibold"
-                    size="lg"
                   >
-                    Próximo
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
+                    <span>Próximo</span>
+                    <ChevronRight size={14} strokeWidth={1.5} />
+                  </button>
                 </>
               )}
             </div>
