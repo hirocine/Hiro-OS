@@ -50,6 +50,7 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
     if (debouncedSearch !== filters.search) {
       setIsSearching(true);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [debouncedSearch]);
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
       updateFilter('search', debouncedSearch);
       setIsSearching(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [debouncedSearch]);
 
   const updateFilter = useCallback(

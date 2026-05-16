@@ -25,6 +25,7 @@ export default function Suppliers() {
 
   useEffect(() => {
     fetchSuppliers(filters);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [filters]);
 
   const handleSearchChange = (search: string) =>

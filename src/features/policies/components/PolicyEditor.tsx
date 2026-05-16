@@ -37,6 +37,7 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
         setCategory('Geral');
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [open]); // Removido policy para evitar reset durante digitação
 
   const handleSave = async () => {

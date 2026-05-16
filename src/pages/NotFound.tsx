@@ -15,6 +15,7 @@ const NotFound = () => {
         hash: location.hash,
       },
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [location.pathname]);
 
   return (

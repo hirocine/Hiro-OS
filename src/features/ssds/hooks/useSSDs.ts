@@ -108,8 +108,10 @@ export const useSSDs = () => {
     queryFn: fetchSSDs,
   });
 
-  const ssds = data?.ssds || [];
-  const ssdAllocations = data?.allocations || {};
+  // Memoize so downstream useMemo deps stay stable across renders that
+  // produce the same data shape.
+  const ssds = useMemo(() => data?.ssds || [], [data?.ssds]);
+  const ssdAllocations = useMemo(() => data?.allocations || {}, [data?.allocations]);
 
   // Real-time subscription
   useEffect(() => {

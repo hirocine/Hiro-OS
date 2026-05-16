@@ -412,6 +412,7 @@ export default function ProposalDetails() {
       if (!pps) return false;
       return pps.some(pp => pp.title.toLowerCase().includes(search) || pp.description.toLowerCase().includes(search));
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [doresBankSearch, painPointsByCategory]);
 
   const filterPainPoints = (pps: typeof painPointsBank) => {

@@ -51,17 +51,21 @@ export function TaskHistorySection({ taskId, taskCreatedAt }: TaskHistorySection
   const { history, isLoading } = useTaskHistory(taskId);
   const [filter, setFilter] = useState<'all' | 'system'>('all');
 
-  const creationEntry = {
-    id: 'creation',
-    task_id: taskId,
-    user_id: 'system',
-    user_name: 'Sistema',
-    action: 'Tarefa criada',
-    field_changed: null as string | null,
-    old_value: null as string | null,
-    new_value: null as string | null,
-    created_at: taskCreatedAt,
-  };
+  // Memoized so allHistory's deps stay stable across renders.
+  const creationEntry = useMemo(
+    () => ({
+      id: 'creation',
+      task_id: taskId,
+      user_id: 'system',
+      user_name: 'Sistema',
+      action: 'Tarefa criada',
+      field_changed: null as string | null,
+      old_value: null as string | null,
+      new_value: null as string | null,
+      created_at: taskCreatedAt,
+    }),
+    [taskId, taskCreatedAt],
+  );
 
   const allHistory = useMemo(
     () => [...history, creationEntry],

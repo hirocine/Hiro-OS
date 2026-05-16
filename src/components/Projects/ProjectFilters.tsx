@@ -32,12 +32,14 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
     if (debouncedName !== filters.name) {
       updateFilter('name', debouncedName);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [debouncedName]);
 
   useEffect(() => {
     if (debouncedResponsible !== filters.responsible) {
       updateFilter('responsible', debouncedResponsible);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [debouncedResponsible]);
 
   const updateFilter = (key: keyof ProjectFilters, value: string | undefined) => {

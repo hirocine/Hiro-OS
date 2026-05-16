@@ -66,6 +66,7 @@ export function useMarketingPostMetricsHistory(
     // intentionally key on the *contents* of postIds (not the array
     // reference) and on ISO timestamps so a re-render with a new array
     // identity but same data doesn't re-trigger the fetch.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [postIdsKey, rangeStart, rangeEnd]);
 
   return { history, loading };

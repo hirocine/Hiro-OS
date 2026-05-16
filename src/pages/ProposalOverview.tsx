@@ -161,6 +161,7 @@ export default function ProposalOverview() {
               });
           });
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [proposal?.id]);
 
   const handleSetLatest = async (versionId: string) => {

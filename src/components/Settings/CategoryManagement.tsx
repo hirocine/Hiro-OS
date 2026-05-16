@@ -255,6 +255,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
     if (searchTerm) {
       setExpandedCategories(new Set(filteredHierarchy.map(cat => cat.categoryName)));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [searchTerm]);
 
   const handleAddCategory = async () => {

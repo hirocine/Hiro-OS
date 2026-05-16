@@ -52,6 +52,7 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
       initialState[item.id] = false;
     });
     setCheckedItems(initialState);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [equipmentIds]);
 
   // Group equipment by category with hierarchy

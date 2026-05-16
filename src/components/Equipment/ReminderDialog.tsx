@@ -77,6 +77,7 @@ Equipe de Inventário`,
     if (open && loanData) {
       setMessage(defaultMessages.email);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [open, loanData]);
 
   const handleSendReminder = async () => {

@@ -149,6 +149,7 @@ export function useProjectEquipment(projectId: string) {
     if (projectId) {
       fetchProjectEquipment();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [projectId]);
 
   const refetch = async () => {

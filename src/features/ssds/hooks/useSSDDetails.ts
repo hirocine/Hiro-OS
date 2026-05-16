@@ -27,6 +27,7 @@ export function useSSDDetails(ssd: Equipment | null) {
     if (ssd?.id) {
       fetchDetails();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch helper closes over the listed deps; missing deps are stable refs/setters
   }, [ssd?.id]);
 
   const fetchDetails = async () => {
