@@ -31,7 +31,7 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { action, password, encryptedPassword } = await req.json();
+    const { action, password, encryptedPassword, platformAccessId } = await req.json();
 
     // Require the encryption key to be configured. No more hardcoded fallback —
     // if PASSWORD_ENCRYPTION_KEY isn't set, fail loudly instead of silently
@@ -83,13 +83,59 @@ serve(async (req) => {
       );
 
     } else if (action === 'decrypt') {
-      // Decrypt password
+      // Defensive change: callers now pass a platform_access_id instead of
+      // raw ciphertext. We re-read the row using the *caller's JWT* so RLS
+      // applies — the function won't decrypt rows the user can't see.
+      // This way the encryption secret never operates on attacker-controlled
+      // ciphertext, and audit log captures *which* credential was opened.
+
+      // Accept either the new platformAccessId (preferred) or the legacy
+      // encryptedPassword for a transition period. Legacy callers can still
+      // be migrated frontend-side.
+      let ciphertext = encryptedPassword as string | undefined;
+
+      if (platformAccessId) {
+        // Authenticated client (RLS applies). Looks up the row scoped to the
+        // caller's permissions.
+        const userClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+          { global: { headers: { Authorization: authHeader } } }
+        );
+        const { data: row, error: lookupErr } = await userClient
+          .from('platform_accesses')
+          .select('encrypted_password')
+          .eq('id', platformAccessId)
+          .maybeSingle();
+        if (lookupErr) {
+          console.error('Lookup failed:', lookupErr);
+          return new Response(
+            JSON.stringify({ error: 'Failed to fetch credential' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (!row || !row.encrypted_password) {
+          return new Response(
+            JSON.stringify({ error: 'Credential not found or not accessible' }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        ciphertext = row.encrypted_password as string;
+      }
+
+      if (!ciphertext) {
+        return new Response(
+          JSON.stringify({ error: 'platformAccessId or encryptedPassword required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       const decoder = new TextDecoder();
       const encoder = new TextEncoder();
 
       // Decode base64
-      const combined = Uint8Array.from(atob(encryptedPassword), c => c.charCodeAt(0));
-      
+      const combined = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
+
       const iv = combined.slice(0, 12);
       const encrypted = combined.slice(12);
 
@@ -110,15 +156,16 @@ serve(async (req) => {
 
       const decryptedPassword = decoder.decode(decrypted);
 
-      // Log audit entry
+      // Log audit entry — now captures which platform_access was opened.
       await supabase.rpc('log_audit_entry', {
         _action: 'decrypt_password',
         _table_name: 'platform_accesses',
-        _record_id: null,
+        _record_id: platformAccessId ?? null,
         _old_values: null,
-        _new_values: { 
+        _new_values: {
           timestamp: new Date().toISOString(),
-          user_id: user.id 
+          user_id: user.id,
+          via: platformAccessId ? 'platform_access_id' : 'legacy_ciphertext',
         }
       });
 

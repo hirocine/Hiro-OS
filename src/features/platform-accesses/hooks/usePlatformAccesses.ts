@@ -337,12 +337,14 @@ export function usePlatformAccesses() {
         data: { id: accessId }
       });
 
+      // Pass the access id instead of raw ciphertext — backend re-reads the
+      // row using the caller's JWT so RLS gates the decrypt.
       const { data, error } = await supabase.functions.invoke(
         'manage-password',
         {
-          body: { 
-            action: 'decrypt', 
-            encryptedPassword: access.encrypted_password 
+          body: {
+            action: 'decrypt',
+            platformAccessId: accessId,
           }
         }
       );
@@ -441,12 +443,14 @@ export function usePlatformAccesses() {
         data: { id: accessId }
       });
 
+      // Pass the access id instead of raw ciphertext — backend re-reads the
+      // row using the caller's JWT so RLS gates the decrypt.
       const { data, error } = await supabase.functions.invoke(
         'manage-password',
         {
-          body: { 
-            action: 'decrypt', 
-            encryptedPassword: access.encrypted_password 
+          body: {
+            action: 'decrypt',
+            platformAccessId: accessId,
           }
         }
       );
