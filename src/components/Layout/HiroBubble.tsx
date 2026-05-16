@@ -119,7 +119,7 @@ export function HiroBubble() {
 
       {(open || visible) && (
         <div
-          className={`fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] bg-[hsl(var(--ds-surface))] border border-[hsl(var(--ds-line-1))] rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-[250ms] ease-out ${
+          className={`fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] bg-[hsl(var(--ds-surface))] border border-[hsl(var(--ds-line-1))] rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ease-out ${
             visible && open
               ? 'opacity-100 translate-y-0 scale-100'
               : 'opacity-0 translate-y-4 scale-95 pointer-events-none'

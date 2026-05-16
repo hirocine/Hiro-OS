@@ -1,6 +1,8 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
-import lineClamp from "@tailwindcss/line-clamp";
+// @tailwindcss/line-clamp is built into Tailwind v3.3+ and no longer needs
+// to be loaded as a plugin (still installed as a dependency for compat with
+// any code that might import from it directly).
 import typography from "@tailwindcss/typography";
 
 export default {
@@ -389,5 +391,5 @@ export default {
 			}
 		}
 	},
-	plugins: [tailwindcssAnimate, lineClamp, typography],
+	plugins: [tailwindcssAnimate, typography],
 } satisfies Config;
