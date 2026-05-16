@@ -4,33 +4,55 @@ import type { SubtitleStyle, AspectRatio } from '../types';
 interface Props {
   style: SubtitleStyle;
   text: string;
-  caption?: string;
+  showSafeArea?: boolean;
+  width?: number;
 }
 
 const ASPECT_DIMS: Record<AspectRatio, { w: number; h: number }> = {
-  '16:9': { w: 320, h: 180 },
-  '9:16': { w: 180, h: 320 },
-  '1:1': { w: 240, h: 240 },
-  '4:5': { w: 220, h: 275 },
+  '16:9': { w: 1920, h: 1080 },
+  '9:16': { w: 1080, h: 1920 },
+  '1:1': { w: 1080, h: 1080 },
+  '4:5': { w: 1080, h: 1350 },
+  '2.39:1': { w: 2048, h: 858 },
 };
 
-export function LivePreview({ style, text, caption }: Props) {
+export function LivePreview({ style, text, showSafeArea, width = 560 }: Props) {
   const dims = ASPECT_DIMS[style.aspect_ratio];
-  const scale = dims.h / 1080;
+  const aspectRatio = dims.w / dims.h;
+  const containerW = width;
+  const containerH = containerW / aspectRatio;
+  const scale = containerH / dims.h;
 
-  const renderedStyle = useMemo(() => {
+  const rendered = useMemo(() => {
     const fontSize = style.font_size * scale;
-    const outlineWidth = style.outline_width * scale;
+    const outlineW = style.outline_width * scale;
+    const trackingEm = style.tracking / 1000;
 
     const textShadow = (() => {
-      if (style.outline_width === 0 || !style.outline_color) return undefined;
-      const w = Math.max(1, outlineWidth);
-      const c = style.outline_color;
-      return `${-w}px ${-w}px 0 ${c}, ${w}px ${-w}px 0 ${c}, ${-w}px ${w}px 0 ${c}, ${w}px ${w}px 0 ${c}, 0 ${-w}px 0 ${c}, 0 ${w}px 0 ${c}, ${-w}px 0 0 ${c}, ${w}px 0 0 ${c}`;
+      const parts: string[] = [];
+      if (style.outline_width > 0 && style.outline_color) {
+        const w = Math.max(0.5, outlineW);
+        const c = style.outline_color;
+        // 8-direction stroke
+        parts.push(
+          `${-w}px ${-w}px 0 ${c}`,
+          `${w}px ${-w}px 0 ${c}`,
+          `${-w}px ${w}px 0 ${c}`,
+          `${w}px ${w}px 0 ${c}`,
+          `0 ${-w}px 0 ${c}`,
+          `0 ${w}px 0 ${c}`,
+          `${-w}px 0 0 ${c}`,
+          `${w}px 0 0 ${c}`,
+        );
+      }
+      if (style.shadow_enabled) {
+        parts.push(`${style.shadow_x * scale}px ${style.shadow_y * scale}px ${style.shadow_blur * scale}px ${style.shadow_color}`);
+      }
+      return parts.length > 0 ? parts.join(', ') : undefined;
     })();
 
     const bg = (() => {
-      if (!style.background_color || style.background_opacity === 0) return 'transparent';
+      if (style.bg_type === 'none' || !style.background_color || style.background_opacity === 0) return 'transparent';
       const hex = style.background_color.replace('#', '');
       const r = parseInt(hex.slice(0, 2), 16);
       const g = parseInt(hex.slice(2, 4), 16);
@@ -38,63 +60,142 @@ export function LivePreview({ style, text, caption }: Props) {
       return `rgba(${r}, ${g}, ${b}, ${style.background_opacity})`;
     })();
 
-    return {
-      fontFamily: `"${style.font_family}", sans-serif`,
-      fontSize: `${fontSize}px`,
-      fontWeight: style.font_weight === 'bold' ? 700 : 400,
-      color: style.text_color,
-      textShadow,
-      background: bg,
-      padding: bg === 'transparent' ? 0 : `${4 * scale}px ${10 * scale}px`,
-      lineHeight: 1.15,
-      letterSpacing: '-0.005em',
-      textAlign: 'center' as const,
-      whiteSpace: 'pre-line' as const,
-      maxWidth: `${dims.w * 0.92}px`,
-      display: 'inline-block',
-    };
-  }, [style, scale, dims.w]);
+    const textTransform = style.casing === 'upper' ? 'uppercase' : 'none';
 
-  const containerJustify = (() => {
-    if (style.position === 'top') return 'flex-start';
-    if (style.position === 'middle') return 'center';
-    return 'flex-end';
-  })();
+    return {
+      lineStyle: {
+        fontFamily: `"${style.font_family}", "HN Display", sans-serif`,
+        fontSize: `${fontSize}px`,
+        fontWeight: style.font_weight === 'bold' ? 700 : 500,
+        color: style.text_color,
+        textShadow,
+        background: bg,
+        padding: bg === 'transparent' ? 0 : `${style.padding_v * scale}px ${style.padding_h * scale}px`,
+        lineHeight: 1.2,
+        letterSpacing: `${trackingEm}em`,
+        textTransform: textTransform as 'uppercase' | 'none',
+        whiteSpace: 'nowrap' as const,
+        display: 'inline-block',
+      },
+    };
+  }, [style, scale]);
+
+  const positionStyle = useMemo(() => {
+    const marginPct = style.margin_v;
+    if (style.position === 'top') return { top: `${marginPct}%`, bottom: 'auto' };
+    if (style.position === 'middle') return { top: '50%', bottom: 'auto', transform: 'translateY(-50%)' };
+    return { bottom: `${marginPct}%`, top: 'auto' };
+  }, [style.position, style.margin_v]);
+
+  const lines = (text || '—').split('\n');
 
   return (
-    <div style={{ display: 'inline-block' }}>
+    <div
+      style={{
+        position: 'relative',
+        width: containerW,
+        height: containerH,
+        background: '#0A0A0A',
+        overflow: 'hidden',
+        display: 'inline-block',
+      }}
+    >
+      {/* Cena fake (gradient quente) */}
       <div
         style={{
-          position: 'relative',
-          width: dims.w,
-          height: dims.h,
-          background: '#2a2a2a',
-          border: '1px solid hsl(var(--ds-line-1))',
+          position: 'absolute',
+          inset: 0,
+          background:
+            'radial-gradient(70% 80% at 50% 30%, #6a5840 0%, transparent 65%), linear-gradient(180deg, #3a3128 0%, #110d09 100%)',
+        }}
+      />
+      {/* Vignette */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(70% 80% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%)',
+        }}
+      />
+      {/* Safe area */}
+      {showSafeArea && (
+        <>
+          <div
+            style={{
+              position: 'absolute',
+              left: '5%',
+              right: '5%',
+              top: '5%',
+              bottom: '5%',
+              border: '1px dashed rgba(0, 226, 122, 0.5)',
+              pointerEvents: 'none',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              left: '10%',
+              right: '10%',
+              top: '10%',
+              bottom: '10%',
+              border: '1px dashed rgba(255, 255, 255, 0.3)',
+              pointerEvents: 'none',
+            }}
+          />
+        </>
+      )}
+      {/* Subtitle */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
           display: 'flex',
-          flexDirection: 'column',
-          justifyContent: containerJustify,
-          alignItems: 'center',
-          padding: `${12 * scale}px`,
-          overflow: 'hidden',
+          justifyContent: 'center',
+          padding: `0 ${100 - style.max_width}%`,
+          zIndex: 2,
+          ...positionStyle,
         }}
       >
-        <div style={renderedStyle}>{text || '—'}</div>
-      </div>
-      {caption && (
-        <p
+        <div
           style={{
-            margin: '6px 0 0',
-            fontSize: 10,
-            color: 'hsl(var(--ds-fg-3))',
-            fontFamily: '"HN Text", sans-serif',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 3 * scale,
+            alignItems: 'center',
             textAlign: 'center',
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
+            maxWidth: `${style.max_width}%`,
           }}
         >
-          {caption}
-        </p>
-      )}
+          {lines.map((line, i) => (
+            <span key={i} style={rendered.lineStyle}>
+              {line || '—'}
+            </span>
+          ))}
+        </div>
+      </div>
     </div>
   );
+}
+
+export function wrapLines(text: string, maxChars: number, maxLines: number): string {
+  const flat = text.replace(/\n/g, ' ').trim();
+  const words = flat.split(/\s+/);
+  const lines: string[] = [];
+  let current = '';
+  for (const w of words) {
+    if (!current) {
+      current = w;
+      continue;
+    }
+    if (current.length + 1 + w.length <= maxChars) {
+      current += ' ' + w;
+    } else {
+      lines.push(current);
+      current = w;
+      if (lines.length >= maxLines) break;
+    }
+  }
+  if (current && lines.length < maxLines) lines.push(current);
+  return lines.join('\n');
 }

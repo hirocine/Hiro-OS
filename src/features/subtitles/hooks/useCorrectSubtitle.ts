@@ -25,6 +25,9 @@ export function useCorrectSubtitle() {
           targetLanguage: input.targetLanguage,
           maxCharsPerLine: input.style.chars_per_line,
           maxLines: input.style.max_lines,
+          cpsMax: input.style.cps_max,
+          tone: input.style.tone,
+          casing: input.style.casing,
           glossary: input.glossary,
         },
       });
