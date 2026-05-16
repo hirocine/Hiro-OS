@@ -59,13 +59,15 @@ export function StepStrip({ steps, current, onJump, canVisit }: StepStripProps) 
         const isDone = current > step.id;
         const isCurrent = current === step.id;
         const allowed = canVisit ? canVisit(step.id) : isDone || isCurrent;
-        const cursor = allowed && onJump ? 'pointer' : 'default';
+        const isFutureBlocked = !isDone && !isCurrent && !allowed;
+        const cursor = isFutureBlocked ? 'not-allowed' : allowed && onJump ? 'pointer' : 'default';
         return (
           <button
             key={step.id}
             type="button"
             onClick={() => allowed && onJump?.(step.id)}
             disabled={!allowed}
+            title={isFutureBlocked ? (step.id === 3 ? 'Processe a legenda antes de revisar' : 'Aprove a revisão antes de exportar') : undefined}
             style={{
               padding: '16px 20px',
               display: 'flex',
@@ -77,12 +79,13 @@ export function StepStrip({ steps, current, onJump, canVisit }: StepStripProps) 
               cursor,
               background: isCurrent ? DS.bg : 'transparent',
               color: isDone || isCurrent ? DS.fg1 : DS.fg3,
+              opacity: isFutureBlocked ? 0.5 : 1,
               textAlign: 'left',
               border: 'none',
               borderLeft: 0,
               borderTop: 0,
               borderBottom: 0,
-              transition: 'background 120ms',
+              transition: 'background 120ms, opacity 120ms',
             }}
           >
             <span
