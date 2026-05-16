@@ -1561,7 +1561,7 @@ export function ProposalGuidedWizard() {
 
           {/* New Case Dialog */}
           <Dialog open={showNewCaseDialog} onOpenChange={setShowNewCaseDialog}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md ds-shell">
               <DialogHeader>
                 <DialogTitle>
                   <span style={{ fontFamily: '"HN Display", sans-serif' }}>Novo Case</span>
@@ -2007,7 +2007,7 @@ export function ProposalGuidedWizard() {
 
           {/* New Testimonial Dialog */}
           <Dialog open={showNewTestimonialDialog} onOpenChange={setShowNewTestimonialDialog}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md ds-shell">
               <DialogHeader>
                 <DialogTitle>
                   <span style={{ fontFamily: '"HN Display", sans-serif' }}>Novo Depoimento</span>

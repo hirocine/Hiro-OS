@@ -1126,7 +1126,7 @@ export default function ProposalDetails() {
 
           {/* Dores Bank Dialog */}
           <Dialog open={showDoresBank} onOpenChange={setShowDoresBank}>
-            <DialogContent className="sm:max-w-4xl max-h-[85vh] flex flex-col p-0">
+            <DialogContent className="sm:max-w-4xl max-h-[85vh] flex flex-col p-0 ds-shell">
               <DialogHeader className="px-6 pt-6 pb-4 shrink-0" style={{ borderBottom: '1px solid hsl(var(--ds-line-1))' }}>
                 <DialogTitle>
                   <span style={{ fontFamily: '"HN Display", sans-serif' }}>Banco de Dores</span>
@@ -1346,7 +1346,7 @@ export default function ProposalDetails() {
 
           {/* Cases Bank Dialog */}
           <Dialog open={showCasesBank} onOpenChange={setShowCasesBank}>
-            <DialogContent className="sm:max-w-4xl max-h-[85vh] flex flex-col p-0">
+            <DialogContent className="sm:max-w-4xl max-h-[85vh] flex flex-col p-0 ds-shell">
               <DialogHeader className="px-6 pt-6 pb-4 shrink-0" style={{ borderBottom: '1px solid hsl(var(--ds-line-1))' }}>
                 <DialogTitle>
                   <span style={{ fontFamily: '"HN Display", sans-serif' }}>Banco de Cases</span>
@@ -1650,7 +1650,7 @@ export default function ProposalDetails() {
 
           {/* Testimonial Bank Dialog */}
           <Dialog open={showTestimonialBank} onOpenChange={(open) => { setShowTestimonialBank(open); if (!open) { setShowNewTestimonial(false); setEditingTestimonialId(null); } }}>
-            <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col p-0">
+            <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col p-0 ds-shell">
               <DialogHeader className="px-6 pt-6 pb-4 shrink-0" style={{ borderBottom: '1px solid hsl(var(--ds-line-1))' }}>
                 <DialogTitle>
                   <span style={{ fontFamily: '"HN Display", sans-serif' }}>Banco de Depoimentos</span>
@@ -1823,7 +1823,7 @@ export default function ProposalDetails() {
 
         {/* Transcript Dialog */}
         <Dialog open={showTranscriptDialog} onOpenChange={setShowTranscriptDialog}>
-          <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
+          <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col ds-shell">
             <DialogHeader>
               <DialogTitle>
                 <span style={{ fontFamily: '"HN Display", sans-serif' }}>Importar Transcrição</span>
@@ -1862,7 +1862,7 @@ export default function ProposalDetails() {
 
       {/* Version Dialog */}
       <Dialog open={showVersionDialog} onOpenChange={setShowVersionDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md ds-shell">
           <DialogHeader>
             <DialogTitle>
               <span style={{ fontFamily: '"HN Display", sans-serif' }}>Como deseja salvar?</span>

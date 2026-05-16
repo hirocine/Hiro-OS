@@ -1559,7 +1559,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   return (
     <TooltipProvider>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl max-h-[90vh] w-[98vw] sm:max-w-5xl flex flex-col overflow-hidden mobile-safe">
+        <DialogContent className="max-w-5xl max-h-[90vh] w-[98vw] sm:max-w-5xl flex flex-col overflow-hidden mobile-safe ds-shell">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-base sm:text-lg truncate">
               <span style={{ fontFamily: '"HN Display", sans-serif' }}>

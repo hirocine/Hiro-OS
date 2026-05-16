@@ -291,10 +291,10 @@ export function MobileSidebar() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent 
-        side="left" 
+      <SheetContent
+        side="left"
         className={cn(
-          "w-80 flex flex-col p-0 [&>button]:hidden",
+          "ds-shell w-80 flex flex-col p-0 [&>button]:hidden",
           isPWA && "pt-[env(safe-area-inset-top,0px)]"
         )}
       >

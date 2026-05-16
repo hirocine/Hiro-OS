@@ -55,7 +55,7 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto ds-shell">
         <DialogHeader>
           <DialogTitle>
             {policy ? 'Editar Política' : 'Nova Política'}

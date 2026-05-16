@@ -28,7 +28,7 @@ export function MarketingReferenceLightbox({ reference, onOpenChange, onEdit, on
 
   return (
     <Dialog open={!!reference} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-5xl max-h-[90vh] p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-5xl max-h-[90vh] p-0 overflow-hidden ds-shell">
         <div
           style={{
             display: 'grid',

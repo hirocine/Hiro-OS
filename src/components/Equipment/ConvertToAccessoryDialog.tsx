@@ -88,7 +88,7 @@ export function ConvertToAccessoryDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className={isMobile ? '' : 'max-w-md'}>
+      <ResponsiveDialogContent className={`ds-shell ${isMobile ? '' : 'max-w-md'}`}>
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             <span

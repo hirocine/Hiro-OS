@@ -19,7 +19,7 @@ export function LostReasonDialog({ open, onConfirm, onCancel }: LostReasonDialog
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md ds-shell">
         <DialogHeader>
           <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>Motivo da Perda</DialogTitle>
         </DialogHeader>

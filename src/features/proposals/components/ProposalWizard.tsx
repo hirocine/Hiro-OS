@@ -549,7 +549,7 @@ export function ProposalWizard() {
 
               {/* Transcript Modal */}
               <Dialog open={showTranscriptModal} onOpenChange={setShowTranscriptModal}>
-                <DialogContent className="max-w-2xl max-h-[90vh]">
+                <DialogContent className="max-w-2xl max-h-[90vh] ds-shell">
                   <DialogHeader>
                     <DialogTitle>
                       <span style={displayTitle}>Importar Transcrição de Reunião</span>

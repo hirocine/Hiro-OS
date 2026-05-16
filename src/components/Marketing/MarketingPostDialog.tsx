@@ -255,7 +255,7 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-y-auto ds-shell">
         <DialogHeader>
           <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
             {post ? 'Editar post' : 'Novo post'}

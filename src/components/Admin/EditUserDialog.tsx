@@ -122,7 +122,7 @@ export function EditUserDialog({ open, onOpenChange, user, onSuccess }: EditUser
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] ds-shell">
         <DialogHeader>
           <DialogTitle>Editar Usuário</DialogTitle>
           <DialogDescription>

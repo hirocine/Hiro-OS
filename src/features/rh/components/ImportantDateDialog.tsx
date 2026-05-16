@@ -118,7 +118,7 @@ export function ImportantDateDialog({ open, onOpenChange, editing }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[460px]">
+      <DialogContent className="sm:max-w-[460px] ds-shell">
         <DialogHeader>
           <DialogTitle>{editing ? 'Editar data' : 'Nova data'}</DialogTitle>
           <DialogDescription>

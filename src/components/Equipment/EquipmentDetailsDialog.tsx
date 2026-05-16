@@ -175,7 +175,7 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="w-full max-w-4xl max-h-[90vh]">
+      <ResponsiveDialogContent className="w-full max-w-4xl max-h-[90vh] ds-shell">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             <span

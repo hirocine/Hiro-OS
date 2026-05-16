@@ -546,7 +546,7 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
 
   return (
     <ResponsiveDialog open={open} onOpenChange={handleClose}>
-      <ResponsiveDialogContent className={isMobile ? '' : 'max-w-2xl max-h-[80vh]'}>
+      <ResponsiveDialogContent className={`ds-shell ${isMobile ? '' : 'max-w-2xl max-h-[80vh]'}`}>
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             <span

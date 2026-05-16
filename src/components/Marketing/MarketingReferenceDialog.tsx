@@ -166,7 +166,7 @@ export function MarketingReferenceDialog({ open, onOpenChange, reference }: Prop
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto ds-shell">
         <DialogHeader>
           <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
             {reference ? 'Editar referência' : 'Nova referência'}

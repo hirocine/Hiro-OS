@@ -842,7 +842,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
 
       {/* Dialog: Nova Categoria Principal */}
       <Dialog open={showAddCategoryDialog} onOpenChange={setShowAddCategoryDialog}>
-        <DialogContent>
+        <DialogContent className="ds-shell">
           <DialogHeader>
             <DialogTitle>
               <span style={{ fontFamily: '"HN Display", sans-serif' }}>Nova Categoria Principal</span>
@@ -906,7 +906,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
 
       {/* Dialog: Adicionar Subcategoria */}
       <Dialog open={showAddSubcategoryDialog} onOpenChange={setShowAddSubcategoryDialog}>
-        <DialogContent>
+        <DialogContent className="ds-shell">
           <DialogHeader>
             <DialogTitle>
               <span style={{ fontFamily: '"HN Display", sans-serif' }}>Adicionar Subcategoria</span>
@@ -977,7 +977,7 @@ export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogC
 
       {/* Dialog: Editar */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
+        <DialogContent className="ds-shell">
           <DialogHeader>
             <DialogTitle>
               <span style={{ fontFamily: '"HN Display", sans-serif' }}>

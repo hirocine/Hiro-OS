@@ -206,7 +206,7 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="w-full max-w-4xl">
+      <ResponsiveDialogContent className="w-full max-w-4xl ds-shell">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             <span style={{ fontFamily: '"HN Display", sans-serif' }}>Upload de Imagens em Massa</span>

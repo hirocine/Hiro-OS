@@ -362,7 +362,7 @@ export function AddEquipmentToProjectDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="w-full max-w-5xl flex flex-col h-[80vh] overflow-hidden">
+      <ResponsiveDialogContent className="w-full max-w-5xl flex flex-col h-[80vh] overflow-hidden ds-shell">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             <span style={{ fontFamily: '"HN Display", sans-serif' }}>

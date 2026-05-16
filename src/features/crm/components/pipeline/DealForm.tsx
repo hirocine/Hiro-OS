@@ -116,7 +116,7 @@ export function DealForm({ open, onOpenChange, deal, defaultContactId }: DealFor
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto ds-shell">
         <DialogHeader>
           <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
             {isEditing ? 'Editar Deal' : 'Novo Deal'}

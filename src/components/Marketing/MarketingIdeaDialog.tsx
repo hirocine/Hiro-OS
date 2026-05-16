@@ -127,7 +127,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto ds-shell">
         <DialogHeader>
           <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
             {idea ? 'Editar ideia' : 'Nova ideia'}

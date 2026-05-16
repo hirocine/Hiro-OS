@@ -71,7 +71,7 @@ export function MarketingPillarDialog({ open, onOpenChange, pillar, onSave }: Pr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col ds-shell">
         <DialogHeader>
           <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
             {pillar ? 'Editar Pilar' : 'Novo Pilar'}

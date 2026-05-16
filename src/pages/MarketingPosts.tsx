@@ -405,7 +405,7 @@ export default function MarketingPosts() {
 
       {/* Modal de detalhes */}
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto p-0 sm:max-w-3xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto p-0 sm:max-w-3xl ds-shell">
           {selectedPost && (
             <div className="grid grid-cols-1 md:grid-cols-2">
               <div className="relative aspect-square bg-black md:aspect-auto md:min-h-[480px]">

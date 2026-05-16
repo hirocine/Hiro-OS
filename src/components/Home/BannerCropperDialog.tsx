@@ -282,7 +282,7 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0 border-[hsl(var(--ds-line-1))] bg-[hsl(var(--ds-surface))]">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0 border-[hsl(var(--ds-line-1))] bg-[hsl(var(--ds-surface))] ds-shell">
         <div className="ds-shell" style={{ display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
           {/* ─── Header ─── */}
           <DialogHeader

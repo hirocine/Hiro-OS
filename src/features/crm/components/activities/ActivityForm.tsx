@@ -61,7 +61,7 @@ export function ActivityForm({ open, onOpenChange, contactId, dealId }: Activity
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md ds-shell">
         <DialogHeader>
           <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>Nova Atividade</DialogTitle>
         </DialogHeader>

@@ -1259,7 +1259,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
 
       {/* Dialog para criar nova subcategoria */}
       <Dialog open={showNewSubcategoryDialog} onOpenChange={setShowNewSubcategoryDialog}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] ds-shell">
           <DialogHeader>
             <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>
               Criar Nova Subcategoria
@@ -1342,7 +1342,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
 
       {/* Dialog para criar nova categoria */}
       <Dialog open={showNewCategoryDialog} onOpenChange={setShowNewCategoryDialog}>
-        <DialogContent>
+        <DialogContent className="ds-shell">
           <DialogHeader>
             <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>Nova Categoria</DialogTitle>
             <DialogDescription>Crie uma nova categoria para o equipamento.</DialogDescription>

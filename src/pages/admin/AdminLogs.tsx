@@ -416,7 +416,7 @@ export default function AdminLogs() {
 
         {/* Log details dialog */}
         <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
-          <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogContent className="max-w-2xl max-h-[80vh] ds-shell">
             <DialogHeader>
               <DialogTitle>
                 <span style={{ ...HN_DISPLAY, display: 'inline-flex', alignItems: 'center', gap: 8 }}>

@@ -84,7 +84,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
   if (categoriesLoading && EQUIPMENT_STEPS.length === 0) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] mx-auto">
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] mx-auto ds-shell">
           <DialogHeader>
             <DialogTitle>
               <span style={{ fontFamily: '"HN Display", sans-serif' }}>
@@ -672,7 +672,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] mx-auto overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] mx-auto overflow-y-auto ds-shell">
         <DialogHeader>
           <DialogTitle>
             <span

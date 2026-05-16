@@ -140,7 +140,7 @@ export function AVProjectDialog({ open, onOpenChange, project }: AVProjectDialog
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md ds-shell">
         <DialogHeader>
           <DialogTitle>{project ? 'Editar Projeto' : 'Novo Projeto'}</DialogTitle>
         </DialogHeader>

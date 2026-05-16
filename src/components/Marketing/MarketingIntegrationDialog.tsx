@@ -104,7 +104,7 @@ export function MarketingIntegrationDialog({ open, onOpenChange, platform, exist
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg ds-shell">
         <DialogHeader>
           <DialogTitle style={{ fontFamily: '"HN Display", sans-serif' }}>{meta.title}</DialogTitle>
           <DialogDescription style={{ fontSize: 12, lineHeight: 1.5 }}>{meta.helper}</DialogDescription>

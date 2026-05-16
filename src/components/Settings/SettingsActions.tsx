@@ -113,7 +113,7 @@ export function SettingsActions() {
               <span>Restaurar</span>
             </button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="ds-shell">
             <DialogHeader>
               <DialogTitle>
                 <span style={{ fontFamily: '"HN Display", sans-serif' }}>Restaurar Backup</span>

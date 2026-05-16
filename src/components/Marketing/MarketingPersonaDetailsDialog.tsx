@@ -41,7 +41,7 @@ export function MarketingPersonaDetailsDialog({ open, onOpenChange, persona }: P
   if (!persona) return null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto ds-shell">
         <DialogHeader>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Avatar style={{ width: 56, height: 56 }}>

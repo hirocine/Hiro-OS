@@ -249,7 +249,7 @@ export function ServicesSection({
       </div>
 
       <Dialog open={showMigrateDialog} onOpenChange={setShowMigrateDialog}>
-        <DialogContent>
+        <DialogContent className="ds-shell">
           <DialogHeader>
             <DialogTitle>
               <span style={{ fontFamily: '"HN Display", sans-serif' }}>

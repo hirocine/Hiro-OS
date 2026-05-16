@@ -134,7 +134,7 @@ Equipe de Inventário`,
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className={isMobile ? '' : 'max-w-2xl'}>
+      <ResponsiveDialogContent className={`ds-shell ${isMobile ? '' : 'max-w-2xl'}`}>
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             <span

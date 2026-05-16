@@ -409,7 +409,7 @@ export function NotificationPanel() {
     return (
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>{TriggerButton}</SheetTrigger>
-        <SheetContent side="bottom" className="max-h-[85vh] px-0">
+        <SheetContent side="bottom" className="max-h-[85vh] px-0 ds-shell">
           <SheetHeader className="sr-only">
             <SheetTitle>Notificações</SheetTitle>
           </SheetHeader>
