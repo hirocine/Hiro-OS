@@ -192,6 +192,24 @@ serve(async (req) => {
       });
     }
 
+    // Require a real user, not just any token. The pre-existing check only
+    // verified the header was present — anyone holding the public anon JWT
+    // could call this endpoint and burn Anthropic API credits at our expense.
+    {
+      const token = authHeader.replace(/^Bearer\s+/i, "");
+      const ac = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      );
+      const { data: { user } } = await ac.auth.getUser(token);
+      if (!user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     if (!ANTHROPIC_API_KEY) {
       return new Response(JSON.stringify({ error: "AI service not configured" }), {

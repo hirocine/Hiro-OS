@@ -9,12 +9,27 @@
 
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useWikiArticle, useWikiMutations, WIKI_CATEGORY_LABEL } from '@/features/rh';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { EmptyState } from '@/ds/components/EmptyState';
 import { BookOpen } from 'lucide-react';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
+
+// Mirror PolicyView's allow-list. TipTap writes the body, but any wiki-editor
+// could otherwise paste raw HTML with <script> / on* handlers that fire when
+// teammates open the article. Keep this list aligned with PolicyView so the
+// authoring experience matches.
+const ALLOWED_WIKI_TAGS = [
+  'p', 'br', 'strong', 'em', 'u', 's',
+  'h1', 'h2', 'h3', 'h4',
+  'ul', 'ol', 'li',
+  'a', 'img',
+  'blockquote', 'code', 'pre',
+  'hr', 'span',
+];
+const ALLOWED_WIKI_ATTR = ['href', 'src', 'alt', 'title', 'target', 'rel', 'class'];
 
 export default function RHWikiArticle() {
   const { slug } = useParams<{ slug: string }>();
@@ -180,7 +195,12 @@ export default function RHWikiArticle() {
             lineHeight: 1.7,
             color: 'var(--ds-text)',
           }}
-          dangerouslySetInnerHTML={{ __html: article.body }}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(article.body, {
+              ALLOWED_TAGS: ALLOWED_WIKI_TAGS,
+              ALLOWED_ATTR: ALLOWED_WIKI_ATTR,
+            }),
+          }}
         />
       </div>
     </div>
