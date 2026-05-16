@@ -1183,7 +1183,7 @@ export default function ProjectWithdrawal() {
   // Loading state
   if (equipmentLoading || isDraftLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+      <div className="ds-shell min-h-screen flex flex-col items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">
@@ -1195,7 +1195,7 @@ export default function ProjectWithdrawal() {
   }
 
   return (
-    <>
+    <div className="ds-shell">
       {/* Draft Recovery Dialog */}
       {draft && (
         <DraftRecoveryDialog
@@ -1382,6 +1382,6 @@ export default function ProjectWithdrawal() {
         </div>
       </div>
     </div>
-    </>
+    </div>
   );
 }
