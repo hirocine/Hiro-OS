@@ -1634,7 +1634,7 @@ export default function ProposalDetails() {
                     )}
                   </div>
                   <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-2))', marginTop: 4, fontStyle: 'italic' }}>
-                    "{testimonialForm.testimonial_text}"
+"{testimonialForm.testimonial_text}"
                   </p>
                 </div>
                 <button
@@ -1711,7 +1711,7 @@ export default function ProposalDetails() {
                                 </div>
                                 {t.role && <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))' }}>{t.role}</p>}
                                 <p style={{ fontSize: 12, color: 'hsl(var(--ds-fg-3))', marginTop: 4, fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                  "{t.text}"
+"{t.text}"
                                 </p>
                               </div>
                               <button

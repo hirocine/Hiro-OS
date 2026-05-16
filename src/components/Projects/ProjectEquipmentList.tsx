@@ -60,8 +60,8 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
   if (error) {
     return (
       <div className="text-center py-4">
-        <AlertTriangle className="h-8 w-8 text-destructive mx-auto mb-2" />
-        <p className="text-sm text-destructive">{error}</p>
+        <AlertTriangle className="h-8 w-8 text-[hsl(0_84%_60%)] mx-auto mb-2" />
+        <p className="text-sm text-[hsl(0_84%_60%)]">{error}</p>
       </div>
     );
   }

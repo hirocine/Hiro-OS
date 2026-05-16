@@ -17,18 +17,18 @@ import { NotificationPanel } from "@/components/Layout/NotificationPanel";
 import { I } from "../icons";
 
 const BREADCRUMB_LABELS: Record<string, string> = {
-  "": "Home",
+"": "Home",
   financeiro: "Financeiro",
   dashboard: "Dashboard",
   capex: "Gestão de CAPEX",
   inventario: "Inventário",
-  "esteira-de-pos": "Esteira de Pós",
+"esteira-de-pos": "Esteira de Pós",
   tarefas: "Tarefas",
   retiradas: "Retiradas",
   ssds: "Armazenamento",
   plataformas: "Plataformas",
   politicas: "Políticas",
-  "projetos-av": "Projetos",
+"projetos-av": "Projetos",
   orcamentos: "Orçamentos",
   crm: "CRM",
   fornecedores: "Fornecedores",
@@ -38,7 +38,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   estrategia: "Estratégia",
   ideias: "Ideias",
   referencias: "Referências",
-  "social-media": "Social Media",
+"social-media": "Social Media",
   calendario: "Calendário",
   instagram: "Instagram",
   posts: "Posts",
@@ -168,7 +168,7 @@ export function TopbarReal() {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleSignOut}
-              className="text-destructive focus:text-destructive"
+              className="text-[hsl(0_84%_60%)] focus:text-[hsl(0_84%_60%)]"
             >
               Sair
             </DropdownMenuItem>

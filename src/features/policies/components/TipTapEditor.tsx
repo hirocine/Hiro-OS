@@ -78,7 +78,7 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-primary underline',
+          class: 'text-[hsl(var(--ds-text))] underline',
         },
       }),
       Image.configure({

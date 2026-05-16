@@ -88,7 +88,7 @@ export function PlatformAccessGrid({
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--ds-text))]" />
       </div>
     );
   }
@@ -113,12 +113,12 @@ export function PlatformAccessGrid({
           }}
         >
           <div className="space-y-4">
-            <div className="w-20 h-20 mx-auto bg-muted rounded-full flex items-center justify-center">
-              <Plus className="h-10 w-10 text-muted-foreground" />
+            <div className="w-20 h-20 mx-auto bg-[hsl(var(--ds-bg))] rounded-full flex items-center justify-center">
+              <Plus className="h-10 w-10 text-[hsl(var(--ds-fg-3))]" />
             </div>
             <div>
               <h3 className="text-lg font-semibold">Nenhum acesso encontrado</h3>
-              <p className="text-muted-foreground mt-1">
+              <p className="text-[hsl(var(--ds-fg-3))] mt-1">
                 {filters.search || filters.category !== 'all' || filters.favorites
                   ? 'Tente ajustar os filtros'
                   : 'Comece adicionando seu primeiro acesso de plataforma'}
@@ -167,7 +167,7 @@ export function PlatformAccessGrid({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+            <AlertDialogAction onClick={confirmDelete} className="bg-[hsl(0_84%_60%)] hover:bg-[hsl(0_84%_60%)]/90">
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>

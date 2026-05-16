@@ -204,7 +204,7 @@ export function EditUserDialog({ open, onOpenChange, user, onSuccess }: EditUser
               </SelectContent>
             </Select>
             {isCurrentUser && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-[hsl(var(--ds-fg-3))]">
                 Você não pode alterar sua própria permissão
               </p>
             )}

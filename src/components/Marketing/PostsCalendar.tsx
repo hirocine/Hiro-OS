@@ -301,7 +301,7 @@ function DayDetailPopover({
               <span style={{ fontFamily: '"HN Display", sans-serif' }}>Remover post?</span>
             </AlertDialogTitle>
             <AlertDialogDescription>
-              "{confirmDelete?.title}" será removido permanentemente.
+"{confirmDelete?.title}" será removido permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -184,7 +184,7 @@ export function AVProjectDialog({ open, onOpenChange, project }: AVProjectDialog
           <div className="space-y-1.5">
             <Label htmlFor="name">Nome do Projeto *</Label>
             <Input id="name" {...register('name')} placeholder="Ex: Vídeo Institucional" />
-            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+            {errors.name && <p className="text-xs text-[hsl(0_84%_60%)]">{errors.name.message}</p>}
           </div>
 
           {/* Company */}

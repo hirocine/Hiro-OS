@@ -80,7 +80,7 @@ export function Sidebar({ collapsed, onToggle }: Props) {
                 <div key={it.name}>
                   <div
                     className={
-                      "nav-row" +
+"nav-row" +
                       (isActive ? " active" : "") +
                       (isExpanded ? " expanded" : "") +
                       (it.admin ? " admin" : "")
@@ -110,7 +110,7 @@ export function Sidebar({ collapsed, onToggle }: Props) {
                   {!collapsed && hasChildren && isExpanded && (
                     <div className="nav-children">
                       {it.children!.map((c, idx) =>
-                        "section" in c && c.section ? (
+"section" in c && c.section ? (
                           <div key={"s" + idx} className="nav-child-section">
                             {c.section}
                           </div>
@@ -118,7 +118,7 @@ export function Sidebar({ collapsed, onToggle }: Props) {
                           <div
                             key={c.href}
                             className={
-                              "nav-child" + (c.href === activePath ? " active" : "")
+"nav-child" + (c.href === activePath ? " active" : "")
                             }
                             onClick={(e) => {
                               e.stopPropagation();

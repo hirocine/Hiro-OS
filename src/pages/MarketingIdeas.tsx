@@ -108,7 +108,7 @@ function IdeaCard({ idea, profile, pillar, postLink, onEdit, onDelete, onDuplica
       {...attributes}
       {...listeners}
       className={cn(
-        'group rounded-xl border border-border bg-card p-3 shadow-sm transition cursor-grab active:cursor-grabbing',
+        'group rounded-xl border border-[hsl(var(--ds-line-1))] bg-[hsl(var(--ds-surface))] p-3 shadow-sm transition cursor-grab active:cursor-grabbing',
         'hover:border-primary/40 hover:shadow-md',
         (isDragging || dragging) && 'opacity-50',
       )}
@@ -154,7 +154,7 @@ function IdeaCard({ idea, profile, pillar, postLink, onEdit, onDelete, onDuplica
             <DropdownMenuItem onClick={() => onDuplicate(idea)}>
               <Copy className="h-3.5 w-3.5 mr-2" /> Duplicar
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDelete(idea)} className="text-destructive">
+            <DropdownMenuItem onClick={() => onDelete(idea)} className="text-[hsl(0_84%_60%)]">
               <Trash2 className="h-3.5 w-3.5 mr-2" /> Excluir
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -162,7 +162,7 @@ function IdeaCard({ idea, profile, pillar, postLink, onEdit, onDelete, onDuplica
       </div>
 
       {idea.description && (
-        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{idea.description}</p>
+        <p className="text-xs text-[hsl(var(--ds-fg-3))] line-clamp-2 mb-2">{idea.description}</p>
       )}
 
       {idea.tags.length > 0 && (
@@ -173,7 +173,7 @@ function IdeaCard({ idea, profile, pillar, postLink, onEdit, onDelete, onDuplica
             </span>
           ))}
           {idea.tags.length > 3 && (
-            <span className="text-[10px] text-muted-foreground">+{idea.tags.length - 3}</span>
+            <span className="text-[10px] text-[hsl(var(--ds-fg-3))]">+{idea.tags.length - 3}</span>
           )}
         </div>
       )}
@@ -184,7 +184,7 @@ function IdeaCard({ idea, profile, pillar, postLink, onEdit, onDelete, onDuplica
           <AvatarFallback className="text-[9px]">{initials}</AvatarFallback>
         </Avatar>
         {idea.reference_ids.length > 0 && (
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1 text-[10px] text-[hsl(var(--ds-fg-3))]">
             <Link2 className="h-3 w-3" />
             <span>{idea.reference_ids.length} ref{idea.reference_ids.length > 1 ? 's' : ''}</span>
           </div>
@@ -260,12 +260,12 @@ function KanbanColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'flex flex-col rounded-xl bg-muted/30 border border-border/50 transition',
+        'flex flex-col rounded-xl bg-[hsl(var(--ds-bg)/0.5)] border border-[hsl(var(--ds-line-1))]/50 transition',
         'w-full md:w-72 md:shrink-0',
-        isOver && 'border-primary/50 bg-primary/5',
+        isOver && 'border-primary/50 bg-[hsl(var(--ds-text)/0.04)]',
       )}
     >
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-border/50">
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-[hsl(var(--ds-line-1))]/50">
         <div className="flex items-center gap-2">
           <span className="text-base">{emoji}</span>
           <span className="text-sm font-medium">{label}</span>
@@ -303,7 +303,7 @@ function KanbanColumn({
           <button
             type="button"
             onClick={() => onAdd(status)}
-            className="w-full text-left rounded-lg border border-dashed border-border/60 px-3 py-4 text-xs text-muted-foreground hover:border-border hover:text-foreground hover:bg-accent/30 transition cursor-pointer"
+            className="w-full text-left rounded-lg border border-dashed border-[hsl(var(--ds-line-1))]/60 px-3 py-4 text-xs text-[hsl(var(--ds-fg-3))] hover:border-[hsl(var(--ds-line-1))] hover:text-[hsl(var(--ds-text))] hover:bg-[hsl(var(--ds-bg))]/30 transition cursor-pointer"
           >
             <div className="flex items-center gap-2">
               <Plus className="h-3.5 w-3.5 shrink-0" />
@@ -454,7 +454,7 @@ export default function MarketingIdeas() {
 
         <div className="flex flex-col sm:flex-row gap-3" style={{ marginTop: 24, marginBottom: 16 }}>
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--ds-fg-3))]" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -481,7 +481,7 @@ export default function MarketingIdeas() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20 text-muted-foreground">
+        <div className="flex items-center justify-center py-20 text-[hsl(var(--ds-fg-3))]">
           <Loader2 className="h-5 w-5 animate-spin mr-2" /> Carregando...
         </div>
       ) : (
@@ -509,7 +509,7 @@ export default function MarketingIdeas() {
           </div>
           <DragOverlay>
             {activeIdea ? (
-              <div className="rounded-xl border border-primary/40 bg-card p-3 shadow-lg w-72 rotate-2">
+              <div className="rounded-xl border border-primary/40 bg-[hsl(var(--ds-surface))] p-3 shadow-lg w-72 rotate-2">
                 <h4 className="text-sm font-medium line-clamp-2">{activeIdea.title}</h4>
               </div>
             ) : null}
@@ -547,7 +547,7 @@ export default function MarketingIdeas() {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir ideia?</AlertDialogTitle>
             <AlertDialogDescription>
-              "{deleteTarget?.title}" será removida permanentemente.
+"{deleteTarget?.title}" será removida permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

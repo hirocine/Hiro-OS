@@ -567,7 +567,7 @@ export default function Home() {
                     <div
                       key={idx}
                       className={
-                        "rc-day" +
+"rc-day" +
                         (cell.other ? " other" : "") +
                         (isToday ? " today" : "") +
                         (isWeekend ? " weekend" : "")
@@ -880,7 +880,7 @@ function TeamProfileModal({
                 letterSpacing: "-0.04em",
                 color: "hsl(var(--ds-fg-3))",
                 background:
-                  "linear-gradient(135deg, hsl(var(--ds-surface-2)), hsl(var(--ds-surface-3)))",
+"linear-gradient(135deg, hsl(var(--ds-surface-2)), hsl(var(--ds-surface-3)))",
               }}
             >
               {initialsFromName(member.name)}

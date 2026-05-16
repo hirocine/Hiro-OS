@@ -172,7 +172,7 @@ export function CRMDashboard() {
           title="Taxa de Conversão"
           value={`${stats?.conversionRate ?? 0}%`}
           icon={TrendingUp}
-          color="text-primary"
+          color="text-[hsl(var(--ds-text))]"
         />
       </StatsCardGrid>
 

@@ -17,7 +17,7 @@ export function AVProjectStatsCards({ stats, isLoading }: AVProjectStatsCardsPro
   }
 
   const cards = [
-    { title: 'Projetos Ativos', value: stats?.active || 0, icon: Film, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { title: 'Projetos Ativos', value: stats?.active || 0, icon: Film, color: 'text-[hsl(var(--ds-text))]', bgColor: 'bg-[hsl(var(--ds-text)/0.07)]' },
     { title: 'Projetos em Atraso', value: stats?.overdue || 0, icon: AlertTriangle, color: 'text-orange-500', bgColor: 'bg-orange-500/10' },
     { title: 'Projetos Entregues', value: stats?.completed || 0, icon: CheckCircle, color: 'text-success', bgColor: 'bg-success/10' },
   ];

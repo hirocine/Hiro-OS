@@ -41,7 +41,7 @@ export function LayoutDS() {
         if (!item.children || item.children.length === 0) continue;
         const childActive = item.children.some(
           (c) =>
-            "href" in c &&
+"href" in c &&
             c.href &&
             (location.pathname === c.href || location.pathname.startsWith(c.href + "/")),
         );
@@ -95,7 +95,7 @@ export function LayoutDS() {
           <HiroBubble />
           <main
             className={cn(
-              "flex-1 w-full min-h-screen bg-background [contain:layout]",
+"flex-1 w-full min-h-screen bg-[hsl(var(--ds-surface))] [contain:layout]",
               isPWA
                 ? "pt-[calc(4rem+env(safe-area-inset-top,0px))] pb-[env(safe-area-inset-bottom,1rem)]"
                 : "pt-16 pb-4",
@@ -127,7 +127,7 @@ export function LayoutDS() {
                 <SubSidebar parent={activeParent} />
               </div>
             )}
-            <main className="ds-layout-content bg-background">
+            <main className="ds-layout-content bg-[hsl(var(--ds-surface))]">
               <Suspense fallback={<LoadingScreenSkeleton />}>
                 {/* `key` on route remounts the subtree on navigation, which
                     re-triggers the .ds-page-inner enter animation. */}

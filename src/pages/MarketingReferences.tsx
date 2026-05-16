@@ -300,7 +300,7 @@ export default function MarketingReferences() {
             <AlertDialogHeader>
               <AlertDialogTitle>Excluir referência?</AlertDialogTitle>
               <AlertDialogDescription>
-                "{confirmDelete?.title}" será removido permanentemente.
+"{confirmDelete?.title}" será removido permanentemente.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

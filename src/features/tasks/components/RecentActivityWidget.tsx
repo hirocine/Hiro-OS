@@ -120,7 +120,7 @@ export function RecentActivityWidget() {
                       {getActionText(activity.action, activity.field_changed)}
                       {' '}
                       <span style={{ color: 'hsl(var(--ds-accent))', fontWeight: 500 }}>
-                        "{activity.task_title}"
+"{activity.task_title}"
                       </span>
                     </p>
                     <p style={{ fontSize: 11, color: 'hsl(var(--ds-fg-3))', marginTop: 2 }}>

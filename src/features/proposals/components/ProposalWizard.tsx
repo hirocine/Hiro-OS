@@ -1451,7 +1451,7 @@ export function ProposalWizard() {
                     {form.testimonial_role}
                   </p>
                   <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))', marginTop: 8, fontStyle: 'italic' }}>
-                    "{form.testimonial_text}"
+"{form.testimonial_text}"
                   </p>
                 </div>
               </div>

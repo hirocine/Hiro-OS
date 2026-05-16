@@ -96,7 +96,7 @@ export function SubSidebar({ parent }: Props) {
               to={c.href!}
               onClick={(e) => handleNavClick(e, c.href!)}
               className={() =>
-                "sub-nav-row" + (isActivePath(c.href!) ? " active" : "")
+"sub-nav-row" + (isActivePath(c.href!) ? " active" : "")
               }
             >
               {isActivePath(c.href!) && <span className="nav-active-mark" />}

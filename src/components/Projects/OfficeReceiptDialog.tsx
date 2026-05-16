@@ -89,7 +89,7 @@ export function OfficeReceiptDialog({
       <DialogContent className="sm:max-w-md ds-shell">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-primary" />
+            <Building2 className="h-5 w-5 text-[hsl(var(--ds-text))]" />
             Retorno
           </DialogTitle>
           <DialogDescription>
@@ -126,7 +126,7 @@ export function OfficeReceiptDialog({
                         <div className="flex flex-col items-start">
                           <span className="font-medium">{user.display_name || user.email}</span>
                           {(user.position || user.department) && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-[hsl(var(--ds-fg-3))]">
                               {user.position && user.department 
                                 ? `${user.position} • ${user.department}`
                                 : user.position || user.department}
@@ -153,7 +153,7 @@ export function OfficeReceiptDialog({
                 max={new Date().toISOString().slice(0, 16)}
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Clock className="h-4 w-4 text-[hsl(var(--ds-fg-3))]" />
               </div>
             </div>
           </div>

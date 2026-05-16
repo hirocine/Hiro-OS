@@ -133,7 +133,7 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
     <div className="space-y-4">
       {/* Custom Upload */}
       <div>
-        <Label className="text-sm text-muted-foreground mb-2 block">Carregar Ícone da Plataforma</Label>
+        <Label className="text-sm text-[hsl(var(--ds-fg-3))] mb-2 block">Carregar Ícone da Plataforma</Label>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -153,7 +153,7 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
             onChange={handleUpload}
           />
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
+        <p className="text-xs text-[hsl(var(--ds-fg-3))] mt-2">
           Máximo 2MB. A imagem será otimizada para 256x256px em WebP.
         </p>
       </div>
@@ -161,7 +161,7 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
       {/* Preview */}
       {selectedIconUrl && (
         <div>
-          <Label className="text-sm text-muted-foreground mb-2 block">Preview</Label>
+          <Label className="text-sm text-[hsl(var(--ds-fg-3))] mb-2 block">Preview</Label>
           <div className="flex justify-center">
             <div
               style={{

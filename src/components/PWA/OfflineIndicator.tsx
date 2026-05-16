@@ -14,7 +14,7 @@ export function OfflineIndicator() {
   return (
     <div 
       className={cn(
-        "fixed left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 animate-in slide-in-from-top-2",
+"fixed left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 animate-in slide-in-from-top-2",
         isPWA 
           ? "top-[calc(4rem+env(safe-area-inset-top,0px)+0.5rem)]"
           : "top-[calc(4rem+0.5rem)]"

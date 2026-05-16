@@ -263,7 +263,7 @@ export default function MarketingPosts() {
 
         <div style={{ display: 'flex', gap: 12, marginTop: 24, alignItems: 'center', flexWrap: 'wrap' }}>
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[hsl(var(--ds-fg-3))]" />
           <Input
             placeholder="Buscar por título, legenda ou hashtag..."
             value={search}
@@ -300,8 +300,8 @@ export default function MarketingPosts() {
       </div>
 
       {/* Stats line */}
-      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-        <span><strong className="text-foreground font-numeric">{filtered.length}</strong> de {counts.total} posts</span>
+      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-[hsl(var(--ds-fg-3))]">
+        <span><strong className="text-[hsl(var(--ds-text))] font-numeric">{filtered.length}</strong> de {counts.total} posts</span>
         <span>•</span>
         <span>{counts.reels} Reels</span>
         <span>•</span>
@@ -315,7 +315,7 @@ export default function MarketingPosts() {
         {loading ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {Array.from({ length: 15 }).map((_, i) => (
-              <div key={i} className="aspect-square animate-pulse rounded-xl bg-muted" />
+              <div key={i} className="aspect-square animate-pulse rounded-xl bg-[hsl(var(--ds-bg))]" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
@@ -343,7 +343,7 @@ export default function MarketingPosts() {
                   key={post.id}
                   type="button"
                   onClick={() => setSelected(post)}
-                  className="group relative aspect-square overflow-hidden rounded-xl bg-muted transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+                  className="group relative aspect-square overflow-hidden rounded-xl bg-[hsl(var(--ds-bg))] transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
                 >
                   {cover ? (
                     <img
@@ -353,7 +353,7 @@ export default function MarketingPosts() {
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                    <div className="flex h-full w-full items-center justify-center text-[hsl(var(--ds-fg-3))]">
                       <ImageIcon className="h-8 w-8" />
                     </div>
                   )}
@@ -416,7 +416,7 @@ export default function MarketingPosts() {
                     className="h-full w-full object-contain"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                  <div className="flex h-full w-full items-center justify-center text-[hsl(var(--ds-fg-3))]">
                     <ImageIcon className="h-12 w-12" />
                   </div>
                 )}
@@ -430,7 +430,7 @@ export default function MarketingPosts() {
                   <DialogTitle className="text-base font-semibold leading-snug">
                     {selectedPost.title}
                   </DialogTitle>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-[hsl(var(--ds-fg-3))]">
                     Publicado em {formatDate(selectedPost.published_at)}
                   </p>
                 </div>
@@ -451,22 +451,22 @@ export default function MarketingPosts() {
 
                 <div className="grid grid-cols-2 gap-3 border border-[hsl(var(--ds-line-1))] bg-[hsl(var(--ds-line-2)/0.3)] p-3">
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Curtidas</p>
+                    <p className="text-[10px] uppercase tracking-wider text-[hsl(var(--ds-fg-3))]">Curtidas</p>
                     <p className="text-lg font-bold font-numeric">{compactNumber(selectedPost.likes ?? 0)}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Comentários</p>
+                    <p className="text-[10px] uppercase tracking-wider text-[hsl(var(--ds-fg-3))]">Comentários</p>
                     <p className="text-lg font-bold font-numeric">{compactNumber(selectedPost.comments ?? 0)}</p>
                   </div>
                   {selectedPost.reach > 0 && (
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Alcance</p>
+                      <p className="text-[10px] uppercase tracking-wider text-[hsl(var(--ds-fg-3))]">Alcance</p>
                       <p className="text-lg font-bold font-numeric">{compactNumber(selectedPost.reach)}</p>
                     </div>
                   )}
                   {selectedPost.saves > 0 && (
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Salvos</p>
+                      <p className="text-[10px] uppercase tracking-wider text-[hsl(var(--ds-fg-3))]">Salvos</p>
                       <p className="text-lg font-bold font-numeric">{compactNumber(selectedPost.saves)}</p>
                     </div>
                   )}
@@ -474,8 +474,8 @@ export default function MarketingPosts() {
 
                 {selectedPost.caption && (
                   <div className="space-y-1">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Legenda</p>
-                    <p className="max-h-40 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+                    <p className="text-[10px] uppercase tracking-wider text-[hsl(var(--ds-fg-3))]">Legenda</p>
+                    <p className="max-h-40 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed text-[hsl(var(--ds-text))]/90">
                       {selectedPost.caption}
                     </p>
                   </div>
@@ -492,7 +492,7 @@ export default function MarketingPosts() {
                 )}
 
                 <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[10px] text-[hsl(var(--ds-fg-3))]">
                     {selectedPost.source === 'auto_discovered' ? 'Auto-descoberto' : 'Criado manualmente'}
                   </span>
                   {selectedPost.published_url && (

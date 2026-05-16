@@ -158,7 +158,7 @@ export function ProposalCard({ proposal, onDelete, onDuplicate }: Props) {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => onDelete(proposal.id)}
-                  className="text-destructive focus:text-destructive"
+                  className="text-[hsl(0_84%_60%)] focus:text-[hsl(0_84%_60%)]"
                 >
                   <Trash2 className="mr-2 h-4 w-4" /> Excluir
                 </DropdownMenuItem>

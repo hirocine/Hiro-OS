@@ -111,7 +111,7 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
               onChange={setContent}
               placeholder="Escreva o conteúdo da política aqui..."
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-[hsl(var(--ds-fg-3))]">
               Use a barra de ferramentas acima para formatar o texto.
             </p>
           </div>

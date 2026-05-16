@@ -33,7 +33,7 @@ export function StarRating({ rating = 0, onChange, readonly = false }: StarRatin
               'h-4 w-4',
               star <= rating
                 ? 'fill-yellow-400 text-yellow-400'
-                : 'fill-muted text-muted-foreground'
+                : 'fill-muted text-[hsl(var(--ds-fg-3))]'
             )}
           />
         </button>

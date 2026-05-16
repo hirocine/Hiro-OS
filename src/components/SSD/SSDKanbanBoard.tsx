@@ -65,9 +65,9 @@ const SortableCard = ({ ssd, kanbanStatus, allocatedSpace, onCardClick }: Sortab
       ref={setNodeRef} 
       style={style} 
       className={cn(
-        "will-change-transform",
+"will-change-transform",
         isDragging && "opacity-0",
-        "transition-opacity duration-200 ease-out motion-reduce:transition-none"
+"transition-opacity duration-200 ease-out motion-reduce:transition-none"
       )}
       {...attributes} 
       {...listeners}
@@ -340,7 +340,7 @@ export const SSDKanbanBoard = ({ ssdsByStatus, ssdAllocations, onStatusChange, o
                 animate-scale-in rotate-2 scale-105
                 transition-all duration-200 ease-out
                 motion-reduce:transition-none motion-reduce:rotate-0 motion-reduce:scale-100
-              "
+"
               style={{ boxShadow: '0 16px 40px hsl(0 0% 0% / 0.25)' }}
             >
               <SSDCard 

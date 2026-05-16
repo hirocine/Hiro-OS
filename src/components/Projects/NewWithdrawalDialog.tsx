@@ -1262,7 +1262,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                         <span>Selecionado</span>
                                       </>
                                     ) : (
-                                      "Selecionar"
+"Selecionar"
                                     )}
                                   </button>
                                 </div>

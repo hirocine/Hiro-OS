@@ -21,7 +21,7 @@ export function LeaveWithdrawalDialog({
       <DialogContent className="sm:max-w-md ds-shell">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Save className="h-5 w-5 text-primary" />
+            <Save className="h-5 w-5 text-[hsl(var(--ds-text))]" />
             Salvar rascunho?
           </DialogTitle>
           <DialogDescription>

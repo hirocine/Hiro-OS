@@ -143,10 +143,10 @@ export function AddUserDialog({ open, onOpenChange, onUserAdded }: AddUserDialog
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">
-              Email <span className="text-destructive">*</span>
+              Email <span className="text-[hsl(0_84%_60%)]">*</span>
             </Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Mail className="absolute left-3 top-2.5 h-4 w-4 text-[hsl(var(--ds-fg-3))]" />
               <Input
                 id="email"
                 type="email"
@@ -211,13 +211,13 @@ export function AddUserDialog({ open, onOpenChange, onUserAdded }: AddUserDialog
                 <SelectItem value="financeiro">Financeiro</SelectItem>
                 <SelectItem value="admin">
                   <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-primary" />
+                    <Shield className="h-4 w-4 text-[hsl(var(--ds-text))]" />
                     Administrador
                   </div>
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-[hsl(var(--ds-fg-3))]">
               Administradores têm acesso total ao sistema.
             </p>
           </div>

@@ -36,9 +36,9 @@ const MONTH_LABELS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 's
  * right-side slot of the toolbar by itself.
  *
  * Three modes:
- *   - `month`  → "mai 2026 ◂ ▸"  (calendar view scope)
+ *   - `month`  → "mai 2026 ◂ ▸" (calendar view scope)
  *   - `range`  → date range popover
- *   - `preset` → "Últimos 30 dias ▾"  (preset list)
+ *   - `preset` → "Últimos 30 dias ▾" (preset list)
  */
 export function PeriodPicker(props: PeriodPickerProps) {
   if (props.mode === 'month') {

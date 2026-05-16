@@ -71,7 +71,7 @@ export function SeparationDialog({ open, onOpenChange, onConfirm, loading = fals
       <DialogContent className="sm:max-w-md ds-shell">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-primary" />
+            <Package className="h-5 w-5 text-[hsl(var(--ds-text))]" />
             Confirmar Separação de Equipamentos
           </DialogTitle>
           <DialogDescription>
@@ -108,7 +108,7 @@ export function SeparationDialog({ open, onOpenChange, onConfirm, loading = fals
                         <div className="flex flex-col items-start">
                           <span className="font-medium">{user.display_name || user.email}</span>
                           {(user.position || user.department) && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-[hsl(var(--ds-fg-3))]">
                               {user.position && user.department 
                                 ? `${user.position} • ${user.department}`
                                 : user.position || user.department}
@@ -135,7 +135,7 @@ export function SeparationDialog({ open, onOpenChange, onConfirm, loading = fals
                 max={new Date().toISOString().slice(0, 16)}
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Clock className="h-4 w-4 text-[hsl(var(--ds-fg-3))]" />
               </div>
             </div>
           </div>

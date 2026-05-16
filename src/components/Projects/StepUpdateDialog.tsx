@@ -47,10 +47,10 @@ export function StepUpdateDialog({ project, open, onOpenChange, onUpdate }: Step
         
         <div className="space-y-4">
           <div>
-            <p className="text-sm text-muted-foreground mb-2">
+            <p className="text-sm text-[hsl(var(--ds-fg-3))] mb-2">
               Projeto: <span className="font-medium">{project.name}</span>
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-[hsl(var(--ds-fg-3))]">
               Status atual: <span className="font-medium">{stepLabels[currentStep]}</span>
             </p>
           </div>

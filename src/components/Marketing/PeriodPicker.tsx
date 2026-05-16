@@ -82,7 +82,7 @@ export function PeriodPicker({
         onValueChange={(v) => onPresetChange(v as PeriodPreset)}
       >
         <SelectTrigger className="h-9 w-[200px] gap-2">
-          <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+          <CalendarIcon className="h-4 w-4 text-[hsl(var(--ds-fg-3))]" />
           <SelectValue>
             <span className="font-numeric truncate">{presetLabel}</span>
           </SelectValue>
@@ -112,7 +112,7 @@ export function PeriodPicker({
         >
           <div className="p-3 border-b border-[hsl(var(--ds-line-1))]">
             <p className="text-sm font-medium">Período personalizado</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-[hsl(var(--ds-fg-3))] mt-0.5">
               Selecione data inicial e final
             </p>
           </div>

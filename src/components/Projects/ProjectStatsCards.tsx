@@ -17,7 +17,7 @@ export function ProjectStatsCards({ stats, isLoading }: ProjectStatsCardsProps) 
   }
 
   const cards = [
-    { title: 'Retiradas Ativas', value: stats?.active || 0, icon: FolderOpen, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { title: 'Retiradas Ativas', value: stats?.active || 0, icon: FolderOpen, color: 'text-[hsl(var(--ds-text))]', bgColor: 'bg-[hsl(var(--ds-text)/0.07)]' },
     { title: 'Pendente Separação', value: stats?.byStep?.pending_separation || 0, icon: Clock, color: 'text-warning', bgColor: 'bg-warning/10' },
     { title: 'Em Gravação', value: stats?.byStep?.in_use || 0, icon: Play, color: 'text-success', bgColor: 'bg-success/10' },
   ];

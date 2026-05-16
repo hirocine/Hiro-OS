@@ -120,7 +120,7 @@ export function SidebarReal({ collapsed, onToggle }: Props) {
                   to={it.href}
                   onClick={(e) => handleNavClick(e, it.href)}
                   className={
-                    "nav-row" +
+"nav-row" +
                     (isActive ? " active" : "") +
                     (it.admin ? " admin" : "")
                   }

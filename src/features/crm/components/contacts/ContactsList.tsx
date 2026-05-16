@@ -201,7 +201,7 @@ export function ContactsList() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive hover:bg-destructive/90"
+              className="bg-[hsl(0_84%_60%)] hover:bg-[hsl(0_84%_60%)]/90"
               onClick={() => {
                 if (deletingContactId) deleteContact.mutate(deletingContactId);
                 setDeletingContactId(null);

@@ -200,7 +200,7 @@ export function SelectableEquipmentCard({
                 )}
                 <DropdownMenuItem
                   onClick={() => onDelete(equipment)}
-                  className="text-destructive focus:text-destructive"
+                  className="text-[hsl(0_84%_60%)] focus:text-[hsl(0_84%_60%)]"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Excluir

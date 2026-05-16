@@ -38,19 +38,19 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
 
   return (
     <div className={cn(
-      "border-t border-border/50 bg-card/50 backdrop-blur-sm shrink-0",
+"border-t border-[hsl(var(--ds-line-1))]/50 bg-[hsl(var(--ds-surface))]/50 backdrop-blur-sm shrink-0",
       isMobile ? "" : "p-2"
     )}>
       <div className="flex items-center justify-between w-full">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-lg cursor-pointer transition-colors shrink-0">
+            <button className="flex items-center gap-2 p-1.5 hover:bg-[hsl(var(--ds-bg))] rounded-lg cursor-pointer transition-colors shrink-0">
               <Avatar className="w-8 h-8">
                 <AvatarImage src={avatarData.url || undefined} className="object-cover" />
                 <AvatarFallback className="text-xs font-medium">{avatarData.initials}</AvatarFallback>
               </Avatar>
               {firstName && (
-                <span className="text-sm font-medium text-foreground truncate max-w-[80px]">
+                <span className="text-sm font-medium text-[hsl(var(--ds-text))] truncate max-w-[80px]">
                   {firstName}
                 </span>
               )}
@@ -62,7 +62,7 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
               Ver Perfil
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+            <DropdownMenuItem onClick={handleSignOut} className="text-[hsl(0_84%_60%)] focus:text-[hsl(0_84%_60%)]">
               <LogOut className="mr-2 h-4 w-4" />
               Sair
             </DropdownMenuItem>

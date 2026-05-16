@@ -665,8 +665,8 @@ export default function ProjectWithdrawal() {
   const getStepIcon = () => {
     if (currentStep <= 2) {
       const icons = [
-        <FileText className="h-5 w-5 text-primary" />,
-        <User className="h-5 w-5 text-primary" />
+        <FileText className="h-5 w-5 text-[hsl(var(--ds-text))]" />,
+        <User className="h-5 w-5 text-[hsl(var(--ds-text))]" />
       ];
       return icons[currentStep - 1] || null;
     }
@@ -674,10 +674,10 @@ export default function ProjectWithdrawal() {
     const categoryStepIndex = currentStep - 3;
     if (categoryStepIndex >= 0 && categoryStepIndex < CATEGORY_STEPS.length) {
       const Icon = CATEGORY_STEPS[categoryStepIndex].icon;
-      return <Icon className="h-5 w-5 text-primary" />;
+      return <Icon className="h-5 w-5 text-[hsl(var(--ds-text))]" />;
     }
     
-    return <Check className="h-5 w-5 text-primary" />;
+    return <Check className="h-5 w-5 text-[hsl(var(--ds-text))]" />;
   };
 
   // Render category with subcategories using accordion
@@ -710,7 +710,7 @@ export default function ProjectWithdrawal() {
             <Label htmlFor="projectNumber" className="text-base font-semibold flex items-center gap-2">
               <Package size={14} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" />
               Número do Projeto
-              <span className="text-destructive">*</span>
+              <span className="text-[hsl(0_84%_60%)]">*</span>
             </Label>
             <Input
               id="projectNumber"
@@ -722,7 +722,7 @@ export default function ProjectWithdrawal() {
               placeholder="Ex: 398"
               maxLength={4}
               className={cn(
-                "h-12 text-base font-mono transition-all",
+"h-12 text-base font-mono transition-all",
                 data.projectNumber && /^\d{1,4}$/.test(data.projectNumber) 
                   ? "border-success focus:ring-success" 
                   : ""
@@ -738,7 +738,7 @@ export default function ProjectWithdrawal() {
             <Label htmlFor="company" className="text-base font-semibold flex items-center gap-2">
               <Building2 size={14} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" />
               Empresa
-              <span className="text-destructive">*</span>
+              <span className="text-[hsl(0_84%_60%)]">*</span>
             </Label>
             <Input
               id="company"
@@ -746,7 +746,7 @@ export default function ProjectWithdrawal() {
               onChange={(e) => updateField('company', e.target.value)}
               placeholder="Ex: Hiro Films"
               className={cn(
-                "h-12 text-base transition-all",
+"h-12 text-base transition-all",
                 data.company.trim() ? "border-success focus:ring-success" : ""
               )}
             />
@@ -756,7 +756,7 @@ export default function ProjectWithdrawal() {
             <Label htmlFor="projectName" className="text-base font-semibold flex items-center gap-2">
               <FileText size={14} strokeWidth={1.5} color="hsl(var(--ds-fg-3))" />
               Nome do Projeto
-              <span className="text-destructive">*</span>
+              <span className="text-[hsl(0_84%_60%)]">*</span>
             </Label>
             <Input
               id="projectName"
@@ -764,7 +764,7 @@ export default function ProjectWithdrawal() {
               onChange={(e) => updateField('projectName', e.target.value)}
               placeholder="Ex: Institucional"
               className={cn(
-                "h-12 text-base transition-all",
+"h-12 text-base transition-all",
                 data.projectName.trim() ? "border-success focus:ring-success" : ""
               )}
             />
@@ -776,7 +776,7 @@ export default function ProjectWithdrawal() {
                 <Check className="h-4 w-4 text-success" />
                 Nome final do projeto:
               </p>
-              <p className="text-sm text-foreground font-medium pl-6">
+              <p className="text-sm text-[hsl(var(--ds-text))] font-medium pl-6">
                 {data.projectNumber} - {data.company}: {data.projectName}
               </p>
             </div>
@@ -1268,9 +1268,9 @@ export default function ProjectWithdrawal() {
   // Loading state
   if (equipmentLoading || isDraftLoading) {
     return (
-      <div className="ds-shell min-h-screen flex flex-col items-center justify-center bg-background">
+      <div className="ds-shell min-h-screen flex flex-col items-center justify-center bg-[hsl(var(--ds-surface))]">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--ds-text))]" />
           <p style={{ fontSize: 13, color: 'hsl(var(--ds-fg-3))' }}>
             {isDraftLoading ? 'Verificando rascunhos...' : 'Carregando equipamentos...'}
           </p>

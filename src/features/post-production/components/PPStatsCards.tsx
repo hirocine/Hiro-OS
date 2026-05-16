@@ -31,9 +31,9 @@ export function PPStatsCards({ items }: PPStatsCardsProps) {
   }, [items]);
 
   const cards = [
-    { title: 'Total na Esteira', value: stats.total, icon: Film, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { title: 'Total na Esteira', value: stats.total, icon: Film, color: 'text-[hsl(var(--ds-text))]', bgColor: 'bg-[hsl(var(--ds-text)/0.07)]' },
     { title: 'Em Produção', value: stats.inProgress, icon: Clock, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-500/10' },
-    { title: 'Atrasados', value: stats.overdue, icon: AlertTriangle, color: 'text-destructive', bgColor: 'bg-destructive/10' },
+    { title: 'Atrasados', value: stats.overdue, icon: AlertTriangle, color: 'text-[hsl(0_84%_60%)]', bgColor: 'bg-[hsl(0_84%_60%/0.10)]' },
     { title: 'Entregues (mês)', value: stats.delivered, icon: CheckCircle2, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-500/10' },
   ];
 

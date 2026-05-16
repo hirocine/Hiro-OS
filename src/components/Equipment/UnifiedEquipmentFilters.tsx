@@ -373,7 +373,7 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
                   updateFilter('search', undefined);
                 }}
               >
-                "{filters.search}"
+"{filters.search}"
               </ChipRemove>
             )}
 

@@ -89,13 +89,13 @@ export function HeroBanner() {
   const displayName = user?.user_metadata?.full_name || 
                       user?.user_metadata?.name || 
                       user?.email?.split("@")[0] || 
-                      "Usuário";
+"Usuário";
   const firstName = displayName.split(" ")[0];
 
   // Skeleton apenas durante loading inicial dos dados
   if (isLoading) {
     return (
-      <div className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden  bg-muted animate-pulse">
+      <div className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden  bg-[hsl(var(--ds-bg))] animate-pulse">
         <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/20 to-transparent" />
       </div>
     );
@@ -110,7 +110,7 @@ export function HeroBanner() {
       >
         {/* Skeleton overlay */}
         <div 
-          className={`absolute inset-0 bg-muted  transition-opacity duration-300 z-10 ${
+          className={`absolute inset-0 bg-[hsl(var(--ds-bg))]  transition-opacity duration-300 z-10 ${
             imageLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
@@ -143,14 +143,14 @@ export function HeroBanner() {
           </h1>
 
           <div className={cn(
-            "flex items-end justify-between w-full mt-auto pt-8 transition-all duration-700 ease-out",
+"flex items-end justify-between w-full mt-auto pt-8 transition-all duration-700 ease-out",
             (nextRec || weather?.current_weather)
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-2 pointer-events-none"
           )}>
               {nextRec ? (
                 <div className={cn(
-                  "flex items-center gap-2 text-white/90 text-xs md:text-sm bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5 transition-all duration-500 delay-300",
+"flex items-center gap-2 text-white/90 text-xs md:text-sm bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5 transition-all duration-500 delay-300",
                   nextRec ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
                 )}>
                   <span>🎬</span>
@@ -164,7 +164,7 @@ export function HeroBanner() {
 
               {weather?.current_weather ? (
                 <div className={cn(
-                  "flex items-center gap-2 transition-all duration-500 delay-500",
+"flex items-center gap-2 transition-all duration-500 delay-500",
                   weather?.current_weather ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
                 )}>
                   <div className="flex items-center gap-1.5 text-white/90 text-xs md:text-sm bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5">

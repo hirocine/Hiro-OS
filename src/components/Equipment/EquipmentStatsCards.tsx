@@ -23,8 +23,8 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
       title: 'Total de Equipamentos',
       value: stats.total,
       icon: Package,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
+      color: 'text-[hsl(var(--ds-text))]',
+      bgColor: 'bg-[hsl(var(--ds-text)/0.07)]',
       description: `${stats.mainItems} principais, ${stats.accessories} acessórios`,
     },
     {
@@ -39,8 +39,8 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
       title: 'Em Manutenção',
       value: stats.maintenance,
       icon: Wrench,
-      color: 'text-destructive',
-      bgColor: 'bg-destructive/10',
+      color: 'text-[hsl(0_84%_60%)]',
+      bgColor: 'bg-[hsl(0_84%_60%/0.10)]',
       description: stats.maintenance > 0 ? 'Requer atenção' : 'Tudo em ordem',
     },
   ];

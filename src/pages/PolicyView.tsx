@@ -128,7 +128,7 @@ export default function PolicyView() {
                   <AlertDialogAction
                     onClick={handleDelete}
                     disabled={deleting}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="bg-[hsl(0_84%_60%)] text-[hsl(0_84%_60%)]-foreground hover:bg-[hsl(0_84%_60%)]/90"
                   >
                     {deleting ? 'Excluindo…' : 'Excluir'}
                   </AlertDialogAction>

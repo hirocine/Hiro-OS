@@ -698,7 +698,7 @@ export default function TaskDetails() {
                       />
                       <span
                         className={cn(
-                          "flex-1 text-sm",
+"flex-1 text-sm",
                           subtask.is_completed && "line-through"
                         )}
                         style={{

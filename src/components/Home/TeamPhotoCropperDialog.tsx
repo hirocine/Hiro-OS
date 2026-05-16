@@ -196,7 +196,7 @@ export function TeamPhotoCropperDialog({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-sm">Rotação</Label>
-              <span className="text-xs text-muted-foreground">{rotation}°</span>
+              <span className="text-xs text-[hsl(var(--ds-fg-3))]">{rotation}°</span>
             </div>
             <Slider
               value={[rotation]}
