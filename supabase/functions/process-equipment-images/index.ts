@@ -62,8 +62,30 @@ serve(async (req) => {
   }
 
   try {
+    // Require a real logged-in user. verify_jwt=true alone accepts anon JWTs;
+    // this function writes to storage and updates the equipments table, so
+    // bots holding only the anon key must not be allowed in.
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    const authClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    )
+    const { data: { user }, error: authError } = await authClient.auth.getUser(
+      authHeader.replace(/^Bearer\s+/i, '')
+    )
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     const { images } = await req.json()
-    
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
