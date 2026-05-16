@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
-import { ChevronDown, Bookmark, BookmarkPlus, Edit3, Trash2, RotateCcw, Save, Eye, EyeOff, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
+import { ChevronDown, BookmarkPlus, Trash2, RotateCcw, Save, Eye, EyeOff, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { Section, DS, TYPO } from './shared';
+import { DS, TYPO } from './shared';
 import { LivePreview, wrapLines } from './LivePreview';
 import {
   useSubtitlePresets,
@@ -18,14 +18,9 @@ import {
   ASPECT_HINTS,
   ASPECT_RESOLUTION,
   TONE_LABELS,
-  CASING_LABELS,
-  BG_TYPE_LABELS,
-  FONT_FAMILIES,
   type AspectRatio,
   type Casing,
   type SubtitlePosition,
-  type FontWeight,
-  type BgType,
   type Tone,
   type SubtitlePreset,
   type SubtitleStyle,
@@ -453,126 +448,37 @@ export function Step2Configure({ cues, sourceLanguage, targetLanguage, style, gl
             </div>
           </Group>
 
-          {/* B TIPOGRAFIA */}
-          <Group letter="B" title="Tipografia" subtitle="fonte · peso · tamanho · casing">
-            <FldGrid cols={3}>
-              <Fld label="Família" colSpan={2}>
-                <NativeSelect value={style.font_family} onChange={(v) => setStyle({ ...style, font_family: v })}>
-                  {FONT_FAMILIES.map((f) => <option key={f} value={f}>{f}</option>)}
-                </NativeSelect>
+          {/* B TIPOGRAFIA — simplificado */}
+          <Group letter="B" title="Tipografia" subtitle="tamanho · tracking · casing · largura">
+            <FldGrid cols={4}>
+              <Fld label="Tamanho (px)">
+                <NumberInput value={style.font_size} min={10} max={96} onChange={(v) => setStyle({ ...style, font_size: v })} suffix="px" />
               </Fld>
-              <Fld label="Peso">
-                <NativeSelect value={style.font_weight} onChange={(v) => setStyle({ ...style, font_weight: v as FontWeight })}>
-                  <option value="normal">Regular · 400</option>
-                  <option value="bold">Bold · 700</option>
-                </NativeSelect>
+              <Fld label="Tracking">
+                <SliderRow value={style.tracking} min={-20} max={20} unit="" onChange={(v) => setStyle({ ...style, tracking: v })} />
               </Fld>
-            </FldGrid>
-            <div style={{ marginTop: 14 }}>
-              <FldGrid cols={3}>
-                <Fld label="Tamanho (px)">
-                  <NumberInput value={style.font_size} min={10} max={96} onChange={(v) => setStyle({ ...style, font_size: v })} suffix="px" />
-                </Fld>
-                <Fld label="Tracking">
-                  <SliderRow value={style.tracking} min={-20} max={20} unit="" onChange={(v) => setStyle({ ...style, tracking: v })} />
-                </Fld>
-                <Fld label="Casing">
-                  <Segmented
-                    value={style.casing}
-                    options={[
-                      { value: 'sentence', label: 'Sentence' },
-                      { value: 'literal', label: 'Literal' },
-                      { value: 'upper', label: 'CAIXA' },
-                    ]}
-                    onChange={(v) => setStyle({ ...style, casing: v as Casing })}
-                  />
-                </Fld>
-              </FldGrid>
-            </div>
-          </Group>
-
-          {/* C CORES */}
-          <Group letter="C" title="Cores e fundo">
-            <FldGrid cols={2}>
-              <Fld label="Cor do texto">
-                <ColorRow value={style.text_color} onChange={(v) => setStyle({ ...style, text_color: v })} />
-              </Fld>
-              <Fld label="Fundo">
+              <Fld label="Casing">
                 <Segmented
-                  value={style.bg_type}
+                  value={style.casing}
                   options={[
-                    { value: 'none', label: 'Nenhum' },
-                    { value: 'box', label: 'Caixa' },
-                    { value: 'strip', label: 'Faixa' },
+                    { value: 'sentence', label: 'Sentence' },
+                    { value: 'literal', label: 'Literal' },
+                    { value: 'upper', label: 'CAIXA' },
                   ]}
-                  onChange={(v) => setStyle({ ...style, bg_type: v as BgType })}
+                  onChange={(v) => setStyle({ ...style, casing: v as Casing })}
                 />
               </Fld>
-            </FldGrid>
-            {style.bg_type !== 'none' && (
-              <div style={{ marginTop: 14 }}>
-                <FldGrid cols={2}>
-                  <Fld label="Cor do fundo">
-                    <ColorRow value={style.background_color ?? '#0A0A0A'} onChange={(v) => setStyle({ ...style, background_color: v })} />
-                  </Fld>
-                  <Fld label="Opacidade do fundo">
-                    <SliderRow value={Math.round(style.background_opacity * 100)} min={0} max={100} unit="%" onChange={(v) => setStyle({ ...style, background_opacity: v / 100 })} />
-                  </Fld>
-                </FldGrid>
-                <div style={{ marginTop: 14 }}>
-                  <FldGrid cols={2}>
-                    <Fld label="Padding · vertical · horizontal">
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <NumberInput value={style.padding_v} min={0} max={30} onChange={(v) => setStyle({ ...style, padding_v: v })} suffix="V" />
-                        <NumberInput value={style.padding_h} min={0} max={40} onChange={(v) => setStyle({ ...style, padding_h: v })} suffix="H" />
-                      </div>
-                    </Fld>
-                    <Fld label="Largura máxima">
-                      <SliderRow value={style.max_width} min={40} max={100} unit="%" onChange={(v) => setStyle({ ...style, max_width: v })} />
-                    </Fld>
-                  </FldGrid>
-                </div>
-              </div>
-            )}
-          </Group>
-
-          {/* D CONTORNO + SOMBRA */}
-          <Group letter="D" title="Contorno e sombra" subtitle="leitura sobre imagem clara">
-            <FldGrid cols={2}>
-              <Fld label="Cor do contorno">
-                <ColorRow value={style.outline_color ?? '#000000'} onChange={(v) => setStyle({ ...style, outline_color: v })} />
-              </Fld>
-              <Fld label="Espessura do contorno">
-                <SliderRow value={style.outline_width} min={0} max={10} unit="px" onChange={(v) => setStyle({ ...style, outline_width: v })} />
+              <Fld label="Largura máxima">
+                <SliderRow value={style.max_width} min={40} max={100} unit="%" onChange={(v) => setStyle({ ...style, max_width: v })} />
               </Fld>
             </FldGrid>
-            <div style={{ marginTop: 14 }}>
-              <FldGrid cols={4}>
-                <Fld label="Sombra">
-                  <Segmented
-                    value={style.shadow_enabled ? 'on' : 'off'}
-                    options={[
-                      { value: 'off', label: 'Off' },
-                      { value: 'on', label: 'On' },
-                    ]}
-                    onChange={(v) => setStyle({ ...style, shadow_enabled: v === 'on' })}
-                  />
-                </Fld>
-                <Fld label="X">
-                  <NumberInput value={style.shadow_x} min={-20} max={20} disabled={!style.shadow_enabled} onChange={(v) => setStyle({ ...style, shadow_x: v })} suffix="px" />
-                </Fld>
-                <Fld label="Y">
-                  <NumberInput value={style.shadow_y} min={-20} max={20} disabled={!style.shadow_enabled} onChange={(v) => setStyle({ ...style, shadow_y: v })} suffix="px" />
-                </Fld>
-                <Fld label="Blur">
-                  <NumberInput value={style.shadow_blur} min={0} max={30} disabled={!style.shadow_enabled} onChange={(v) => setStyle({ ...style, shadow_blur: v })} suffix="px" />
-                </Fld>
-              </FldGrid>
-            </div>
+            <p style={{ marginTop: 12, fontSize: 11, color: DS.fg4, fontFamily: TYPO.text }}>
+              Fonte fixa: <strong style={{ fontFamily: TYPO.display, fontWeight: 500, color: DS.fg3 }}>Helvetica Now Display Bold</strong> · cor branca · sem outline, sombra ou caixa.
+            </p>
           </Group>
 
-          {/* E TOM */}
-          <Group letter="E" title="Tom da revisão" subtitle="como a Hiro escreve">
+          {/* C TOM */}
+          <Group letter="C" title="Tom da revisão" subtitle="como a Hiro escreve">
             <Segmented
               fullWidth
               value={style.tone}
@@ -982,53 +888,6 @@ function Segmented<T extends string>({ value, options, onChange, fullWidth }: { 
           </button>
         );
       })}
-    </div>
-  );
-}
-
-const SWATCHES = ['#FFFFFF', '#FFE7A8', '#00E27A', '#FFB800', '#0A0A0A', '#1F6FB8'];
-
-function ColorRow({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32 }}>
-      {SWATCHES.map((c) => {
-        const isOn = value.toUpperCase() === c.toUpperCase();
-        return (
-          <button
-            key={c}
-            type="button"
-            onClick={() => onChange(c)}
-            title={c}
-            style={{
-              width: 26,
-              height: 26,
-              background: c,
-              border: isOn ? `2px solid ${DS.fg1}` : `1px solid ${DS.line2}`,
-              cursor: 'pointer',
-              padding: 0,
-              flexShrink: 0,
-              transition: 'transform 120ms',
-            }}
-          />
-        );
-      })}
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={{
-          height: 30,
-          padding: '0 8px',
-          border: `1px solid ${DS.line2}`,
-          background: DS.bg,
-          fontFamily: DS.mono,
-          fontSize: 11,
-          textTransform: 'uppercase',
-          color: DS.fg2,
-          width: 88,
-          outline: 'none',
-        }}
-      />
     </div>
   );
 }
