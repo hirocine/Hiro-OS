@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarData } from "@/lib/avatarUtils";
@@ -1575,7 +1574,22 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 <span>Passo {currentStep} de 15</span>
                 <span>{Math.round((currentStep / 15) * 100)}% completo</span>
               </div>
-              <Progress value={(currentStep / 15) * 100} className="h-2" />
+              <div
+                style={{
+                  height: 4,
+                  background: 'hsl(var(--ds-line-1))',
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${(currentStep / 15) * 100}%`,
+                    background: 'hsl(var(--ds-text))',
+                    transition: 'width 0.25s ease',
+                  }}
+                />
+              </div>
             </div>
 
             {renderStep()}

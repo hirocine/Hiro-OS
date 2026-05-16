@@ -1,14 +1,10 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarData } from "@/lib/avatarUtils";
 import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Download, Video, ArrowLeft, X, Building2, User, Clock, FileText, Loader2, Edit, AlertCircle, Calendar as CalendarIconLucide, Layers, Cloud, CloudOff } from 'lucide-react';
