@@ -79,6 +79,18 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
   const TOTAL_STEPS = 6 + EQUIPMENT_STEPS.length + 1;
 
   const [currentStep, setCurrentStep] = useState(1);
+  // All hooks must run before any early return — keep this state above the
+  // loading-skeleton guard below.
+  const [projectData, setProjectData] = useState<ProjectData>({
+    name: '',
+    description: '',
+    responsibleName: '',
+    responsibleEmail: '',
+    department: '',
+    startDate: new Date().toISOString().split('T')[0],
+    expectedEndDate: '',
+    selectedEquipment: {}
+  });
 
   // Loading state enquanto categorias carregam
   if (categoriesLoading && EQUIPMENT_STEPS.length === 0) {
@@ -108,17 +120,6 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
       </Dialog>
     );
   }
-
-  const [projectData, setProjectData] = useState<ProjectData>({
-    name: '',
-    description: '',
-    responsibleName: '',
-    responsibleEmail: '',
-    department: '',
-    startDate: new Date().toISOString().split('T')[0],
-    expectedEndDate: '',
-    selectedEquipment: {}
-  });
 
   const updateField = (field: keyof ProjectData, value: string) => {
     setProjectData(prev => ({ ...prev, [field]: value }));

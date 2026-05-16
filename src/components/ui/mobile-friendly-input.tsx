@@ -29,7 +29,11 @@ export const MobileFriendlyInput = React.forwardRef<
 }, ref) => {
   const isMobile = useIsMobile();
   const { scrollToField } = useVirtualKeyboard();
-  const inputId = id || React.useId();
+  // Always call useId so hook order stays stable across renders even when
+  // `id` flips between defined/undefined. The generated id is only used as
+  // a fallback when the consumer didn't supply one.
+  const generatedId = React.useId();
+  const inputId = id || generatedId;
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     if (isMobile) {

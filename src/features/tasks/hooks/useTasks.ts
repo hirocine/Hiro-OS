@@ -87,7 +87,7 @@ export function useTasks(filters?: TaskFilters) {
         (task.task_assignees || []).forEach((ta: any) => allUserIds.add(ta.user_id));
       });
 
-      let profilesMap: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
+      const profilesMap: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
       if (allUserIds.size > 0) {
         const { data: profiles } = await supabase
           .from('profiles')

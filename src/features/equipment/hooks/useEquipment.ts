@@ -134,8 +134,8 @@ export function useEquipment(): UseEquipmentReturn {
 
   const sortEquipment = useCallback(<T extends Equipment>(items: T[], field: SortableField, order: SortOrder): T[] => {
     return [...items].sort((a, b) => {
-      let aVal = a[field];
-      let bVal = b[field];
+      const aVal = a[field];
+      const bVal = b[field];
       
       if (aVal === undefined || aVal === null) return 1;
       if (bVal === undefined || bVal === null) return -1;

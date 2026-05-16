@@ -430,6 +430,13 @@ export default function ProposalDetails() {
     );
   }, [casesBankSearch, casesBank]);
 
+  // All hooks must run before any early return. investFinalValue used to live
+  // below the isLoading/!proposal guards, which violated rules-of-hooks.
+  const investFinalValue = useMemo(
+    () => investForm.list_price * (1 - investForm.discount_pct / 100),
+    [investForm.list_price, investForm.discount_pct],
+  );
+
   if (isLoading) {
     return (
       <div className="ds-shell ds-page">
@@ -629,11 +636,6 @@ export default function ProposalDetails() {
     await deleteProposal.mutateAsync(proposal.id);
     navigate('/orcamentos');
   };
-
-  const investFinalValue = useMemo(
-    () => investForm.list_price * (1 - investForm.discount_pct / 100),
-    [investForm.list_price, investForm.discount_pct],
-  );
 
   const formatCurrencyBR = (v: number) => formatMoney(v);
 

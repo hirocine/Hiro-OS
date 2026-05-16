@@ -77,7 +77,7 @@ const fetchSSDs = async (): Promise<{ ssds: Equipment[], allocations: SSDAllocat
   })) as Equipment[];
 
   // Fetch all allocations in batch
-  let allocationsMap: SSDAllocationsMap = {};
+  const allocationsMap: SSDAllocationsMap = {};
   if (transformedData.length > 0) {
     const { data: allocationsData, error: allocError } = await supabase
       .from('ssd_allocations')

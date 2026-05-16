@@ -75,7 +75,7 @@ export function ServicesEditor({ proposalId, proposalSlug, initialServices }: Pr
   // se a prop mudar (refetch), sincroniza — mas só se diferente
   useEffect(() => {
     setServices(initialServices);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [initialServices]);
 
   const apply = (next: ProposalServices) => {

@@ -62,7 +62,7 @@ export function useTaskDetails(taskId: string) {
 
       const assigneeIds = (assigneesData || []).map((a: any) => a.user_id);
 
-      let profilesMap: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
+      const profilesMap: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
       if (assigneeIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')

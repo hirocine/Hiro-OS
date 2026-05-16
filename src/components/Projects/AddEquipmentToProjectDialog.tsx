@@ -237,7 +237,7 @@ export function AddEquipmentToProjectDialog({
       setLoading(true);
 
       let successCount = 0;
-      let errors: string[] = [];
+      const errors: string[] = [];
 
       // Create loans for all selected equipment
       const loanPromises = Array.from(selectedEquipment).map(async (equipmentId) => {
