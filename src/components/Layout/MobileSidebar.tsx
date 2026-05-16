@@ -126,31 +126,31 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
 
   return (
     <div className={cn(
-      "transition-colors duration-200 rounded-lg",
-      expanded ? "bg-muted/50" : "bg-transparent"
+"transition-colors duration-200 rounded-lg",
+      expanded ? "bg-[hsl(var(--ds-bg)/0.7)]" : "bg-transparent"
     )}>
       <div
         className={cn(
-          "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group cursor-pointer select-none",
+"flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group cursor-pointer select-none",
           expanded
-            ? childActive ? "text-foreground font-medium" : "text-muted-foreground"
+            ? childActive ? "text-[hsl(var(--ds-text))] font-medium" : "text-[hsl(var(--ds-fg-3))]"
             : "rounded-lg",
           parentActive && !expanded
-            ? isAdminItem ? "bg-destructive/10 text-destructive font-medium" : "bg-primary/10 text-primary font-medium"
+            ? isAdminItem ? "bg-[hsl(0_84%_60%/0.10)] text-[hsl(0_84%_60%)] font-medium" : "bg-[hsl(var(--ds-text)/0.07)] text-[hsl(var(--ds-text))] font-medium"
             : !expanded
-              ? isAdminItem ? "hover:bg-destructive/5 text-muted-foreground hover:text-foreground" : "hover:bg-accent text-muted-foreground hover:text-foreground"
+              ? isAdminItem ? "hover:bg-[hsl(0_84%_60%/0.05)] text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]" : "hover:bg-[hsl(var(--ds-bg))] text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]"
               : ""
         )}
         onClick={handleParentClick}
       >
         {(parentActive && !expanded || childActive && expanded) && (
-          <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-r-full", isAdminItem ? "bg-destructive" : "bg-primary")} />
+          <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-r-full", isAdminItem ? "bg-[hsl(0_84%_60%)]" : "bg-[hsl(var(--ds-text))]")} />
         )}
 
         <ChevronRight className={cn(
-          "h-[18px] w-[18px] shrink-0 transition-transform duration-200",
+"h-[18px] w-[18px] shrink-0 transition-transform duration-200",
           expanded && "rotate-90",
-          parentActive && !expanded ? (isAdminItem ? "text-destructive" : "text-primary") : "text-muted-foreground"
+          parentActive && !expanded ? (isAdminItem ? "text-[hsl(0_84%_60%)]" : "text-[hsl(var(--ds-text))]") : "text-[hsl(var(--ds-fg-3))]"
         )} />
 
         <span className="text-sm flex-1">{item.name}</span>
@@ -165,7 +165,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
                   <p
                     key={`section-${idx}`}
                     className={cn(
-                      "text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider px-2 pt-2 pb-1",
+"text-[10px] font-semibold text-[hsl(var(--ds-fg-3))]/70 uppercase tracking-wider px-2 pt-2 pb-1",
                       idx === 0 && "pt-1"
                     )}
                   >
@@ -180,13 +180,13 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
                   to={child.href!}
                   onClick={(e) => onNavClick(e, child.href!)}
                   className={cn(
-                    "flex items-center gap-3 px-1.5 py-2.5 rounded-lg transition-all duration-200 text-sm border border-transparent",
+"flex items-center gap-3 px-1.5 py-2.5 rounded-lg transition-all duration-200 text-sm border border-transparent",
                     active
-                      ? isAdminItem ? "text-destructive font-semibold" : "text-success font-semibold"
-                      : "text-muted-foreground hover:bg-background/80 hover:text-foreground hover:border-border/50"
+                      ? isAdminItem ? "text-[hsl(0_84%_60%)] font-semibold" : "text-success font-semibold"
+                      : "text-[hsl(var(--ds-fg-3))] hover:bg-[hsl(var(--ds-surface))]/80 hover:text-[hsl(var(--ds-text))] hover:border-[hsl(var(--ds-line-1))]/50"
                   )}
                 >
-                  <span className={cn("h-[18px] w-[18px] shrink-0 flex items-center justify-center text-[8px]", active ? (isAdminItem ? "text-destructive" : "text-success") : "text-muted-foreground")}>●</span>
+                  <span className={cn("h-[18px] w-[18px] shrink-0 flex items-center justify-center text-[8px]", active ? (isAdminItem ? "text-[hsl(0_84%_60%)]" : "text-success") : "text-[hsl(var(--ds-fg-3))]")}>●</span>
                   <span>{child.name}</span>
                 </NavLink>
               );
@@ -294,18 +294,18 @@ export function MobileSidebar() {
       <SheetContent
         side="left"
         className={cn(
-          "ds-shell w-80 flex flex-col p-0 [&>button]:hidden",
+"ds-shell w-80 flex flex-col p-0 [&>button]:hidden",
           isPWA && "pt-[env(safe-area-inset-top,0px)]"
         )}
       >
         {/* Header */}
         <SheetHeader className={cn(
-          "flex-row items-center justify-between border-b border-border px-4 py-4",
+"flex-row items-center justify-between border-b border-[hsl(var(--ds-line-1))] px-4 py-4",
           isPWA && "pt-[calc(1rem+env(safe-area-inset-top,0px))]"
         )}>
           <div className="flex items-center gap-3">
             <img src={hiroLogo} alt="HIRO Logo" className="h-8 w-8 rounded-lg object-cover" />
-            <span className="text-base font-bold text-foreground">Hiro OS®</span>
+            <span className="text-base font-bold text-[hsl(var(--ds-text))]">Hiro OS®</span>
           </div>
           <button
             type="button"
@@ -320,12 +320,12 @@ export function MobileSidebar() {
         {/* Search */}
         <div className="px-4 py-3">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--ds-fg-3))]" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar..."
-              className="w-full h-9 pl-8 pr-3 rounded-lg border border-border bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-background transition-colors"
+              className="w-full h-9 pl-8 pr-3 rounded-lg border border-[hsl(var(--ds-line-1))] bg-[hsl(var(--ds-bg)/0.7)] text-sm placeholder:text-[hsl(var(--ds-fg-3))] focus:outline-none focus:border-primary/50 focus:bg-[hsl(var(--ds-surface))] transition-colors"
             />
           </div>
         </div>
@@ -342,16 +342,16 @@ export function MobileSidebar() {
                     to="/"
                     onClick={(e) => { setExpandedItem(null); handleNavClick(e, '/'); }}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+"flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
                       active
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "hover:bg-accent text-muted-foreground hover:text-foreground"
+                        ? "bg-[hsl(var(--ds-text)/0.07)] text-[hsl(var(--ds-text))] font-medium"
+                        : "hover:bg-[hsl(var(--ds-bg))] text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]"
                     )}
                   >
                     {active && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-[hsl(var(--ds-text))] rounded-r-full" />
                     )}
-                    <Home className={cn("h-[18px] w-[18px]", active && "text-primary")} />
+                    <Home className={cn("h-[18px] w-[18px]", active && "text-[hsl(var(--ds-text))]")} />
                     <span className="text-sm">Home</span>
                   </NavLink>
                 );
@@ -359,7 +359,7 @@ export function MobileSidebar() {
             </nav>
 
             {/* Operações */}
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-7 mb-2">
+            <p className="text-[11px] font-semibold text-[hsl(var(--ds-fg-3))] uppercase tracking-wider px-7 mb-2">
               Operações
             </p>
             <nav className="space-y-0.5 px-4">
@@ -382,16 +382,16 @@ export function MobileSidebar() {
                       to={item.href}
                       onClick={(e) => { setExpandedItem(null); handleNavClick(e, item.href); }}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+"flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
                         active
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "hover:bg-accent text-muted-foreground hover:text-foreground"
+                          ? "bg-[hsl(var(--ds-text)/0.07)] text-[hsl(var(--ds-text))] font-medium"
+                          : "hover:bg-[hsl(var(--ds-bg))] text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]"
                       )}
                     >
                       {active && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-[hsl(var(--ds-text))] rounded-r-full" />
                       )}
-                      <Icon className={cn("h-[18px] w-[18px]", active && "text-primary")} />
+                      <Icon className={cn("h-[18px] w-[18px]", active && "text-[hsl(var(--ds-text))]")} />
                       <span className="text-sm">{item.name}</span>
                     </NavLink>
                   );
@@ -405,7 +405,7 @@ export function MobileSidebar() {
                 <div className="px-4 my-3">
                   <Separator />
                 </div>
-                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-7 mb-2">
+                <p className="text-[11px] font-semibold text-[hsl(var(--ds-fg-3))] uppercase tracking-wider px-7 mb-2">
                   Produção
                 </p>
                 <nav className="space-y-0.5 px-4">
@@ -428,16 +428,16 @@ export function MobileSidebar() {
                           to={item.href}
                           onClick={(e) => { setExpandedItem(null); handleNavClick(e, item.href); }}
                           className={cn(
-                            "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+"flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
                             active
-                              ? "bg-primary/10 text-primary font-medium"
-                              : "hover:bg-accent text-muted-foreground hover:text-foreground"
+                              ? "bg-[hsl(var(--ds-text)/0.07)] text-[hsl(var(--ds-text))] font-medium"
+                              : "hover:bg-[hsl(var(--ds-bg))] text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]"
                           )}
                         >
                           {active && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-[hsl(var(--ds-text))] rounded-r-full" />
                           )}
-                          <Icon className={cn("h-[18px] w-[18px]", active && "text-primary")} />
+                          <Icon className={cn("h-[18px] w-[18px]", active && "text-[hsl(var(--ds-text))]")} />
                           <span className="text-sm">{item.name}</span>
                         </NavLink>
                       );
@@ -453,7 +453,7 @@ export function MobileSidebar() {
                 <div className="px-4 my-3">
                   <Separator />
                 </div>
-                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-7 mb-2">
+                <p className="text-[11px] font-semibold text-[hsl(var(--ds-fg-3))] uppercase tracking-wider px-7 mb-2">
                   Marketing
                 </p>
                 <nav className="space-y-0.5 px-4">
@@ -476,16 +476,16 @@ export function MobileSidebar() {
                           to={item.href}
                           onClick={(e) => { setExpandedItem(null); handleNavClick(e, item.href); }}
                           className={cn(
-                            "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+"flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
                             active
-                              ? "bg-primary/10 text-primary font-medium"
-                              : "hover:bg-accent text-muted-foreground hover:text-foreground"
+                              ? "bg-[hsl(var(--ds-text)/0.07)] text-[hsl(var(--ds-text))] font-medium"
+                              : "hover:bg-[hsl(var(--ds-bg))] text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]"
                           )}
                         >
                           {active && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-[hsl(var(--ds-text))] rounded-r-full" />
                           )}
-                          <Icon className={cn("h-[18px] w-[18px]", active && "text-primary")} />
+                          <Icon className={cn("h-[18px] w-[18px]", active && "text-[hsl(var(--ds-text))]")} />
                           <span className="text-sm">{item.name}</span>
                         </NavLink>
                       );
@@ -501,7 +501,7 @@ export function MobileSidebar() {
                 <div className="px-4 my-3">
                   <Separator />
                 </div>
-                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-7 mb-2">
+                <p className="text-[11px] font-semibold text-[hsl(var(--ds-fg-3))] uppercase tracking-wider px-7 mb-2">
                   Administração
                 </p>
                 <nav className="space-y-0.5 px-4">
@@ -525,16 +525,16 @@ export function MobileSidebar() {
                           to={item.href}
                           onClick={(e) => { setExpandedItem(null); handleNavClick(e, item.href); }}
                           className={cn(
-                            "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+"flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
                             active
-                              ? "bg-destructive/10 text-destructive font-medium"
-                              : "hover:bg-destructive/5 text-muted-foreground hover:text-foreground"
+                              ? "bg-[hsl(0_84%_60%/0.10)] text-[hsl(0_84%_60%)] font-medium"
+                              : "hover:bg-[hsl(0_84%_60%/0.05)] text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]"
                           )}
                         >
                           {active && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-destructive rounded-r-full" />
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-[hsl(0_84%_60%)] rounded-r-full" />
                           )}
-                          <Icon className={cn("h-[18px] w-[18px]", active && "text-destructive")} />
+                          <Icon className={cn("h-[18px] w-[18px]", active && "text-[hsl(0_84%_60%)]")} />
                           <span className="text-sm">{item.name}</span>
                         </NavLink>
                       );
@@ -548,9 +548,9 @@ export function MobileSidebar() {
             <div className="px-4 mt-3">
               <Separator className="mb-3" />
               <div className="space-y-0.5">
-                <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition-colors cursor-pointer">
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[hsl(var(--ds-bg))] transition-colors cursor-pointer">
                   <NotificationPanel />
-                  <span className="text-sm text-muted-foreground">Notificações</span>
+                  <span className="text-sm text-[hsl(var(--ds-fg-3))]">Notificações</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg">
                   <ThemeSwitcher className="w-full justify-start gap-3 px-3 py-2.5 h-auto rounded-lg" showLabel />

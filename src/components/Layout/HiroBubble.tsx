@@ -7,10 +7,10 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 const SUGGESTIONS = [
-  "Resumo da plataforma agora",
-  "Orçamentos que vencem essa semana",
-  "Equipamentos emprestados",
-  "Tarefas urgentes",
+"Resumo da plataforma agora",
+"Orçamentos que vencem essa semana",
+"Equipamentos emprestados",
+"Tarefas urgentes",
 ];
 
 function MessageContent({ content }: { content: string }) {
@@ -44,7 +44,7 @@ function MessageContent({ content }: { content: string }) {
             {path && (
               <button
                 onClick={() => navigate(path)}
-                className="shrink-0 text-xs px-2.5 py-1 rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition-colors font-medium whitespace-nowrap"
+                className="shrink-0 text-xs px-2.5 py-1 rounded-full bg-[hsl(var(--ds-text)/0.10)] text-[hsl(var(--ds-text))] hover:bg-[hsl(var(--ds-text)/0.18)] transition-colors font-medium whitespace-nowrap"
               >
                 Ver →
               </button>
@@ -108,7 +108,7 @@ export function HiroBubble() {
     <>
       <button
         onClick={() => open ? handleClose() : setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[hsl(var(--ds-text))] text-[hsl(var(--ds-surface))] shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
         aria-label="Assistente Hiro"
       >
         <div className="relative w-6 h-6">
@@ -119,31 +119,31 @@ export function HiroBubble() {
 
       {(open || visible) && (
         <div
-          className={`fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-[250ms] ease-out ${
+          className={`fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] bg-[hsl(var(--ds-surface))] border border-[hsl(var(--ds-line-1))] rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-[250ms] ease-out ${
             visible && open
               ? 'opacity-100 translate-y-0 scale-100'
               : 'opacity-0 translate-y-4 scale-95 pointer-events-none'
           }`}
           style={{ height: hasMessages ? "520px" : "auto", transformOrigin: "bottom right" }}
         >
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30 shrink-0">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[hsl(var(--ds-line-1))] bg-[hsl(var(--ds-bg)/0.5)] shrink-0">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <div className="w-7 h-7 rounded-full bg-[hsl(var(--ds-text)/0.07)] flex items-center justify-center">
+                <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--ds-text))]" />
               </div>
               <div>
                 <p className="text-sm font-semibold">Hiro</p>
-                <p className="text-[10px] text-muted-foreground">Assistente · Claude</p>
+                <p className="text-[10px] text-[hsl(var(--ds-fg-3))]">Assistente · Claude</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
               {hasMessages && (
                 <button type="button" className="btn ghost icon sm" onClick={clearMessages} aria-label="Limpar conversa">
-                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Trash2 className="h-3.5 w-3.5 text-[hsl(var(--ds-fg-3))]" />
                 </button>
               )}
               <button type="button" className="btn ghost icon sm" onClick={handleClose} aria-label="Fechar">
-                <X className="h-4 w-4 text-muted-foreground" />
+                <X className="h-4 w-4 text-[hsl(var(--ds-fg-3))]" />
               </button>
             </div>
           </div>
@@ -153,14 +153,14 @@ export function HiroBubble() {
               {messages.map((msg, i) => (
                 <div key={i} className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                   {msg.role === "assistant" && (
-                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Sparkles className="h-3.5 w-3.5 text-primary" />
+                    <div className="w-7 h-7 rounded-full bg-[hsl(var(--ds-text)/0.07)] flex items-center justify-center shrink-0 mt-0.5">
+                      <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--ds-text))]" />
                     </div>
                   )}
                   <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${
                     msg.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-tr-sm"
-                      : "bg-muted rounded-tl-sm"
+                      ? "bg-[hsl(var(--ds-text))] text-[hsl(var(--ds-surface))] rounded-tr-sm"
+                      : "bg-[hsl(var(--ds-bg))] rounded-tl-sm"
                   }`}>
                     {msg.role === "assistant"
                       ? <MessageContent content={msg.content} />
@@ -172,12 +172,12 @@ export function HiroBubble() {
 
               {isLoading && (
                 <div className="flex gap-2.5 justify-start">
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  <div className="w-7 h-7 rounded-full bg-[hsl(var(--ds-text)/0.07)] flex items-center justify-center shrink-0">
+                    <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--ds-text))]" />
                   </div>
-                  <div className="bg-muted rounded-2xl rounded-tl-sm px-3.5 py-2.5 flex items-center gap-2">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Consultando dados...</span>
+                  <div className="bg-[hsl(var(--ds-bg))] rounded-2xl rounded-tl-sm px-3.5 py-2.5 flex items-center gap-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[hsl(var(--ds-fg-3))]" />
+                    <span className="text-sm text-[hsl(var(--ds-fg-3))]">Consultando dados...</span>
                   </div>
                 </div>
               )}
@@ -187,14 +187,14 @@ export function HiroBubble() {
 
           {!hasMessages && (
             <div className="px-4 pt-4 pb-2">
-              <p className="text-xs text-muted-foreground mb-2 font-medium">Sugestões:</p>
+              <p className="text-xs text-[hsl(var(--ds-fg-3))] mb-2 font-medium">Sugestões:</p>
               <div className="flex flex-col gap-1.5">
                 {SUGGESTIONS.map((s, i) => (
                   <button
                     key={i}
                     onClick={() => handleSuggestion(s)}
                     disabled={isLoading}
-                    className="text-left text-sm px-3 py-2 rounded-lg border border-border hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
+                    className="text-left text-sm px-3 py-2 rounded-lg border border-[hsl(var(--ds-line-1))] hover:bg-[hsl(var(--ds-bg)/0.7)] transition-colors text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]"
                   >
                     {s}
                   </button>
@@ -203,7 +203,7 @@ export function HiroBubble() {
             </div>
           )}
 
-          <div className="px-4 py-3 border-t border-border shrink-0">
+          <div className="px-4 py-3 border-t border-[hsl(var(--ds-line-1))] shrink-0">
             <form onSubmit={handleSubmit} className="flex items-center gap-2">
               <input
                 ref={inputRef}
@@ -211,12 +211,12 @@ export function HiroBubble() {
                 onChange={e => setInput(e.target.value)}
                 placeholder="Pergunte qualquer coisa..."
                 disabled={isLoading}
-                className="flex-1 text-sm bg-muted/50 border border-border rounded-xl px-3.5 py-2 outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/30 transition-all placeholder:text-muted-foreground/60 disabled:opacity-50"
+                className="flex-1 text-sm bg-[hsl(var(--ds-bg)/0.7)] border border-[hsl(var(--ds-line-1))] rounded-xl px-3.5 py-2 outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/30 transition-all placeholder:text-[hsl(var(--ds-fg-3))]/60 disabled:opacity-50"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-9 h-9 rounded-xl bg-[hsl(var(--ds-text))] text-[hsl(var(--ds-surface))] flex items-center justify-center shrink-0 hover:bg-[hsl(var(--ds-text))]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Send className="h-4 w-4" />
               </button>

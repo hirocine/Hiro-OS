@@ -40,7 +40,7 @@ export function validateEmail(email: string): boolean {
   const suspiciousPatterns = [
     /\.\./,           // Double dots
     /^\.|\.$/, // Starting or ending with dot
-    /@\.|\@$/,        // @ followed by dot or at end
+    /@\.|@$/,         // @ followed by dot or at end
     /\s/,             // Whitespace
     /[<>]/,           // HTML characters
     /javascript:/i,   // JavaScript protocol

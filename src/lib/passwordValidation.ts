@@ -70,7 +70,7 @@ export function validatePassword(
     score += 1;
   }
 
-  if (reqs.requireSpecialChars && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+  if (reqs.requireSpecialChars && !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
     errors.push('A senha deve conter pelo menos um caractere especial (!@#$%^&*)');
   } else if (reqs.requireSpecialChars) {
     score += 1;

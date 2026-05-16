@@ -110,25 +110,25 @@ function NavItem({ item, active, isAdmin: isAdminItem, onNavClick, onClearExpand
       to={href}
       onClick={(e) => { onClearExpanded?.(); onNavClick(e, href); }}
       className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+"flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
         active
           ? isAdminItem
-            ? "bg-destructive/10 text-destructive font-medium"
-            : "bg-primary/10 text-primary font-medium"
+            ? "bg-[hsl(0_84%_60%/0.10)] text-[hsl(0_84%_60%)] font-medium"
+            : "bg-[hsl(var(--ds-text)/0.07)] text-[hsl(var(--ds-text))] font-medium"
           : isAdminItem
-            ? "hover:bg-destructive/5 text-muted-foreground hover:text-foreground"
-            : "hover:bg-muted text-muted-foreground hover:text-foreground"
+            ? "hover:bg-[hsl(0_84%_60%/0.05)] text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]"
+            : "hover:bg-[hsl(var(--ds-bg))] text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]"
       )}
     >
       {active && (
         <div className={cn(
-          "absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full",
-          isAdminItem ? "bg-destructive" : "bg-primary"
+"absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full",
+          isAdminItem ? "bg-[hsl(0_84%_60%)]" : "bg-[hsl(var(--ds-text))]"
         )} />
       )}
       <Icon className={cn(
-        "h-[18px] w-[18px] shrink-0",
-        active && (isAdminItem ? "text-destructive" : "text-primary")
+"h-[18px] w-[18px] shrink-0",
+        active && (isAdminItem ? "text-[hsl(0_84%_60%)]" : "text-[hsl(var(--ds-text))]")
       )} />
       <span className="text-sm truncate">{item.name}</span>
     </NavLink>
@@ -160,19 +160,19 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem,
 
   return (
     <div className={cn(
-      "transition-colors duration-200 rounded-lg",
-      expanded ? "bg-muted/50" : "bg-transparent"
+"transition-colors duration-200 rounded-lg",
+      expanded ? "bg-[hsl(var(--ds-bg)/0.7)]" : "bg-transparent"
     )}>
       <div
         className={cn(
-          "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group cursor-pointer select-none",
+"flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group cursor-pointer select-none",
           expanded
-            ? childActive ? "text-foreground font-medium" : "text-muted-foreground"
+            ? childActive ? "text-[hsl(var(--ds-text))] font-medium" : "text-[hsl(var(--ds-fg-3))]"
             : "rounded-lg",
           parentActive && !expanded
-            ? isAdminItem ? "bg-destructive/10 text-destructive font-medium" : "bg-primary/10 text-primary font-medium"
+            ? isAdminItem ? "bg-[hsl(0_84%_60%/0.10)] text-[hsl(0_84%_60%)] font-medium" : "bg-[hsl(var(--ds-text)/0.07)] text-[hsl(var(--ds-text))] font-medium"
             : !expanded
-              ? isAdminItem ? "hover:bg-destructive/5 text-muted-foreground hover:text-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
+              ? isAdminItem ? "hover:bg-[hsl(0_84%_60%/0.05)] text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]" : "hover:bg-[hsl(var(--ds-bg))] text-[hsl(var(--ds-fg-3))] hover:text-[hsl(var(--ds-text))]"
               : ""
         )}
         onClick={handleParentClick}
@@ -180,20 +180,20 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem,
         onMouseLeave={() => setHovered(false)}
       >
         {(parentActive && !expanded || childActive && expanded) && (
-          <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full", isAdminItem ? "bg-destructive" : "bg-primary")} />
+          <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full", isAdminItem ? "bg-[hsl(0_84%_60%)]" : "bg-[hsl(var(--ds-text))]")} />
         )}
 
         <div className="relative h-[18px] w-[18px] shrink-0 flex items-center justify-center">
           <Icon className={cn(
-            "h-[18px] w-[18px] absolute inset-0 transition-opacity duration-150",
+"h-[18px] w-[18px] absolute inset-0 transition-opacity duration-150",
             hovered ? "opacity-0" : "opacity-100",
-            parentActive && !expanded && (isAdminItem ? "text-destructive" : "text-primary")
+            parentActive && !expanded && (isAdminItem ? "text-[hsl(0_84%_60%)]" : "text-[hsl(var(--ds-text))]")
           )} />
           <ChevronRight className={cn(
-            "h-[18px] w-[18px] absolute inset-0 transition-all duration-200",
+"h-[18px] w-[18px] absolute inset-0 transition-all duration-200",
             hovered ? "opacity-100" : "opacity-0",
             expanded && "rotate-90",
-            parentActive && !expanded ? (isAdminItem ? "text-destructive" : "text-primary") : "text-muted-foreground"
+            parentActive && !expanded ? (isAdminItem ? "text-[hsl(0_84%_60%)]" : "text-[hsl(var(--ds-text))]") : "text-[hsl(var(--ds-fg-3))]"
           )} />
         </div>
 
@@ -210,7 +210,7 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem,
                   <p
                     key={`section-${idx}`}
                     className={cn(
-                      "text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider px-2 pt-2 pb-1",
+"text-[10px] font-semibold text-[hsl(var(--ds-fg-3))]/70 uppercase tracking-wider px-2 pt-2 pb-1",
                       idx === 0 && "pt-1"
                     )}
                   >
@@ -225,13 +225,13 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem,
                   to={child.href!}
                   onClick={(e) => onNavClick(e, child.href!)}
                   className={cn(
-                    "flex items-center gap-3 px-1.5 py-2.5 rounded-lg transition-all duration-200 text-sm border border-transparent",
+"flex items-center gap-3 px-1.5 py-2.5 rounded-lg transition-all duration-200 text-sm border border-transparent",
                     active
-                      ? isAdminItem ? "text-destructive font-semibold" : "text-success font-semibold"
-                      : "text-muted-foreground hover:bg-background/80 hover:text-foreground hover:border-border/50"
+                      ? isAdminItem ? "text-[hsl(0_84%_60%)] font-semibold" : "text-success font-semibold"
+                      : "text-[hsl(var(--ds-fg-3))] hover:bg-[hsl(var(--ds-surface))]/80 hover:text-[hsl(var(--ds-text))] hover:border-[hsl(var(--ds-line-1))]/50"
                   )}
                 >
-                  <span className={cn("h-[18px] w-[18px] shrink-0 flex items-center justify-center text-[8px]", active ? (isAdminItem ? "text-destructive" : "text-success") : "text-muted-foreground")}>●</span>
+                  <span className={cn("h-[18px] w-[18px] shrink-0 flex items-center justify-center text-[8px]", active ? (isAdminItem ? "text-[hsl(0_84%_60%)]" : "text-success") : "text-[hsl(var(--ds-fg-3))]")}>●</span>
                   <span className="truncate">{child.name}</span>
                 </NavLink>
               );
@@ -333,31 +333,31 @@ export function DesktopSidebar() {
   return (
     <aside
       className={cn(
-        "hidden lg:flex flex-col w-64 border-r border-border bg-card fixed left-0 bottom-0",
+"hidden lg:flex flex-col w-64 border-r border-[hsl(var(--ds-line-1))] bg-[hsl(var(--ds-surface))] fixed left-0 bottom-0",
         isPWA ? "top-[env(safe-area-inset-top,0px)]" : "top-0"
       )}
       style={{ zIndex: Z_INDEX.sidebar }}
     >
       {/* Header + Search */}
       <div className={cn(
-        "shrink-0",
+"shrink-0",
         isPWA && "pt-[env(safe-area-inset-top,0px)]"
       )}>
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-border">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-[hsl(var(--ds-line-1))]">
           <img src={hiroLogo} alt="HIRO Logo" className="h-8 w-8 rounded-lg object-cover shrink-0" />
-          <span className="text-base font-bold text-foreground truncate">Hiro OS®</span>
+          <span className="text-base font-bold text-[hsl(var(--ds-text))] truncate">Hiro OS®</span>
         </div>
         <div className="px-3 py-3">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--ds-fg-3))]" />
             <input
               ref={searchInputRef}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar"
-              className="w-full h-8 pl-8 pr-12 rounded-lg border border-border bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-background transition-colors"
+              className="w-full h-8 pl-8 pr-12 rounded-lg border border-[hsl(var(--ds-line-1))] bg-[hsl(var(--ds-bg)/0.7)] text-sm placeholder:text-[hsl(var(--ds-fg-3))] focus:outline-none focus:border-primary/50 focus:bg-[hsl(var(--ds-surface))] transition-colors"
             />
-            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none hidden xl:inline-flex h-5 items-center rounded border border-border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
+            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none hidden xl:inline-flex h-5 items-center rounded border border-[hsl(var(--ds-line-1))] bg-[hsl(var(--ds-bg))] px-1.5 text-[10px] font-medium text-[hsl(var(--ds-fg-3))]">
               ⌘K
             </kbd>
           </div>
@@ -368,7 +368,7 @@ export function DesktopSidebar() {
       <ScrollArea className="flex-1">
         <div className="pt-5 pb-3">
           {/* Operações Section */}
-          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
+          <p className="text-[11px] font-semibold text-[hsl(var(--ds-fg-3))] uppercase tracking-wider px-6 mb-2">
             Operações
           </p>
           <nav className="space-y-0.5 px-3">
@@ -400,7 +400,7 @@ export function DesktopSidebar() {
               <div className="px-3 my-5">
                 <Separator />
               </div>
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
+              <p className="text-[11px] font-semibold text-[hsl(var(--ds-fg-3))] uppercase tracking-wider px-6 mb-2">
                 Produção
               </p>
               <nav className="space-y-0.5 px-3">
@@ -434,7 +434,7 @@ export function DesktopSidebar() {
               <div className="px-3 my-5">
                 <Separator />
               </div>
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
+              <p className="text-[11px] font-semibold text-[hsl(var(--ds-fg-3))] uppercase tracking-wider px-6 mb-2">
                 Marketing
               </p>
               <nav className="space-y-0.5 px-3">
@@ -468,7 +468,7 @@ export function DesktopSidebar() {
               <div className="px-3 my-5">
                 <Separator />
               </div>
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2 flex items-center gap-1.5">
+              <p className="text-[11px] font-semibold text-[hsl(var(--ds-fg-3))] uppercase tracking-wider px-6 mb-2 flex items-center gap-1.5">
                 <Lock className="h-3 w-3" />
                 Administração
               </p>

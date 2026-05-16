@@ -106,11 +106,11 @@ function parseJsonSafe(text: string): any {
   } catch {
     const objMatch = text.match(/\{[\s\S]*\}/);
     if (objMatch) {
-      try { return JSON.parse(objMatch[0]); } catch {}
+      try { return JSON.parse(objMatch[0]); } catch { /* fall through to array attempt */ }
     }
     const arrMatch = text.match(/\[[\s\S]*\]/);
     if (arrMatch) {
-      try { return JSON.parse(arrMatch[0]); } catch {}
+      try { return JSON.parse(arrMatch[0]); } catch { /* fall through to null */ }
     }
     return null;
   }

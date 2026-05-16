@@ -469,7 +469,7 @@ serve(async (req) => {
     }));
 
     let finalText = "";
-    let loopMessages = [...anthropicMessages];
+    const loopMessages = [...anthropicMessages];
     let iterations = 0;
     const MAX_ITERATIONS = 5;
 
