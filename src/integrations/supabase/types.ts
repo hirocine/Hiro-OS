@@ -2995,6 +2995,176 @@ export type Database = {
           },
         ]
       }
+      subtitle_jobs: {
+        Row: {
+          aspect_ratio: string
+          corrected_srt: string | null
+          created_at: string
+          cue_count: number
+          file_name: string
+          file_size_bytes: number
+          glossary: string[]
+          id: string
+          original_srt: string
+          preset_id: string | null
+          preset_name: string | null
+          source_language: string
+          status: string
+          target_language: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          aspect_ratio?: string
+          corrected_srt?: string | null
+          created_at?: string
+          cue_count?: number
+          file_name: string
+          file_size_bytes?: number
+          glossary?: string[]
+          id?: string
+          original_srt: string
+          preset_id?: string | null
+          preset_name?: string | null
+          source_language?: string
+          status?: string
+          target_language?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          aspect_ratio?: string
+          corrected_srt?: string | null
+          created_at?: string
+          cue_count?: number
+          file_name?: string
+          file_size_bytes?: number
+          glossary?: string[]
+          id?: string
+          original_srt?: string
+          preset_id?: string | null
+          preset_name?: string | null
+          source_language?: string
+          status?: string
+          target_language?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subtitle_jobs_preset_id_fkey"
+            columns: ["preset_id"]
+            isOneToOne: false
+            referencedRelation: "subtitle_presets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subtitle_presets: {
+        Row: {
+          aspect_ratio: string
+          background_color: string | null
+          background_opacity: number | null
+          bg_type: string
+          casing: string
+          chars_per_line: number
+          cps_max: number
+          created_at: string
+          font_family: string
+          font_size: number
+          font_weight: string
+          id: string
+          is_global: boolean
+          margin_v: number
+          max_lines: number
+          max_width: number
+          name: string
+          outline_color: string | null
+          outline_width: number | null
+          padding_h: number
+          padding_v: number
+          position: string
+          shadow_blur: number
+          shadow_color: string
+          shadow_enabled: boolean
+          shadow_x: number
+          shadow_y: number
+          text_color: string
+          tone: string
+          tracking: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          aspect_ratio: string
+          background_color?: string | null
+          background_opacity?: number | null
+          bg_type?: string
+          casing?: string
+          chars_per_line?: number
+          cps_max?: number
+          created_at?: string
+          font_family?: string
+          font_size?: number
+          font_weight?: string
+          id?: string
+          is_global?: boolean
+          margin_v?: number
+          max_lines?: number
+          max_width?: number
+          name: string
+          outline_color?: string | null
+          outline_width?: number | null
+          padding_h?: number
+          padding_v?: number
+          position?: string
+          shadow_blur?: number
+          shadow_color?: string
+          shadow_enabled?: boolean
+          shadow_x?: number
+          shadow_y?: number
+          text_color?: string
+          tone?: string
+          tracking?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          aspect_ratio?: string
+          background_color?: string | null
+          background_opacity?: number | null
+          bg_type?: string
+          casing?: string
+          chars_per_line?: number
+          cps_max?: number
+          created_at?: string
+          font_family?: string
+          font_size?: number
+          font_weight?: string
+          id?: string
+          is_global?: boolean
+          margin_v?: number
+          max_lines?: number
+          max_width?: number
+          name?: string
+          outline_color?: string | null
+          outline_width?: number | null
+          padding_h?: number
+          padding_v?: number
+          position?: string
+          shadow_blur?: number
+          shadow_color?: string
+          shadow_enabled?: boolean
+          shadow_x?: number
+          shadow_y?: number
+          text_color?: string
+          tone?: string
+          tracking?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       supplier_companies: {
         Row: {
           area: string
