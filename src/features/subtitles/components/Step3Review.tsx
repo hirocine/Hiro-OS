@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { DS, TYPO, Section } from './shared';
 import { wordDiff, tripleDiff, hasDiff, type DiffToken, type TripleDiffToken } from '../utils/diff';
@@ -260,20 +260,9 @@ function EditableDiff({
   onCommit: (value: string) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [editing, setEditing] = useState(false);
-
-  // Quando NÃO está editando, ressincronizamos o DOM com o conteúdo atual do `after`
-  // (caso o React decida reaproveitar o elemento entre renders sem trocar children).
-  // Quando ESTÁ editando, o browser controla o DOM via contentEditable — não tocamos.
-  useEffect(() => {
-    if (editing) return;
-    // o React vai re-renderizar os filhos quando muted/diff mudam, então só precisa
-    // garantir que o cursor não esteja preso de uma sessão anterior.
-  }, [after, editing]);
 
   const finish = () => {
-    const text = (ref.current?.innerText ?? '').replace(/ /g, ' ');
-    setEditing(false);
+    const text = ref.current?.innerText ?? '';
     if (text.trim() !== after.trim()) onCommit(text);
   };
 
@@ -289,7 +278,7 @@ function EditableDiff({
       ref={ref}
       contentEditable
       suppressContentEditableWarning
-      onFocus={() => setEditing(true)}
+      key={after}
       onBlur={finish}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
