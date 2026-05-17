@@ -95,8 +95,8 @@ export function Step2Configure({ cues, sourceLanguage, targetLanguage, style, gl
           description={<>Onde a legenda vai aparecer. Cada formato define limites diferentes de <strong style={{ fontFamily: TYPO.display, color: DS.fg1 }}>chars por linha</strong>, <strong style={{ fontFamily: TYPO.display, color: DS.fg1 }}>posição</strong> e <strong style={{ fontFamily: TYPO.display, color: DS.fg1 }}>safe-area</strong>.</>}
           info="define defaults dos presets"
         >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', border: `1px solid ${DS.line2}` }}>
-            {ASPECT_OPTIONS.map((a, i) => {
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+            {ASPECT_OPTIONS.map((a) => {
               const isOn = style.aspect_ratio === a;
               return (
                 <button
@@ -104,18 +104,25 @@ export function Step2Configure({ cues, sourceLanguage, targetLanguage, style, gl
                   type="button"
                   onClick={() => setAspect(a)}
                   style={{
-                    padding: '14px 12px',
+                    padding: '16px 14px',
                     background: isOn ? DS.fg1 : DS.bg,
                     color: isOn ? DS.bg : DS.fg1,
-                    borderRight: i < ASPECT_OPTIONS.length - 1 ? `1px solid ${DS.line2}` : 'none',
-                    border: 'none',
+                    border: `1px solid ${isOn ? DS.fg1 : DS.line2}`,
+                    outline: isOn ? `1px solid ${DS.fg1}` : 'none',
+                    outlineOffset: -2,
                     cursor: 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 8,
+                    gap: 10,
                     alignItems: 'flex-start',
                     textAlign: 'left',
-                    transition: 'background 120ms',
+                    transition: 'background 120ms, border-color 120ms',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isOn) e.currentTarget.style.borderColor = DS.line3;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isOn) e.currentTarget.style.borderColor = DS.line2;
                   }}
                 >
                   <FmtFrame aspect={a} isOn={isOn} />
