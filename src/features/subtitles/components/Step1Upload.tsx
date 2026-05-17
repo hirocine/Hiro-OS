@@ -241,11 +241,7 @@ export function Step1Upload({ srt, cues, fileName, parseTimeMs, cpsMax, maxChars
         </div>
       </Section>
 
-      <Section
-        ix="1.2"
-        title="Resumo"
-        meta={summary.parseTimeMs !== null ? `parse concluído em ${summary.parseTimeMs}ms` : undefined}
-      >
+      <Section ix="1.2" title="Resumo">
         <StatsGrid
           items={[
             { label: 'Cues', value: summary.cueCount.toLocaleString('pt-BR') },
@@ -283,11 +279,7 @@ export function Step1Upload({ srt, cues, fileName, parseTimeMs, cpsMax, maxChars
         />
       </Section>
 
-      <Section
-        ix="1.3"
-        title="Amostra do conteúdo"
-        meta={`cues 001 a ${String(Math.min(5, cues.length)).padStart(3, '0')}`}
-      >
+      <Section ix="1.3" title="Amostra do conteúdo">
         <div style={{ border: `1px solid ${DS.line1}`, background: DS.bg }}>
           {cues.slice(0, 5).map((c, i) => (
             <div
@@ -319,11 +311,6 @@ export function Step1Upload({ srt, cues, fileName, parseTimeMs, cpsMax, maxChars
       <Section
         ix="1.4"
         title="Avisos detectados"
-        meta={
-          summary.emptyCueCount + summary.longLineCount + summary.highCpsCount > 0
-            ? `${summary.emptyCueCount + summary.longLineCount + summary.highCpsCount} de ${summary.cueCount} · serão resolvidos na configuração`
-            : 'nenhum aviso · tudo dentro dos limites'
-        }
         noBorder
       >
         <div style={{ border: `1px solid ${DS.line1}`, background: DS.bg }}>

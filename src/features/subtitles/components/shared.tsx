@@ -155,13 +155,12 @@ export function StepStrip({ steps, current, onJump, canVisit }: StepStripProps) 
 interface SectionProps {
   ix: string;
   title: string;
-  meta?: ReactNode;
   right?: ReactNode;
   children: ReactNode;
   noBorder?: boolean;
 }
 
-export function Section({ ix, title, meta, right, children, noBorder }: SectionProps) {
+export function Section({ ix, title, right, children, noBorder }: SectionProps) {
   return (
     <section
       style={{
@@ -169,19 +168,7 @@ export function Section({ ix, title, meta, right, children, noBorder }: SectionP
         borderBottom: noBorder ? 'none' : `1px solid ${DS.line1}`,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 18 }}>
-        <span
-          style={{
-            fontFamily: TYPO.display,
-            fontSize: 10,
-            fontWeight: 500,
-            letterSpacing: '0.16em',
-            color: DS.fg4,
-            fontVariantNumeric: 'tabular-nums',
-          }}
-        >
-          {ix}
-        </span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 18 }}>
         <h2
           style={{
             fontFamily: TYPO.display,
@@ -192,19 +179,11 @@ export function Section({ ix, title, meta, right, children, noBorder }: SectionP
             margin: 0,
           }}
         >
+          <span style={{ color: DS.fg4, fontVariantNumeric: 'tabular-nums', marginRight: 10 }}>
+            {ix}
+          </span>
           {title}
         </h2>
-        {meta && (
-          <span
-            style={{
-              fontSize: 11,
-              color: DS.fg4,
-              fontFamily: TYPO.display,
-            }}
-          >
-            {meta}
-          </span>
-        )}
         {right && <div style={{ marginLeft: 'auto' }}>{right}</div>}
       </div>
       {children}
