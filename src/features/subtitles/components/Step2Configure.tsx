@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { DS, TYPO } from './shared';
 import { defaultStyleForAspect } from '../hooks/useSubtitlePresets';
@@ -104,12 +104,11 @@ export function Step2Configure({ cues, sourceLanguage, targetLanguage, style, gl
                   type="button"
                   onClick={() => setAspect(a)}
                   style={{
+                    position: 'relative',
                     padding: '16px 14px',
-                    background: isOn ? DS.fg1 : DS.bg,
-                    color: isOn ? DS.bg : DS.fg1,
+                    background: isOn ? DS.surface : DS.bg,
+                    color: DS.fg1,
                     border: `1px solid ${isOn ? DS.fg1 : DS.line2}`,
-                    outline: isOn ? `1px solid ${DS.fg1}` : 'none',
-                    outlineOffset: -2,
                     cursor: 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
@@ -125,14 +124,31 @@ export function Step2Configure({ cues, sourceLanguage, targetLanguage, style, gl
                     if (!isOn) e.currentTarget.style.borderColor = DS.line2;
                   }}
                 >
+                  {isOn && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: 10,
+                        right: 10,
+                        width: 14,
+                        height: 14,
+                        background: DS.accent,
+                        color: '#0A0A0A',
+                        display: 'grid',
+                        placeItems: 'center',
+                      }}
+                    >
+                      <Check size={9} strokeWidth={3} />
+                    </span>
+                  )}
                   <FmtFrame aspect={a} isOn={isOn} />
                   <span style={{ fontFamily: TYPO.display, fontWeight: 500, fontSize: 13, letterSpacing: '-0.005em' }}>
                     {ASPECT_LABELS[a].split('·')[0].trim()}
-                    <span style={{ fontFamily: DS.mono, fontSize: 11, color: isOn ? 'hsl(0 0% 70%)' : DS.fg4, marginLeft: 6 }}>
+                    <span style={{ fontFamily: DS.mono, fontSize: 11, color: DS.fg4, marginLeft: 6 }}>
                       {a}
                     </span>
                   </span>
-                  <span style={{ fontSize: 10, color: isOn ? 'hsl(0 0% 70%)' : DS.fg4, fontFamily: TYPO.text }}>
+                  <span style={{ fontSize: 10, color: DS.fg4, fontFamily: TYPO.text }}>
                     {ASPECT_HINTS[a]}
                   </span>
                 </button>
