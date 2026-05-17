@@ -36,8 +36,6 @@ export default function CorrecaoLegendas() {
   const [targetLanguage, setTargetLanguage] = useState<SupportedLanguage>('pt-BR');
   const [style, setStyle] = useState<SubtitleStyle>(() => defaultStyleForAspect('16:9'));
   const [glossary, setGlossary] = useState<string[]>([]);
-  const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
-  const [baselineStyle, setBaselineStyle] = useState<SubtitleStyle | null>(null);
 
   const correct = useCorrectSubtitle();
   const createJob = useCreateJob();
@@ -91,8 +89,6 @@ export default function CorrecaoLegendas() {
     setCorrectedCues([]);
     setParseTimeMs(null);
     setGlossary([]);
-    setSelectedPresetId(null);
-    setBaselineStyle(null);
     setStyle(defaultStyleForAspect('16:9'));
     setSourceLanguage('pt-BR');
     setTargetLanguage('pt-BR');
@@ -209,15 +205,11 @@ export default function CorrecaoLegendas() {
             targetLanguage={targetLanguage}
             style={style}
             glossary={glossary}
-            selectedPresetId={selectedPresetId}
-            baselineStyle={baselineStyle}
             onChange={(next) => {
               setSourceLanguage(next.sourceLanguage);
               setTargetLanguage(next.targetLanguage);
               setStyle(next.style);
               setGlossary(next.glossary);
-              setSelectedPresetId(next.selectedPresetId);
-              setBaselineStyle(next.baselineStyle);
             }}
           />
         )}
