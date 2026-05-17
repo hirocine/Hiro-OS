@@ -215,7 +215,7 @@ export default function CorrecaoLegendas() {
         )}
 
         {step === 3 && correctedCues.length > 0 && (
-          <Step3Review beforeCues={originalCues} afterCues={correctedCues} glossary={glossary} onUpdate={setCorrectedCues} />
+          <Step3Review beforeCues={originalCues} afterCues={correctedCues} onUpdate={setCorrectedCues} />
         )}
 
         {step === 4 && correctedCues.length > 0 && (

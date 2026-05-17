@@ -1,14 +1,13 @@
 import { useMemo, useState } from 'react';
-import { Check, X, Edit3, RotateCcw, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
-import { DS, TYPO } from './shared';
+import { Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { DS, TYPO, Section } from './shared';
 import { wordDiff, hasDiff, type DiffToken } from '../utils/diff';
-import { classifyChange, cueStats, CHANGE_TAG_LABELS, CHANGE_TAG_COLORS, type ChangeTag } from '../utils/analyze';
+import { cueStats } from '../utils/analyze';
 import type { SrtCue } from '../types';
 
 interface Props {
   beforeCues: SrtCue[];
   afterCues: SrtCue[];
-  glossary: string[];
   onUpdate: (cues: SrtCue[]) => void;
 }
 
@@ -19,12 +18,10 @@ interface AnnotatedCue {
   before: SrtCue | undefined;
   isChanged: boolean;
   isRemoved: boolean;
-  tags: ChangeTag[];
-  cpsBefore: number;
   cpsAfter: number;
 }
 
-export function Step3Review({ beforeCues, afterCues, glossary, onUpdate }: Props) {
+export function Step3Review({ beforeCues, afterCues, onUpdate }: Props) {
   const [page, setPage] = useState(1);
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState<string[]>([]);
@@ -40,20 +37,16 @@ export function Step3Review({ beforeCues, afterCues, glossary, onUpdate }: Props
       const before = beforeByIdx.get(c.index);
       const isEmptyAfter = cueStats(c).isEmpty;
       const isChanged = before ? hasDiff(before.text, c.text) : false;
-      const cpsBefore = before ? cueStats(before).cps : 0;
       const cpsAfter = cueStats(c).cps;
-      const tags = before ? classifyChange(before.text, c.text, glossary, cpsBefore, cpsAfter) : [];
       return {
         cue: c,
         before,
         isChanged,
         isRemoved: isEmptyAfter && !!before && !cueStats(before).isEmpty,
-        tags: isEmptyAfter ? ['removida' as ChangeTag] : tags,
-        cpsBefore,
         cpsAfter,
       };
     });
-  }, [afterCues, beforeByIdx, glossary]);
+  }, [afterCues, beforeByIdx]);
 
   const totalPages = Math.max(1, Math.ceil(annotated.length / PAGE_SIZE));
   const visiblePage = Math.min(page, totalPages);
@@ -71,16 +64,9 @@ export function Step3Review({ beforeCues, afterCues, glossary, onUpdate }: Props
     setEditDraft([]);
   };
 
-  const revertCue = (cue: SrtCue) => {
-    const before = beforeByIdx.get(cue.index);
-    if (!before) return;
-    onUpdate(afterCues.map((c) => (c.index === cue.index ? { ...c, text: before.text } : c)));
-  };
-
   return (
-    <>
-      {/* CUE LIST */}
-      <div style={{ padding: '20px 40px', display: 'flex', flexDirection: 'column', gap: 1, background: DS.line1 }}>
+    <Section ix="3.1" title="Revisão">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {paged.map((a) => (
           <CueRow
             key={a.cue.index}
@@ -91,20 +77,12 @@ export function Step3Review({ beforeCues, afterCues, glossary, onUpdate }: Props
             onCancelEdit={() => { setEditingIdx(null); setEditDraft([]); }}
             onSaveEdit={saveEdit}
             onUpdateDraft={setEditDraft}
-            onRevert={() => revertCue(a.cue)}
-            chars={a.cue.text.split('\n').map((l) => l.length)}
           />
         ))}
-        {paged.length === 0 && (
-          <div style={{ padding: 40, textAlign: 'center', background: DS.bg, color: DS.fg3, fontSize: 13, fontFamily: TYPO.text }}>
-            Nenhuma legenda corresponde aos filtros atuais.
-          </div>
-        )}
       </div>
 
-      {/* PAGINATION */}
       {totalPages > 1 && (
-        <div style={{ padding: '14px 40px', display: 'flex', alignItems: 'center', gap: 12, borderTop: `1px solid ${DS.line1}` }}>
+        <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 12, color: DS.fg3, fontFamily: TYPO.text }}>
             Página <strong style={{ fontFamily: TYPO.display, fontWeight: 500, color: DS.fg1, fontVariantNumeric: 'tabular-nums' }}>{visiblePage}</strong> de <strong style={{ fontFamily: TYPO.display, fontWeight: 500, color: DS.fg1, fontVariantNumeric: 'tabular-nums' }}>{totalPages}</strong>
           </span>
@@ -118,7 +96,7 @@ export function Step3Review({ beforeCues, afterCues, glossary, onUpdate }: Props
           </div>
         </div>
       )}
-    </>
+    </Section>
   );
 }
 
@@ -130,8 +108,6 @@ function CueRow({
   onCancelEdit,
   onSaveEdit,
   onUpdateDraft,
-  onRevert,
-  chars,
 }: {
   entry: AnnotatedCue;
   isEditing: boolean;
@@ -140,19 +116,18 @@ function CueRow({
   onCancelEdit: () => void;
   onSaveEdit: () => void;
   onUpdateDraft: (lines: string[]) => void;
-  onRevert: () => void;
-  chars: number[];
 }) {
-  const { cue, before, isChanged, isRemoved, tags, cpsAfter } = entry;
+  const { cue, before, isChanged, isRemoved, cpsAfter } = entry;
   const isUnchanged = !isChanged && !isRemoved;
 
   return (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: '160px minmax(0, 1fr) minmax(0, 1fr) 102px',
-        background: DS.bg,
-        padding: '18px 22px',
+        gridTemplateColumns: '140px minmax(0, 1fr) minmax(0, 1fr)',
+        background: DS.surface,
+        border: `1px solid ${DS.line1}`,
+        padding: '16px 18px',
         gap: 18,
       }}
     >
@@ -175,18 +150,13 @@ function CueRow({
       <div style={{ minWidth: 0 }}>
         <ColLabel>Antes</ColLabel>
         <DiffBlock before={before?.text ?? ''} after={cue.text} side="left" muted={isUnchanged} />
-        {tags.length > 0 && (
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 8 }}>
-            {tags.map((t) => (
-              <TagPill key={t} tag={t} />
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* After */}
+      {/* After (clicável pra editar) */}
       <div style={{ minWidth: 0 }}>
-        <ColLabel highlight={isChanged && !isEditing}>{isEditing ? 'Editando' : isRemoved ? 'Removida do output' : isUnchanged ? 'Sem alterações' : 'Depois'}</ColLabel>
+        <ColLabel highlight={isChanged && !isEditing}>
+          {isEditing ? 'Editando' : isRemoved ? 'Removida do output' : isUnchanged ? 'Sem alterações' : 'Depois'}
+        </ColLabel>
         {isEditing ? (
           <EditBlock draft={editDraft} onUpdate={onUpdateDraft} onSave={onSaveEdit} onCancel={onCancelEdit} cps={cpsAfter} />
         ) : isRemoved ? (
@@ -204,26 +174,21 @@ function CueRow({
             — cue inteira descartada (vazia ou sem texto válido)
           </div>
         ) : (
-          <DiffBlock before={before?.text ?? ''} after={cue.text} side="right" muted={isUnchanged} />
-        )}
-      </div>
-
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: 0, height: 'fit-content', border: `1px solid ${DS.line2}` }}>
-        {!isEditing && !isRemoved && (
-          <ActionBtn title="Editar" onClick={onStartEdit}>
-            <Edit3 size={13} strokeWidth={1.5} />
-          </ActionBtn>
-        )}
-        {isChanged && !isEditing && !isRemoved && (
-          <ActionBtn title="Reverter" onClick={onRevert}>
-            <RotateCcw size={13} strokeWidth={1.5} />
-          </ActionBtn>
-        )}
-        {!isEditing && (
-          <ActionBtn title="Mais" last>
-            <MoreHorizontal size={13} strokeWidth={1.5} />
-          </ActionBtn>
+          <div
+            onClick={onStartEdit}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onStartEdit();
+              }
+            }}
+            title="Clique pra editar"
+            style={{ cursor: 'text' }}
+          >
+            <DiffBlock before={before?.text ?? ''} after={cue.text} side="right" muted={isUnchanged} />
+          </div>
         )}
       </div>
     </div>
@@ -440,62 +405,6 @@ function ColLabel({ children, highlight }: { children: React.ReactNode; highligh
       <span style={{ width: 6, height: 6, background: highlight ? DS.fg1 : DS.line2, display: 'inline-block' }} />
       {children}
     </span>
-  );
-}
-
-function TagPill({ tag }: { tag: ChangeTag }) {
-  const c = CHANGE_TAG_COLORS[tag];
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-        padding: '2px 6px',
-        background: c.bg,
-        color: c.fg,
-        fontFamily: TYPO.display,
-        fontSize: 9,
-        fontWeight: 500,
-        letterSpacing: '0.12em',
-        textTransform: 'uppercase',
-      }}
-    >
-      <span style={{ width: 4, height: 4, background: c.fg, display: 'inline-block' }} />
-      {CHANGE_TAG_LABELS[tag]}
-    </span>
-  );
-}
-
-function ActionBtn({ children, onClick, title, last }: { children: React.ReactNode; onClick?: () => void; title: string; last?: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      style={{
-        width: 32,
-        height: 32,
-        display: 'grid',
-        placeItems: 'center',
-        color: DS.fg3,
-        borderRight: last ? 'none' : `1px solid ${DS.line2}`,
-        background: 'transparent',
-        border: 'none',
-        cursor: 'pointer',
-        transition: 'color 120ms, background 120ms',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.color = DS.fg1;
-        e.currentTarget.style.background = DS.surface;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.color = DS.fg3;
-        e.currentTarget.style.background = 'transparent';
-      }}
-    >
-      {children}
-    </button>
   );
 }
 
