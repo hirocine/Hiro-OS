@@ -121,9 +121,25 @@ export function TopbarReal() {
         <nav className="crumbs" aria-label="Breadcrumb">
           {crumbs.flatMap((c, i) => {
             const isLast = i === crumbs.length - 1;
-            const node = c.href && !isLast
-              ? <Link key={`l${i}`} to={c.href} className="crumb-link" title={c.label}>{c.label}</Link>
-              : <span key={`c${i}`} className="crumb-current" title={c.label}>{c.label}</span>;
+            let node: JSX.Element;
+            if (!isLast && c.onClick) {
+              node = (
+                <button
+                  key={`b${i}`}
+                  type="button"
+                  onClick={c.onClick}
+                  className="crumb-link"
+                  title={c.label}
+                  style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'inherit', cursor: 'pointer' }}
+                >
+                  {c.label}
+                </button>
+              );
+            } else if (!isLast && c.href) {
+              node = <Link key={`l${i}`} to={c.href} className="crumb-link" title={c.label}>{c.label}</Link>;
+            } else {
+              node = <span key={`c${i}`} className="crumb-current" title={c.label}>{c.label}</span>;
+            }
             return i === 0
               ? [node]
               : [<span key={`s${i}`} className="crumb-sep">/</span>, node];

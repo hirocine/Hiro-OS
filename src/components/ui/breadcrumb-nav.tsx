@@ -3,6 +3,7 @@ import { useSetBreadcrumbs } from "@/ds/BreadcrumbContext";
 export interface BreadcrumbItem {
   label: string;
   href?: string;
+  onClick?: () => void;
 }
 
 interface BreadcrumbNavProps {

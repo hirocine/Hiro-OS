@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 export type BreadcrumbItem = {
   label: string;
   href?: string;
+  onClick?: () => void;
 };
 
 type Ctx = {

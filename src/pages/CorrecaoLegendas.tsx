@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Sparkles, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { StepStrip, PageHeader, EyebrowDot, WizardFooter, FooterButton, DS, TYPO } from '@/features/subtitles/components/shared';
 import { LandingPage } from '@/features/subtitles/components/LandingPage';
 import { Step1Upload } from '@/features/subtitles/components/Step1Upload';
@@ -153,6 +154,7 @@ export default function CorrecaoLegendas() {
   if (!srt) {
     return (
       <div className="ds-shell" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: DS.bg }}>
+        <BreadcrumbNav items={[{ label: 'Correção de Legendas' }]} />
         <LandingPage onUploadFresh={handleUploadFresh} onResumeJob={handleResumeJob} />
       </div>
     );
@@ -161,6 +163,12 @@ export default function CorrecaoLegendas() {
   // ============ WIZARD ============
   return (
     <div className="ds-shell" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: DS.bg }}>
+      <BreadcrumbNav
+        items={[
+          { label: 'Correção de Legendas', onClick: handleReset },
+          { label: fileName ?? 'Sem nome' },
+        ]}
+      />
       <PageHeader
         eyebrow={
           <>
