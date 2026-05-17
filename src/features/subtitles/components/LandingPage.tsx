@@ -71,7 +71,7 @@ export function LandingPage({ onUploadFresh, onResumeJob }: Props) {
         }
       />
 
-      <div style={{ padding: '32px 40px 32px', display: 'flex', flexDirection: 'column', gap: 32, flex: 1, minHeight: 0, maxWidth: 760 }}>
+      <div style={{ padding: '32px 40px 32px', display: 'flex', flexDirection: 'column', gap: 32, flex: 1, minHeight: 0 }}>
         {/* DROPZONE */}
         <section>
           <p
