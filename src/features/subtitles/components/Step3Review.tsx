@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Edit3 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { DS, TYPO, Section } from './shared';
 import { wordDiff, tripleDiff, hasDiff, type DiffToken, type TripleDiffToken } from '../utils/diff';
 import { cueStats } from '../utils/analyze';
@@ -25,7 +25,6 @@ interface AnnotatedCue {
 
 export function Step3Review({ beforeCues, afterCues, aiBaselineCues, onUpdate }: Props) {
   const [page, setPage] = useState(1);
-  const [editingIdx, setEditingIdx] = useState<number | null>(null);
 
   const beforeByIdx = useMemo(() => {
     const m = new Map<number, SrtCue>();
@@ -59,24 +58,20 @@ export function Step3Review({ beforeCues, afterCues, aiBaselineCues, onUpdate }:
   const visiblePage = Math.min(page, totalPages);
   const paged = annotated.slice((visiblePage - 1) * PAGE_SIZE, visiblePage * PAGE_SIZE);
 
-  const startEdit = (cue: SrtCue) => setEditingIdx(cue.index);
   const commitEdit = (cueIndex: number, value: string) => {
     onUpdate(afterCues.map((c) => (c.index === cueIndex ? { ...c, text: value.trim() } : c)));
   };
-  const exitEdit = () => setEditingIdx(null);
 
   return (
     <Section ix="3.1" title="Revisão" noBorder>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {paged.map((a) => (
+      <div style={{ border: `1px solid ${DS.line1}`, background: DS.surface }}>
+        {paged.map((a, i) => (
           <CueRow
             key={a.cue.index}
             entry={a}
             aiText={aiByIdx.get(a.cue.index)?.text ?? a.cue.text}
-            isEditing={editingIdx === a.cue.index}
-            onStartEdit={() => startEdit(a.cue)}
+            isFirst={i === 0}
             onCommit={(value) => commitEdit(a.cue.index, value)}
-            onExitEdit={exitEdit}
           />
         ))}
       </div>
@@ -103,19 +98,15 @@ export function Step3Review({ beforeCues, afterCues, aiBaselineCues, onUpdate }:
 function CueRow({
   entry,
   aiText,
-  isEditing,
-  onStartEdit,
+  isFirst,
   onCommit,
-  onExitEdit,
 }: {
   entry: AnnotatedCue;
   aiText: string;
-  isEditing: boolean;
-  onStartEdit: () => void;
+  isFirst: boolean;
   onCommit: (value: string) => void;
-  onExitEdit: () => void;
 }) {
-  const { cue, before, isChanged, isRemoved, cpsAfter } = entry;
+  const { cue, before, isChanged, isRemoved } = entry;
   const isUnchanged = !isChanged && !isRemoved;
 
   return (
@@ -123,14 +114,13 @@ function CueRow({
       style={{
         display: 'grid',
         gridTemplateColumns: '140px minmax(0, 1fr) minmax(0, 1fr)',
-        background: DS.surface,
-        border: `1px solid ${DS.line1}`,
-        padding: '16px 18px',
+        padding: '14px 18px',
         gap: 18,
+        borderTop: isFirst ? 'none' : `1px solid ${DS.line1}`,
       }}
     >
-      {/* Side */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {/* Side compacta */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <span style={{ fontFamily: TYPO.display, fontWeight: 500, fontSize: 11, color: isRemoved ? DS.danger : DS.fg4, letterSpacing: '0.12em', fontVariantNumeric: 'tabular-nums' }}>
           CUE {String(cue.index).padStart(3, '0')}
         </span>
@@ -138,9 +128,6 @@ function CueRow({
           <strong style={{ color: DS.fg1, fontWeight: 500 }}>{cue.startStr}</strong>
           <br />
           → {cue.endStr}
-        </span>
-        <span style={{ fontSize: 10, color: isRemoved ? DS.danger : DS.fg4, fontFamily: TYPO.text }}>
-          {((cue.endMs - cue.startMs) / 1000).toFixed(1)}s · {cpsAfter.toFixed(1)} CPS
         </span>
       </div>
 
@@ -150,10 +137,10 @@ function CueRow({
         <DiffBlock before={before?.text ?? ''} after={cue.text} aiText={aiText} side="left" muted={isUnchanged} />
       </div>
 
-      {/* After (auto-edit) */}
+      {/* After */}
       <div style={{ minWidth: 0 }}>
-        <ColLabel highlight={isChanged && !isEditing}>
-          {isEditing ? 'Editando' : isRemoved ? 'Removida do output' : isUnchanged ? 'Sem alterações' : 'Depois'}
+        <ColLabel highlight={isChanged}>
+          {isRemoved ? 'Removida do output' : isUnchanged ? 'Sem alterações' : 'Depois'}
         </ColLabel>
         {isRemoved ? (
           <div
@@ -168,10 +155,8 @@ function CueRow({
           >
             — cue inteira descartada (vazia ou sem texto válido)
           </div>
-        ) : isEditing ? (
-          <InlineEdit initial={cue.text} onCommit={onCommit} onExit={onExitEdit} />
         ) : (
-          <EditableDiff before={before?.text ?? ''} after={cue.text} aiText={aiText} muted={isUnchanged} onStartEdit={onStartEdit} />
+          <EditableDiff before={before?.text ?? ''} after={cue.text} aiText={aiText} muted={isUnchanged} onCommit={onCommit} />
         )}
       </div>
     </div>
@@ -201,8 +186,7 @@ function DiffBlock({ before, after, aiText, side, muted }: { before: string; aft
   return (
     <div
       style={{
-        padding: '10px 12px',
-        background: DS.surface,
+        padding: '10px 0',
         fontSize: 13,
         color: DS.fg1,
         lineHeight: 1.55,
@@ -266,107 +250,69 @@ function EditableDiff({
   after,
   aiText,
   muted,
-  onStartEdit,
+  onCommit,
 }: {
   before: string;
   after: string;
   aiText: string;
   muted: boolean;
-  onStartEdit: () => void;
+  onCommit: (value: string) => void;
 }) {
-  const [hover, setHover] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const [editing, setEditing] = useState(false);
+
+  // Quando NÃO está editando, ressincronizamos o DOM com o conteúdo atual do `after`
+  // (caso o React decida reaproveitar o elemento entre renders sem trocar children).
+  // Quando ESTÁ editando, o browser controla o DOM via contentEditable — não tocamos.
+  useEffect(() => {
+    if (editing) return;
+    // o React vai re-renderizar os filhos quando muted/diff mudam, então só precisa
+    // garantir que o cursor não esteja preso de uma sessão anterior.
+  }, [after, editing]);
+
+  const finish = () => {
+    const text = (ref.current?.innerText ?? '').replace(/ /g, ' ');
+    setEditing(false);
+    if (text.trim() !== after.trim()) onCommit(text);
+  };
+
+  const tokens = useMemo(() => {
+    if (muted || !before || !after || before === after) {
+      return null; // será renderizado como texto puro
+    }
+    return tripleDiff(before, aiText, after).right;
+  }, [before, after, aiText, muted]);
+
   return (
     <div
-      onClick={onStartEdit}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onStartEdit();
-        }
-      }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      title="Clique pra editar"
-      style={{
-        position: 'relative',
-        cursor: 'text',
-        margin: '0 -10px',
-        padding: '10px 30px 10px 10px',
-        borderRadius: 2,
-        background: hover ? DS.bg : 'transparent',
-        border: `1px solid ${hover ? DS.line2 : 'transparent'}`,
-        transition: 'background 120ms, border-color 120ms',
-      }}
-    >
-      <DiffBlock before={before} after={after} aiText={aiText} side="right" muted={muted} />
-      <Edit3
-        size={12}
-        strokeWidth={1.5}
-        style={{
-          position: 'absolute',
-          top: 12,
-          right: 10,
-          color: DS.fg4,
-          opacity: hover ? 1 : 0.4,
-          transition: 'opacity 120ms',
-        }}
-      />
-    </div>
-  );
-}
-
-function InlineEdit({
-  initial,
-  onCommit,
-  onExit,
-}: {
-  initial: string;
-  onCommit: (value: string) => void;
-  onExit: () => void;
-}) {
-  const [value, setValue] = useState(initial);
-  const finish = () => {
-    if (value.trim() !== initial.trim()) onCommit(value);
-    onExit();
-  };
-  return (
-    <textarea
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
+      ref={ref}
+      contentEditable
+      suppressContentEditableWarning
+      onFocus={() => setEditing(true)}
       onBlur={finish}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
-          setValue(initial);
-          onExit();
+          if (ref.current) ref.current.innerText = after;
+          (e.currentTarget as HTMLDivElement).blur();
         } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
           e.preventDefault();
-          (e.currentTarget as HTMLTextAreaElement).blur();
+          (e.currentTarget as HTMLDivElement).blur();
         }
       }}
-      autoFocus
-      onFocus={(e) => {
-        const el = e.currentTarget;
-        el.setSelectionRange(el.value.length, el.value.length);
-      }}
-      rows={Math.max(2, initial.split('\n').length)}
       style={{
-        width: '100%',
-        margin: '0 -10px',
-        padding: '10px',
-        boxSizing: 'content-box',
+        padding: '10px 0',
         fontSize: 13,
+        color: muted ? DS.fg3 : DS.fg1,
+        lineHeight: 1.55,
+        whiteSpace: 'pre-wrap',
         fontFamily: TYPO.text,
-        color: DS.fg1,
-        background: DS.bg,
-        border: `1px solid ${DS.fg1}`,
-        borderRadius: 2,
-        outline: 'none',
-        resize: 'vertical',
-        lineHeight: 1.5,
+        outline: editing ? `1px solid ${DS.fg1}` : 'none',
+        outlineOffset: editing ? 4 : 0,
+        cursor: 'text',
       }}
-    />
+    >
+      {tokens ? tokens.map((t, i) => renderToken(t, 'right', i)) : (after || (muted ? '—' : ''))}
+    </div>
   );
 }
 
