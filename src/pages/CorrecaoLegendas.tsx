@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Sparkles, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
-import { StepStrip, PageHeader, EyebrowDot, WizardFooter, FooterButton, DS, TYPO } from '@/features/subtitles/components/shared';
+import { PageHeader } from '@/ds/components/toolbar';
+import { StepStrip, WizardFooter, FooterButton, DS, TYPO } from '@/features/subtitles/components/shared';
 import { LandingPage } from '@/features/subtitles/components/LandingPage';
 import { Step1Upload } from '@/features/subtitles/components/Step1Upload';
 import { Step2Configure, step2Estimate } from '@/features/subtitles/components/Step2Configure';
@@ -169,22 +170,12 @@ export default function CorrecaoLegendas() {
           { label: fileName ?? 'Sem nome' },
         ]}
       />
-      <PageHeader
-        eyebrow={
-          <>
-            <EyebrowDot>Ferramenta · AI</EyebrowDot>
-            <span style={{ color: DS.line2 }}>·</span>
-            <span>Pós-Produção</span>
-          </>
-        }
-        title="Correção de legendas"
-        description={
-          <>
-            Carregue um <strong style={{ fontFamily: TYPO.display, fontWeight: 500, color: DS.fg1 }}>.srt</strong> e a engine de revisão limpa pontuação, normaliza casing, respeita o{' '}
-            <strong style={{ fontFamily: TYPO.display, fontWeight: 500, color: DS.fg1 }}>CPS</strong> e quebra as linhas conforme o formato final. Saída pronta pro DaVinci Resolve, Premiere ou pra queimar direto no vídeo.
-          </>
-        }
-      />
+      <div className="ds-page-inner" style={{ paddingTop: 32 }}>
+        <PageHeader
+          title="Correção de Legendas."
+          subtitle="Carregue um .srt e a engine de revisão limpa pontuação, normaliza casing, respeita o CPS e quebra as linhas conforme o formato final."
+        />
+      </div>
 
       <StepStrip
         steps={STEPS}

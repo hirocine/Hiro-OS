@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
-import { Upload, FileText, Trash2, ArrowRight, Clock } from 'lucide-react';
+import { Upload, Trash2, ArrowRight, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { DS, TYPO, PageHeader, EyebrowDot } from './shared';
+import { PageHeader } from '@/ds/components/toolbar';
+import { DS, TYPO } from './shared';
 import { parseSrt } from '../utils/parseSrt';
 import { useSubtitleJobs, useDeleteJob, type SubtitleJob } from '../hooks/useSubtitleJobs';
 import type { SrtCue } from '../types';
@@ -54,24 +55,15 @@ export function LandingPage({ onUploadFresh, onResumeJob }: Props) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <PageHeader
-        eyebrow={
-          <>
-            <EyebrowDot>Ferramenta · AI</EyebrowDot>
-            <span style={{ color: DS.line2 }}>·</span>
-            <span>Pós-Produção</span>
-          </>
-        }
-        title="Correção de legendas"
-        description={
-          <>
-            Carregue um <strong style={{ fontFamily: TYPO.display, fontWeight: 500, color: DS.fg1 }}>.srt</strong> pra começar uma nova revisão, ou continue uma das suas legendas recentes abaixo.
-          </>
-        }
-      />
+    <div className="ds-page" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+      <div className="ds-page-inner">
+        <PageHeader
+          title="Correção de Legendas."
+          subtitle="Carregue um .srt pra começar uma nova revisão, ou continue uma das suas legendas recentes abaixo."
+        />
+      </div>
 
-      <div style={{ padding: '32px 40px 32px', display: 'flex', flexDirection: 'column', gap: 32, flex: 1, minHeight: 0 }}>
+      <div style={{ padding: '0 40px 32px', display: 'flex', flexDirection: 'column', gap: 32, flex: 1, minHeight: 0 }}>
         {/* DROPZONE */}
         <section>
           <p
