@@ -49,6 +49,7 @@ export type PermissionKey =
   | 'juridico.contratos'
   | 'rh.datas'
   | 'rh.wiki'
+  | 'chat'
   | 'admin';
 
 /** All known permission keys (handy for iteration / seed). */
