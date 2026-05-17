@@ -29,6 +29,7 @@ export default function CorrecaoLegendas() {
   const [parseTimeMs, setParseTimeMs] = useState<number | null>(null);
   const [originalCues, setOriginalCues] = useState<SrtCue[]>([]);
   const [correctedCues, setCorrectedCues] = useState<SrtCue[]>([]);
+  const [aiBaselineCues, setAiBaselineCues] = useState<SrtCue[]>([]);
   const [showRawSrt, setShowRawSrt] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
 
@@ -46,6 +47,7 @@ export default function CorrecaoLegendas() {
     setFileName(name);
     setOriginalCues(cues);
     setCorrectedCues([]);
+    setAiBaselineCues([]);
     setParseTimeMs(dt);
     setStep(1);
     // Persist job
@@ -67,7 +69,9 @@ export default function CorrecaoLegendas() {
     setSrt(job.original_srt);
     setFileName(job.file_name);
     setOriginalCues(parseSrt(job.original_srt));
-    setCorrectedCues(job.corrected_srt ? parseSrt(job.corrected_srt) : []);
+    const parsedCorrected = job.corrected_srt ? parseSrt(job.corrected_srt) : [];
+    setCorrectedCues(parsedCorrected);
+    setAiBaselineCues(parsedCorrected);
     setParseTimeMs(null);
     setJobId(job.id);
     setSourceLanguage(job.source_language);
@@ -87,6 +91,7 @@ export default function CorrecaoLegendas() {
     setFileName(null);
     setOriginalCues([]);
     setCorrectedCues([]);
+    setAiBaselineCues([]);
     setParseTimeMs(null);
     setGlossary([]);
     setStyle(defaultStyleForAspect('16:9'));
@@ -111,6 +116,7 @@ export default function CorrecaoLegendas() {
         return;
       }
       setCorrectedCues(parsed);
+      setAiBaselineCues(parsed);
       setStep(3);
       toast.success(`${parsed.length} legendas processadas`);
       if (jobId) {
@@ -215,7 +221,7 @@ export default function CorrecaoLegendas() {
         )}
 
         {step === 3 && correctedCues.length > 0 && (
-          <Step3Review beforeCues={originalCues} afterCues={correctedCues} onUpdate={setCorrectedCues} />
+          <Step3Review beforeCues={originalCues} afterCues={correctedCues} aiBaselineCues={aiBaselineCues} onUpdate={setCorrectedCues} />
         )}
 
         {step === 4 && correctedCues.length > 0 && (

@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react';
-import { Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit3 } from 'lucide-react';
 import { DS, TYPO, Section } from './shared';
-import { wordDiff, hasDiff, type DiffToken } from '../utils/diff';
+import { wordDiff, tripleDiff, hasDiff, type DiffToken, type TripleDiffToken } from '../utils/diff';
 import { cueStats } from '../utils/analyze';
 import type { SrtCue } from '../types';
 
 interface Props {
   beforeCues: SrtCue[];
   afterCues: SrtCue[];
+  /** Snapshot do output da IA antes de qualquer edição manual. Permite distinguir mudanças da IA (verde) das do usuário (azul). */
+  aiBaselineCues?: SrtCue[];
   onUpdate: (cues: SrtCue[]) => void;
 }
 
@@ -21,16 +23,21 @@ interface AnnotatedCue {
   cpsAfter: number;
 }
 
-export function Step3Review({ beforeCues, afterCues, onUpdate }: Props) {
+export function Step3Review({ beforeCues, afterCues, aiBaselineCues, onUpdate }: Props) {
   const [page, setPage] = useState(1);
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
-  const [editDraft, setEditDraft] = useState<string[]>([]);
 
   const beforeByIdx = useMemo(() => {
     const m = new Map<number, SrtCue>();
     beforeCues.forEach((c) => m.set(c.index, c));
     return m;
   }, [beforeCues]);
+
+  const aiByIdx = useMemo(() => {
+    const m = new Map<number, SrtCue>();
+    (aiBaselineCues ?? []).forEach((c) => m.set(c.index, c));
+    return m;
+  }, [aiBaselineCues]);
 
   const annotated = useMemo<AnnotatedCue[]>(() => {
     return afterCues.map((c) => {
@@ -52,17 +59,11 @@ export function Step3Review({ beforeCues, afterCues, onUpdate }: Props) {
   const visiblePage = Math.min(page, totalPages);
   const paged = annotated.slice((visiblePage - 1) * PAGE_SIZE, visiblePage * PAGE_SIZE);
 
-  const startEdit = (cue: SrtCue) => {
-    setEditingIdx(cue.index);
-    setEditDraft(cue.text.split('\n'));
+  const startEdit = (cue: SrtCue) => setEditingIdx(cue.index);
+  const commitEdit = (cueIndex: number, value: string) => {
+    onUpdate(afterCues.map((c) => (c.index === cueIndex ? { ...c, text: value.trim() } : c)));
   };
-
-  const saveEdit = () => {
-    if (editingIdx === null) return;
-    onUpdate(afterCues.map((c) => (c.index === editingIdx ? { ...c, text: editDraft.join('\n').trim() } : c)));
-    setEditingIdx(null);
-    setEditDraft([]);
-  };
+  const exitEdit = () => setEditingIdx(null);
 
   return (
     <Section ix="3.1" title="Revisão" noBorder>
@@ -71,12 +72,11 @@ export function Step3Review({ beforeCues, afterCues, onUpdate }: Props) {
           <CueRow
             key={a.cue.index}
             entry={a}
+            aiText={aiByIdx.get(a.cue.index)?.text ?? a.cue.text}
             isEditing={editingIdx === a.cue.index}
-            editDraft={editDraft}
             onStartEdit={() => startEdit(a.cue)}
-            onCancelEdit={() => { setEditingIdx(null); setEditDraft([]); }}
-            onSaveEdit={saveEdit}
-            onUpdateDraft={setEditDraft}
+            onCommit={(value) => commitEdit(a.cue.index, value)}
+            onExitEdit={exitEdit}
           />
         ))}
       </div>
@@ -102,20 +102,18 @@ export function Step3Review({ beforeCues, afterCues, onUpdate }: Props) {
 
 function CueRow({
   entry,
+  aiText,
   isEditing,
-  editDraft,
   onStartEdit,
-  onCancelEdit,
-  onSaveEdit,
-  onUpdateDraft,
+  onCommit,
+  onExitEdit,
 }: {
   entry: AnnotatedCue;
+  aiText: string;
   isEditing: boolean;
-  editDraft: string[];
   onStartEdit: () => void;
-  onCancelEdit: () => void;
-  onSaveEdit: () => void;
-  onUpdateDraft: (lines: string[]) => void;
+  onCommit: (value: string) => void;
+  onExitEdit: () => void;
 }) {
   const { cue, before, isChanged, isRemoved, cpsAfter } = entry;
   const isUnchanged = !isChanged && !isRemoved;
@@ -149,21 +147,18 @@ function CueRow({
       {/* Before */}
       <div style={{ minWidth: 0 }}>
         <ColLabel>Antes</ColLabel>
-        <DiffBlock before={before?.text ?? ''} after={cue.text} side="left" muted={isUnchanged} />
+        <DiffBlock before={before?.text ?? ''} after={cue.text} aiText={aiText} side="left" muted={isUnchanged} />
       </div>
 
-      {/* After (clicável pra editar) */}
+      {/* After (auto-edit) */}
       <div style={{ minWidth: 0 }}>
         <ColLabel highlight={isChanged && !isEditing}>
           {isEditing ? 'Editando' : isRemoved ? 'Removida do output' : isUnchanged ? 'Sem alterações' : 'Depois'}
         </ColLabel>
-        {isEditing ? (
-          <EditBlock draft={editDraft} onUpdate={onUpdateDraft} onSave={onSaveEdit} onCancel={onCancelEdit} cps={cpsAfter} />
-        ) : isRemoved ? (
+        {isRemoved ? (
           <div
             style={{
-              padding: '10px 12px',
-              background: DS.dangerSoft,
+              padding: '10px 0',
               color: DS.danger,
               fontSize: 12.5,
               fontFamily: TYPO.text,
@@ -173,36 +168,23 @@ function CueRow({
           >
             — cue inteira descartada (vazia ou sem texto válido)
           </div>
+        ) : isEditing ? (
+          <InlineEdit initial={cue.text} onCommit={onCommit} onExit={onExitEdit} />
         ) : (
-          <div
-            onClick={onStartEdit}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onStartEdit();
-              }
-            }}
-            title="Clique pra editar"
-            style={{ cursor: 'text' }}
-          >
-            <DiffBlock before={before?.text ?? ''} after={cue.text} side="right" muted={isUnchanged} />
-          </div>
+          <EditableDiff before={before?.text ?? ''} after={cue.text} aiText={aiText} muted={isUnchanged} onStartEdit={onStartEdit} />
         )}
       </div>
     </div>
   );
 }
 
-function DiffBlock({ before, after, side, muted }: { before: string; after: string; side: 'left' | 'right'; muted?: boolean }) {
+function DiffBlock({ before, after, aiText, side, muted }: { before: string; after: string; aiText: string; side: 'left' | 'right'; muted?: boolean }) {
   const text = side === 'left' ? before : after;
   if (muted || !before || !after || before === after) {
     return (
       <div
         style={{
-          padding: '10px 12px',
-          background: DS.surface,
+          padding: '10px 0',
           fontSize: 13,
           color: muted ? DS.fg3 : DS.fg1,
           lineHeight: 1.5,
@@ -214,8 +196,8 @@ function DiffBlock({ before, after, side, muted }: { before: string; after: stri
       </div>
     );
   }
-  const diff = wordDiff(before, after);
-  const tokens = side === 'left' ? diff.left : diff.right;
+  const diff = tripleDiff(before, aiText, after);
+  const tokens: (DiffToken | TripleDiffToken)[] = side === 'left' ? diff.left : diff.right;
   return (
     <div
       style={{
@@ -258,12 +240,16 @@ function renderToken(t: DiffToken, side: 'left' | 'right', i: number) {
     );
   }
   if (t.op === 'insert' && side === 'right') {
+    const isUser = 'source' in t && t.source === 'user';
+    // Verde = IA (default), Azul = usuário
+    const bg = isUser ? 'hsl(209 71% 92%)' : DS.accentSoft;
+    const fg = isUser ? DS.info : DS.accentDeep;
     return (
       <span
         key={i}
         style={{
-          background: DS.accentSoft,
-          color: DS.accentDeep,
+          background: bg,
+          color: fg,
           padding: 0,
           fontWeight: 500,
         }}
@@ -275,114 +261,112 @@ function renderToken(t: DiffToken, side: 'left' | 'right', i: number) {
   return null;
 }
 
-function EditBlock({
-  draft,
-  onUpdate,
-  onSave,
-  onCancel,
-  cps,
+function EditableDiff({
+  before,
+  after,
+  aiText,
+  muted,
+  onStartEdit,
 }: {
-  draft: string[];
-  onUpdate: (lines: string[]) => void;
-  onSave: () => void;
-  onCancel: () => void;
-  cps: number;
+  before: string;
+  after: string;
+  aiText: string;
+  muted: boolean;
+  onStartEdit: () => void;
 }) {
+  const [hover, setHover] = useState(false);
   return (
-    <div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {draft.map((line, i) => (
-          <div
-            key={i}
-            style={{
-              display: 'flex',
-              gap: 6,
-              alignItems: 'center',
-              padding: '8px 10px',
-              background: DS.surface2,
-              border: `1px solid ${DS.line2}`,
-            }}
-          >
-            <input
-              type="text"
-              value={line}
-              onChange={(e) => onUpdate(draft.map((l, j) => (j === i ? e.target.value : l)))}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                  e.preventDefault();
-                  onSave();
-                } else if (e.key === 'Escape') {
-                  onCancel();
-                }
-              }}
-              autoFocus={i === 0}
-              style={{
-                flex: 1,
-                fontSize: 13,
-                fontFamily: TYPO.text,
-                color: DS.fg1,
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                minWidth: 0,
-              }}
-            />
-            <span style={{ fontSize: 10, color: DS.fg4, fontFamily: TYPO.display, fontWeight: 500, letterSpacing: '0.04em', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-              {line.length} chars
-            </span>
-          </div>
-        ))}
-      </div>
-      <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-        <button
-          type="button"
-          onClick={onSave}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '6px 12px',
-            height: 30,
-            fontFamily: TYPO.display,
-            fontSize: 10,
-            fontWeight: 500,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: DS.bg,
-            background: DS.fg1,
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          <Check size={12} strokeWidth={1.5} /> Salvar
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '6px 12px',
-            height: 30,
-            fontFamily: TYPO.display,
-            fontSize: 10,
-            fontWeight: 500,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: DS.fg2,
-            background: DS.bg,
-            border: `1px solid ${DS.line2}`,
-            cursor: 'pointer',
-          }}
-        >
-          <X size={12} strokeWidth={1.5} /> Cancelar
-        </button>
-        <span style={{ marginLeft: 'auto', fontSize: 11, color: DS.fg4, fontFamily: TYPO.text }}>
-          ⌘+↵ salvar · Esc cancelar · CPS atual: {cps.toFixed(1)}
-        </span>
-      </div>
+    <div
+      onClick={onStartEdit}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onStartEdit();
+        }
+      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      title="Clique pra editar"
+      style={{
+        position: 'relative',
+        cursor: 'text',
+        margin: '0 -10px',
+        padding: '10px 30px 10px 10px',
+        borderRadius: 2,
+        background: hover ? DS.bg : 'transparent',
+        border: `1px solid ${hover ? DS.line2 : 'transparent'}`,
+        transition: 'background 120ms, border-color 120ms',
+      }}
+    >
+      <DiffBlock before={before} after={after} aiText={aiText} side="right" muted={muted} />
+      <Edit3
+        size={12}
+        strokeWidth={1.5}
+        style={{
+          position: 'absolute',
+          top: 12,
+          right: 10,
+          color: DS.fg4,
+          opacity: hover ? 1 : 0.4,
+          transition: 'opacity 120ms',
+        }}
+      />
     </div>
+  );
+}
+
+function InlineEdit({
+  initial,
+  onCommit,
+  onExit,
+}: {
+  initial: string;
+  onCommit: (value: string) => void;
+  onExit: () => void;
+}) {
+  const [value, setValue] = useState(initial);
+  const finish = () => {
+    if (value.trim() !== initial.trim()) onCommit(value);
+    onExit();
+  };
+  return (
+    <textarea
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={finish}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          setValue(initial);
+          onExit();
+        } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+          e.preventDefault();
+          (e.currentTarget as HTMLTextAreaElement).blur();
+        }
+      }}
+      autoFocus
+      onFocus={(e) => {
+        const el = e.currentTarget;
+        el.setSelectionRange(el.value.length, el.value.length);
+      }}
+      rows={Math.max(2, initial.split('\n').length)}
+      style={{
+        width: '100%',
+        margin: '0 -10px',
+        padding: '10px',
+        boxSizing: 'content-box',
+        fontSize: 13,
+        fontFamily: TYPO.text,
+        color: DS.fg1,
+        background: DS.bg,
+        border: `1px solid ${DS.fg1}`,
+        borderRadius: 2,
+        outline: 'none',
+        resize: 'vertical',
+        lineHeight: 1.5,
+      }}
+    />
   );
 }
 
