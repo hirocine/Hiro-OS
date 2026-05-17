@@ -22,7 +22,7 @@ interface Props {
   fileNameBase: string;
 }
 
-const FORMATS: ExportFormat[] = ['srt', 'srt-html', 'vtt', 'ass', 'csv', 'txt'];
+const FORMATS: ExportFormat[] = ['srt', 'txt'];
 
 export function Step4Export({ beforeCues, afterCues, style, fileNameBase }: Props) {
   const [format, setFormat] = useState<ExportFormat>('srt');
@@ -30,7 +30,8 @@ export function Step4Export({ beforeCues, afterCues, style, fileNameBase }: Prop
     const base = fileNameBase.replace(/\.srt$/i, '');
     return `${base}_revisado_v1`;
   });
-  const [opts, setOpts] = useState<ExportOptions>({ bom: true, crlf: false, renumber: true });
+  // Opções fixas: BOM (UTF-8) ligado pra compat Resolve/Windows, sem CRLF, renumera vazias.
+  const opts = useMemo<ExportOptions>(() => ({ bom: true, crlf: false, renumber: true }), []);
 
   // Stats finais
   const finalStats = useMemo(() => {
@@ -243,27 +244,6 @@ export function Step4Export({ beforeCues, afterCues, style, fileNameBase }: Prop
               </span>
             </div>
 
-            <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 0, border: `1px solid ${DS.line1}` }}>
-              <OptionRow
-                checked={opts.bom}
-                onChange={(v) => setOpts({ ...opts, bom: v })}
-                title="BOM (UTF-8 Byte Order Mark)"
-                description="Garante encoding correto no DaVinci/Resolve em Windows."
-              />
-              <OptionRow
-                checked={opts.crlf}
-                onChange={(v) => setOpts({ ...opts, crlf: v })}
-                title="CRLF (line endings Windows)"
-                description="Útil pra arquivos lidos em players legados."
-              />
-              <OptionRow
-                checked={opts.renumber}
-                onChange={(v) => setOpts({ ...opts, renumber: v })}
-                title="Numeração contínua"
-                description="Renumera cues 1, 2, 3… após remover vazias."
-                last
-              />
-            </div>
           </div>
 
           <div>
@@ -409,33 +389,3 @@ function SuccStat({ label, value, accent }: { label: string; value: string; acce
   );
 }
 
-function OptionRow({ checked, onChange, title, description, last }: { checked: boolean; onChange: (v: boolean) => void; title: string; description: string; last?: boolean }) {
-  return (
-    <label
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 12,
-        padding: '12px 14px',
-        borderBottom: last ? 'none' : `1px solid ${DS.line1}`,
-        cursor: 'pointer',
-        background: DS.bg,
-      }}
-    >
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        style={{ marginTop: 2, accentColor: DS.fg1 }}
-      />
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <span style={{ display: 'block', fontFamily: TYPO.display, fontWeight: 500, fontSize: 13, color: DS.fg1, letterSpacing: '-0.005em' }}>
-          {title}
-        </span>
-        <span style={{ display: 'block', marginTop: 2, fontSize: 11.5, color: DS.fg3, fontFamily: TYPO.text, lineHeight: 1.4 }}>
-          {description}
-        </span>
-      </div>
-    </label>
-  );
-}
