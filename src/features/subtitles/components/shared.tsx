@@ -179,7 +179,7 @@ export function Section({ ix, title, right, children, noBorder }: SectionProps) 
             margin: 0,
           }}
         >
-          <span style={{ color: DS.fg4, fontVariantNumeric: 'tabular-nums', marginRight: 10 }}>
+          <span style={{ marginRight: 8, letterSpacing: 0 }}>
             {ix}
           </span>
           {title}

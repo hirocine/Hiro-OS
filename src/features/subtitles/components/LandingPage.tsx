@@ -84,7 +84,6 @@ export function LandingPage({ onUploadFresh, onResumeJob }: Props) {
               margin: '0 0 14px',
             }}
           >
-            <span style={{ color: DS.fg4, fontVariantNumeric: 'tabular-nums', marginRight: 10 }}>0.1</span>
             Novo upload
           </p>
 
@@ -177,7 +176,6 @@ export function LandingPage({ onUploadFresh, onResumeJob }: Props) {
                 margin: 0,
               }}
             >
-              <span style={{ color: DS.fg4, fontVariantNumeric: 'tabular-nums', marginRight: 10 }}>0.2</span>
               Histórico
             </p>
             {jobs && jobs.length > 0 && (
