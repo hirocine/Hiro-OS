@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState } from 'react';
-import { Upload, FileText, RotateCw, AlertTriangle, Eye, ChevronRight, Edit3, X, Languages, Clock } from 'lucide-react';
+import { Upload, FileText, RotateCw, AlertTriangle, Eye, Edit3, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { parseSrt } from '../utils/parseSrt';
 import { summarizeSrt } from '../utils/analyze';
-import { Section, StatsGrid, EyebrowDot, DS, TYPO, StatValueSmall } from './shared';
+import { Section, StatsGrid, DS, TYPO, StatValueSmall } from './shared';
 import type { SrtCue } from '../types';
 
 interface Props {
@@ -365,7 +365,7 @@ export function Step1Upload({ srt, cues, fileName, parseTimeMs, cpsMax, maxChars
           {summary.emptyCueCount + summary.longLineCount + summary.highCpsCount === 0 && (
             <AlertRow
               tone="info"
-              icon={<EyebrowDot color="accent">Tudo limpo</EyebrowDot>}
+              icon={<Check size={14} strokeWidth={1.75} />}
               title="Sem avisos"
               description="O SRT já chegou bem formatado. Avance pra configurar o estilo."
               last={true}
