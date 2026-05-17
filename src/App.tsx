@@ -48,6 +48,7 @@ const ProposalPublic = lazy(() => import("./pages/ProposalPublic"));
 const ProposalDetails = lazy(() => import("./pages/ProposalDetails"));
 const ProposalOverview = lazy(() => import("./pages/ProposalOverview"));
 const NewProposal = lazy(() => import("./pages/NewProposal"));
+const Chat = lazy(() => import("./pages/Chat"));
 const PostProduction = lazy(() => import("./pages/PostProduction"));
 const PPVideoDetail = lazy(() => import("./pages/PPVideoDetail"));
 const PPVideoEditDetail = lazy(() => import("./pages/PPVideoEditDetail"));
@@ -168,6 +169,8 @@ const App = () => (
                 <Route path="tarefas" element={<RequirePermission permission="tarefas"><Tasks /></RequirePermission>} />
                 <Route path="tarefas/nova" element={<RequirePermission permission="tarefas"><TaskNew /></RequirePermission>} />
                 <Route path="tarefas/:id" element={<RequirePermission permission="tarefas"><TaskDetails /></RequirePermission>} />
+                <Route path="chat" element={<RequirePermission permission="chat"><Chat /></RequirePermission>} />
+                <Route path="chat/:conversationId" element={<RequirePermission permission="chat"><Chat /></RequirePermission>} />
                 <Route path="fornecedores" element={<Navigate to="/fornecedores/freelancers" replace />} />
                 <Route path="fornecedores/freelancers" element={<RequirePermission permission="fornecedores.freelancers"><Suppliers /></RequirePermission>} />
                 <Route path="fornecedores/freelancers/:id" element={<RequirePermission permission="fornecedores.freelancers"><SupplierDetails /></RequirePermission>} />

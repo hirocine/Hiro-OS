@@ -49,6 +49,7 @@ export type PermissionKey =
   | 'juridico.contratos'
   | 'rh.datas'
   | 'rh.wiki'
+  | 'chat'
   | 'admin';
 
 /** All known permission keys (handy for iteration / seed). */
@@ -81,6 +82,7 @@ export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'juridico.contratos',
   'rh.datas',
   'rh.wiki',
+  'chat',
   'admin',
 ];
 
@@ -124,6 +126,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     politicas: true,
     'rh.datas': true,
     'rh.wiki': true,
+    chat: true,
   },
   marketing: {
     home: true,
@@ -137,6 +140,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     politicas: true,
     'rh.datas': true,
     'rh.wiki': true,
+    chat: true,
   },
   comercial: {
     home: true,
@@ -151,6 +155,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     politicas: true,
     'rh.datas': true,
     'rh.wiki': true,
+    chat: true,
   },
   edicao: {
     home: true,
@@ -164,6 +169,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     politicas: true,
     'rh.datas': true,
     'rh.wiki': true,
+    chat: true,
   },
   financeiro: {
     home: true,
@@ -177,6 +183,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     politicas: true,
     'rh.datas': true,
     'rh.wiki': true,
+    chat: true,
   },
   user: {
     home: true,
@@ -185,12 +192,14 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RoleMap> = {
     politicas: true,
     'rh.datas': true,
     'rh.wiki': true,
+    chat: true,
   },
   convidado: {
     home: true,
     inbox: true,
     'rh.datas': true,
     'rh.wiki': true,
+    chat: true,
   },
 };
 
