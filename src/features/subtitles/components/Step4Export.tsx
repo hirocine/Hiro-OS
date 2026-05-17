@@ -200,9 +200,11 @@ export function Step4Export({ beforeCues, afterCues, style, format, fileName, on
         <SectHead ix="4.2" title="Opções do arquivo" />
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 24 }}>
           <div>
-            <label style={{ display: 'block', fontFamily: TYPO.display, fontSize: 10, fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: DS.fg4, marginBottom: 6 }}>
-              Nome do arquivo
-            </label>
+            <div style={{ display: 'flex', alignItems: 'center', height: 24, marginBottom: 8 }}>
+              <label style={{ fontFamily: TYPO.display, fontSize: 10, fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: DS.fg4 }}>
+                Nome do arquivo
+              </label>
+            </div>
             <div style={{ display: 'flex', border: `1px solid ${DS.line2}`, background: DS.bg, alignItems: 'stretch' }}>
               <input
                 type="text"
@@ -229,7 +231,7 @@ export function Step4Export({ beforeCues, afterCues, style, format, fileName, on
           </div>
 
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, height: 24, marginBottom: 8 }}>
               <span style={{ fontFamily: TYPO.display, fontSize: 10, fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: DS.fg4 }}>
                 Prévia do arquivo
               </span>
