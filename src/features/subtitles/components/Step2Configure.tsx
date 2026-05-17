@@ -1,8 +1,7 @@
-import { useMemo, useState } from 'react';
-import { ChevronDown, BookmarkPlus, Trash2, RotateCcw, Save, Eye, EyeOff, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, BookmarkPlus, Trash2, RotateCcw, Save, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { DS, TYPO } from './shared';
-import { LivePreview, wrapLines } from './LivePreview';
 import {
   useSubtitlePresets,
   useCreatePreset,
@@ -16,18 +15,13 @@ import {
   LANGUAGE_LABELS,
   ASPECT_LABELS,
   ASPECT_HINTS,
-  ASPECT_RESOLUTION,
-  TONE_LABELS,
   type AspectRatio,
-  type Casing,
-  type SubtitlePosition,
-  type Tone,
   type SubtitlePreset,
   type SubtitleStyle,
   type SupportedLanguage,
   type SrtCue,
 } from '../types';
-import { cueStats, estimateCost, estimateTime } from '../utils/analyze';
+import { estimateCost, estimateTime } from '../utils/analyze';
 
 interface Props {
   cues: SrtCue[];
@@ -56,17 +50,9 @@ export function Step2Configure({ cues, sourceLanguage, targetLanguage, style, gl
   const updatePreset = useUpdatePreset();
   const deletePreset = useDeletePreset();
 
-  const [cueIdx, setCueIdx] = useState(0);
-  const [showSafeArea, setShowSafeArea] = useState(true);
   const [showSaveBox, setShowSaveBox] = useState(false);
   const [savingName, setSavingName] = useState('');
   const [glossaryInput, setGlossaryInput] = useState('');
-
-  const currentCue = cues[cueIdx] ?? cues[0];
-  const wrappedSample = useMemo(
-    () => (currentCue ? wrapLines(currentCue.text, style.chars_per_line, style.max_lines) : 'a gente faz filme'),
-    [currentCue, style.chars_per_line, style.max_lines],
-  );
 
   const selected = (presets ?? []).find((p) => p.id === selectedPresetId) ?? null;
   const isModified = selected && baselineStyle ? !stylesEqual(baselineStyle, style) : false;
@@ -158,13 +144,9 @@ export function Step2Configure({ cues, sourceLanguage, targetLanguage, style, gl
     setGlossaryInput('');
   };
 
-  const stats = currentCue ? cueStats(currentCue) : null;
-  const lineChars = wrappedSample.split('\n').map((l) => l.length);
-
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 460px', minHeight: 0 }}>
-      {/* CONFIG */}
-      <div style={{ minWidth: 0, borderRight: `1px solid ${DS.line1}`, overflowY: 'auto' }}>
+    <div style={{ minHeight: 0 }}>
+      <div style={{ minWidth: 0 }}>
         {/* 2.1 IDIOMAS */}
         <CfgBlock ix="2.1" title="Idiomas" description="Como a Hiro lê o áudio e em que idioma escreve a legenda. Mantenha igual pra revisão; troque pra gerar uma versão traduzida.">
           <FldGrid cols={2}>
@@ -411,86 +393,9 @@ export function Step2Configure({ cues, sourceLanguage, targetLanguage, style, gl
           )}
         </CfgBlock>
 
-        {/* 2.4 ESTILO */}
+        {/* 2.4 GLOSSÁRIO */}
         <CfgBlock
           ix="2.4"
-          title="Estilo da legenda"
-          description={<>Aspectos visuais e regras de leitura. Alterar qualquer coisa aqui marca o preset como <strong style={{ fontFamily: TYPO.display, color: DS.fg1 }}>modificado</strong>.</>}
-        >
-          {/* A LAYOUT */}
-          <Group letter="A" title="Layout" subtitle="chars · linhas · CPS · posição">
-            <FldGrid cols={4}>
-              <Fld label="Chars / linha">
-                <NumberInput value={style.chars_per_line} min={10} max={80} onChange={(v) => setStyle({ ...style, chars_per_line: v })} />
-              </Fld>
-              <Fld label="Máx. linhas">
-                <NumberInput value={style.max_lines} min={1} max={4} onChange={(v) => setStyle({ ...style, max_lines: v })} />
-              </Fld>
-              <Fld label="CPS máx">
-                <NumberInput value={style.cps_max} min={8} max={30} onChange={(v) => setStyle({ ...style, cps_max: v })} suffix="c/s" />
-              </Fld>
-              <Fld label="Posição">
-                <Segmented
-                  value={style.position}
-                  options={[
-                    { value: 'top', label: 'Topo' },
-                    { value: 'middle', label: 'Centro' },
-                    { value: 'bottom', label: 'Rodapé' },
-                  ]}
-                  onChange={(v) => setStyle({ ...style, position: v as SubtitlePosition })}
-                />
-              </Fld>
-            </FldGrid>
-            <div style={{ marginTop: 14 }}>
-              <Fld label={`Margem do ${style.position === 'top' ? 'topo' : style.position === 'middle' ? 'centro' : 'rodapé'} · safe`}>
-                <SliderRow value={style.margin_v} min={0} max={25} unit="%" onChange={(v) => setStyle({ ...style, margin_v: v })} />
-              </Fld>
-            </div>
-          </Group>
-
-          {/* B TIPOGRAFIA — simplificado */}
-          <Group letter="B" title="Tipografia" subtitle="tamanho · tracking · casing · largura">
-            <FldGrid cols={4}>
-              <Fld label="Tamanho (px)">
-                <NumberInput value={style.font_size} min={10} max={96} onChange={(v) => setStyle({ ...style, font_size: v })} suffix="px" />
-              </Fld>
-              <Fld label="Tracking">
-                <SliderRow value={style.tracking} min={-20} max={20} unit="" onChange={(v) => setStyle({ ...style, tracking: v })} />
-              </Fld>
-              <Fld label="Casing">
-                <Segmented
-                  value={style.casing}
-                  options={[
-                    { value: 'sentence', label: 'Sentence' },
-                    { value: 'literal', label: 'Literal' },
-                    { value: 'upper', label: 'CAIXA' },
-                  ]}
-                  onChange={(v) => setStyle({ ...style, casing: v as Casing })}
-                />
-              </Fld>
-              <Fld label="Largura máxima">
-                <SliderRow value={style.max_width} min={40} max={100} unit="%" onChange={(v) => setStyle({ ...style, max_width: v })} />
-              </Fld>
-            </FldGrid>
-            <p style={{ marginTop: 12, fontSize: 11, color: DS.fg4, fontFamily: TYPO.text }}>
-              Fonte fixa: <strong style={{ fontFamily: TYPO.display, fontWeight: 500, color: DS.fg3 }}>Helvetica Now Display Bold</strong> · cor branca · sem outline, sombra ou caixa.
-            </p>
-          </Group>
-
-          {/* C TOM */}
-          <Group letter="C" title="Tom da revisão" subtitle="como a Hiro escreve">
-            <Segmented
-              fullWidth
-              value={style.tone}
-              options={(['editorial', 'neutral', 'casual', 'literal'] as Tone[]).map((t) => ({ value: t, label: TONE_LABELS[t] }))}
-              onChange={(v) => setStyle({ ...style, tone: v as Tone })}
-            />
-          </Group>
-        </CfgBlock>
-
-        {/* 2.5 GLOSSÁRIO */}
-        <CfgBlock
-          ix="2.5"
           title="Glossário"
           description={<>Termos que <strong style={{ fontFamily: TYPO.display, color: DS.fg1 }}>não devem ser alterados</strong> pela revisão — nomes próprios, marcas, jargões. Pressione <kbd style={{ fontFamily: DS.mono, background: DS.surface2, padding: '1px 5px', border: `1px solid ${DS.line1}`, fontSize: 10 }}>⏎</kbd> para adicionar.</>}
           info={`${glossary.length} termo${glossary.length === 1 ? '' : 's'}`}
@@ -570,112 +475,6 @@ export function Step2Configure({ cues, sourceLanguage, targetLanguage, style, gl
           </div>
         </CfgBlock>
       </div>
-
-      {/* PREVIEW */}
-      <div style={{ display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100%', maxHeight: 'calc(100vh - 200px)', minHeight: 600 }}>
-        <div
-          style={{
-            height: 50,
-            padding: '0 24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            borderBottom: `1px solid ${DS.line1}`,
-            background: DS.bg,
-            flexShrink: 0,
-          }}
-        >
-          <span style={{ fontFamily: TYPO.display, fontSize: 10, fontWeight: 500, letterSpacing: '0.16em', textTransform: 'uppercase', color: DS.fg3 }}>
-            Preview ao vivo
-          </span>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '3px 8px',
-              background: DS.accentSoft,
-              color: DS.accentDeep,
-              fontFamily: TYPO.display,
-              fontSize: 10,
-              fontWeight: 500,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              border: `1px solid hsl(var(--ds-accent) / 0.25)`,
-            }}
-          >
-            {style.aspect_ratio} · {ASPECT_RESOLUTION[style.aspect_ratio]}
-          </span>
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-            {currentCue && (
-              <span style={{ fontFamily: DS.mono, fontSize: 11, color: DS.fg2, fontVariantNumeric: 'tabular-nums' }}>
-                {currentCue.startStr.slice(0, 8)} → {currentCue.endStr.slice(0, 8)}
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={() => setShowSafeArea((v) => !v)}
-              title="Safe area"
-              style={{
-                width: 28,
-                height: 28,
-                display: 'grid',
-                placeItems: 'center',
-                color: showSafeArea ? DS.fg1 : DS.fg3,
-                border: `1px solid ${DS.line2}`,
-                background: showSafeArea ? DS.surface : 'transparent',
-                cursor: 'pointer',
-              }}
-            >
-              {showSafeArea ? <Eye size={12} strokeWidth={1.5} /> : <EyeOff size={12} strokeWidth={1.5} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Stage */}
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 24,
-            background: `repeating-linear-gradient(45deg, ${DS.surface} 0 6px, ${DS.surface2} 6px 12px)`,
-            minHeight: 0,
-          }}
-        >
-          <LivePreview style={style} text={wrappedSample} showSafeArea={showSafeArea} width={400} />
-        </div>
-
-        {/* Cue nav */}
-        <div style={{ borderTop: `1px solid ${DS.line1}`, background: DS.bg, flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', padding: '10px 20px', gap: 14, borderBottom: `1px solid ${DS.line1}` }}>
-            <div style={{ display: 'flex', border: `1px solid ${DS.line2}` }}>
-              <NavBtn onClick={() => setCueIdx((i) => Math.max(0, i - 1))} disabled={cueIdx === 0}>
-                <ChevronLeft size={13} strokeWidth={1.5} />
-              </NavBtn>
-              <NavBtn onClick={() => setCueIdx((i) => Math.min(cues.length - 1, i + 1))} disabled={cueIdx >= cues.length - 1} last>
-                <ChevronRight size={13} strokeWidth={1.5} />
-              </NavBtn>
-            </div>
-            <span style={{ fontFamily: TYPO.display, fontWeight: 500, fontSize: 12, color: DS.fg1, fontVariantNumeric: 'tabular-nums' }}>
-              CUE {String((currentCue?.index ?? 1)).padStart(3, '0')}
-              <span style={{ color: DS.fg4, fontWeight: 400, marginLeft: 6 }}>
-                de {cues.length}
-              </span>
-            </span>
-            <span style={{ flex: 1, height: 4, background: DS.surface3, position: 'relative', margin: '0 8px' }}>
-              <span style={{ position: 'absolute', left: 0, top: 0, bottom: 0, background: DS.accent, width: `${((cueIdx + 1) / Math.max(1, cues.length)) * 100}%` }} />
-            </span>
-          </div>
-          {/* Line stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
-            <LineStat label={`Linha 1 · ${lineChars[0] ?? 0} chars`} value={lineChars[0] ?? 0} max={style.chars_per_line} />
-            <LineStat label={`Linha 2 · ${lineChars[1] ?? 0} chars`} value={lineChars[1] ?? 0} max={style.chars_per_line} />
-            <LineStat label="CPS desta cue" value={stats?.cps ?? 0} max={style.cps_max} decimals={1} last />
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -707,40 +506,6 @@ function CfgBlock({ ix, title, description, info, children }: { ix: string; titl
         {info && (
           <span style={{ fontFamily: TYPO.display, fontSize: 10, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase', color: DS.fg4, flexShrink: 0 }}>
             {info}
-          </span>
-        )}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function Group({ letter, title, subtitle, children }: { letter: string; title: string; subtitle?: string; children: React.ReactNode }) {
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 14 }}>
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 18,
-            height: 18,
-            background: DS.surface2,
-            color: DS.fg2,
-            fontFamily: TYPO.display,
-            fontWeight: 500,
-            fontSize: 9,
-          }}
-        >
-          {letter}
-        </span>
-        <span style={{ fontFamily: TYPO.display, fontWeight: 500, fontSize: 13, letterSpacing: '-0.005em', color: DS.fg1 }}>
-          {title}
-        </span>
-        {subtitle && (
-          <span style={{ marginLeft: 'auto', fontFamily: TYPO.display, fontSize: 10, fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: DS.fg4 }}>
-            {subtitle}
           </span>
         )}
       </div>
@@ -791,105 +556,6 @@ function NativeSelect({ value, onChange, children }: { value: string; onChange: 
   );
 }
 
-function NumberInput({ value, min, max, onChange, suffix, disabled }: { value: number; min: number; max: number; onChange: (v: number) => void; suffix?: string; disabled?: boolean }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'stretch', border: `1px solid ${DS.line2}`, background: disabled ? DS.surface : DS.bg, opacity: disabled ? 0.5 : 1 }}>
-      <input
-        type="number"
-        value={value}
-        min={min}
-        max={max}
-        disabled={disabled}
-        onChange={(e) => {
-          const n = Number(e.target.value);
-          if (Number.isFinite(n)) onChange(Math.min(max, Math.max(min, n)));
-        }}
-        style={{
-          flex: 1,
-          padding: '0 0 0 10px',
-          height: 32,
-          fontSize: 13,
-          fontFamily: TYPO.text,
-          fontVariantNumeric: 'tabular-nums',
-          background: 'transparent',
-          border: 'none',
-          color: DS.fg1,
-          outline: 'none',
-          width: 0,
-          minWidth: 0,
-        }}
-      />
-      {suffix && (
-        <span style={{ display: 'inline-flex', alignItems: 'center', padding: '0 8px', fontSize: 10, color: DS.fg4, fontFamily: TYPO.text, fontWeight: 500, letterSpacing: '0.04em' }}>
-          {suffix}
-        </span>
-      )}
-    </div>
-  );
-}
-
-function SliderRow({ value, min, max, unit, onChange }: { value: number; min: number; max: number; unit: string; onChange: (v: number) => void }) {
-  const pct = ((value - min) / (max - min)) * 100;
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, height: 32 }}>
-      <span style={{ fontFamily: TYPO.display, fontWeight: 500, fontSize: 12, color: DS.fg1, fontVariantNumeric: 'tabular-nums', minWidth: 38 }}>
-        {value} {unit && <small style={{ color: DS.fg4, fontWeight: 400 }}>{unit}</small>}
-      </span>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        style={{ flex: 1, accentColor: DS.fg1, height: 4 }}
-      />
-      <span style={{ fontFamily: TYPO.display, fontSize: 11, color: DS.fg4, fontWeight: 500, fontVariantNumeric: 'tabular-nums', minWidth: 44, textAlign: 'right' }}>
-        {min} → {max}
-      </span>
-    </div>
-  );
-}
-
-function Segmented<T extends string>({ value, options, onChange, fullWidth }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; fullWidth?: boolean }) {
-  return (
-    <div
-      style={{
-        display: 'inline-flex',
-        width: fullWidth ? '100%' : undefined,
-        border: `1px solid ${DS.line2}`,
-      }}
-    >
-      {options.map((opt, i) => {
-        const isOn = value === opt.value;
-        return (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => onChange(opt.value)}
-            style={{
-              flex: fullWidth ? 1 : undefined,
-              height: 32,
-              padding: '0 12px',
-              fontFamily: TYPO.display,
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: '0.04em',
-              color: isOn ? DS.bg : DS.fg2,
-              background: isOn ? DS.fg1 : DS.bg,
-              border: 'none',
-              borderRight: i < options.length - 1 ? `1px solid ${DS.line2}` : 'none',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {opt.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 function SmallActionBtn({ icon, children, onClick, last, primary }: { icon?: React.ReactNode; children: React.ReactNode; onClick: () => void; last?: boolean; primary?: boolean }) {
   return (
     <button
@@ -927,79 +593,6 @@ function SmallActionBtn({ icon, children, onClick, last, primary }: { icon?: Rea
       {icon}
       {children}
     </button>
-  );
-}
-
-function NavBtn({ children, onClick, disabled, last }: { children: React.ReactNode; onClick: () => void; disabled?: boolean; last?: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        width: 28,
-        height: 28,
-        display: 'grid',
-        placeItems: 'center',
-        color: DS.fg3,
-        borderRight: last ? 'none' : `1px solid ${DS.line2}`,
-        background: 'transparent',
-        border: 'none',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        opacity: disabled ? 0.4 : 1,
-        transition: 'color 120ms, background 120ms',
-      }}
-    >
-      {children}
-    </button>
-  );
-}
-
-function LineStat({ label, value, max, decimals, last }: { label: string; value: number; max: number; decimals?: number; last?: boolean }) {
-  const isOk = value <= max;
-  return (
-    <div
-      style={{
-        padding: '10px 16px',
-        borderRight: last ? 'none' : `1px solid ${DS.line1}`,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 3,
-        minWidth: 0,
-      }}
-    >
-      <span
-        style={{
-          fontFamily: TYPO.display,
-          fontSize: 9,
-          fontWeight: 500,
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-          color: DS.fg4,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {label}
-      </span>
-      <span style={{ fontFamily: TYPO.display, fontWeight: 500, fontSize: 13, color: DS.fg1, fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', gap: 6 }}>
-        {decimals !== undefined ? value.toFixed(decimals) : value}
-        <span style={{ fontSize: 10, color: DS.fg3, fontWeight: 400 }}>/ {max}</span>
-        <span
-          style={{
-            fontSize: 9,
-            padding: '1px 5px',
-            color: isOk ? DS.accentDeep : DS.warn,
-            background: isOk ? DS.accentSoft : 'hsl(43 89% 92%)',
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-          }}
-        >
-          {isOk ? 'OK' : 'ACIMA'}
-        </span>
-      </span>
-    </div>
   );
 }
 
