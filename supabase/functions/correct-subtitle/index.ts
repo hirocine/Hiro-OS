@@ -51,6 +51,25 @@ const SUPPORTED_LANGUAGES = Object.keys(LANGUAGE_NAMES);
 type Tone = 'editorial' | 'neutral' | 'casual' | 'literal';
 type Casing = 'sentence' | 'literal' | 'upper';
 
+// ═══════════════════════════════════════════════════════════════════════
+// ORIENTAÇÕES EDITORIAIS — preencha em PT-BR. Vão direto pro prompt.
+// Mude o texto e dê redeploy do edge function (`deploy_edge_function`)
+// pra Claude usar as novas regras.
+// ═══════════════════════════════════════════════════════════════════════
+
+const GLOBAL_GUIDELINES = `
+[orientações que valem pra qualquer formato — preencha aqui]
+`.trim();
+
+const FORMAT_GUIDELINES: Record<string, string> = {
+  '16:9': `
+[orientações específicas pra vídeo horizontal — preencha aqui]
+`.trim(),
+  '9:16': `
+[orientações específicas pra vídeo vertical — preencha aqui]
+`.trim(),
+};
+
 function buildPrompt(opts: {
   srt: string;
   aspectRatio: string;
@@ -95,6 +114,15 @@ function buildPrompt(opts: {
 - Watch the reading speed: target ≤ ${opts.cpsMax} characters per second. When a cue's CPS is significantly above ${opts.cpsMax}, you may tighten redundant words while keeping meaning.
 - Add ellipses (…) when a cue trails off into the next.`;
 
+  // Orientações editoriais do Hiro OS — vai num bloco separado pra Claude.
+  const formatGuide = FORMAT_GUIDELINES[opts.aspectRatio] ?? '';
+  const editorialGuidelines = [GLOBAL_GUIDELINES, formatGuide]
+    .filter((s) => s && !s.startsWith('['))
+    .join('\n\n');
+  const editorialBlock = editorialGuidelines
+    ? `\n<editorial-guidelines>\n${editorialGuidelines}\n</editorial-guidelines>\n\nFollow the editorial guidelines above strictly — they are the house style of the production company.\n`
+    : '';
+
   const rules = isTranslation
     ? `Rules:
 ${baseRules}
@@ -113,7 +141,7 @@ ${baseRules}
   return `You are a professional subtitle editor. ${task}
 
 ${rules}
-
+${editorialBlock}
 Output the corrected SRT in full. No commentary, no markdown fences, no preface. Start directly with "1\\n".
 
 <srt>
