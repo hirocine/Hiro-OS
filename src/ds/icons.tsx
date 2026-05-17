@@ -43,6 +43,7 @@ import {
   Gift,
   BookOpen,
   Captions,
+  MessageSquare,
   type LucideProps,
 } from "lucide-react";
 
