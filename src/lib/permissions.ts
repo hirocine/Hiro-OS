@@ -82,6 +82,7 @@ export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'juridico.contratos',
   'rh.datas',
   'rh.wiki',
+  'chat',
   'admin',
 ];
 
