@@ -132,17 +132,19 @@ function CueRow({
 
       {/* Before */}
       <div style={{ minWidth: 0 }}>
-        {isFirst && <ColLabel>Antes</ColLabel>}
+        <div style={{ visibility: isFirst ? 'visible' : 'hidden' }}>
+          <ColLabel>Antes</ColLabel>
+        </div>
         <DiffBlock before={before?.text ?? ''} after={cue.text} aiText={aiText} side="left" muted={isUnchanged} />
       </div>
 
       {/* After */}
       <div style={{ minWidth: 0 }}>
-        {isFirst && (
+        <div style={{ visibility: isFirst ? 'visible' : 'hidden' }}>
           <ColLabel highlight={isChanged}>
             {isRemoved ? 'Removida do output' : isUnchanged ? 'Sem alterações' : 'Depois'}
           </ColLabel>
-        )}
+        </div>
         {isRemoved ? (
           <div
             style={{
