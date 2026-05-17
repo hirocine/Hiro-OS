@@ -71,9 +71,9 @@ export function LandingPage({ onUploadFresh, onResumeJob }: Props) {
         }
       />
 
-      <div style={{ padding: '40px 40px 32px', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 360px', gap: 40, flex: 1, minHeight: 0 }}>
+      <div style={{ padding: '32px 40px 32px', display: 'flex', flexDirection: 'column', gap: 32, flex: 1, minHeight: 0, maxWidth: 760 }}>
         {/* DROPZONE */}
-        <div>
+        <section>
           <p
             style={{
               fontFamily: TYPO.display,
@@ -81,7 +81,7 @@ export function LandingPage({ onUploadFresh, onResumeJob }: Props) {
               fontSize: 18,
               letterSpacing: '-0.015em',
               color: DS.fg1,
-              margin: '0 0 18px',
+              margin: '0 0 14px',
             }}
           >
             <span style={{ color: DS.fg4, fontVariantNumeric: 'tabular-nums', marginRight: 10 }}>0.1</span>
@@ -102,12 +102,9 @@ export function LandingPage({ onUploadFresh, onResumeJob }: Props) {
             }}
             style={{
               display: 'flex',
-              flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center',
-              gap: 14,
-              minHeight: 280,
-              padding: '40px 24px',
+              gap: 18,
+              padding: '20px 22px',
               border: `1.5px dashed ${dragging ? DS.fg1 : DS.line2}`,
               background: dragging ? DS.surface2 : DS.surface,
               cursor: 'pointer',
@@ -127,24 +124,25 @@ export function LandingPage({ onUploadFresh, onResumeJob }: Props) {
             />
             <div
               style={{
-                width: 56,
-                height: 56,
+                width: 44,
+                height: 44,
                 display: 'grid',
                 placeItems: 'center',
                 background: DS.bg,
                 border: `1px solid ${DS.line2}`,
                 color: DS.fg2,
+                flexShrink: 0,
               }}
             >
-              <Upload size={22} strokeWidth={1.5} />
+              <Upload size={18} strokeWidth={1.5} />
             </div>
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ minWidth: 0 }}>
               <p
                 style={{
                   fontFamily: TYPO.display,
                   fontWeight: 500,
-                  fontSize: 18,
-                  letterSpacing: '-0.015em',
+                  fontSize: 14,
+                  letterSpacing: '-0.005em',
                   color: DS.fg1,
                   margin: 0,
                 }}
@@ -153,24 +151,22 @@ export function LandingPage({ onUploadFresh, onResumeJob }: Props) {
               </p>
               <p
                 style={{
-                  fontSize: 12.5,
+                  fontSize: 11.5,
                   color: DS.fg4,
-                  margin: '6px 0 0',
+                  margin: '3px 0 0',
                   fontFamily: TYPO.text,
                   lineHeight: 1.5,
                 }}
               >
-                UTF-8 detectado automaticamente · até 1 MB
-                <br />
-                Whisper, manual, exportação do Premiere/Resolve — tudo serve.
+                UTF-8 · até 1 MB · Whisper, manual, exportação do Premiere/Resolve
               </p>
             </div>
           </label>
-        </div>
+        </section>
 
         {/* HISTÓRICO */}
-        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 18 }}>
+        <section style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
             <p
               style={{
                 fontFamily: TYPO.display,
@@ -197,10 +193,10 @@ export function LandingPage({ onUploadFresh, onResumeJob }: Props) {
             <EmptyState>
               Nenhuma legenda processada ainda.
               <br />
-              <span style={{ color: DS.fg4 }}>Faça seu primeiro upload ao lado.</span>
+              <span style={{ color: DS.fg4 }}>Faça seu primeiro upload acima.</span>
             </EmptyState>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: DS.line1, border: `1px solid ${DS.line1}`, overflowY: 'auto', maxHeight: 480 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: DS.line1, border: `1px solid ${DS.line1}`, overflowY: 'auto', maxHeight: 520 }}>
               {jobs.map((job) => (
                 <JobRow
                   key={job.id}
@@ -211,7 +207,7 @@ export function LandingPage({ onUploadFresh, onResumeJob }: Props) {
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );
