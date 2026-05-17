@@ -381,7 +381,7 @@ export function WizardFooter({ hint, children }: WizardFooterProps) {
           marginLeft: 'auto',
           display: 'flex',
           alignItems: 'stretch',
-          border: `1px solid ${DS.line2}`,
+          gap: 8,
         }}
       >
         {children}
@@ -420,23 +420,24 @@ export function FooterButton({
         textTransform: 'uppercase',
         color: primary ? DS.bg : DS.fg2,
         background: primary ? DS.fg1 : DS.bg,
-        borderRight: `1px solid ${DS.line2}`,
-        border: 'none',
+        border: `1px solid ${primary ? DS.fg1 : DS.line2}`,
         display: 'inline-flex',
         alignItems: 'center',
         gap: 8,
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.5 : 1,
-        transition: 'color 120ms, background 120ms',
+        transition: 'color 120ms, background 120ms, border-color 120ms',
       }}
       onMouseEnter={(e) => {
         if (disabled) return;
         if (primary) {
           e.currentTarget.style.background = DS.accent;
           e.currentTarget.style.color = '#0A0A0A';
+          e.currentTarget.style.borderColor = DS.accent;
         } else {
           e.currentTarget.style.background = DS.surface2;
           e.currentTarget.style.color = DS.fg1;
+          e.currentTarget.style.borderColor = DS.line3;
         }
       }}
       onMouseLeave={(e) => {
@@ -444,9 +445,11 @@ export function FooterButton({
         if (primary) {
           e.currentTarget.style.background = DS.fg1;
           e.currentTarget.style.color = DS.bg;
+          e.currentTarget.style.borderColor = DS.fg1;
         } else {
           e.currentTarget.style.background = DS.bg;
           e.currentTarget.style.color = DS.fg2;
+          e.currentTarget.style.borderColor = DS.line2;
         }
       }}
     >
