@@ -63,7 +63,7 @@ export function Step3Review({ beforeCues, afterCues, aiBaselineCues, onUpdate }:
   };
 
   return (
-    <Section ix="3.1" title="Revisão" noBorder>
+    <Section ix="3.1" title="Revisão" noBorder right={<DiffLegend />}>
       <div style={{ border: `1px solid ${DS.line1}`, background: DS.surface, padding: '14px 0' }}>
         {paged.map((a, i) => (
           <CueRow
@@ -313,6 +313,37 @@ function EditableDiff({
       }}
     >
       {tokens ? tokens.map((t, i) => renderToken(t, 'right', i)) : (after || (muted ? '—' : ''))}
+    </div>
+  );
+}
+
+function DiffLegend() {
+  const items: Array<{ bg: string; fg: string; label: string }> = [
+    { bg: 'hsl(0 60% 92%)', fg: DS.danger, label: 'Removido' },
+    { bg: DS.accentSoft, fg: DS.accentDeep, label: 'Trocado pelo Claude' },
+    { bg: 'hsl(209 71% 92%)', fg: DS.info, label: 'Edição manual' },
+  ];
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 14 }}>
+      {items.map((it) => (
+        <span
+          key={it.label}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontFamily: TYPO.display,
+            fontSize: 10,
+            fontWeight: 500,
+            letterSpacing: '0.06em',
+            color: DS.fg3,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <span style={{ width: 18, height: 12, background: it.bg, border: `1px solid ${it.fg}33`, display: 'inline-block' }} />
+          {it.label}
+        </span>
+      ))}
     </div>
   );
 }
