@@ -307,8 +307,7 @@ function EditableDiff({
         lineHeight: 1.55,
         whiteSpace: 'pre-wrap',
         fontFamily: TYPO.text,
-        outline: editing ? `1px solid ${DS.fg1}` : 'none',
-        outlineOffset: editing ? 4 : 0,
+        outline: 'none',
         cursor: 'text',
       }}
     >
