@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Sparkles, Loader2, Download, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
@@ -12,7 +12,7 @@ import { Step4Export, EXPORT_OPTS } from '@/features/subtitles/components/Step4E
 import { defaultStyleForAspect } from '@/features/subtitles/hooks/useSubtitlePresets';
 import { useCorrectSubtitle } from '@/features/subtitles/hooks/useCorrectSubtitle';
 import { useCreateJob, useUpdateJob, type SubtitleJob } from '@/features/subtitles/hooks/useSubtitleJobs';
-import { parseSrt } from '@/features/subtitles/utils/parseSrt';
+import { parseSrt, stringifySrt } from '@/features/subtitles/utils/parseSrt';
 import { exportCues, downloadFile } from '@/features/subtitles/utils/export';
 import type { SrtCue, SubtitleStyle, SupportedLanguage, ExportFormat } from '@/features/subtitles/types';
 
@@ -62,12 +62,31 @@ export default function CorrecaoLegendas() {
   const createJob = useCreateJob();
   const updateJob = useUpdateJob();
 
+  // Última versão do SRT já persistida no banco — usado pelo auto-save
+  // pra não disparar updates duplicados quando o estado já está sincronizado.
+  const lastSavedSrtRef = useRef<string>('');
+
+  // Auto-save: persiste edições manuais (Step 3) no banco com debounce.
+  // Só dispara quando o conteúdo realmente muda em relação ao último salvo.
+  useEffect(() => {
+    if (!jobId || correctedCues.length === 0) return;
+    const srtNow = stringifySrt(correctedCues);
+    if (srtNow === lastSavedSrtRef.current) return;
+    const timer = setTimeout(() => {
+      updateJob.mutate({ id: jobId, patch: { corrected_srt: srtNow } });
+      lastSavedSrtRef.current = srtNow;
+    }, 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [correctedCues, jobId]);
+
   const handleUploadFresh = async (rawSrt: string, cues: SrtCue[], name: string, dt: number) => {
     setSrt(rawSrt);
     setFileName(name);
     setOriginalCues(cues);
     setCorrectedCues([]);
     setAiBaselineCues([]);
+    lastSavedSrtRef.current = '';
     setParseTimeMs(dt);
     setStep(1);
     // Persist job
@@ -92,6 +111,8 @@ export default function CorrecaoLegendas() {
     const parsedCorrected = job.corrected_srt ? parseSrt(job.corrected_srt) : [];
     setCorrectedCues(parsedCorrected);
     setAiBaselineCues(parsedCorrected);
+    // já está sincronizado com o banco — evita re-save no useEffect
+    lastSavedSrtRef.current = job.corrected_srt ?? '';
     setParseTimeMs(null);
     setJobId(job.id);
     setSourceLanguage(job.source_language);
@@ -112,6 +133,7 @@ export default function CorrecaoLegendas() {
     setOriginalCues([]);
     setCorrectedCues([]);
     setAiBaselineCues([]);
+    lastSavedSrtRef.current = '';
     setParseTimeMs(null);
     setGlossary([]);
     setStyle(defaultStyleForAspect('16:9'));
@@ -137,6 +159,8 @@ export default function CorrecaoLegendas() {
       }
       setCorrectedCues(parsed);
       setAiBaselineCues(parsed);
+      // o banco vai receber esse mesmo SRT no updateJob abaixo — evita re-save pelo auto-save
+      lastSavedSrtRef.current = correctedSrt;
       setStep(3);
       toast.success(`${parsed.length} legendas processadas`);
       if (jobId) {
