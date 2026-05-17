@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Check, Download, Copy, RefreshCw } from 'lucide-react';
+import { Download, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { DS, TYPO } from './shared';
 import { exportCues, downloadFile, type ExportOptions } from '../utils/export';
@@ -79,44 +79,32 @@ export function Step4Export({ beforeCues, afterCues, style, fileNameBase }: Prop
       {/* SUCCESS BANNER */}
       <div
         style={{
-          padding: '36px 40px',
+          padding: '32px 40px',
           borderBottom: `1px solid ${DS.line1}`,
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 22,
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1fr) auto',
+          alignItems: 'center',
+          gap: 40,
         }}
       >
-        <div
-          style={{
-            width: 56,
-            height: 56,
-            display: 'grid',
-            placeItems: 'center',
-            background: DS.accent,
-            color: '#0A0A0A',
-            flexShrink: 0,
-          }}
-        >
-          <Check size={26} strokeWidth={2} />
-        </div>
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <p style={{ fontFamily: TYPO.display, fontSize: 10, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase', color: DS.accentDeep, margin: '0 0 6px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontFamily: TYPO.display, fontSize: 10, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase', color: DS.accentDeep, margin: '0 0 8px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             <span style={{ width: 6, height: 6, background: DS.accent, display: 'inline-block' }} />
             Revisão concluída
           </p>
-          <h2 style={{ fontFamily: TYPO.display, fontWeight: 500, fontSize: 28, letterSpacing: '-0.02em', margin: '0 0 8px', color: DS.fg1 }}>
+          <h2 style={{ fontFamily: TYPO.display, fontWeight: 500, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 8px', color: DS.fg1 }}>
             Legendas prontas pra exportar
           </h2>
-          <p style={{ margin: '0 0 16px', fontSize: 13.5, color: DS.fg3, fontFamily: TYPO.text, lineHeight: 1.55, maxWidth: '62ch' }}>
+          <p style={{ margin: 0, fontSize: 13.5, color: DS.fg3, fontFamily: TYPO.text, lineHeight: 1.55, maxWidth: '62ch' }}>
             {finalStats.final} cues processadas, {finalStats.changed} alteradas{finalStats.removed > 0 ? `, ${finalStats.removed} removidas` : ''}.
             CPS médio agora em {finalStats.avgCps.toFixed(1)}. Escolha o formato e baixe.
           </p>
-          <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-            <SuccStat label="Cues finais" value={String(finalStats.final)} />
-            <SuccStat label="Alteradas" value={String(finalStats.changed)} accent />
-            <SuccStat label="CPS médio" value={finalStats.avgCps.toFixed(1)} accent />
-            <SuccStat label="Duração" value={finalStats.duration} />
-          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap', alignSelf: 'center' }}>
+          <SuccStat label="Cues finais" value={String(finalStats.final)} />
+          <SuccStat label="Alteradas" value={String(finalStats.changed)} accent />
+          <SuccStat label="CPS médio" value={finalStats.avgCps.toFixed(1)} accent />
+          <SuccStat label="Duração" value={finalStats.duration} />
         </div>
       </div>
 
@@ -360,11 +348,9 @@ export function Step4Export({ beforeCues, afterCues, style, fileNameBase }: Prop
 
 function SectHead({ ix, title, info }: { ix: string; title: string; info?: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 18 }}>
-      <span style={{ fontFamily: TYPO.display, fontSize: 10, fontWeight: 500, letterSpacing: '0.16em', color: DS.fg4, fontVariantNumeric: 'tabular-nums' }}>
-        {ix}
-      </span>
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 18 }}>
       <h2 style={{ fontFamily: TYPO.display, fontWeight: 500, fontSize: 18, letterSpacing: '-0.015em', color: DS.fg1, margin: 0 }}>
+        <span style={{ marginRight: 8, letterSpacing: 0 }}>{ix}</span>
         {title}
       </h2>
       {info && (
