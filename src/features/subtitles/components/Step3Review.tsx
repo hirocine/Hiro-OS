@@ -114,9 +114,8 @@ function CueRow({
       style={{
         display: 'grid',
         gridTemplateColumns: '140px minmax(0, 1fr) minmax(0, 1fr)',
-        padding: '14px 18px',
+        padding: isFirst ? '14px 18px' : '6px 18px',
         gap: 18,
-        borderTop: isFirst ? 'none' : `1px solid ${DS.line1}`,
       }}
     >
       {/* Side compacta */}
@@ -133,15 +132,17 @@ function CueRow({
 
       {/* Before */}
       <div style={{ minWidth: 0 }}>
-        <ColLabel>Antes</ColLabel>
+        {isFirst && <ColLabel>Antes</ColLabel>}
         <DiffBlock before={before?.text ?? ''} after={cue.text} aiText={aiText} side="left" muted={isUnchanged} />
       </div>
 
       {/* After */}
       <div style={{ minWidth: 0 }}>
-        <ColLabel highlight={isChanged}>
-          {isRemoved ? 'Removida do output' : isUnchanged ? 'Sem alterações' : 'Depois'}
-        </ColLabel>
+        {isFirst && (
+          <ColLabel highlight={isChanged}>
+            {isRemoved ? 'Removida do output' : isUnchanged ? 'Sem alterações' : 'Depois'}
+          </ColLabel>
+        )}
         {isRemoved ? (
           <div
             style={{
