@@ -48,6 +48,7 @@ const ProposalPublic = lazy(() => import("./pages/ProposalPublic"));
 const ProposalDetails = lazy(() => import("./pages/ProposalDetails"));
 const ProposalOverview = lazy(() => import("./pages/ProposalOverview"));
 const NewProposal = lazy(() => import("./pages/NewProposal"));
+const Chat = lazy(() => import("./pages/Chat"));
 const PostProduction = lazy(() => import("./pages/PostProduction"));
 const PPVideoDetail = lazy(() => import("./pages/PPVideoDetail"));
 const PPVideoEditDetail = lazy(() => import("./pages/PPVideoEditDetail"));
