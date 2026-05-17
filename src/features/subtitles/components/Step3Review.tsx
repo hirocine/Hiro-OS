@@ -64,7 +64,7 @@ export function Step3Review({ beforeCues, afterCues, aiBaselineCues, onUpdate }:
 
   return (
     <Section ix="3.1" title="Revisão" noBorder>
-      <div style={{ border: `1px solid ${DS.line1}`, background: DS.surface }}>
+      <div style={{ border: `1px solid ${DS.line1}`, background: DS.surface, padding: '14px 0' }}>
         {paged.map((a, i) => (
           <CueRow
             key={a.cue.index}
@@ -114,7 +114,7 @@ function CueRow({
       style={{
         display: 'grid',
         gridTemplateColumns: '140px minmax(0, 1fr) minmax(0, 1fr)',
-        padding: isFirst ? '14px 18px' : '6px 18px',
+        padding: '6px 18px',
         gap: 18,
       }}
     >
