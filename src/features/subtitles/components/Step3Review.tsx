@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Check, X, Edit3, RotateCcw, Search, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
+import { Check, X, Edit3, RotateCcw, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { DS, TYPO } from './shared';
 import { wordDiff, hasDiff, type DiffToken } from '../utils/diff';
 import { classifyChange, cueStats, CHANGE_TAG_LABELS, CHANGE_TAG_COLORS, type ChangeTag } from '../utils/analyze';
@@ -11,8 +11,6 @@ interface Props {
   glossary: string[];
   onUpdate: (cues: SrtCue[]) => void;
 }
-
-type StatusFilter = 'all' | 'changed' | 'unchanged' | 'removed';
 
 const PAGE_SIZE = 8;
 
@@ -27,9 +25,6 @@ interface AnnotatedCue {
 }
 
 export function Step3Review({ beforeCues, afterCues, glossary, onUpdate }: Props) {
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [typeFilters, setTypeFilters] = useState<Set<ChangeTag>>(new Set());
-  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState<string[]>([]);
@@ -43,7 +38,6 @@ export function Step3Review({ beforeCues, afterCues, glossary, onUpdate }: Props
   const annotated = useMemo<AnnotatedCue[]>(() => {
     return afterCues.map((c) => {
       const before = beforeByIdx.get(c.index);
-      const isRemoved = before ? cueStats(before).isEmpty && !cueStats(c).isEmpty : false;
       const isEmptyAfter = cueStats(c).isEmpty;
       const isChanged = before ? hasDiff(before.text, c.text) : false;
       const cpsBefore = before ? cueStats(before).cps : 0;
@@ -61,41 +55,9 @@ export function Step3Review({ beforeCues, afterCues, glossary, onUpdate }: Props
     });
   }, [afterCues, beforeByIdx, glossary]);
 
-  const stats = useMemo(() => {
-    let changed = 0;
-    let unchanged = 0;
-    let removed = 0;
-    const byType: Record<ChangeTag, number> = {
-      pontuacao: 0, quebra: 0, casing: 0, glossario: 0, acentos: 0, cps: 0, removida: 0,
-    };
-    annotated.forEach((a) => {
-      if (a.isRemoved) removed++;
-      else if (a.isChanged) changed++;
-      else unchanged++;
-      a.tags.forEach((t) => byType[t]++);
-    });
-    return { total: annotated.length, changed, unchanged, removed, byType };
-  }, [annotated]);
-
-  const filtered = useMemo(() => {
-    return annotated.filter((a) => {
-      if (statusFilter === 'changed' && !a.isChanged) return false;
-      if (statusFilter === 'unchanged' && (a.isChanged || a.isRemoved)) return false;
-      if (statusFilter === 'removed' && !a.isRemoved) return false;
-      if (typeFilters.size > 0 && !a.tags.some((t) => typeFilters.has(t))) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        const tBefore = a.before?.text.toLowerCase() ?? '';
-        const tAfter = a.cue.text.toLowerCase();
-        if (!tBefore.includes(q) && !tAfter.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [annotated, statusFilter, typeFilters, search]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(annotated.length / PAGE_SIZE));
   const visiblePage = Math.min(page, totalPages);
-  const paged = filtered.slice((visiblePage - 1) * PAGE_SIZE, visiblePage * PAGE_SIZE);
+  const paged = annotated.slice((visiblePage - 1) * PAGE_SIZE, visiblePage * PAGE_SIZE);
 
   const startEdit = (cue: SrtCue) => {
     setEditingIdx(cue.index);
@@ -115,107 +77,8 @@ export function Step3Review({ beforeCues, afterCues, glossary, onUpdate }: Props
     onUpdate(afterCues.map((c) => (c.index === cue.index ? { ...c, text: before.text } : c)));
   };
 
-  const toggleType = (t: ChangeTag) => {
-    setTypeFilters((prev) => {
-      const next = new Set(prev);
-      if (next.has(t)) next.delete(t);
-      else next.add(t);
-      return next;
-    });
-    setPage(1);
-  };
-
   return (
     <>
-      {/* FILTER BAR */}
-      <div
-        style={{
-          padding: '14px 40px',
-          borderBottom: `1px solid ${DS.line1}`,
-          background: DS.surface,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          flexWrap: 'wrap',
-        }}
-      >
-        <FilterGroup>
-          <FilterChip active={statusFilter === 'all'} onClick={() => { setStatusFilter('all'); setPage(1); }}>
-            Todas <Count>{stats.total}</Count>
-          </FilterChip>
-          <FilterChip active={statusFilter === 'changed'} onClick={() => { setStatusFilter('changed'); setPage(1); }}>
-            Alteradas <Count>{stats.changed}</Count>
-          </FilterChip>
-          <FilterChip active={statusFilter === 'unchanged'} onClick={() => { setStatusFilter('unchanged'); setPage(1); }}>
-            Mantidas <Count>{stats.unchanged}</Count>
-          </FilterChip>
-          <FilterChip active={statusFilter === 'removed'} onClick={() => { setStatusFilter('removed'); setPage(1); }}>
-            Removidas <Count>{stats.removed}</Count>
-          </FilterChip>
-        </FilterGroup>
-
-        <span style={{ width: 1, height: 22, background: DS.line2 }} />
-
-        <FilterGroup>
-          {(['pontuacao', 'quebra', 'casing', 'glossario', 'acentos', 'cps'] as ChangeTag[]).map((t) => (
-            <FilterChip
-              key={t}
-              active={typeFilters.has(t)}
-              onClick={() => toggleType(t)}
-              dotColor={CHANGE_TAG_COLORS[t].fg}
-            >
-              {CHANGE_TAG_LABELS[t]} <Count>{stats.byType[t]}</Count>
-            </FilterChip>
-          ))}
-        </FilterGroup>
-
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '6px 10px',
-            border: `1px solid ${DS.line2}`,
-            background: DS.bg,
-            flex: 1,
-            maxWidth: 280,
-          }}
-        >
-          <Search size={13} strokeWidth={1.5} style={{ color: DS.fg3 }} />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Buscar no texto…"
-            style={{
-              flex: 1,
-              border: 'none',
-              outline: 'none',
-              fontSize: 12,
-              fontFamily: TYPO.text,
-              color: DS.fg1,
-              background: 'transparent',
-              minWidth: 0,
-            }}
-          />
-        </div>
-
-        <span
-          style={{
-            marginLeft: 'auto',
-            fontSize: 11,
-            color: DS.fg4,
-            fontFamily: TYPO.display,
-            letterSpacing: '0.04em',
-          }}
-        >
-          Mostrando <strong style={{ fontWeight: 500, color: DS.fg1 }}>{paged.length === 0 ? 0 : (visiblePage - 1) * PAGE_SIZE + 1}–{Math.min(visiblePage * PAGE_SIZE, filtered.length)}</strong> de <strong style={{ fontWeight: 500, color: DS.fg1 }}>{filtered.length}</strong>
-        </span>
-      </div>
-
       {/* CUE LIST */}
       <div style={{ padding: '20px 40px', display: 'flex', flexDirection: 'column', gap: 1, background: DS.line1 }}>
         {paged.map((a) => (
@@ -600,58 +463,6 @@ function TagPill({ tag }: { tag: ChangeTag }) {
     >
       <span style={{ width: 4, height: 4, background: c.fg, display: 'inline-block' }} />
       {CHANGE_TAG_LABELS[tag]}
-    </span>
-  );
-}
-
-function FilterGroup({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: 'inline-flex', gap: 0, border: `1px solid ${DS.line2}` }}>{children}</div>;
-}
-
-function FilterChip({
-  active,
-  onClick,
-  children,
-  dotColor,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  dotColor?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        height: 28,
-        padding: '0 10px',
-        fontFamily: TYPO.display,
-        fontSize: 10,
-        fontWeight: 500,
-        letterSpacing: '0.12em',
-        textTransform: 'uppercase',
-        color: active ? DS.bg : DS.fg2,
-        background: active ? DS.fg1 : DS.bg,
-        border: 'none',
-        borderRight: `1px solid ${DS.line2}`,
-        cursor: 'pointer',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {dotColor && <span style={{ width: 6, height: 6, background: dotColor, display: 'inline-block' }} />}
-      {children}
-    </button>
-  );
-}
-
-function Count({ children }: { children: React.ReactNode }) {
-  return (
-    <span style={{ marginLeft: 6, fontSize: 9, color: 'currentColor', opacity: 0.6, fontVariantNumeric: 'tabular-nums' }}>
-      {children}
     </span>
   );
 }
