@@ -306,29 +306,27 @@ function EditableDiff({
 }
 
 function DiffLegend() {
-  const items: Array<{ bg: string; fg: string; label: string }> = [
-    { bg: 'hsl(0 60% 92%)', fg: DS.danger, label: 'Removido' },
-    { bg: DS.accentSoft, fg: DS.accentDeep, label: 'Trocado pelo Claude' },
-    { bg: 'hsl(209 71% 92%)', fg: DS.info, label: 'Edição manual' },
+  const items: Array<{ dot: string; label: string }> = [
+    { dot: DS.danger, label: 'Removido' },
+    { dot: DS.accent, label: 'Trocado pelo Claude' },
+    { dot: DS.info, label: 'Edição manual' },
   ];
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 14 }}>
-      {items.map((it) => (
-        <span
-          key={it.label}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            fontFamily: TYPO.display,
-            fontSize: 10,
-            fontWeight: 500,
-            letterSpacing: '0.06em',
-            color: DS.fg3,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <span style={{ width: 18, height: 12, background: it.bg, border: `1px solid ${it.fg}33`, display: 'inline-block' }} />
+    <div
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 14,
+        fontSize: 12,
+        color: DS.fg3,
+        fontFamily: TYPO.text,
+        flexWrap: 'wrap',
+      }}
+    >
+      {items.map((it, i) => (
+        <span key={it.label} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          {i > 0 && <span style={{ color: DS.line2, marginRight: 6 }}>·</span>}
+          <span style={{ width: 6, height: 6, background: it.dot, flexShrink: 0 }} />
           {it.label}
         </span>
       ))}
