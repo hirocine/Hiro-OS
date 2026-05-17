@@ -28,7 +28,7 @@ interface Props {
   }) => void;
 }
 
-const ASPECT_OPTIONS: AspectRatio[] = ['16:9', '9:16', '1:1', '2.39:1'];
+const ASPECT_OPTIONS: AspectRatio[] = ['16:9', '9:16'];
 const LANG_OPTIONS = Object.keys(LANGUAGE_LABELS) as SupportedLanguage[];
 
 export function Step2Configure({ cues, sourceLanguage, targetLanguage, style, glossary, onChange }: Props) {
@@ -95,7 +95,7 @@ export function Step2Configure({ cues, sourceLanguage, targetLanguage, style, gl
           description={<>Onde a legenda vai aparecer. Cada formato define limites diferentes de <strong style={{ fontFamily: TYPO.display, color: DS.fg1 }}>chars por linha</strong>, <strong style={{ fontFamily: TYPO.display, color: DS.fg1 }}>posição</strong> e <strong style={{ fontFamily: TYPO.display, color: DS.fg1 }}>safe-area</strong>.</>}
           info="define defaults dos presets"
         >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
             {ASPECT_OPTIONS.map((a) => {
               const isOn = style.aspect_ratio === a;
               return (
