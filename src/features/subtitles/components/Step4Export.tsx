@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
-import { Download, Copy } from 'lucide-react';
+import { useMemo } from 'react';
+import { Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { DS, TYPO } from './shared';
-import { exportCues, downloadFile, type ExportOptions } from '../utils/export';
+import { exportCues, type ExportOptions } from '../utils/export';
 import {
   EXPORT_FORMAT_LABELS,
   EXPORT_FORMAT_EXTENSIONS,
@@ -19,19 +19,18 @@ interface Props {
   beforeCues: SrtCue[];
   afterCues: SrtCue[];
   style: SubtitleStyle;
-  fileNameBase: string;
+  format: ExportFormat;
+  fileName: string;
+  onFormatChange: (f: ExportFormat) => void;
+  onFileNameChange: (name: string) => void;
 }
 
 const FORMATS: ExportFormat[] = ['srt', 'txt'];
 
-export function Step4Export({ beforeCues, afterCues, style, fileNameBase }: Props) {
-  const [format, setFormat] = useState<ExportFormat>('srt');
-  const [fileName, setFileName] = useState(() => {
-    const base = fileNameBase.replace(/\.srt$/i, '');
-    return `${base}_revisado_v1`;
-  });
-  // Opções fixas: BOM (UTF-8) ligado pra compat Resolve/Windows, sem CRLF, renumera vazias.
-  const opts = useMemo<ExportOptions>(() => ({ bom: true, crlf: false, renumber: true }), []);
+export const EXPORT_OPTS: ExportOptions = { bom: true, crlf: false, renumber: true };
+
+export function Step4Export({ beforeCues, afterCues, style, format, fileName, onFormatChange, onFileNameChange }: Props) {
+  const opts = EXPORT_OPTS;
 
   // Stats finais
   const finalStats = useMemo(() => {
@@ -59,11 +58,6 @@ export function Step4Export({ beforeCues, afterCues, style, fileNameBase }: Prop
   );
 
   const previewLines = useMemo(() => preview.content.split('\n').slice(0, 16).join('\n'), [preview.content]);
-
-  const handleDownload = () => {
-    downloadFile(preview.content, preview.filename, preview.mime);
-    toast.success(`${preview.filename} baixado`);
-  };
 
   const handleCopy = async () => {
     try {
@@ -119,7 +113,7 @@ export function Step4Export({ beforeCues, afterCues, style, fileNameBase }: Prop
               <button
                 key={f}
                 type="button"
-                onClick={() => setFormat(f)}
+                onClick={() => onFormatChange(f)}
                 style={{
                   padding: 14,
                   background: DS.bg,
@@ -213,7 +207,7 @@ export function Step4Export({ beforeCues, afterCues, style, fileNameBase }: Prop
               <input
                 type="text"
                 value={fileName}
-                onChange={(e) => setFileName(e.target.value)}
+                onChange={(e) => onFileNameChange(e.target.value)}
                 style={{
                   flex: 1,
                   padding: '0 12px',
@@ -288,60 +282,6 @@ export function Step4Export({ beforeCues, afterCues, style, fileNameBase }: Prop
         </div>
       </div>
 
-      {/* DOWNLOAD ROW */}
-      <div style={{ padding: '24px 40px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '10px 14px',
-            border: `1px solid ${DS.line2}`,
-            background: DS.bg,
-          }}
-        >
-          <Download size={14} strokeWidth={1.5} style={{ color: DS.fg3 }} />
-          <strong style={{ fontFamily: TYPO.display, fontWeight: 500, fontSize: 13, color: DS.fg1 }}>
-            {preview.filename}
-          </strong>
-          <span style={{ color: DS.fg4, fontFamily: TYPO.text, fontSize: 12 }}>
-            · {(preview.content.length / 1024).toFixed(1)} KB · {finalStats.final} cues
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={handleDownload}
-          style={{
-            marginLeft: 'auto',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            height: 38,
-            padding: '0 22px',
-            fontFamily: TYPO.display,
-            fontSize: 11,
-            fontWeight: 500,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: DS.bg,
-            background: DS.fg1,
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'background 120ms',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = DS.accent;
-            e.currentTarget.style.color = '#0A0A0A';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = DS.fg1;
-            e.currentTarget.style.color = DS.bg;
-          }}
-        >
-          <Download size={13} strokeWidth={1.5} />
-          Baixar arquivo
-        </button>
-      </div>
     </>
   );
 }

@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Sparkles, Loader2, X } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Sparkles, Loader2, Download, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { PageHeader } from '@/ds/components/toolbar';
@@ -8,12 +8,13 @@ import { LandingPage } from '@/features/subtitles/components/LandingPage';
 import { Step1Upload } from '@/features/subtitles/components/Step1Upload';
 import { Step2Configure, step2Estimate } from '@/features/subtitles/components/Step2Configure';
 import { Step3Review } from '@/features/subtitles/components/Step3Review';
-import { Step4Export } from '@/features/subtitles/components/Step4Export';
+import { Step4Export, EXPORT_OPTS } from '@/features/subtitles/components/Step4Export';
 import { defaultStyleForAspect } from '@/features/subtitles/hooks/useSubtitlePresets';
 import { useCorrectSubtitle } from '@/features/subtitles/hooks/useCorrectSubtitle';
 import { useCreateJob, useUpdateJob, type SubtitleJob } from '@/features/subtitles/hooks/useSubtitleJobs';
 import { parseSrt } from '@/features/subtitles/utils/parseSrt';
-import type { SrtCue, SubtitleStyle, SupportedLanguage } from '@/features/subtitles/types';
+import { exportCues, downloadFile } from '@/features/subtitles/utils/export';
+import type { SrtCue, SubtitleStyle, SupportedLanguage, ExportFormat } from '@/features/subtitles/types';
 
 const STEPS = [
   { id: 1, num: '01', title: 'Upload do SRT' },
@@ -37,6 +38,25 @@ export default function CorrecaoLegendas() {
   const [targetLanguage, setTargetLanguage] = useState<SupportedLanguage>('pt-BR');
   const [style, setStyle] = useState<SubtitleStyle>(() => defaultStyleForAspect('16:9'));
   const [glossary, setGlossary] = useState<string[]>([]);
+
+  // Step 4 state (no parent pra footer poder disparar Download)
+  const [exportFormat, setExportFormat] = useState<ExportFormat>('srt');
+  const [exportName, setExportName] = useState<string>('');
+
+  // Inicializa o nome do arquivo de export quando o usuário entra no Step 4 sem nome ainda.
+  useEffect(() => {
+    if (step === 4 && !exportName && fileName) {
+      const base = fileName.replace(/\.srt$/i, '');
+      setExportName(`${base}_revisado_v1`);
+    }
+  }, [step, fileName, exportName]);
+
+  const handleDownload = () => {
+    if (!exportName) return;
+    const { content, filename, mime } = exportCues(correctedCues, style, exportFormat, exportName, EXPORT_OPTS);
+    downloadFile(content, filename, mime);
+    toast.success(`${filename} baixado`);
+  };
 
   const correct = useCorrectSubtitle();
   const createJob = useCreateJob();
@@ -225,7 +245,15 @@ export default function CorrecaoLegendas() {
         )}
 
         {step === 4 && correctedCues.length > 0 && (
-          <Step4Export beforeCues={originalCues} afterCues={correctedCues} style={style} fileNameBase={fileName ?? 'legenda.srt'} />
+          <Step4Export
+            beforeCues={originalCues}
+            afterCues={correctedCues}
+            style={style}
+            format={exportFormat}
+            fileName={exportName}
+            onFormatChange={setExportFormat}
+            onFileNameChange={setExportName}
+          />
         )}
       </div>
 
@@ -285,12 +313,23 @@ export default function CorrecaoLegendas() {
       )}
 
       {step === 4 && (
-        <WizardFooter>
+        <WizardFooter
+          hint={
+            exportName ? (
+              <>
+                <strong style={{ fontFamily: TYPO.display, fontWeight: 500, color: DS.fg1 }}>
+                  {exportName}.{exportFormat === 'srt' ? 'srt' : 'txt'}
+                </strong>
+                {' '}· {correctedCues.length} cues
+              </>
+            ) : null
+          }
+        >
           <FooterButton icon={<ChevronLeft size={12} strokeWidth={1.5} />} onClick={() => setStep(3)}>
             Voltar
           </FooterButton>
-          <FooterButton primary onClick={handleReset}>
-            Nova legenda
+          <FooterButton primary icon={<Download size={12} strokeWidth={1.5} />} onClick={handleDownload} disabled={!exportName}>
+            Baixar arquivo
           </FooterButton>
         </WizardFooter>
       )}
