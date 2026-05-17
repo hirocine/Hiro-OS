@@ -169,6 +169,8 @@ const App = () => (
                 <Route path="tarefas" element={<RequirePermission permission="tarefas"><Tasks /></RequirePermission>} />
                 <Route path="tarefas/nova" element={<RequirePermission permission="tarefas"><TaskNew /></RequirePermission>} />
                 <Route path="tarefas/:id" element={<RequirePermission permission="tarefas"><TaskDetails /></RequirePermission>} />
+                <Route path="chat" element={<RequirePermission permission="chat"><Chat /></RequirePermission>} />
+                <Route path="chat/:conversationId" element={<RequirePermission permission="chat"><Chat /></RequirePermission>} />
                 <Route path="fornecedores" element={<Navigate to="/fornecedores/freelancers" replace />} />
                 <Route path="fornecedores/freelancers" element={<RequirePermission permission="fornecedores.freelancers"><Suppliers /></RequirePermission>} />
                 <Route path="fornecedores/freelancers/:id" element={<RequirePermission permission="fornecedores.freelancers"><SupplierDetails /></RequirePermission>} />
