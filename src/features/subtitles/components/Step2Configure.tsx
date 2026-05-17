@@ -490,7 +490,7 @@ export function step2Estimate(cues: SrtCue[]) {
 
 function CfgBlock({ ix, title, description, info, children }: { ix: string; title: string; description?: React.ReactNode; info?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div style={{ padding: '24px 32px', borderBottom: `1px solid ${DS.line1}` }}>
+    <div style={{ padding: '24px 40px', borderBottom: `1px solid ${DS.line1}` }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 16 }}>
         <div style={{ minWidth: 0, flex: 1 }}>
           <h3 style={{ margin: 0, fontFamily: TYPO.display, fontWeight: 500, fontSize: 18, letterSpacing: '-0.015em', color: DS.fg1, lineHeight: 1.3 }}>
