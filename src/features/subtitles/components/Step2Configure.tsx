@@ -693,11 +693,9 @@ function CfgBlock({ ix, title, description, info, children }: { ix: string; titl
   return (
     <div style={{ padding: '24px 32px', borderBottom: `1px solid ${DS.line1}` }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 16 }}>
-        <span style={{ fontFamily: TYPO.display, fontSize: 10, fontWeight: 500, letterSpacing: '0.16em', color: DS.fg4, fontVariantNumeric: 'tabular-nums', flexShrink: 0, marginTop: 4 }}>
-          {ix}
-        </span>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <h3 style={{ margin: 0, fontFamily: TYPO.display, fontWeight: 500, fontSize: 16, letterSpacing: '-0.015em', color: DS.fg1, lineHeight: 1.3 }}>
+          <h3 style={{ margin: 0, fontFamily: TYPO.display, fontWeight: 500, fontSize: 18, letterSpacing: '-0.015em', color: DS.fg1, lineHeight: 1.3 }}>
+            <span style={{ marginRight: 8, letterSpacing: 0 }}>{ix}</span>
             {title}
           </h3>
           {description && (
