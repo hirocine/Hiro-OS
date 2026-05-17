@@ -119,15 +119,20 @@ function CueRow({
       }}
     >
       {/* Side compacta */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span style={{ fontFamily: TYPO.display, fontWeight: 500, fontSize: 11, color: isRemoved ? DS.danger : DS.fg4, letterSpacing: '0.12em', fontVariantNumeric: 'tabular-nums' }}>
-          CUE {String(cue.index).padStart(3, '0')}
-        </span>
-        <span style={{ fontFamily: DS.mono, fontSize: 11, color: DS.fg3, lineHeight: 1.4 }}>
-          <strong style={{ color: DS.fg1, fontWeight: 500 }}>{cue.startStr}</strong>
-          <br />
-          → {cue.endStr}
-        </span>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ visibility: isFirst ? 'visible' : 'hidden' }}>
+          <ColLabel>Cue</ColLabel>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontFamily: TYPO.display, fontWeight: 500, fontSize: 11, color: isRemoved ? DS.danger : DS.fg4, letterSpacing: '0.12em', fontVariantNumeric: 'tabular-nums' }}>
+            CUE {String(cue.index).padStart(3, '0')}
+          </span>
+          <span style={{ fontFamily: DS.mono, fontSize: 11, color: DS.fg3, lineHeight: 1.4 }}>
+            <strong style={{ color: DS.fg1, fontWeight: 500 }}>{cue.startStr}</strong>
+            <br />
+            → {cue.endStr}
+          </span>
+        </div>
       </div>
 
       {/* Before */}
