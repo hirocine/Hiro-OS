@@ -53,6 +53,7 @@ export const NAV: NavSection[] = [
       { name: "Home",             href: "/",                 icon: I.home,  permission: "home" },
       { name: "Caixa de Entrada", href: "/caixa-de-entrada", icon: I.inbox, permission: "inbox" },
       { name: "Tarefas",          href: "/tarefas",          icon: I.task,  permission: "tarefas" },
+      { name: "Chat",             href: "/chat",             icon: I.chat,  permission: "chat" },
     ],
   },
   {
