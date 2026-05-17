@@ -1,13 +1,15 @@
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Sparkles, Loader2, Clock, Bookmark, MoreHorizontal, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { StepStrip, PageHeader, PageAction, EyebrowDot, WizardFooter, FooterButton, DS, TYPO } from '@/features/subtitles/components/shared';
+import { StepStrip, PageHeader, EyebrowDot, WizardFooter, FooterButton, DS, TYPO } from '@/features/subtitles/components/shared';
+import { LandingPage } from '@/features/subtitles/components/LandingPage';
 import { Step1Upload } from '@/features/subtitles/components/Step1Upload';
 import { Step2Configure, step2Estimate } from '@/features/subtitles/components/Step2Configure';
 import { Step3Review } from '@/features/subtitles/components/Step3Review';
 import { Step4Export } from '@/features/subtitles/components/Step4Export';
 import { defaultStyleForAspect } from '@/features/subtitles/hooks/useSubtitlePresets';
 import { useCorrectSubtitle } from '@/features/subtitles/hooks/useCorrectSubtitle';
+import { useCreateJob, useUpdateJob, type SubtitleJob } from '@/features/subtitles/hooks/useSubtitleJobs';
 import { parseSrt } from '@/features/subtitles/utils/parseSrt';
 import type { SrtCue, SubtitleStyle, SupportedLanguage } from '@/features/subtitles/types';
 
@@ -26,6 +28,7 @@ export default function CorrecaoLegendas() {
   const [originalCues, setOriginalCues] = useState<SrtCue[]>([]);
   const [correctedCues, setCorrectedCues] = useState<SrtCue[]>([]);
   const [showRawSrt, setShowRawSrt] = useState(false);
+  const [jobId, setJobId] = useState<string | null>(null);
 
   const [sourceLanguage, setSourceLanguage] = useState<SupportedLanguage>('pt-BR');
   const [targetLanguage, setTargetLanguage] = useState<SupportedLanguage>('pt-BR');
@@ -35,13 +38,47 @@ export default function CorrecaoLegendas() {
   const [baselineStyle, setBaselineStyle] = useState<SubtitleStyle | null>(null);
 
   const correct = useCorrectSubtitle();
+  const createJob = useCreateJob();
+  const updateJob = useUpdateJob();
 
-  const handleUpload = (rawSrt: string, cues: SrtCue[], name: string, dt: number) => {
+  const handleUploadFresh = async (rawSrt: string, cues: SrtCue[], name: string, dt: number) => {
     setSrt(rawSrt);
     setFileName(name);
     setOriginalCues(cues);
     setCorrectedCues([]);
     setParseTimeMs(dt);
+    setStep(1);
+    // Persist job
+    try {
+      const job = await createJob.mutateAsync({
+        file_name: name,
+        file_size_bytes: new Blob([rawSrt]).size,
+        cue_count: cues.length,
+        original_srt: rawSrt,
+      });
+      setJobId(job.id);
+    } catch (e) {
+      console.error('Falha ao salvar job no histórico:', e);
+      // não bloqueia o fluxo
+    }
+  };
+
+  const handleResumeJob = (job: SubtitleJob) => {
+    setSrt(job.original_srt);
+    setFileName(job.file_name);
+    setOriginalCues(parseSrt(job.original_srt));
+    setCorrectedCues(job.corrected_srt ? parseSrt(job.corrected_srt) : []);
+    setParseTimeMs(null);
+    setJobId(job.id);
+    setSourceLanguage(job.source_language);
+    setTargetLanguage(job.target_language);
+    setGlossary(job.glossary ?? []);
+    if (job.aspect_ratio) setStyle(defaultStyleForAspect(job.aspect_ratio));
+    if (job.corrected_srt) {
+      setStep(job.status === 'exported' ? 4 : 3);
+    } else {
+      setStep(1);
+    }
   };
 
   const handleReset = () => {
@@ -57,6 +94,7 @@ export default function CorrecaoLegendas() {
     setStyle(defaultStyleForAspect('16:9'));
     setSourceLanguage('pt-BR');
     setTargetLanguage('pt-BR');
+    setJobId(null);
   };
 
   const handleProcess = async () => {
@@ -77,9 +115,29 @@ export default function CorrecaoLegendas() {
       setCorrectedCues(parsed);
       setStep(3);
       toast.success(`${parsed.length} legendas processadas`);
+      if (jobId) {
+        updateJob.mutate({
+          id: jobId,
+          patch: {
+            status: 'processed',
+            corrected_srt: correctedSrt,
+            source_language: sourceLanguage,
+            target_language: targetLanguage,
+            aspect_ratio: style.aspect_ratio,
+            glossary,
+          },
+        });
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Erro desconhecido';
       toast.error(`Erro processando: ${msg}`);
+    }
+  };
+
+  const handleAdvanceToExport = () => {
+    setStep(4);
+    if (jobId) {
+      updateJob.mutate({ id: jobId, patch: { status: 'exported' } });
     }
   };
 
@@ -91,6 +149,16 @@ export default function CorrecaoLegendas() {
     return false;
   };
 
+  // ============ LANDING ============
+  if (!srt) {
+    return (
+      <div className="ds-shell" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: DS.bg }}>
+        <LandingPage onUploadFresh={handleUploadFresh} onResumeJob={handleResumeJob} />
+      </div>
+    );
+  }
+
+  // ============ WIZARD ============
   return (
     <div className="ds-shell" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: DS.bg }}>
       <PageHeader
@@ -106,13 +174,6 @@ export default function CorrecaoLegendas() {
           <>
             Carregue um <strong style={{ fontFamily: TYPO.display, fontWeight: 500, color: DS.fg1 }}>.srt</strong> e a engine de revisão limpa pontuação, normaliza casing, respeita o{' '}
             <strong style={{ fontFamily: TYPO.display, fontWeight: 500, color: DS.fg1 }}>CPS</strong> e quebra as linhas conforme o formato final. Saída pronta pro DaVinci Resolve, Premiere ou pra queimar direto no vídeo.
-          </>
-        }
-        actions={
-          <>
-            <PageAction icon={<Clock size={12} strokeWidth={1.5} />}>Histórico</PageAction>
-            <PageAction icon={<Bookmark size={12} strokeWidth={1.5} />}>Presets</PageAction>
-            <PageAction icon={<MoreHorizontal size={12} strokeWidth={1.5} />} iconOnly />
           </>
         }
       />
@@ -135,7 +196,7 @@ export default function CorrecaoLegendas() {
             parseTimeMs={parseTimeMs}
             cpsMax={style.cps_max}
             maxCharsPerLine={style.chars_per_line}
-            onUpload={handleUpload}
+            onUpload={handleUploadFresh}
             onRename={(next) => setFileName(next)}
             onRemove={handleReset}
             onShowRaw={() => setShowRawSrt(true)}
@@ -172,7 +233,7 @@ export default function CorrecaoLegendas() {
       </div>
 
       {/* FOOTER */}
-      {step === 1 && srt && (
+      {step === 1 && (
         <WizardFooter
           hint={
             <>
@@ -181,7 +242,7 @@ export default function CorrecaoLegendas() {
           }
         >
           <FooterButton icon={<ChevronLeft size={12} strokeWidth={1.5} />} onClick={handleReset}>
-            Cancelar
+            Voltar ao início
           </FooterButton>
           <FooterButton primary iconRight={<ChevronRight size={12} strokeWidth={1.5} />} onClick={() => setStep(2)}>
             Avançar para Configurar
@@ -220,7 +281,7 @@ export default function CorrecaoLegendas() {
           <FooterButton icon={<ChevronLeft size={12} strokeWidth={1.5} />} onClick={() => setStep(2)}>
             Voltar
           </FooterButton>
-          <FooterButton primary iconRight={<ChevronRight size={12} strokeWidth={1.5} />} onClick={() => setStep(4)}>
+          <FooterButton primary iconRight={<ChevronRight size={12} strokeWidth={1.5} />} onClick={handleAdvanceToExport}>
             Aprovar e exportar
           </FooterButton>
         </WizardFooter>
