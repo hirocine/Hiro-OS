@@ -250,7 +250,7 @@ function renderToken(t: DiffToken, side: 'left' | 'right', i: number) {
           color: DS.danger,
           textDecoration: 'line-through',
           textDecorationColor: 'hsl(0 60% 50% / 0.6)',
-          padding: '0 2px',
+          padding: 0,
         }}
       >
         {t.text}
@@ -264,7 +264,7 @@ function renderToken(t: DiffToken, side: 'left' | 'right', i: number) {
         style={{
           background: DS.accentSoft,
           color: DS.accentDeep,
-          padding: '0 2px',
+          padding: 0,
           fontWeight: 500,
         }}
       >
