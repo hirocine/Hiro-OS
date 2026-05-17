@@ -119,23 +119,6 @@ export default function PostProduction() {
           }}
         >
           <div>
-            <div
-              style={{
-                fontFamily: '"HN Display", sans-serif',
-                fontSize: 11,
-                fontWeight: 500,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                color: 'hsl(var(--ds-fg-3))',
-                marginBottom: 12,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
-              }}
-            >
-              <span style={{ width: 6, height: 6, background: 'hsl(var(--ds-accent))' }} />
-              Operações · Pós-produção
-            </div>
             <h1
               style={{
                 fontFamily: '"HN Display", sans-serif',
