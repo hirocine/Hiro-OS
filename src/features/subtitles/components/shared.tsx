@@ -48,10 +48,10 @@ export function StepStrip({ steps, current, onJump, canVisit }: StepStripProps) 
   return (
     <nav
       style={{
+        margin: '20px 40px 0',
         display: 'grid',
         gridTemplateColumns: `repeat(${steps.length}, 1fr)`,
-        borderBottom: `1px solid ${DS.line1}`,
-        borderTop: `1px solid ${DS.line1}`,
+        border: `1px solid ${DS.line1}`,
         background: DS.surface,
       }}
     >
