@@ -65,7 +65,7 @@ export function Step3Review({ beforeCues, afterCues, onUpdate }: Props) {
   };
 
   return (
-    <Section ix="3.1" title="Revisão">
+    <Section ix="3.1" title="Revisão" noBorder>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {paged.map((a) => (
           <CueRow
