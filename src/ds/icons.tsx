@@ -96,6 +96,7 @@ export const I = {
   gift:     i(Gift),           // RH > Datas
   book:     i(BookOpen),       // RH > Wiki
   captions: i(Captions),       // Pós > Correção de Legendas
+  chat:     i(MessageSquare),  // Chat / mensagens
 
   // Topbar / chrome
   search:   i(Search),
